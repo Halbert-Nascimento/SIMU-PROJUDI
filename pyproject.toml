@@ -30,8 +30,11 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = [
     "acesso",
+    "agendamentos",
     "base",
+    "ciclos",
     "core",
+    "movimentacoes",
     "processos",
     "usuarios",
 ]
