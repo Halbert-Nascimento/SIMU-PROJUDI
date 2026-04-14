@@ -2,17 +2,11 @@
 
 {% block title %}Redirecionamento de Teste{% endblock %}
 
-{% block content %}
-<header class="bg-tjgo-navy text-white h-[45px] flex items-center justify-between px-6 sticky top-0 z-50">
-    <div class="flex items-center gap-2">
-        <i class="fa-solid fa-scale-balanced text-xl"></i>
-        <span class="font-bold text-lg tracking-wide">Processo Judicial</span>
-    </div>
-    <div class="flex items-center text-gray-200">
-        <a href="{% url 'base:home' %}" class="text-xs font-bold hover:underline">Voltar</a>
-    </div>
-</header>
+{% block header_acoes %}
+<a href="{% url 'base:home' %}" class="text-xs font-bold hover:underline">Voltar</a>
+{% endblock %}
 
+{% block content %}
 <main class="main-container px-10 py-8">
     <div class="mx-auto w-full max-w-2xl border border-gray-200 bg-white">
         <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
