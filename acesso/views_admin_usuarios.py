@@ -68,10 +68,26 @@ def usuario_atualizar(request):
             for erro in erros:
                 messages.error(request, erro)
 
+    next_url = request.POST.get("next", "")
+    if next_url:
+        return redirect(next_url)
     return redirect("acesso:usuario_lista")
 
 
+@login_required
 def painel_administrativo(request):
-    return render(request, "acesso/painel_administrativo.html")
+    context = {}
+    if pode_gerenciar_usuarios(request.user) and tipos_que_pode_atribuir(request.user):
+        usuarios = Usuario.objects.order_by("is_active", "tipo_perfil_global", "username")
+        tipos_permitidos = tipos_que_pode_atribuir(request.user)
+        tipos_opcoes = [
+            (tipo.value, tipo.label)
+            for tipo in Usuario.TipoPerfilGlobal
+            if tipo in tipos_permitidos
+        ]
+        context["usuarios"] = usuarios
+        context["tipos_opcoes"] = tipos_opcoes
+        context["usuarios_pendentes_count"] = usuarios.filter(is_active=False).count()
+    return render(request, "acesso/painel_administrativo.html", context)
 
 

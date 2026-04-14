@@ -33,8 +33,23 @@
             <p class="text-gray-500 text-sm mt-1">Visão geral dos ciclos de simulação, turmas e avaliações pendentes.</p>
         </div>
 
-        <!-- BANNER DE ALERTA DE UX (Aprovações Pendentes) -->
-        {% comment %} <!-- No Django, você envolverá isso em um {% if usuarios_pendentes_count > 0 %} --> {% endcomment %}
+        <!-- Mensagens de feedback -->
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+            <div class="p-2.5 text-xs border rounded flex items-center gap-2
+                {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
+                {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
+                {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
+                <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- BANNER DE ALERTA (Aprovações Pendentes) -->
+        {% if usuarios_pendentes_count %}
         <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 shadow-sm flex items-center justify-between rounded-r-sm">
             <div class="flex items-center gap-4">
                 <div class="bg-yellow-100 p-2 rounded-full">
@@ -42,13 +57,17 @@
                 </div>
                 <div>
                     <p class="text-sm font-bold text-yellow-800">Aprovações de Cadastro Pendentes</p>
-                    <p class="text-xs text-yellow-700 mt-0.5">Existem <strong>3 novos alunos</strong> que criaram conta e aguardam a liberação do perfil para acessar o sistema.</p>
+                    <p class="text-xs text-yellow-700 mt-0.5">
+                        Existem <strong>{{ usuarios_pendentes_count }} novo{{ usuarios_pendentes_count|pluralize }} aluno{{ usuarios_pendentes_count|pluralize }}</strong> aguardando liberação de perfil.
+                    </p>
                 </div>
             </div>
-            <a href="{% url 'acesso:usuario_lista' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold py-2 px-4 rounded shadow-sm transition-colors uppercase flex items-center gap-2">
+            <button type="button" onclick="openModal('modal-usuarios'); switchTab('pendentes')"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold py-2 px-4 rounded shadow-sm transition-colors uppercase flex items-center gap-2">
                 Analisar Cadastros <i class="fa-solid fa-arrow-right"></i>
-            </a>
+            </button>
         </div>
+        {% endif %}
 
         <div class="grid grid-cols-1 lg:grid-cols-[65%_32%] gap-x-[3%]">
 
@@ -209,10 +228,11 @@
                             <i class="fa-solid fa-file-circle-plus text-2xl text-tjgo-navy mb-2"></i>
                             <span class="text-[11px] font-bold leading-tight text-gray-800">Distribuir<br>Novo Processo</span>
                         </a>
-                        <a href="{% url 'acesso:usuario_lista' %}" class="bg-tjgo-gray-card hover:bg-gray-300 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-gray-300">
+                        <button type="button" onclick="openModal('modal-usuarios'); switchTab('todos')"
+                            class="bg-tjgo-gray-card hover:bg-gray-300 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-gray-300 w-full">
                             <i class="fa-solid fa-users-gear text-2xl text-tjgo-navy mb-2"></i>
                             <span class="text-[11px] font-bold leading-tight text-gray-800">Gerir<br>Usuários</span>
-                        </a>
+                        </button>
                         <a href="#" class="bg-tjgo-gray-card hover:bg-gray-300 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-gray-300">
                             <i class="fa-solid fa-calendar-days text-2xl text-tjgo-navy mb-2"></i>
                             <span class="text-[11px] font-bold leading-tight text-gray-800">Agendar<br>Audiência</span>
@@ -227,6 +247,163 @@
         </div>
 
 </main>
+
+<!-- Modal: Gestão de Usuários -->
+{% if usuarios %}
+<div id="modal-usuarios" class="fixed inset-0 z-[60] hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="closeModal('modal-usuarios')"></div>
+    <div class="relative bg-white w-full max-w-4xl shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
+
+        <!-- Cabeçalho -->
+        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center shrink-0">
+            <span><i class="fa-solid fa-users-gear mr-2"></i> Gestão de Usuários</span>
+            <button onclick="closeModal('modal-usuarios')" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Abas -->
+        <div class="border-b border-gray-200 px-5 flex gap-0 shrink-0 bg-white">
+            <button id="tab-btn-pendentes" onclick="switchTab('pendentes')"
+                class="tab-btn px-5 py-3 text-xs font-bold border-b-2 border-tjgo-blue text-tjgo-blue transition-colors -mb-px">
+                <i class="fa-solid fa-user-clock mr-1"></i> Pendentes
+                <span id="badge-pendentes" class="ml-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ usuarios_pendentes_count }}</span>
+            </button>
+            <button id="tab-btn-todos" onclick="switchTab('todos')"
+                class="tab-btn px-5 py-3 text-xs font-bold border-b-2 border-transparent text-gray-500 hover:text-tjgo-blue transition-colors -mb-px">
+                <i class="fa-solid fa-list mr-1"></i> Todos os Usuários
+            </button>
+        </div>
+
+        <!-- Conteúdo rolável -->
+        <div class="overflow-y-auto flex-1">
+
+            <!-- Aba: Pendentes -->
+            <div id="tab-pendentes" class="p-5">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-[10px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
+                            <th class="py-2 pr-3 pl-2">Usuário</th>
+                            <th class="py-2 pr-3">Email</th>
+                            <th class="py-2 pr-3">Data do Cadastro</th>
+                            <th class="py-2 pr-3 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}{% if not u.is_active %}
+                        <tr class="border-b border-gray-100 hover:bg-yellow-50/40 transition-colors">
+                            <td class="py-2.5 pr-3 pl-2">
+                                <span class="font-bold text-tjgo-navy text-xs block">{{ u.username }}</span>
+                                <span class="text-[10px] text-gray-500">{{ u.get_full_name }}</span>
+                            </td>
+                            <td class="py-2.5 pr-3 text-xs text-gray-600">{{ u.email }}</td>
+                            <td class="py-2.5 pr-3 text-xs text-gray-500">{{ u.date_joined|date:"d/m/Y H:i" }}</td>
+                            <td class="py-2.5 pr-3 text-right">
+                                <button type="button"
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition-colors uppercase"
+                                    onclick="abrirEdicao('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.tipo_perfil_global }}', false)">
+                                    <i class="fa-solid fa-user-check mr-1"></i> Aprovar / Editar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endif %}{% empty %}
+                        <tr><td colspan="4" class="py-8 text-center text-sm text-gray-400 italic">Nenhum cadastro pendente de aprovação.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Aba: Todos -->
+            <div id="tab-todos" class="p-5 hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-[10px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
+                            <th class="py-2 pr-3 pl-2">Usuário</th>
+                            <th class="py-2 pr-3">Email</th>
+                            <th class="py-2 pr-3">Tipo de Perfil</th>
+                            <th class="py-2 pr-3">Status</th>
+                            <th class="py-2 pr-3 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                            <td class="py-2.5 pr-3 pl-2">
+                                <span class="font-bold text-tjgo-navy text-xs block">{{ u.username }}</span>
+                                <span class="text-[10px] text-gray-500">{{ u.get_full_name }}</span>
+                            </td>
+                            <td class="py-2.5 pr-3 text-xs text-gray-600">{{ u.email }}</td>
+                            <td class="py-2.5 pr-3 text-xs text-gray-600">{{ u.get_tipo_perfil_global_display }}</td>
+                            <td class="py-2.5 pr-3">
+                                {% if u.is_active %}
+                                <span class="bg-green-100 text-green-800 border border-green-200 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Ativo</span>
+                                {% else %}
+                                <span class="bg-red-100 text-red-800 border border-red-200 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-2.5 pr-3 text-right">
+                                <button type="button"
+                                    class="text-tjgo-blue text-[11px] font-bold hover:underline"
+                                    onclick="abrirEdicao('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.tipo_perfil_global }}', {% if u.is_active %}true{% else %}false{% endif %})">
+                                    <i class="fa-solid fa-pen text-[10px]"></i> editar
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="py-8 text-center text-sm text-gray-400 italic">Nenhum usuário encontrado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Usuário (aninhado, z maior) -->
+<div id="modal-editar-usuario" class="fixed inset-0 z-[70] hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/30" onclick="fecharEdicao()"></div>
+    <div class="relative bg-white w-full max-w-sm shadow-modal rounded-sm overflow-hidden modal-content flex flex-col">
+        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center">
+            <span><i class="fa-solid fa-user-pen mr-2"></i> Editar / Aprovar Usuário</span>
+            <button onclick="fecharEdicao()" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-5 text-sm">
+            <div class="mb-4 pb-3 border-b border-gray-100">
+                <span class="font-bold text-tjgo-navy text-sm block mb-0.5" id="edicao-username">-</span>
+                <span class="text-xs text-gray-500" id="edicao-email">-</span>
+            </div>
+            <form method="post" action="{% url 'acesso:usuario_atualizar' %}" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="edicao-user-id">
+                <input type="hidden" name="next" value="{% url 'acesso:painel_administrativo' %}">
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Tipo de Perfil</label>
+                    <select id="edicao-tipo" name="tipo_perfil_global"
+                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                        {% for value, label in tipos_opcoes %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 p-3 rounded">
+                    <input id="edicao-ativo" name="is_active" type="checkbox" value="on"
+                        class="h-4 w-4 border-gray-300 text-tjgo-blue focus:ring-tjgo-blue rounded">
+                    <label for="edicao-ativo" class="text-xs font-bold text-gray-700 uppercase cursor-pointer">Ativo (liberar acesso ao sistema)</label>
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button type="submit"
+                        class="flex-1 bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-2 text-xs rounded shadow-sm transition uppercase">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar
+                    </button>
+                    <button type="button" onclick="fecharEdicao()"
+                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 text-xs rounded shadow-sm transition uppercase">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Modal: Novo Ciclo -->
 <div id="modal-ciclo" class="fixed inset-0 z-[60] hidden items-center justify-center">
@@ -282,5 +459,46 @@
         }, 200);
     }
 
+    function switchTab(tab) {
+        const tabs = ['pendentes', 'todos'];
+        tabs.forEach(t => {
+            document.getElementById('tab-' + t).classList.add('hidden');
+            const btn = document.getElementById('tab-btn-' + t);
+            btn.classList.remove('border-tjgo-blue', 'text-tjgo-blue');
+            btn.classList.add('border-transparent', 'text-gray-500');
+        });
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        const activeBtn = document.getElementById('tab-btn-' + tab);
+        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+        activeBtn.classList.add('border-tjgo-blue', 'text-tjgo-blue');
+    }
+
+    function abrirEdicao(id, username, email, tipo, ativo) {
+        document.getElementById('edicao-user-id').value = id;
+        document.getElementById('edicao-username').textContent = username;
+        document.getElementById('edicao-email').textContent = email;
+        document.getElementById('edicao-tipo').value = tipo;
+        document.getElementById('edicao-ativo').checked = ativo;
+        const modal = document.getElementById('modal-editar-usuario');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => { modal.classList.add('modal-active'); }, 10);
+    }
+
+    function fecharEdicao() {
+        const modal = document.getElementById('modal-editar-usuario');
+        modal.classList.remove('modal-active');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+
+    {% if messages %}
+    document.addEventListener('DOMContentLoaded', () => {
+        const modalUsuarios = document.getElementById('modal-usuarios');
+        if (modalUsuarios) { openModal('modal-usuarios'); switchTab('todos'); }
+    });
+    {% endif %}
 </script>
 {% endblock %}
