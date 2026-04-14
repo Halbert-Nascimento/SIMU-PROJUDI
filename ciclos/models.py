@@ -14,6 +14,18 @@ class StatusCiclo(models.Model):
         return self.nome_status
 
 
+class CargoSimulacao(models.Model):
+    nome = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = "cargo_simulacao"
+        verbose_name = "Cargo de Simulação"
+        verbose_name_plural = "Cargos de Simulação"
+
+    def __str__(self):
+        return self.nome
+
+
 class CicloSimulacao(models.Model):
     nome_edicao = models.CharField(max_length=150)
     coordenador = models.ForeignKey(
@@ -21,7 +33,9 @@ class CicloSimulacao(models.Model):
         on_delete=models.PROTECT,
         related_name="ciclos_coordenados",
     )
-    semestre_ano = models.CharField(max_length=15)
+    semestre = models.PositiveSmallIntegerField()
+    ano = models.PositiveSmallIntegerField()
+    periodo = models.CharField(max_length=100, blank=True)
     status = models.ForeignKey(
         StatusCiclo,
         on_delete=models.PROTECT,
@@ -42,13 +56,18 @@ class CicloSimulacao(models.Model):
         verbose_name_plural = "Ciclos de Simulação"
 
     def __str__(self):
-        return f"{self.nome_edicao} ({self.semestre_ano})"
+        return f"{self.nome_edicao} — {self.semestre}º/{self.ano}"
 
 
 class GrupoTrabalho(models.Model):
     ciclo = models.ForeignKey(
         CicloSimulacao,
         on_delete=models.CASCADE,
+        related_name="grupos",
+    )
+    cargo_simulacao = models.ForeignKey(
+        CargoSimulacao,
+        on_delete=models.PROTECT,
         related_name="grupos",
     )
     nome = models.CharField(max_length=150)
@@ -66,4 +85,4 @@ class GrupoTrabalho(models.Model):
         verbose_name_plural = "Grupos de Trabalho"
 
     def __str__(self):
-        return f"{self.nome} — {self.ciclo}"
+        return f"{self.nome} ({self.cargo})"
