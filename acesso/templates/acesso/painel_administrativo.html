@@ -80,11 +80,14 @@
                         <div class="flex items-center">
                             <i class="fa-solid fa-folder-tree mr-2 text-sm"></i> GESTÃO DE CICLOS DE SIMULAÇÃO
                         </div>
+                        {% if status_ciclo_opcoes %}
                         <button type="button" onclick="openModal('modal-ciclo')" class="bg-[#1e5894] hover:bg-[#1a4b7f] text-white px-3 py-1 rounded-sm transition-colors text-xs lowercase flex items-center gap-1 shadow-sm">
                             <i class="fa-solid fa-plus"></i> novo ciclo
                         </button>
+                        {% endif %}
                     </div>
                     <div class="p-5 text-[13px] leading-relaxed text-gray-800 overflow-x-auto">
+                        {% if ciclos %}
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="text-[11px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
@@ -95,35 +98,40 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                {% for ciclo in ciclos %}
                                 <tr class="border-b border-gray-100 text-sm hover:bg-blue-50/30 transition-colors">
-                                    <td class="py-3 pr-3 pl-2 font-bold text-tjgo-blue">Simulação NPJ - 2026.1</td>
-                                    <td class="py-3 pr-3">
-                                        <span class="bg-green-100 text-green-800 border border-green-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">Em Andamento</span>
+                                    <td class="py-3 pr-3 pl-2">
+                                        <span class="font-bold {% if ciclo.status.nome_status == 'Em Andamento' %}text-tjgo-blue{% else %}text-gray-600{% endif %}">
+                                            {{ ciclo.nome_edicao }}
+                                        </span>
+                                        <span class="block text-[10px] text-gray-400 mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %}</span>
                                     </td>
-                                    <td class="py-3 pr-3 font-semibold text-gray-700">12 Grupos</td>
+                                    <td class="py-3 pr-3">
+                                        {% if ciclo.status.nome_status == 'Em Andamento' %}
+                                        <span class="bg-green-100 text-green-800 border border-green-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">{{ ciclo.status }}</span>
+                                        {% elif ciclo.status.nome_status == 'Finalizado' %}
+                                        <span class="bg-gray-200 text-gray-700 border border-gray-300 text-[10px] font-bold px-2.5 py-1 rounded uppercase">{{ ciclo.status }}</span>
+                                        {% else %}
+                                        <span class="bg-orange-100 text-orange-700 border border-orange-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">{{ ciclo.status }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 pr-3 font-semibold text-gray-700">{{ ciclo.grupos.count }} Grupo{{ ciclo.grupos.count|pluralize }}</td>
                                     <td class="py-3 pr-3 flex justify-end gap-3">
-                                        <a href="{% url 'ciclos:gerenciar_grupos' %}?ciclo=Simulação NPJ - 2026.1" class="text-tjgo-blue text-[11px] font-bold hover:underline flex items-center gap-1" title="Gerenciar Grupos">
+                                        <a href="{% url 'ciclos:gerenciar_grupos' %}?ciclo={{ ciclo.nome_edicao }}"
+                                            class="text-tjgo-blue text-[11px] font-bold hover:underline flex items-center gap-1">
                                             <i class="fa-solid fa-users"></i> Gerenciar Grupos
                                         </a>
-                                        <a href="#" class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1" title="Editar Ciclo">
+                                        <a href="#" class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
                                             <i class="fa-solid fa-pen"></i> Editar
                                         </a>
                                     </td>
                                 </tr>
-                                <tr class="border-b border-gray-100 text-sm hover:bg-blue-50/30 transition-colors">
-                                    <td class="py-3 pr-3 pl-2 font-bold text-gray-600">Simulação NPJ - 2025.2</td>
-                                    <td class="py-3 pr-3">
-                                        <span class="bg-gray-200 text-gray-700 border border-gray-300 text-[10px] font-bold px-2.5 py-1 rounded uppercase">Finalizado</span>
-                                    </td>
-                                    <td class="py-3 pr-3 font-semibold text-gray-700">10 Grupos</td>
-                                    <td class="py-3 pr-3 flex justify-end gap-3">
-                                        <a href="{% url 'ciclos:gerenciar_grupos' %}?ciclo=Simulação NPJ - 2025.2" class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
-                                            <i class="fa-solid fa-eye"></i> Visualizar
-                                        </a>
-                                    </td>
-                                </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
+                        {% else %}
+                        <p class="text-sm text-gray-400 italic text-center py-6">Nenhum ciclo de simulação cadastrado.</p>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -406,41 +414,95 @@
 {% endif %}
 
 <!-- Modal: Novo Ciclo -->
+{% if status_ciclo_opcoes %}
 <div id="modal-ciclo" class="fixed inset-0 z-[60] hidden items-center justify-center">
     <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="closeModal('modal-ciclo')"></div>
     <div class="relative bg-white w-full max-w-lg shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
-        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center">
+        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center shrink-0">
             <span><i class="fa-solid fa-folder-plus mr-2"></i> Novo Ciclo de Simulação</span>
             <button onclick="closeModal('modal-ciclo')" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="p-6 overflow-y-auto text-sm">
-            <form class="space-y-4">
+        <form method="post" action="{% url 'ciclos:criar_ciclo' %}" class="flex flex-col overflow-hidden">
+            {% csrf_token %}
+            <div class="p-6 overflow-y-auto space-y-4 text-sm">
+
+                <!-- Nome da Edição -->
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Nome / Edição do Ciclo *</label>
-                    <input type="text" placeholder="Ex: Simulação NPJ - Turma A" class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">
+                        Nome / Edição do Ciclo *
+                    </label>
+                    <input
+                        type="text"
+                        name="nome_edicao"
+                        placeholder="Ex: Simulação NPJ - Turma A"
+                        maxlength="150"
+                        required
+                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
                 </div>
+
+                <!-- Semestre e Ano -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Semestre / Ano *</label>
-                        <input type="text" placeholder="Ex: 2026.1" class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Status *</label>
-                        <select class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                            <option value="Em Andamento" selected>Em Andamento</option>
-                            <option value="Finalizado">Finalizado</option>
-                            <option value="Arquivado">Arquivado</option>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Semestre *</label>
+                        <select
+                            name="semestre"
+                            required
+                            class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                            <option value="">Selecione...</option>
+                            <option value="1">1º Semestre</option>
+                            <option value="2">2º Semestre</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Ano *</label>
+                        <input
+                            type="number"
+                            name="ano"
+                            value="{{ ano_atual }}"
+                            min="2000"
+                            max="{{ ano_atual|add:5 }}"
+                            required
+                            class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                    </div>
                 </div>
-            </form>
-        </div>
-        <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-end gap-2">
-            <button onclick="closeModal('modal-ciclo')" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-4 text-xs rounded shadow-sm transition-colors uppercase">Cancelar</button>
-            <button onclick="closeModal('modal-ciclo')" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-6 text-xs rounded shadow-sm transition-colors uppercase">Salvar Ciclo</button>
-        </div>
+
+                
+
+                <!-- Status -->
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Status *</label>
+                    <select
+                        name="status"
+                        required
+                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                        <option value="">Selecione...</option>
+                        {% for s in status_ciclo_opcoes %}
+                        <option value="{{ s.pk }}">{{ s.nome_status }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Info coordenador (somente leitura) -->
+                <div class="bg-blue-50 border border-blue-100 rounded px-3 py-2 text-xs text-blue-700 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Você será registrado automaticamente como <strong class="ml-1">coordenador</strong> deste ciclo.
+                </div>
+
+            </div>
+            <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-end gap-2 shrink-0">
+                <button type="button" onclick="closeModal('modal-ciclo')"
+                    class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-4 text-xs rounded shadow-sm transition-colors uppercase">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-6 text-xs rounded shadow-sm transition-colors uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar Ciclo
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+{% endif %}
 
 <script>
     function openModal(modalId) {
@@ -496,8 +558,20 @@
 
     {% if messages %}
     document.addEventListener('DOMContentLoaded', () => {
-        const modalUsuarios = document.getElementById('modal-usuarios');
-        if (modalUsuarios) { openModal('modal-usuarios'); switchTab('todos'); }
+        let abrirCiclo = false;
+        let abrirUsuarios = false;
+        {% for message in messages %}
+            {% if 'ciclo' in message.tags %}abrirCiclo = true;{% endif %}
+            {% if 'usuario' in message.tags %}abrirUsuarios = true;{% endif %}
+        {% endfor %}
+        if (abrirCiclo) {
+            const m = document.getElementById('modal-ciclo');
+            if (m) openModal('modal-ciclo');
+        }
+        if (abrirUsuarios) {
+            const m = document.getElementById('modal-usuarios');
+            if (m) { openModal('modal-usuarios'); switchTab('todos'); }
+        }
     });
     {% endif %}
 </script>
