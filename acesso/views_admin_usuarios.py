@@ -73,3 +73,5 @@ def usuario_atualizar(request):
 
 def painel_administrativo(request):
     return render(request, "acesso/painel_administrativo.html")
+
+
