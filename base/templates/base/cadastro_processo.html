@@ -1,57 +1,14 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Processo Judicial - Cadastro de Processo Comum</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'azul-marinho': '#153A61',
-                        'azul-primario': '#1A5B9E',
-                        'azul-botao': '#1E5894',
-                        'fundo-geral': '#F7F7F7',
-                        'fundo-container': '#FFFFFF',
-                        'fundo-caixa': '#E9E9E9',
-                        'hover-caixa': '#DCDCDC',
-                        'texto-principal': '#333333',
-                        'texto-secundario': '#666666',
-                        'borda': '#D1D1D1',
-                    },
-                    fontFamily: {
-                        'sistema': ['Arial', 'Helvetica', 'sans-serif'],
-                    },
-                    maxWidth: {
-                        'container': '1200px',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        fieldset {
-            border: 1px solid #D1D1D1;
-            border-radius: 4px;
-            background-color: #FFFFFF;
-        }
-        fieldset legend {
-            font-weight: bold;
-            font-size: 13px;
-            padding: 0 8px;
-            color: #333333;
-        }
-        input[type="text"]:focus,
-        select:focus {
-            border-color: #1A5B9E !important;
-        }
-    </style>
-</head>
-<body class="bg-fundo-geral font-sistema text-[13px] text-texto-principal">
+{% extends 'base/base.html' %}
+{% load static %}
 
+{% block title %}Processo Judicial - Cadastro de Processo Comum{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'js/tailwind.config.formularios.js' %}"></script>
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+{% endblock %}
+
+{% block content %}
     <!-- Header -->
     <header class="bg-azul-marinho text-white flex items-center justify-between px-10 py-2.5">
         <div class="flex items-center gap-2.5">
@@ -316,6 +273,4 @@
             </button>
         </div>
     </main>
-
-</body>
-</html>
+{% endblock %}
