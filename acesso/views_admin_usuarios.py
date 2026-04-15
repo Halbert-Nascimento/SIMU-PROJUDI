@@ -80,6 +80,9 @@ def usuario_atualizar(request):
 
 @login_required
 def painel_administrativo(request):
+    if request.user.tipo_perfil_global not in (Usuario.TipoPerfilGlobal.ADMIN, Usuario.TipoPerfilGlobal.COORDENADOR, Usuario.TipoPerfilGlobal.PROFESSOR):
+        raise Http404()
+
     context = {
         "ano_atual": datetime.date.today().year,
     }
