@@ -15,7 +15,16 @@ class StatusCiclo(models.Model):
 
 
 class CargoSimulacao(models.Model):
-    nome = models.CharField(max_length=100)
+    nome = models.CharField(max_length=100, verbose_name="Cargo Simulação")
+    cod = models.CharField(max_length=20, unique=True, verbose_name="Código do Cargo")
+
+    #        nome                   |  Códigos:
+    # ('Gabinete do Juiz',          | 'GJ'),
+    # ('Serventia/Cartório',        | 'SC'),
+    # ('Advogados Polo Ativo',      | 'APA'),
+    # ('Advogados Polo Passivo',    | 'APP'),
+    # ('Ministério Público',        | 'MP')
+
 
     class Meta:
         db_table = "cargo_simulacao"
