@@ -6,5 +6,5 @@ app_name = "ciclos"
 
 urlpatterns = [
     path("criar/", criar_ciclo, name="criar_ciclo"),
-    path("grupos/gerenciar/", gerenciar_grupos, name="gerenciar_grupos"),
+    path("<int:ciclo_id>/grupos/", gerenciar_grupos, name="gerenciar_grupos"),
 ]
