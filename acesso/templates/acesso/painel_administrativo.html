@@ -107,7 +107,7 @@
                                             {% else %}text-gray-400{% endif %}">
                                             {{ ciclo.nome_edicao }}
                                         </span>
-                                        <span class="block text-[10px] text-gray-400 mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %}</span>
+                                        <span class="block text-[10px] text-gray-400 mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %} - Responsável: {{ ciclo.coordenador.first_name | capfirst }} </span>
                                     </td>
                                     <td class="py-3 pr-3">
                                         {% if ciclo.status.nome_status == 'em andamento' %}
@@ -130,7 +130,7 @@
                                     </td>
                                     <td class="py-3 pr-3 font-semibold text-gray-700">{{ ciclo.grupos.count }} Grupo{{ ciclo.grupos.count|pluralize }}</td>
                                     <td class="py-3 pr-3 flex justify-end gap-3">
-                                        <a href="{% url 'ciclos:gerenciar_grupos' %}?ciclo={{ ciclo.nome_edicao }}"
+                                        <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
                                             class="text-tjgo-blue text-[11px] font-bold hover:underline flex items-center gap-1">
                                             <i class="fa-solid fa-users"></i> Gerenciar Grupos
                                         </a>
