@@ -94,4 +94,4 @@ class GrupoTrabalho(models.Model):
         verbose_name_plural = "Grupos de Trabalho"
 
     def __str__(self):
-        return f"{self.nome} ({self.cargo})"
+        return f"{self.nome} ({self.cargo_simulacao})"
