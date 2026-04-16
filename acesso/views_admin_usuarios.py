@@ -11,7 +11,7 @@ from django.db.models import Q
 from usuarios.models import Usuario
 
 from ciclos.models import CicloSimulacao, StatusCiclo
-from ciclos.permissions import pode_criar_ciclo
+from ciclos.permissions import pode_criar_ciclo, pode_editar_ciclo
 from .forms_admin_usuarios import AtualizarUsuarioForm
 from .permissions import tipos_que_pode_atribuir, pode_gerenciar_usuarios
 
@@ -122,6 +122,13 @@ def painel_administrativo(request):
                 .order_by("-data_criacao")
                 .filter(Q(coordenador=request.user) | Q(participantes=request.user), status__nome_status__in=["em andamento", "finalizado"])                
             ). distinct()
+
+    if "ciclos" in context:
+        context["ciclos_editaveis"] = frozenset(
+            ciclo.pk
+            for ciclo in context["ciclos"]
+            if pode_editar_ciclo(request.user, ciclo)
+        )
 
     return render(request, "acesso/painel_administrativo.html", context)
 

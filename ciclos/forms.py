@@ -4,6 +4,8 @@ import datetime
 
 from django import forms
 
+from usuarios.models import Usuario
+
 from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho
 
 _ANO_ATUAL = datetime.date.today().year
@@ -30,9 +32,35 @@ class CicloSimulacaoForm(forms.ModelForm):
             "status": {"required": "Selecione um status."},
         }
 
+    def __init__(self, *args, ator=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ator = ator
+        if ator and ator.tipo_perfil_global in (
+            Usuario.TipoPerfilGlobal.ADMIN,
+            Usuario.TipoPerfilGlobal.COORDENADOR,
+        ):
+            self.fields["coordenador"] = forms.ModelChoiceField(
+                queryset=Usuario.objects.filter(
+                    is_active=True,
+                    tipo_perfil_global__in=[
+                        # Usuario.TipoPerfilGlobal.ADMIN,
+                        Usuario.TipoPerfilGlobal.COORDENADOR,
+                        Usuario.TipoPerfilGlobal.PROFESSOR,
+                    ],
+                ).order_by("first_name", "username"),
+                empty_label="Selecione o coordenador...",
+                label="Coordenador",
+                error_messages={"required": "Selecione o coordenador."},
+            )
+            if self.instance.pk:
+                self.initial["coordenador"] = self.instance.coordenador_id
+
     def clean_nome_edicao(self):
         nome = self.cleaned_data["nome_edicao"].strip()
-        if CicloSimulacao.objects.filter(nome_edicao__iexact=nome).exists():
+        qs = CicloSimulacao.objects.filter(nome_edicao__iexact=nome)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
             raise forms.ValidationError(
                 f'Já existe um ciclo com o nome "{nome}".'
             )
