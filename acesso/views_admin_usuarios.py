@@ -6,6 +6,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import Http404
+from django.db.models import Q
+
 from usuarios.models import Usuario
 
 from ciclos.models import CicloSimulacao, StatusCiclo
@@ -101,12 +103,25 @@ def painel_administrativo(request):
 
     if pode_criar_ciclo(request.user):
         context["status_ciclo_opcoes"] = StatusCiclo.objects.all()
-        context["ciclos"] = (
-            CicloSimulacao.objects
-            .select_related("status")
-            .prefetch_related("grupos")
-            .order_by("-data_criacao")
-        )
+
+        tp = request.user.tipo_perfil_global
+        if tp in (Usuario.TipoPerfilGlobal.ADMIN, Usuario.TipoPerfilGlobal.COORDENADOR):
+            context["ciclos"] = (
+                CicloSimulacao.objects
+                .select_related("status")
+                .prefetch_related("grupos")
+                .order_by("-data_criacao")
+                .filter(status__nome_status__in=["em andamento", "finalizado"])
+            )
+        elif tp == Usuario.TipoPerfilGlobal.PROFESSOR:
+            # so mostra os ciclos dos grupos que o professor é responsável
+            context["ciclos"] = (
+                CicloSimulacao.objects
+                .select_related("status")
+                .prefetch_related("grupos")
+                .order_by("-data_criacao")
+                .filter(Q(coordenador=request.user) | Q(participantes=request.user), status__nome_status__in=["em andamento", "finalizado"])                
+            ). distinct()
 
     return render(request, "acesso/painel_administrativo.html", context)
 
