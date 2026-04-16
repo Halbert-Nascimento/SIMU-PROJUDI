@@ -1,7 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}Gerenciar Grupos - Projudi{% endblock %}
+{% block title %}Gerenciar Grupos — {{ ciclo.nome_edicao }} - Projudi{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/painel.css' %}">
@@ -20,10 +20,10 @@
 {% endblock %}
 
 {% block content %}
-<main class="main-container px-10 py-8">
+<main class="main-container px-10 py-8 flex flex-col">
 
     <!-- Cabeçalho da Página -->
-    <div class="mb-6 border-b border-gray-100 pb-4 flex items-start justify-between">
+    <div class="mb-6 border-b border-gray-100 pb-4 flex items-start justify-between shrink-0">
         <div>
             <a href="{% url 'acesso:painel_administrativo' %}"
                 class="text-gray-500 hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors">
@@ -31,77 +31,118 @@
             </a>
             <h2 class="text-tjgo-blue text-2xl font-bold flex items-center gap-2 mt-1">
                 <i class="fa-solid fa-users-gear"></i> Grupos:
-                <span class="text-tjgo-navy">{{ nome_ciclo }}</span>
+                <span class="text-tjgo-navy">{{ ciclo.nome_edicao }}</span>
             </h2>
-            <p class="text-gray-500 text-sm mt-1">Gerencie as equipes e os alunos participantes deste ciclo.</p>
+            <p class="text-gray-500 text-sm mt-1">
+                {{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}
+                {% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %}
+                &nbsp;·&nbsp;
+                <span class="inline-flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full
+                        {% if ciclo.status.nome_status == 'em andamento' %}bg-green-500
+                        {% elif ciclo.status.nome_status == 'finalizado' %}bg-[#1a5b9e]
+                        {% else %}bg-gray-400{% endif %} inline-block"></span>
+                    {{ ciclo.status.nome_status | capfirst }}
+                </span>
+            </p>
         </div>
         <span class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded border border-blue-100 shadow-sm flex items-center gap-2 mt-6">
             <i class="fa-solid fa-graduation-cap"></i> 120 Alunos Matriculados
         </span>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-[30%_68%] gap-[2%] items-start">
+    <!-- Mensagens de feedback -->
+    {% if messages %}
+    <div class="mb-4 space-y-2 shrink-0">
+        {% for message in messages %}
+        <div class="p-2.5 text-xs border rounded flex items-center gap-2
+            {% if 'success' in message.tags %} bg-green-50 border-green-200 text-green-800
+            {% elif 'error' in message.tags %} bg-red-50 border-red-200 text-red-800
+            {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
+            <i class="fa-solid {% if 'success' in message.tags %}fa-circle-check{% elif 'error' in message.tags %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Grid Principal -->
+    <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[30%_68%] gap-[2%]">
 
         <!-- Painel Esquerdo: Lista de Grupos -->
-        <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden flex flex-col h-[550px]">
+        <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden flex flex-col min-h-[450px] lg:h-full">
             <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center justify-between shrink-0">
                 <div class="flex items-center">
-                    <i class="fa-solid fa-layer-group mr-2 text-sm"></i> Equipes Criadas (3)
+                    <i class="fa-solid fa-layer-group mr-2 text-sm"></i>
+                    Equipes Criadas ({{ grupos.count }})
                 </div>
-                <button type="button" onclick="openModal('modal-novo-grupo')"
+                <button type="button" onclick="abrirModalGrupo()"
                     class="bg-[#1e5894] hover:bg-[#1a4b7f] text-white px-3 py-1 rounded-sm transition-colors text-xs lowercase flex items-center gap-1 shadow-sm">
                     <i class="fa-solid fa-plus"></i> novo grupo
                 </button>
             </div>
+
             <div class="overflow-y-auto flex-1 p-2 space-y-1.5">
-                <div onclick="selecionarGrupo(this, 'Gabinete do Juiz - 1ª Vara Cível', 'Gabinete do Juiz')"
-                    class="grupo-item border border-tjgo-blue bg-blue-50 cursor-pointer p-3 rounded-sm transition-colors relative">
-                    <div class="absolute left-0 top-0 bottom-0 w-1 bg-tjgo-blue rounded-l-sm"></div>
-                    <h3 class="text-xs font-bold text-tjgo-navy mb-1 pl-1">Gabinete do Juiz - 1ª Vara Cível</h3>
-                    <div class="flex justify-between items-center pl-1">
-                        <span class="text-[10px] text-gray-500">Papel: Gabinete do Juiz</span>
-                        <span class="bg-white text-blue-700 border border-blue-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">3 Alunos</span>
-                    </div>
-                </div>
-
-                <div onclick="selecionarGrupo(this, 'Escritório Advocacia Ativo 01', 'Advogados Polo Ativo')"
+                {% for grupo in grupos %}
+                <div id="grupo-item-{{ grupo.pk }}"
+                    onclick="selecionarGrupo(this, {{ grupo.pk }}, '{{ grupo.nome|escapejs }}', '{{ grupo.cargo_simulacao.nome|escapejs }}')"
                     class="grupo-item border border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer p-3 rounded-sm transition-colors">
-                    <h3 class="text-xs font-bold text-gray-700 mb-1">Escritório Advocacia Ativo 01</h3>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] text-gray-500">Papel: Advogados Polo Ativo</span>
-                        <span class="bg-gray-100 text-gray-600 border border-gray-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">0 Alunos</span>
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h3 class="text-xs font-bold text-gray-700 mb-0.5 truncate">{{ grupo.nome }}</h3>
+                            <span class="text-[10px] text-gray-500">{{ grupo.cargo_simulacao }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="bg-gray-100 text-gray-600 border border-gray-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                                {{ grupo.membros.count }} Al.
+                            </span>
+                            <button type="button"
+                                onclick="event.stopPropagation(); abrirModalGrupo({{ grupo.pk }}, '{{ grupo.nome|escapejs }}', {{ grupo.cargo_simulacao.pk }})"
+                                class="text-gray-400 hover:text-tjgo-blue transition-colors p-0.5" title="Editar grupo">
+                                <i class="fa-solid fa-pen text-[10px]"></i>
+                            </button>
+                        </div>
                     </div>
                 </div>
-
-                <div onclick="selecionarGrupo(this, 'Ministério Público Estadual', 'Ministério Público')"
-                    class="grupo-item border border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer p-3 rounded-sm transition-colors">
-                    <h3 class="text-xs font-bold text-gray-700 mb-1">Ministério Público Estadual</h3>
-                    <div class="flex justify-between items-center">
-                        <span class="text-[10px] text-gray-500">Papel: Ministério Público</span>
-                        <span class="bg-gray-100 text-gray-600 border border-gray-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">1 Aluno</span>
-                    </div>
+                {% empty %}
+                <div class="flex flex-col items-center justify-center h-32 text-center px-4">
+                    <i class="fa-solid fa-layer-group text-2xl text-gray-300 mb-2"></i>
+                    <p class="text-xs text-gray-400 italic">Nenhum grupo criado ainda.</p>
+                    <p class="text-[10px] text-gray-400 mt-1">Clique em "+ novo grupo" para começar.</p>
                 </div>
+                {% endfor %}
             </div>
         </div>
 
         <!-- Painel Direito: Editor de Grupo -->
-        <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden flex flex-col h-[550px]">
+        <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden flex flex-col min-h-[450px] lg:h-full">
+
+            <!-- Header dinâmico (atualiza via JS) -->
             <div class="bg-tjgo-navy text-white p-2.5 flex justify-between items-center shrink-0">
                 <div>
                     <span class="text-[10px] font-bold text-gray-300 uppercase block mb-0.5">Editando Grupo:</span>
-                    <h3 id="nome-grupo-selecionado" class="text-sm font-bold">Gabinete do Juiz - 1ª Vara Cível</h3>
+                    <h3 id="nome-grupo-selecionado" class="text-sm font-bold text-gray-300 italic">
+                        Selecione um grupo
+                    </h3>
                 </div>
                 <div class="text-right">
                     <span class="text-[10px] font-bold text-gray-300 uppercase block mb-0.5">Papel Processual:</span>
-                    <span id="papel-grupo-selecionado" class="text-xs font-bold text-yellow-400">Gabinete do Juiz</span>
+                    <span id="papel-grupo-selecionado" class="text-xs font-bold text-gray-400 italic">—</span>
                 </div>
             </div>
 
-            <div class="flex-1 flex overflow-hidden">
+            <!-- Conteúdo (estado vazio ou com grupo selecionado) -->
+            <div id="painel-direito-vazio" class="flex-1 flex flex-col items-center justify-center text-center px-6">
+                <i class="fa-solid fa-hand-pointer text-3xl text-gray-300 mb-3"></i>
+                <p class="text-sm text-gray-400 font-bold">Nenhum grupo selecionado</p>
+                <p class="text-xs text-gray-400 mt-1">Clique em um grupo no painel esquerdo para visualizar e gerenciar seus membros.</p>
+            </div>
+
+            <div id="painel-direito-conteudo" class="flex-1 overflow-hidden hidden">
 
                 <!-- Membros do Grupo -->
                 <div class="w-1/2 border-r border-gray-200 flex flex-col bg-gray-50/50">
-                    <div class="p-2.5 border-b border-gray-200 bg-gray-50/50">
+                    <div class="p-2.5 border-b border-gray-200 bg-gray-50/50 shrink-0">
                         <span class="text-[11px] font-bold uppercase text-gray-600">Membros da Equipe (3)</span>
                     </div>
                     <div class="flex-1 overflow-y-auto p-3 space-y-2">
@@ -137,7 +178,7 @@
 
                 <!-- Adicionar Aluno ao Grupo -->
                 <div class="w-1/2 flex flex-col bg-white">
-                    <div class="p-2.5 border-b border-gray-200 bg-gray-50/50">
+                    <div class="p-2.5 border-b border-gray-200 bg-gray-50/50 shrink-0">
                         <span class="text-[11px] font-bold uppercase text-gray-600 block mb-2">Adicionar ao Grupo</span>
                         <div class="relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-gray-400 text-xs"></i>
@@ -156,27 +197,21 @@
                                 <span class="font-bold text-tjgo-navy text-xs block nome-aluno">Ana Beatriz Machado</span>
                                 <span class="text-[10px] text-gray-500 mat-aluno">Matrícula: 2026012</span>
                             </div>
-                            <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm">
-                                + Add
-                            </button>
+                            <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm">+ Add</button>
                         </div>
                         <div class="aluno-item border-b border-gray-100 py-2 flex justify-between items-center hover:bg-blue-50/30 pr-2 transition-colors">
                             <div>
                                 <span class="font-bold text-tjgo-navy text-xs block nome-aluno">Bruno Carvalho</span>
                                 <span class="text-[10px] text-gray-500 mat-aluno">Matrícula: 2026033</span>
                             </div>
-                            <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm">
-                                + Add
-                            </button>
+                            <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm">+ Add</button>
                         </div>
                         <div class="aluno-item border-b border-gray-100 py-2 flex justify-between items-center hover:bg-blue-50/30 pr-2 transition-colors">
                             <div>
                                 <span class="font-bold text-tjgo-navy text-xs block nome-aluno">Daniela Costa</span>
                                 <span class="text-[10px] text-gray-500 mat-aluno">Matrícula: 2026056</span>
                             </div>
-                            <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm">
-                                + Add
-                            </button>
+                            <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm">+ Add</button>
                         </div>
                     </div>
                 </div>
@@ -186,57 +221,80 @@
     </div>
 </main>
 
-<!-- Modal: Novo Grupo -->
-<div id="modal-novo-grupo" class="fixed inset-0 z-[60] hidden items-center justify-center">
-    <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="closeModal('modal-novo-grupo')"></div>
+<!-- Modal: Criar / Editar Grupo -->
+<div id="modal-grupo" class="fixed inset-0 z-[60] hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="fecharModalGrupo()"></div>
     <div class="relative bg-white w-full max-w-md shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
         <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center shrink-0">
-            <span><i class="fa-solid fa-layer-group mr-2"></i> Cadastrar Novo Grupo</span>
-            <button onclick="closeModal('modal-novo-grupo')" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <span id="modal-grupo-titulo"><i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo</span>
+            <button onclick="fecharModalGrupo()" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="p-6 overflow-y-auto text-sm space-y-4">
-            <div>
-                <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Nome do Grupo *</label>
-                <input
-                    type="text"
-                    placeholder="Ex: Escritório Polo Ativo 01"
-                    class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+        <form method="post" action="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}" class="flex flex-col overflow-hidden">
+            {% csrf_token %}
+            <input type="hidden" name="grupo_id" id="modal-grupo-id" value="">
+            <div class="p-6 overflow-y-auto space-y-4 text-sm">
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Nome do Grupo *</label>
+                    <input
+                        type="text"
+                        name="nome"
+                        id="modal-grupo-nome"
+                        placeholder="Ex: Escritório Polo Ativo 01"
+                        maxlength="150"
+                        required
+                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                </div>
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Papel na Simulação *</label>
+                    <select
+                        name="cargo_simulacao"
+                        id="modal-grupo-cargo"
+                        required
+                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                        <option value="">Selecione o papel...</option>
+                        {% for cargo in cargos %}
+                        <option value="{{ cargo.pk }}">{{ cargo.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
             </div>
-            <div>
-                <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Papel na Simulação *</label>
-                <select class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                    <option value="" disabled selected>Selecione o papel...</option>
-                    <option value="Gabinete do Juiz">Gabinete do Juiz</option>
-                    <option value="Serventia/Cartório">Serventia/Cartório</option>
-                    <option value="Advogados Polo Ativo">Advogados Polo Ativo</option>
-                    <option value="Advogados Polo Passivo">Advogados Polo Passivo</option>
-                    <option value="Ministério Público">Ministério Público</option>
-                </select>
+            <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-end gap-2 shrink-0">
+                <button type="button" onclick="fecharModalGrupo()"
+                    class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-4 text-xs rounded-sm shadow-sm transition-colors uppercase">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-6 text-xs rounded-sm shadow-sm transition-colors uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar
+                </button>
             </div>
-        </div>
-        <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-end gap-2 shrink-0">
-            <button onclick="closeModal('modal-novo-grupo')"
-                class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-4 text-xs rounded-sm shadow-sm transition-colors uppercase">
-                Cancelar
-            </button>
-            <button
-                class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-6 text-xs rounded-sm shadow-sm transition-colors uppercase flex items-center gap-2">
-                <i class="fa-solid fa-floppy-disk"></i> Salvar Grupo
-            </button>
-        </div>
+        </form>
     </div>
 </div>
 
 <script>
-    function openModal(modalId) {
-        const modal = document.getElementById(modalId);
+    // ── Modal de Grupo (criar/editar) ─────────────────────────────────────
+    function abrirModalGrupo(grupoId = null, nome = '', cargoId = null) {
+        const modal = document.getElementById('modal-grupo');
+        const titulo = document.getElementById('modal-grupo-titulo');
+        document.getElementById('modal-grupo-id').value = grupoId || '';
+        document.getElementById('modal-grupo-nome').value = nome;
+        document.getElementById('modal-grupo-cargo').value = cargoId || '';
+
+        if (grupoId) {
+            titulo.innerHTML = '<i class="fa-solid fa-pen mr-2"></i> Editar Grupo';
+        } else {
+            titulo.innerHTML = '<i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo';
+        }
+
         modal.classList.remove('hidden');
         modal.classList.add('flex');
         setTimeout(() => { modal.classList.add('modal-active'); }, 10);
+        setTimeout(() => { document.getElementById('modal-grupo-nome').focus(); }, 150);
     }
 
-    function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
+    function fecharModalGrupo() {
+        const modal = document.getElementById('modal-grupo');
         modal.classList.remove('modal-active');
         setTimeout(() => {
             modal.classList.add('hidden');
@@ -244,30 +302,55 @@
         }, 200);
     }
 
-    function selecionarGrupo(elemento, nomeGrupo, papel) {
+    // ── Seleção de grupo no painel esquerdo ───────────────────────────────
+    function selecionarGrupo(elemento, grupoId, nomeGrupo, papel) {
         document.querySelectorAll('.grupo-item').forEach(el => {
             el.classList.remove('border-tjgo-blue', 'bg-blue-50');
             el.classList.add('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
-            const indicador = el.querySelector('.w-1.bg-tjgo-blue');
-            if (indicador) { indicador.remove(); }
+            const indicador = el.querySelector('.indicador-ativo');
+            if (indicador) indicador.remove();
         });
+
         elemento.classList.remove('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
         elemento.classList.add('border-tjgo-blue', 'bg-blue-50', 'relative');
-        elemento.insertAdjacentHTML('afterbegin', '<div class="absolute left-0 top-0 bottom-0 w-1 bg-tjgo-blue rounded-l-sm"></div>');
-        document.getElementById('nome-grupo-selecionado').innerText = nomeGrupo;
-        document.getElementById('papel-grupo-selecionado').innerText = papel;
+        elemento.insertAdjacentHTML(
+            'afterbegin',
+            '<div class="indicador-ativo absolute left-0 top-0 bottom-0 w-1 bg-tjgo-blue rounded-l-sm"></div>'
+        );
+
+        document.getElementById('nome-grupo-selecionado').textContent = nomeGrupo;
+        document.getElementById('nome-grupo-selecionado').classList.remove('text-gray-300', 'italic');
+        document.getElementById('nome-grupo-selecionado').classList.add('text-white');
+
+        document.getElementById('papel-grupo-selecionado').textContent = papel;
+        document.getElementById('papel-grupo-selecionado').classList.remove('text-gray-400', 'italic');
+        document.getElementById('papel-grupo-selecionado').classList.add('text-yellow-400');
+
+        document.getElementById('painel-direito-vazio').classList.add('hidden');
+        const conteudo = document.getElementById('painel-direito-conteudo');
+        conteudo.classList.remove('hidden');
+        conteudo.classList.add('flex');
     }
 
+    // ── Filtro de alunos ──────────────────────────────────────────────────
     function filtrarAlunos() {
-        const input = document.getElementById('pesquisa-alunos');
-        const filter = input.value.toLowerCase();
-        const lista = document.getElementById('lista-alunos-disponiveis');
-        const itens = lista.getElementsByClassName('aluno-item');
-        for (let i = 0; i < itens.length; i++) {
-            const nome = itens[i].querySelector('.nome-aluno').innerText.toLowerCase();
-            const mat = itens[i].querySelector('.mat-aluno').innerText.toLowerCase();
-            itens[i].style.display = (nome.includes(filter) || mat.includes(filter)) ? 'flex' : 'none';
-        }
+        const filter = document.getElementById('pesquisa-alunos').value.toLowerCase();
+        document.querySelectorAll('#lista-alunos-disponiveis .aluno-item').forEach(item => {
+            const nome = item.querySelector('.nome-aluno').innerText.toLowerCase();
+            const mat = item.querySelector('.mat-aluno').innerText.toLowerCase();
+            item.style.display = (nome.includes(filter) || mat.includes(filter)) ? 'flex' : 'none';
+        });
     }
+
+    // ── Reabre modal se houve erro de validação ───────────────────────────
+    {% if reabrir_modal %}
+    document.addEventListener('DOMContentLoaded', () => {
+        abrirModalGrupo(
+            '{{ grupo_editando.pk|default:"" }}',
+            '{{ form.nome.value|default:""|escapejs }}',
+            '{{ form.cargo_simulacao.value|default:"" }}'
+        );
+    });
+    {% endif %}
 </script>
 {% endblock %}
