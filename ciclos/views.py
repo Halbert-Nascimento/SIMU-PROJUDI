@@ -5,9 +5,11 @@ from django.contrib.auth.decorators import login_required
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 
+from usuarios.models import Usuario
+
 from .forms import CicloSimulacaoForm, GrupoTrabalhoForm
-from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho
-from .permissions import pode_criar_ciclo, pode_gerenciar_grupos_ciclo
+from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
+from .permissions import pode_criar_ciclo, pode_editar_ciclo, pode_gerenciar_grupos_ciclo
 
 
 @login_required
@@ -30,6 +32,71 @@ def criar_ciclo(request):
                 messages.error(request, erro, extra_tags="ciclo")
 
     return redirect("acesso:painel_administrativo")
+
+
+@login_required
+def editar_ciclo(request, ciclo_id):
+    ciclo = get_object_or_404(
+        CicloSimulacao.objects.select_related("status", "coordenador"),
+        pk=ciclo_id,
+    )
+
+    if not pode_editar_ciclo(request.user, ciclo):
+        raise Http404()
+
+    if request.method == "POST":
+        form = CicloSimulacaoForm(request.POST, instance=ciclo, ator=request.user)
+        if form.is_valid():
+            ciclo_salvo = form.save(commit=False)
+            if "coordenador" in form.fields:
+                ciclo_salvo.coordenador = form.cleaned_data["coordenador"]
+            ciclo_salvo.save()
+            messages.success(request, f'Ciclo "{ciclo_salvo.nome_edicao}" atualizado com sucesso.')
+            return redirect("acesso:painel_administrativo")
+        else:
+            for erros in form.errors.values():
+                for erro in erros:
+                    messages.error(request, erro)
+    else:
+        form = CicloSimulacaoForm(instance=ciclo, ator=request.user)
+
+    return render(request, "ciclos/editar_ciclo.html", {
+        "ciclo": ciclo,
+        "form": form,
+        "status_ciclo_opcoes": StatusCiclo.objects.all(),
+    })
+
+
+@login_required
+def detalhe_ciclo(request, ciclo_id):
+    ciclo = get_object_or_404(
+        CicloSimulacao.objects
+        .select_related("status", "coordenador")
+        .prefetch_related("grupos__cargo_simulacao", "grupos__membros"),
+        pk=ciclo_id,
+    )
+
+    if not pode_criar_ciclo(request.user):
+        raise Http404()
+
+    tp = request.user.tipo_perfil_global
+    if tp == Usuario.TipoPerfilGlobal.PROFESSOR:
+        vinculado = (
+            ciclo.coordenador_id == request.user.pk
+            or ciclo.participantes.filter(pk=request.user.pk).exists()
+        )
+        if not vinculado:
+            raise Http404()
+
+    grupos = ciclo.grupos.all()
+    total_membros = sum(len(g.membros.all()) for g in grupos)
+
+    return render(request, "ciclos/detalhe_ciclo.html", {
+        "ciclo": ciclo,
+        "grupos": grupos,
+        "total_membros": total_membros,
+        "pode_editar": pode_editar_ciclo(request.user, ciclo),
+    })
 
 
 @login_required
