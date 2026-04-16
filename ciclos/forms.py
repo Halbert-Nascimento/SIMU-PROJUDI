@@ -74,9 +74,9 @@ class CicloSimulacaoForm(forms.ModelForm):
 
     def clean_ano(self):
         ano = self.cleaned_data["ano"]
-        if ano < 2000 or ano > _ANO_ATUAL + 5:
+        if ano < _ANO_ATUAL -1 or ano > _ANO_ATUAL + 5:
             raise forms.ValidationError(
-                f"Ano inválido. Informe um valor entre 2000 e {_ANO_ATUAL + 5}."
+                f"Ano inválido. Informe um valor entre {_ANO_ATUAL - 1} e {_ANO_ATUAL + 5}."
             )
         return ano
 
