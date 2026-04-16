@@ -4,7 +4,7 @@ import datetime
 
 from django import forms
 
-from .models import CicloSimulacao
+from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho
 
 _ANO_ATUAL = datetime.date.today().year
 
@@ -51,3 +51,30 @@ class CicloSimulacaoForm(forms.ModelForm):
                 f"Ano inválido. Informe um valor entre 2000 e {_ANO_ATUAL + 5}."
             )
         return ano
+
+
+class GrupoTrabalhoForm(forms.ModelForm):
+    class Meta:
+        model = GrupoTrabalho
+        fields = ["nome", "cargo_simulacao"]
+        error_messages = {
+            "nome": {"required": "O nome do grupo é obrigatório."},
+            "cargo_simulacao": {"required": "Selecione o papel na simulação."},
+        }
+
+    def __init__(self, *args, ciclo=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ciclo = ciclo
+        self.fields["cargo_simulacao"].queryset = CargoSimulacao.objects.all()
+        self.fields["cargo_simulacao"].empty_label = "Selecione o papel..."
+
+    def clean_nome(self):
+        nome = self.cleaned_data["nome"].strip()
+        qs = GrupoTrabalho.objects.filter(nome__iexact=nome, ciclo=self.ciclo)
+        if self.instance.pk:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise forms.ValidationError(
+                f'Já existe um grupo com o nome "{nome}" neste ciclo.'
+            )
+        return nome
