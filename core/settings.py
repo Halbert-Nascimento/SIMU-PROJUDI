@@ -111,7 +111,11 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = "usuarios.Usuario" # informa ao Django para usar o modelo de usuário personalizado
+
+# Redirecionamentos de autenticação
 LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após logout
+LOGIN_URL = 'acesso:login'
+LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
 
 
 # Internationalization
@@ -139,8 +143,3 @@ MEDIA_URL = '/media/'
 
 # Mídia PROTEGIDA (documentos)
 PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')
-
-# login redirects
-# LOGIN_URL = 'login'
-# LOGIN_REDIRECT_URL = 'home'
-# LOGOUT_REDIRECT_URL = 'login'

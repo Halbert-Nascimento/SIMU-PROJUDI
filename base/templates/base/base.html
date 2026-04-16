@@ -43,7 +43,7 @@
             <i class="fa-solid fa-download top-bar-icon"></i>
             {% if user.is_authenticated %}
                 
-                <form id="logout-form" method="post" action="/admin/logout/">
+                <form id="logout-form" method="post" action="{% url 'acesso:logout' %}">
                     {% csrf_token %}
                     <button type="submit" class="text-xs font-bold hover:text-white transition-colors flex items-center gap-1">
                         <i class="fa-solid fa-right-from-bracket top-bar-icon"></i> sair
