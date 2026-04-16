@@ -117,6 +117,10 @@ LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após
 LOGIN_URL = 'acesso:login'
 LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
 
+# desconfigurações de segurança (ajustar para produção)
+# SESSION_COOKIE_SECURE = True    # cookie sessionid só via HTTPS
+# SESSION_COOKIE_HTTPONLY = True  # bloqueia acesso via document.cookie (XSS)
+# CSRF_COOKIE_SECURE = True       # csrftoken só via HTTPS
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
