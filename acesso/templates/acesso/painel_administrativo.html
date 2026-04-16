@@ -134,9 +134,17 @@
                                             class="text-tjgo-blue text-[11px] font-bold hover:underline flex items-center gap-1">
                                             <i class="fa-solid fa-users"></i> Gerenciar Grupos
                                         </a>
-                                        <a href="#" class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
+                                        {% if ciclo.pk in ciclos_editaveis %}
+                                        <a href="{% url 'ciclos:editar_ciclo' ciclo.pk %}"
+                                            class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
                                             <i class="fa-solid fa-pen"></i> Editar
                                         </a>
+                                        {% else %}
+                                        <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
+                                            class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
+                                            <i class="fa-solid fa-eye"></i> Visualizar
+                                        </a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% endfor %}
