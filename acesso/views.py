@@ -28,13 +28,13 @@ def login_view(request):
 
         # todo: redirecionar para pagina de acordo com perfil
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ADMIN:
-            return redirect("admin:index")
+            return redirect("acesso:painel_administrativo")
 
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.COORDENADOR:
             return redirect("acesso:painel_administrativo")
 
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.PROFESSOR:
-            return redirect("acesso:usuario_lista")
+            return redirect("acesso:painel_administrativo")
 
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO:
             return redirect("base:cadastro_processo")
