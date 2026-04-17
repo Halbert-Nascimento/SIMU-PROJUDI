@@ -1,7 +1,10 @@
 import logging
 
+from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth import logout as auth_logout
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from usuarios.forms import CadastroPublicoForm
 from usuarios.models import Usuario
@@ -45,6 +48,13 @@ def login_view(request):
 
 
 
+
+
+@require_POST
+def logout_view(request):
+    auth_logout(request)
+    messages.success(request, "Você saiu com sucesso.")
+    return redirect("acesso:login")
 
 
 def cadastrar(request):

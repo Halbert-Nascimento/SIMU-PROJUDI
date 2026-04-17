@@ -111,8 +111,16 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 AUTH_USER_MODEL = "usuarios.Usuario" # informa ao Django para usar o modelo de usuário personalizado
-LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após logout
 
+# Redirecionamentos de autenticação
+LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após logout
+LOGIN_URL = 'acesso:login'
+LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
+
+# desconfigurações de segurança (ajustar para produção)
+# SESSION_COOKIE_SECURE = True    # cookie sessionid só via HTTPS
+# SESSION_COOKIE_HTTPONLY = True  # bloqueia acesso via document.cookie (XSS)
+# CSRF_COOKIE_SECURE = True       # csrftoken só via HTTPS
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -139,8 +147,3 @@ MEDIA_URL = '/media/'
 
 # Mídia PROTEGIDA (documentos)
 PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')
-
-# login redirects
-# LOGIN_URL = 'login'
-# LOGIN_REDIRECT_URL = 'home'
-# LOGOUT_REDIRECT_URL = 'login'
