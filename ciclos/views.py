@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404
+from django.db import transaction
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from usuarios.models import Usuario
 
@@ -109,17 +111,57 @@ def gerenciar_grupos(request, ciclo_id):
     if not pode_gerenciar_grupos_ciclo(request.user, ciclo):
         raise Http404()
 
-    grupos = ciclo.grupos.select_related("cargo_simulacao").order_by("nome")
+    grupos = list(
+        ciclo.grupos
+        .select_related("cargo_simulacao")
+        .prefetch_related("membros")
+        .order_by("nome")
+    )
     cargos = CargoSimulacao.objects.all()
+
+    # Alunos ativos não vinculados a nenhum grupo deste ciclo
+    alunos_disponiveis = list(
+        Usuario.objects
+        .filter(is_active=True, tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO)
+        .exclude(grupos_trabalho__ciclo=ciclo)
+        .order_by("first_name", "last_name", "username")
+    )
+
+    total_alunos_ativos = Usuario.objects.filter(
+        is_active=True,
+        tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+    ).count()
+
+    # Serialização segura para o JS (usa json_script no template)
+    membros_por_grupo = {
+        str(grupo.pk): [
+            {
+                "id": m.pk,
+                "nome": m.get_full_name().strip() or m.username,
+                "matricula": m.username,
+            }
+            for m in grupo.membros.all()  # usa cache do prefetch_related
+        ]
+        for grupo in grupos
+    }
+
+    alunos_lista = [
+        {
+            "id": a.pk,
+            "nome": a.get_full_name().strip() or a.username,
+            "matricula": a.username,
+        }
+        for a in alunos_disponiveis
+    ]
 
     grupo_editando = None
     form = GrupoTrabalhoForm(ciclo=ciclo)
     reabrir_modal = False
 
     if request.method == "POST":
-        grupo_id = request.POST.get("grupo_id") or None
-        if grupo_id:
-            grupo_editando = get_object_or_404(GrupoTrabalho, pk=grupo_id, ciclo=ciclo)
+        grupo_id_post = request.POST.get("grupo_id") or None
+        if grupo_id_post:
+            grupo_editando = get_object_or_404(GrupoTrabalho, pk=grupo_id_post, ciclo=ciclo)
             form = GrupoTrabalhoForm(request.POST, instance=grupo_editando, ciclo=ciclo)
             acao = "atualizado"
         else:
@@ -149,4 +191,76 @@ def gerenciar_grupos(request, ciclo_id):
         "form": form,
         "grupo_editando": grupo_editando,
         "reabrir_modal": reabrir_modal,
+        "membros_por_grupo": membros_por_grupo,
+        "alunos_lista": alunos_lista,
+        "total_alunos_ativos": total_alunos_ativos,
     })
+
+
+@login_required
+@require_POST
+def adicionar_membro(request, ciclo_id, grupo_id):
+    ciclo = get_object_or_404(CicloSimulacao, pk=ciclo_id)
+    grupo = get_object_or_404(GrupoTrabalho, pk=grupo_id, ciclo=ciclo)
+
+    if not pode_gerenciar_grupos_ciclo(request.user, ciclo):
+        return JsonResponse({"erro": "Permissão negada."})
+
+    try:
+        usuario = Usuario.objects.get(
+            pk=request.POST.get("usuario_id"),
+            is_active=True,
+            tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+        )
+    except (Usuario.DoesNotExist, ValueError, TypeError):
+        return JsonResponse({"erro": "Usuário não encontrado ou perfil não é Aluno ativo."})
+
+    # Unicidade: não pode estar em outro grupo do mesmo ciclo
+    if GrupoTrabalho.objects.filter(ciclo=ciclo, membros=usuario).exclude(pk=grupo.pk).exists():
+        nome = usuario.get_full_name().strip() or usuario.username
+        return JsonResponse({"erro": f'"{nome}" já está em outro grupo neste ciclo.'})
+
+    if grupo.membros.filter(pk=usuario.pk).exists():
+        return JsonResponse({"erro": "Este aluno já é membro deste grupo."})
+
+    with transaction.atomic():
+        grupo.membros.add(usuario)
+        ciclo.participantes.add(usuario)  # sincroniza participação no ciclo
+
+    return JsonResponse({
+        "sucesso": True,
+        "membro": {
+            "id": usuario.pk,
+            "nome": usuario.get_full_name().strip() or usuario.username,
+            "matricula": usuario.username,
+        },
+    })
+
+
+@login_required
+@require_POST
+def remover_membro(request, ciclo_id, grupo_id, usuario_id):
+    ciclo = get_object_or_404(CicloSimulacao, pk=ciclo_id)
+    grupo = get_object_or_404(GrupoTrabalho, pk=grupo_id, ciclo=ciclo)
+
+    if not pode_gerenciar_grupos_ciclo(request.user, ciclo):
+        return JsonResponse({"erro": "Permissão negada."})
+
+    try:
+        usuario = Usuario.objects.get(pk=usuario_id)
+    except Usuario.DoesNotExist:
+        return JsonResponse({"erro": "Usuário não encontrado."})
+
+    if not grupo.membros.filter(pk=usuario.pk).exists():
+        return JsonResponse({"erro": "Este aluno não é membro deste grupo."})
+
+    with transaction.atomic():
+        grupo.membros.remove(usuario)
+        # remover_do_ciclo=True se o aluno não pertence a nenhum outro grupo deste ciclo
+        remover_do_ciclo = not GrupoTrabalho.objects.filter(
+            ciclo=ciclo, membros=usuario
+        ).exists()
+        if remover_do_ciclo:
+            ciclo.participantes.remove(usuario)
+
+    return JsonResponse({"sucesso": True, "removido_do_ciclo": remover_do_ciclo})

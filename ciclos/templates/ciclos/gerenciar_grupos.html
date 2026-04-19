@@ -42,16 +42,17 @@
                         {% if ciclo.status.nome_status == 'em andamento' %}bg-green-500
                         {% elif ciclo.status.nome_status == 'finalizado' %}bg-[#1a5b9e]
                         {% else %}bg-gray-400{% endif %} inline-block"></span>
-                    {{ ciclo.status.nome_status | capfirst }}
+                    {{ ciclo.status.nome_status|capfirst }}
                 </span>
             </p>
         </div>
         <span class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded border border-blue-100 shadow-sm flex items-center gap-2 mt-6">
-            <i class="fa-solid fa-graduation-cap"></i> 120 Alunos Matriculados
+            <i class="fa-solid fa-graduation-cap"></i>
+            {{ total_alunos_ativos }} Aluno{{ total_alunos_ativos|pluralize }} Ativo{{ total_alunos_ativos|pluralize }}
         </span>
     </div>
 
-    <!-- Mensagens de feedback -->
+    <!-- Mensagens de feedback (servidor) -->
     {% if messages %}
     <div class="mb-4 space-y-2 shrink-0">
         {% for message in messages %}
@@ -69,12 +70,12 @@
     <!-- Grid Principal -->
     <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[30%_68%] gap-[2%]">
 
-        <!-- Painel Esquerdo: Lista de Grupos -->
+        <!-- ── Painel Esquerdo: Lista de Grupos ──────────────────────────────── -->
         <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden flex flex-col min-h-[450px] lg:h-full">
             <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center justify-between shrink-0">
                 <div class="flex items-center">
                     <i class="fa-solid fa-layer-group mr-2 text-sm"></i>
-                    Equipes Criadas ({{ grupos.count }})
+                    Equipes Criadas ({{ grupos|length }})
                 </div>
                 <button type="button" onclick="abrirModalGrupo()"
                     class="bg-[#1e5894] hover:bg-[#1a4b7f] text-white px-3 py-1 rounded-sm transition-colors text-xs lowercase flex items-center gap-1 shadow-sm">
@@ -93,8 +94,8 @@
                             <span class="text-[10px] text-gray-500">{{ grupo.cargo_simulacao }}</span>
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
-                            <span class="bg-gray-100 text-gray-600 border border-gray-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                                {{ grupo.membros.count }} Al.
+                            <span class="membros-count-badge bg-gray-100 text-gray-600 border border-gray-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                                {{ grupo.membros.all|length }} Al.
                             </span>
                             <button type="button"
                                 onclick="event.stopPropagation(); abrirModalGrupo({{ grupo.pk }}, '{{ grupo.nome|escapejs }}', {{ grupo.cargo_simulacao.pk }})"
@@ -114,10 +115,10 @@
             </div>
         </div>
 
-        <!-- Painel Direito: Editor de Grupo -->
+        <!-- ── Painel Direito: Gerenciar Membros ─────────────────────────────── -->
         <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden flex flex-col min-h-[450px] lg:h-full">
 
-            <!-- Header dinâmico (atualiza via JS) -->
+            <!-- Header dinâmico -->
             <div class="bg-tjgo-navy text-white p-2.5 flex justify-between items-center shrink-0">
                 <div>
                     <span class="text-[10px] font-bold text-gray-300 uppercase block mb-0.5">Editando Grupo:</span>
@@ -131,88 +132,51 @@
                 </div>
             </div>
 
-            <!-- Conteúdo (estado vazio ou com grupo selecionado) -->
+            <!-- Estado vazio -->
             <div id="painel-direito-vazio" class="flex-1 flex flex-col items-center justify-center text-center px-6">
                 <i class="fa-solid fa-hand-pointer text-3xl text-gray-300 mb-3"></i>
                 <p class="text-sm text-gray-400 font-bold">Nenhum grupo selecionado</p>
-                <p class="text-xs text-gray-400 mt-1">Clique em um grupo no painel esquerdo para visualizar e gerenciar seus membros.</p>
+                <p class="text-xs text-gray-400 mt-1">Clique em um grupo no painel esquerdo para gerenciar seus membros.</p>
             </div>
 
+            <!-- Conteúdo (grupo selecionado) -->
             <div id="painel-direito-conteudo" class="flex-1 overflow-hidden hidden">
 
-                <!-- Membros do Grupo -->
+                <!-- Coluna: Membros do Grupo -->
                 <div class="w-1/2 border-r border-gray-200 flex flex-col bg-gray-50/50">
-                    <div class="p-2.5 border-b border-gray-200 bg-gray-50/50 shrink-0">
-                        <span class="text-[11px] font-bold uppercase text-gray-600">Membros da Equipe (3)</span>
+                    <div class="p-2.5 border-b border-gray-200 shrink-0">
+                        <span class="text-[11px] font-bold uppercase text-gray-600">
+                            Membros da Equipe (<span id="membros-count">0</span>)
+                        </span>
                     </div>
-                    <div class="flex-1 overflow-y-auto p-3 space-y-2">
-                        <div class="bg-white border border-gray-200 p-2 text-xs flex justify-between items-center rounded-sm shadow-sm">
-                            <div>
-                                <span class="font-bold text-tjgo-navy block">João da Silva</span>
-                                <span class="text-[10px] text-gray-500">Matrícula: 2026001</span>
-                            </div>
-                            <button class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Remover aluno">
-                                <i class="fa-solid fa-trash-can text-sm"></i>
-                            </button>
-                        </div>
-                        <div class="bg-white border border-gray-200 p-2 text-xs flex justify-between items-center rounded-sm shadow-sm">
-                            <div>
-                                <span class="font-bold text-tjgo-navy block">Maria Oliveira</span>
-                                <span class="text-[10px] text-gray-500">Matrícula: 2026045</span>
-                            </div>
-                            <button class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Remover aluno">
-                                <i class="fa-solid fa-trash-can text-sm"></i>
-                            </button>
-                        </div>
-                        <div class="bg-white border border-gray-200 p-2 text-xs flex justify-between items-center rounded-sm shadow-sm">
-                            <div>
-                                <span class="font-bold text-tjgo-navy block">Carlos Souza</span>
-                                <span class="text-[10px] text-gray-500">Matrícula: 2026089</span>
-                            </div>
-                            <button class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Remover aluno">
-                                <i class="fa-solid fa-trash-can text-sm"></i>
-                            </button>
-                        </div>
+                    <div id="lista-membros" class="flex-1 overflow-y-auto p-3 space-y-2">
+                        <!-- Renderizado via JS -->
                     </div>
                 </div>
 
-                <!-- Adicionar Aluno ao Grupo -->
+                <!-- Coluna: Adicionar Aluno -->
                 <div class="w-1/2 flex flex-col bg-white">
                     <div class="p-2.5 border-b border-gray-200 bg-gray-50/50 shrink-0">
-                        <span class="text-[11px] font-bold uppercase text-gray-600 block mb-2">Adicionar ao Grupo</span>
+                        <span class="text-[11px] font-bold uppercase text-gray-600 block mb-2">
+                            Adicionar ao Grupo
+                        </span>
                         <div class="relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-gray-400 text-xs"></i>
                             <input
                                 type="text"
                                 id="pesquisa-alunos"
-                                onkeyup="filtrarAlunos()"
+                                oninput="renderizarDisponiveis()"
                                 placeholder="Buscar por nome ou matrícula..."
                                 class="w-full border border-gray-300 pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
                         </div>
                     </div>
-                    <div class="flex-1 overflow-y-auto p-3 space-y-0.5" id="lista-alunos-disponiveis">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Alunos sem grupo (117):</p>
-                        <div class="aluno-item border-b border-gray-100 py-2 flex justify-between items-center hover:bg-blue-50/30 pr-2 transition-colors">
-                            <div>
-                                <span class="font-bold text-tjgo-navy text-xs block nome-aluno">Ana Beatriz Machado</span>
-                                <span class="text-[10px] text-gray-500 mat-aluno">Matrícula: 2026012</span>
-                            </div>
-                            <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm">+ Add</button>
-                        </div>
-                        <div class="aluno-item border-b border-gray-100 py-2 flex justify-between items-center hover:bg-blue-50/30 pr-2 transition-colors">
-                            <div>
-                                <span class="font-bold text-tjgo-navy text-xs block nome-aluno">Bruno Carvalho</span>
-                                <span class="text-[10px] text-gray-500 mat-aluno">Matrícula: 2026033</span>
-                            </div>
-                            <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm">+ Add</button>
-                        </div>
-                        <div class="aluno-item border-b border-gray-100 py-2 flex justify-between items-center hover:bg-blue-50/30 pr-2 transition-colors">
-                            <div>
-                                <span class="font-bold text-tjgo-navy text-xs block nome-aluno">Daniela Costa</span>
-                                <span class="text-[10px] text-gray-500 mat-aluno">Matrícula: 2026056</span>
-                            </div>
-                            <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm">+ Add</button>
-                        </div>
+                    <div class="px-3 pt-1.5 shrink-0">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">
+                            Alunos sem grupo (<span id="alunos-sem-grupo-count">0</span>):
+                        </p>
+                    </div>
+                    <div id="lista-alunos-disponiveis" class="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5">
+                        <!-- Renderizado via JS -->
                     </div>
                 </div>
 
@@ -220,6 +184,9 @@
         </div>
     </div>
 </main>
+
+<!-- Toast container (notificações AJAX) -->
+<div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2 pointer-events-none"></div>
 
 <!-- Modal: Criar / Editar Grupo -->
 <div id="modal-grupo" class="fixed inset-0 z-[60] hidden items-center justify-center">
@@ -272,20 +239,225 @@
     </div>
 </div>
 
+{# Dados pré-carregados de forma segura (escaping automático pelo Django) #}
+{{ membros_por_grupo|json_script:"membros-data" }}
+{{ alunos_lista|json_script:"alunos-data" }}
+
 <script>
-    // ── Modal de Grupo (criar/editar) ─────────────────────────────────────
+    // ── Dados e estado ────────────────────────────────────────────────────────
+    const CSRF_TOKEN = '{{ csrf_token }}';
+    const membrosData = JSON.parse(document.getElementById('membros-data').textContent);
+    let alunosData = JSON.parse(document.getElementById('alunos-data').textContent);
+    let grupoAtualId = null;
+
+    // URLs construídas via Django (sentinelas substituídas em runtime)
+    const URL_ADICIONAR_TPL = "{% url 'ciclos:adicionar_membro' ciclo.pk 99997 %}";
+    const URL_REMOVER_TPL   = "{% url 'ciclos:remover_membro'   ciclo.pk 99997 99998 %}";
+
+    function urlAdicionar(grupoId) {
+        return URL_ADICIONAR_TPL.replace('/99997/', '/' + grupoId + '/');
+    }
+    function urlRemover(grupoId, usuarioId) {
+        return URL_REMOVER_TPL
+            .replace('/99997/', '/' + grupoId + '/')
+            .replace('/99998/', '/' + usuarioId + '/');
+    }
+
+    // ── Renderização do painel direito ────────────────────────────────────────
+    function renderizarMembros() {
+        const membros = membrosData[String(grupoAtualId)] || [];
+        const container = document.getElementById('lista-membros');
+        const counter   = document.getElementById('membros-count');
+        counter.textContent = membros.length;
+
+        if (membros.length === 0) {
+            container.innerHTML = '<p class="text-[10px] text-gray-400 italic text-center py-6">Nenhum membro neste grupo.</p>';
+            return;
+        }
+
+        container.innerHTML = membros.map(m => `
+            <div class="bg-white border border-gray-200 p-2 text-xs flex justify-between items-center rounded-sm shadow-sm">
+                <div>
+                    <span class="font-bold text-tjgo-navy block">${escHtml(m.nome)}</span>
+                    <span class="text-[10px] text-gray-500">Matrícula: ${escHtml(m.matricula)}</span>
+                </div>
+                <button onclick="removerMembro(${m.id})"
+                    class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Remover aluno">
+                    <i class="fa-solid fa-trash-can text-sm"></i>
+                </button>
+            </div>
+        `).join('');
+    }
+
+    function renderizarDisponiveis() {
+        const filtro    = (document.getElementById('pesquisa-alunos').value || '').toLowerCase();
+        const container = document.getElementById('lista-alunos-disponiveis');
+        const counter   = document.getElementById('alunos-sem-grupo-count');
+        counter.textContent = alunosData.length;
+
+        const filtrados = filtro
+            ? alunosData.filter(a =>
+                a.nome.toLowerCase().includes(filtro) ||
+                a.matricula.toLowerCase().includes(filtro)
+              )
+            : alunosData;
+
+        if (filtrados.length === 0) {
+            container.innerHTML = `<p class="text-[10px] text-gray-400 italic text-center py-6">${
+                filtro ? 'Nenhum aluno encontrado.' : 'Nenhum aluno disponível para este ciclo.'
+            }</p>`;
+            return;
+        }
+
+        container.innerHTML = filtrados.map(a => `
+            <div class="border-b border-gray-100 py-2 flex justify-between items-center hover:bg-blue-50/30 pr-1 transition-colors">
+                <div>
+                    <span class="font-bold text-tjgo-navy text-xs block">${escHtml(a.nome)}</span>
+                    <span class="text-[10px] text-gray-500">Matrícula: ${escHtml(a.matricula)}</span>
+                </div>
+                <button onclick="adicionarMembro(${a.id})"
+                    class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm shrink-0 ml-2">
+                    + Add
+                </button>
+            </div>
+        `).join('');
+    }
+
+    // ── Ações AJAX: adicionar / remover ───────────────────────────────────────
+    function adicionarMembro(usuarioId) {
+        const fd = new FormData();
+        fd.append('usuario_id', usuarioId);
+        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+        fetch(urlAdicionar(grupoAtualId), { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.sucesso) {
+                    // Adiciona à lista de membros do grupo
+                    if (!membrosData[String(grupoAtualId)]) membrosData[String(grupoAtualId)] = [];
+                    membrosData[String(grupoAtualId)].push(data.membro);
+
+                    // Remove da lista de disponíveis
+                    alunosData = alunosData.filter(a => a.id !== usuarioId);
+
+                    renderizarMembros();
+                    renderizarDisponiveis();
+                    atualizarBadgeGrupo(grupoAtualId, membrosData[String(grupoAtualId)].length);
+                    mostrarToast('sucesso', `"${escHtml(data.membro.nome)}" adicionado ao grupo.`);
+                } else {
+                    mostrarToast('erro', data.erro || 'Erro ao adicionar membro.');
+                }
+            })
+            .catch(() => mostrarToast('erro', 'Erro de conexão. Tente novamente.'));
+    }
+
+    function removerMembro(usuarioId) {
+        const membro = (membrosData[String(grupoAtualId)] || []).find(m => m.id === usuarioId);
+        const fd = new FormData();
+        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+        fetch(urlRemover(grupoAtualId, usuarioId), { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.sucesso) {
+                    // Remove da lista de membros
+                    membrosData[String(grupoAtualId)] = (membrosData[String(grupoAtualId)] || [])
+                        .filter(m => m.id !== usuarioId);
+
+                    // Se foi removido do ciclo, torna-se disponível novamente
+                    if (data.removido_do_ciclo && membro) {
+                        alunosData.push(membro);
+                        alunosData.sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
+                    }
+
+                    renderizarMembros();
+                    renderizarDisponiveis();
+                    atualizarBadgeGrupo(grupoAtualId, membrosData[String(grupoAtualId)].length);
+                    mostrarToast('sucesso', membro ? `"${escHtml(membro.nome)}" removido do grupo.` : 'Membro removido.');
+                } else {
+                    mostrarToast('erro', data.erro || 'Erro ao remover membro.');
+                }
+            })
+            .catch(() => mostrarToast('erro', 'Erro de conexão. Tente novamente.'));
+    }
+
+    // ── Seleção de grupo no painel esquerdo ───────────────────────────────────
+    function selecionarGrupo(elemento, grupoId, nomeGrupo, papel) {
+        document.querySelectorAll('.grupo-item').forEach(el => {
+            el.classList.remove('border-tjgo-blue', 'bg-blue-50');
+            el.classList.add('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
+            const ind = el.querySelector('.indicador-ativo');
+            if (ind) ind.remove();
+        });
+
+        elemento.classList.remove('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
+        elemento.classList.add('border-tjgo-blue', 'bg-blue-50', 'relative');
+        elemento.insertAdjacentHTML(
+            'afterbegin',
+            '<div class="indicador-ativo absolute left-0 top-0 bottom-0 w-1 bg-tjgo-blue rounded-l-sm"></div>'
+        );
+
+        const nomeEl = document.getElementById('nome-grupo-selecionado');
+        nomeEl.textContent = nomeGrupo;
+        nomeEl.classList.remove('text-gray-300', 'italic');
+        nomeEl.classList.add('text-white');
+
+        const papelEl = document.getElementById('papel-grupo-selecionado');
+        papelEl.textContent = papel;
+        papelEl.classList.remove('text-gray-400', 'italic');
+        papelEl.classList.add('text-yellow-400');
+
+        grupoAtualId = grupoId;
+
+        document.getElementById('painel-direito-vazio').classList.add('hidden');
+        const conteudo = document.getElementById('painel-direito-conteudo');
+        conteudo.classList.remove('hidden');
+        conteudo.classList.add('flex');
+
+        // Limpa filtro e renderiza painéis com os dados do grupo selecionado
+        const pesquisa = document.getElementById('pesquisa-alunos');
+        if (pesquisa) pesquisa.value = '';
+        renderizarMembros();
+        renderizarDisponiveis();
+    }
+
+    // ── Utilitários ───────────────────────────────────────────────────────────
+    function atualizarBadgeGrupo(grupoId, count) {
+        const badge = document.querySelector(`#grupo-item-${grupoId} .membros-count-badge`);
+        if (badge) badge.textContent = `${count} Al.`;
+    }
+
+    function escHtml(str) {
+        const d = document.createElement('div');
+        d.appendChild(document.createTextNode(String(str)));
+        return d.innerHTML;
+    }
+
+    function mostrarToast(tipo, mensagem) {
+        const container = document.getElementById('toast-container');
+        const ok = tipo === 'sucesso';
+        const el = document.createElement('div');
+        el.className = [
+            'pointer-events-auto p-3 text-xs border rounded shadow-md flex items-center gap-2 min-w-[260px] transition-opacity duration-300',
+            ok ? 'bg-green-50 border-green-200 text-green-800'
+               : 'bg-red-50 border-red-200 text-red-800',
+        ].join(' ');
+        el.innerHTML = `<i class="fa-solid ${ok ? 'fa-circle-check' : 'fa-circle-xmark'}"></i><span class="flex-1">${mensagem}</span>`;
+        container.appendChild(el);
+        setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 4000);
+    }
+
+    // ── Modal de Grupo (criar/editar) ─────────────────────────────────────────
     function abrirModalGrupo(grupoId = null, nome = '', cargoId = null) {
-        const modal = document.getElementById('modal-grupo');
+        const modal  = document.getElementById('modal-grupo');
         const titulo = document.getElementById('modal-grupo-titulo');
-        document.getElementById('modal-grupo-id').value = grupoId || '';
+        document.getElementById('modal-grupo-id').value   = grupoId || '';
         document.getElementById('modal-grupo-nome').value = nome;
         document.getElementById('modal-grupo-cargo').value = cargoId || '';
 
-        if (grupoId) {
-            titulo.innerHTML = '<i class="fa-solid fa-pen mr-2"></i> Editar Grupo';
-        } else {
-            titulo.innerHTML = '<i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo';
-        }
+        titulo.innerHTML = grupoId
+            ? '<i class="fa-solid fa-pen mr-2"></i> Editar Grupo'
+            : '<i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo';
 
         modal.classList.remove('hidden');
         modal.classList.add('flex');
@@ -302,47 +474,7 @@
         }, 200);
     }
 
-    // ── Seleção de grupo no painel esquerdo ───────────────────────────────
-    function selecionarGrupo(elemento, grupoId, nomeGrupo, papel) {
-        document.querySelectorAll('.grupo-item').forEach(el => {
-            el.classList.remove('border-tjgo-blue', 'bg-blue-50');
-            el.classList.add('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
-            const indicador = el.querySelector('.indicador-ativo');
-            if (indicador) indicador.remove();
-        });
-
-        elemento.classList.remove('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
-        elemento.classList.add('border-tjgo-blue', 'bg-blue-50', 'relative');
-        elemento.insertAdjacentHTML(
-            'afterbegin',
-            '<div class="indicador-ativo absolute left-0 top-0 bottom-0 w-1 bg-tjgo-blue rounded-l-sm"></div>'
-        );
-
-        document.getElementById('nome-grupo-selecionado').textContent = nomeGrupo;
-        document.getElementById('nome-grupo-selecionado').classList.remove('text-gray-300', 'italic');
-        document.getElementById('nome-grupo-selecionado').classList.add('text-white');
-
-        document.getElementById('papel-grupo-selecionado').textContent = papel;
-        document.getElementById('papel-grupo-selecionado').classList.remove('text-gray-400', 'italic');
-        document.getElementById('papel-grupo-selecionado').classList.add('text-yellow-400');
-
-        document.getElementById('painel-direito-vazio').classList.add('hidden');
-        const conteudo = document.getElementById('painel-direito-conteudo');
-        conteudo.classList.remove('hidden');
-        conteudo.classList.add('flex');
-    }
-
-    // ── Filtro de alunos ──────────────────────────────────────────────────
-    function filtrarAlunos() {
-        const filter = document.getElementById('pesquisa-alunos').value.toLowerCase();
-        document.querySelectorAll('#lista-alunos-disponiveis .aluno-item').forEach(item => {
-            const nome = item.querySelector('.nome-aluno').innerText.toLowerCase();
-            const mat = item.querySelector('.mat-aluno').innerText.toLowerCase();
-            item.style.display = (nome.includes(filter) || mat.includes(filter)) ? 'flex' : 'none';
-        });
-    }
-
-    // ── Reabre modal se houve erro de validação ───────────────────────────
+    // ── Reabre modal se houve erro de validação ────────────────────────────────
     {% if reabrir_modal %}
     document.addEventListener('DOMContentLoaded', () => {
         abrirModalGrupo(
