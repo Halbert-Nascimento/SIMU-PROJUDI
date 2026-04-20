@@ -12,9 +12,9 @@
 {% block header_saudacao %}
 <a href="#" class="relative mr-6 text-gray-200 hover:text-white transition-colors" title="Notificações do Sistema">
     <i class="fa-solid fa-bell text-lg"></i>
-    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-tjgo-navy">3</span>
+    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full border border-tjgo-navy flex items-center justify-center leading-none">3</span>
 </a>
-    <span class="text-xs mr-4 font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
+    <span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
         <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> Olá, {{ user.tipo_perfil_global }} - {{ user.first_name }} 
     </span>
     
@@ -23,7 +23,7 @@
 
 
 {% block content %}
-<main class="main-container px-10 py-8">
+<main class="main-container px-10 py-8 mt-10">
 
     <!-- Cabeçalho da Página -->
         <div class="mb-4 border-b border-gray-100 pb-4">
@@ -129,22 +129,24 @@
                                         {% endif %}
                                     </td>
                                     <td class="py-3 pr-3 font-semibold text-gray-700">{{ ciclo.grupos.count }} Grupo{{ ciclo.grupos.count|pluralize }}</td>
-                                    <td class="py-3 pr-3 flex justify-end gap-3">
-                                        <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
-                                            class="text-tjgo-blue text-[11px] font-bold hover:underline flex items-center gap-1">
-                                            <i class="fa-solid fa-users"></i> Gerenciar Grupos
-                                        </a>
-                                        {% if ciclo.pk in ciclos_editaveis %}
-                                        <a href="{% url 'ciclos:editar_ciclo' ciclo.pk %}"
-                                            class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
-                                            <i class="fa-solid fa-pen"></i> Editar
-                                        </a>
-                                        {% else %}
-                                        <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
-                                            class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
-                                            <i class="fa-solid fa-eye"></i> Visualizar
-                                        </a>
-                                        {% endif %}
+                                    <td class="py-3 pr-3 align-middle">
+                                        <div class="flex justify-end items-center gap-3">
+                                            <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
+                                               class="text-tjgo-blue text-[11px] font-bold hover:underline flex items-center gap-1">
+                                                <i class="fa-solid fa-users"></i> Gerenciar Grupos
+                                            </a>
+                                            {% if ciclo.pk in ciclos_editaveis %}
+                                            <a href="{% url 'ciclos:editar_ciclo' ciclo.pk %}"
+                                               class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
+                                                <i class="fa-solid fa-pen"></i> Editar
+                                            </a>
+                                            {% else %}
+                                            <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
+                                               class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
+                                                <i class="fa-solid fa-eye"></i> Visualizar
+                                            </a>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}

@@ -12,15 +12,15 @@
 {% block header_saudacao %}
 <a href="#" class="relative mr-6 text-gray-200 hover:text-white transition-colors" title="Notificações do Sistema">
     <i class="fa-solid fa-bell text-lg"></i>
-    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-tjgo-navy">3</span>
+    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full border border-tjgo-navy flex items-center justify-center leading-none">3</span>
 </a>
-<span class="text-xs mr-4 font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
+<span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
     <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> Olá, {{ user.tipo_perfil_global }} - {{ user.first_name }}
 </span>
 {% endblock %}
 
 {% block content %}
-<main class="main-container px-10 py-8">
+<main class="main-container px-10 py-8 mt-10">
 
     <!-- Cabeçalho da Página -->
     <div class="mb-6 border-b border-gray-100 pb-4">
