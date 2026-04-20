@@ -1,0 +1,15 @@
+fieldset {
+    border: 1px solid #d1d1d1;
+    border-radius: 4px;
+    background-color: #ffffff;
+}
+fieldset legend {
+    font-weight: bold;
+    font-size: 13px;
+    padding: 0 8px;
+    color: #333333;
+}
+input[type="text"]:focus,
+select:focus {
+    border-color: #1a5b9e !important;
+}

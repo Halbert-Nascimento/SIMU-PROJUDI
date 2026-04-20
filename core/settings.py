@@ -10,22 +10,28 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
+
 from pathlib import Path
 
-import os
+import environ
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-n6$j+x+o!_^z!0pmb58n)x0hp7tjl1z7=_02=dccmnrn4vyta%'
+SECRET_KEY = env("SECRET_KEY", default='django-insecure-dev-only')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool("DEBUG", default=False)
 
 ALLOWED_HOSTS = []
 
@@ -39,10 +45,13 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'acesso',
     'usuarios',
-    'processos',
+    'acesso',
+    'agendamentos',
     'base',
+    'ciclos',
+    'movimentacoes',
+    'processos',
 ]
 
 MIDDLEWARE = [
@@ -79,10 +88,7 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': env.db() # Busca automaticamente as variáveis DATABASE_URL
 }
 
 
@@ -104,8 +110,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-AUTH_USER_MODEL = "acesso.Usuario" # informa ao Django para usar o modelo de usuário personalizado
+AUTH_USER_MODEL = "usuarios.Usuario" # informa ao Django para usar o modelo de usuário personalizado
 
+# Redirecionamentos de autenticação
+LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após logout
+LOGIN_URL = 'acesso:login'
+LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
+
+# desconfigurações de segurança (ajustar para produção)
+# SESSION_COOKIE_SECURE = True    # cookie sessionid só via HTTPS
+# SESSION_COOKIE_HTTPONLY = True  # bloqueia acesso via document.cookie (XSS)
+# CSRF_COOKIE_SECURE = True       # csrftoken só via HTTPS
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
@@ -130,7 +145,5 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-# login redirects
-# LOGIN_URL = 'login'
-# LOGIN_REDIRECT_URL = 'home'
-# LOGOUT_REDIRECT_URL = 'login'
+# Mídia PROTEGIDA (documentos)
+PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')

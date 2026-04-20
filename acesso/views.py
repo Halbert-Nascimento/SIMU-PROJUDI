@@ -1,18 +1,60 @@
+import logging
+
+from django.contrib import messages
 from django.contrib.auth import login
-from django.contrib.auth.views import LoginView, LogoutView
+from django.contrib.auth import logout as auth_logout
 from django.shortcuts import redirect, render
-from django.urls import reverse_lazy
+from django.views.decorators.http import require_POST
 
-from .forms import CadastroPublicoForm, LoginForm
+from usuarios.forms import CadastroPublicoForm
+from usuarios.models import Usuario
 
-
-# class EntrarView(LoginView):
-#     template_name = "acesso/login.html"
-#     authentication_form = LoginForm
+from .forms import LoginForm
 
 
-# class SairView(LogoutView):
-#     next_page = reverse_lazy("acesso:login")
+logger = logging.getLogger(__name__)
+
+
+
+
+def login_view(request):
+    form = LoginForm(request, data=request.POST or None)
+    if request.method == "POST" and not form.is_valid():
+        logger.warning(
+            "Tentativa de login invalida para identificador=%s",
+            request.POST.get("username") or request.POST.get("email") or "",
+        )
+
+    if request.method == "POST" and form.is_valid():
+        login(request, form.get_user())
+        logger.info("Login realizado com sucesso para usuario=%s", request.user.pk)
+
+        # todo: redirecionar para pagina de acordo com perfil
+        if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ADMIN:
+            return redirect("acesso:painel_administrativo")
+
+        if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.COORDENADOR:
+            return redirect("acesso:painel_administrativo")
+
+        if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.PROFESSOR:
+            return redirect("acesso:painel_administrativo")
+
+        if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO:
+            return redirect("base:cadastro_processo")
+
+        return redirect("base:redirecionamento_teste_sucesso")
+
+    return render(request, "acesso/login.html", {"form": form})
+
+
+
+
+
+@require_POST
+def logout_view(request):
+    auth_logout(request)
+    messages.success(request, "Você saiu com sucesso.")
+    return redirect("acesso:login")
 
 
 def cadastrar(request):
@@ -21,7 +63,7 @@ def cadastrar(request):
         if form.is_valid():
             user = form.save()
             login(request, user)
-            return redirect("core:home")
+            return redirect("base:redirecionamento_teste_sucesso")
     else:
         form = CadastroPublicoForm()
 

@@ -1,0 +1,177 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Gestão de Usuários{% endblock %}
+
+
+
+{% block content %}
+<main class="main-container px-10 py-8">
+    <div class="grid grid-cols-1 gap-6">
+        <section>
+            <h2 class="text-tjgo-blue text-xl font-bold mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-users-gear"></i> Gestão de Usuários
+            </h2>
+
+            {% if messages %}
+                <div class="mb-4 space-y-2">
+                    {% for message in messages %}
+                        <div class="p-2 text-sm border
+                            {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
+                            {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
+                            {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <div class="border border-gray-200 bg-white">
+                <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
+                    <i class="fa-solid fa-list mr-2 text-sm"></i> USUÁRIOS CADASTRADOS
+                </div>
+
+                <div class="p-5 text-[13px] leading-relaxed text-gray-800 overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="text-xs uppercase text-gray-600 border-b">
+                                <th class="py-2 pr-3">Usuário</th>
+                                <th class="py-2 pr-3">Email</th>
+                                <th class="py-2 pr-3">Tipo</th>
+                                <th class="py-2 pr-3">Status</th>
+                                <th class="py-2 pr-3">Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for u in usuarios %}
+                                <tr class="border-b text-sm">
+                                    <td class="py-2 pr-3 font-bold">{{ u.username }}</td>
+                                    <td class="py-2 pr-3">{{ u.email }}</td>
+                                    <td class="py-2 pr-3">{{ u.tipo_perfil_global }}</td>
+                                    <td class="py-2 pr-3">
+                                        {% if u.is_active %}
+                                            <span class="text-green-700 font-bold">Ativo</span>
+                                        {% else %}
+                                            <span class="text-red-700 font-bold">Inativo</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-2 pr-3">
+                                        <button
+                                           type="button"
+                                           class="text-tjgo-blue text-xs font-bold hover:underline"
+                                           data-modal-open
+                                           data-user-id="{{ u.id }}"
+                                           data-username="{{ u.username }}"
+                                           data-email="{{ u.email }}"
+                                           data-tipo="{{ u.tipo_perfil_global }}"
+                                           data-active="{% if u.is_active %}true{% else %}false{% endif %}">
+                                            editar/aprovar
+                                        </button>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td class="py-4 text-sm text-gray-500" colspan="5">Nenhum usuário encontrado.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+
+                    <p class="text-xs text-gray-500 mt-3">
+                        Usuários pendentes ficam <strong>Inativos</strong> até aprovação.
+                    </p>
+                </div>
+            </div>
+        </section>
+    </div>
+</main>
+
+<div id="modal-overlay" class="fixed inset-0 z-[60] hidden bg-black/40 p-4">
+    <div class="mx-auto mt-10 w-full max-w-lg border border-gray-200 bg-white shadow-card">
+        <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center justify-between">
+            <div class="flex items-center">
+                <i class="fa-solid fa-user-check mr-2 text-sm"></i>
+                Aprovar / Editar Usuario
+            </div>
+            <button id="modal-close-top" type="button" class="text-white text-xs font-bold hover:underline">fechar</button>
+        </div>
+
+        <div class="p-5 text-[13px] leading-relaxed text-gray-800">
+            <p class="text-gray-600 mb-3">
+                <strong>Usuario:</strong> <span id="modal-username">-</span><br>
+                <strong>Email:</strong> <span id="modal-email">-</span>
+            </p>
+
+            <form method="post" action="{% url 'acesso:usuario_atualizar' %}" class="space-y-3">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="modal-user-id">
+
+                <div>
+                    <label for="modal-tipo" class="mb-1 block text-xs font-bold text-tjgo-text-main uppercase">Tipo de Perfil</label>
+                    <select
+                        id="modal-tipo"
+                        name="tipo_perfil_global"
+                        class="w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue">
+                        {% for value, label in tipos_opcoes %}
+                            <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input id="modal-is-active" name="is_active" type="checkbox" value="on" class="h-4 w-4 border-gray-300 text-tjgo-blue focus:ring-tjgo-blue">
+                    <label for="modal-is-active" class="text-xs font-bold text-tjgo-text-main uppercase">Ativo</label>
+                </div>
+
+                <div class="flex justify-start gap-2 pt-2">
+                    <button type="submit" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">
+                        Salvar
+                    </button>
+                    <button type="button" id="modal-close-bottom" class="bg-tjgo-gray-card hover:bg-gray-300 text-tjgo-navy font-bold py-1 px-4 text-sm rounded shadow-sm transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const overlay = document.getElementById('modal-overlay');
+        const closeTop = document.getElementById('modal-close-top');
+        const closeBottom = document.getElementById('modal-close-bottom');
+        const userIdInput = document.getElementById('modal-user-id');
+        const usernameSpan = document.getElementById('modal-username');
+        const emailSpan = document.getElementById('modal-email');
+        const tipoSelect = document.getElementById('modal-tipo');
+        const activeInput = document.getElementById('modal-is-active');
+        const openButtons = document.querySelectorAll('[data-modal-open]');
+
+        function openModal(button) {
+            userIdInput.value = button.dataset.userId;
+            usernameSpan.textContent = button.dataset.username;
+            emailSpan.textContent = button.dataset.email;
+            tipoSelect.value = button.dataset.tipo;
+            activeInput.checked = button.dataset.active === 'true';
+            overlay.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            overlay.classList.add('hidden');
+        }
+
+        openButtons.forEach((button) => {
+            button.addEventListener('click', () => openModal(button));
+        });
+
+        closeTop.addEventListener('click', closeModal);
+        closeBottom.addEventListener('click', closeModal);
+
+        overlay.addEventListener('click', (event) => {
+            if (event.target === overlay) {
+                closeModal();
+            }
+        });
+    })();
+</script>
+{% endblock %}
