@@ -1,27 +1,8 @@
-from django.db import models
+"""Camada de compatibilidade para imports legados.
 
-from django.contrib.auth.models import AbstractUser
+O modelo de identidade foi movido para o app usuarios.
+"""
 
+from usuarios.models import Usuario
 
-
-class Usuario(AbstractUser):
-    class TipoPerfilGlobal(models.TextChoices):
-        ADMIN = "Admin", "Admin"
-        COORDENADOR = "Coordenador", "Coordenador"
-        PROFESSOR = "Professor", "Professor"
-        ALUNO = "Aluno", "Aluno"
-        PENDENTE = "Pendente", "Pendente"
-
-    
-    email = models.EmailField("email", blank=False, unique=True)
-
-    tipo_perfil_global = models.CharField(
-        max_length=20,
-        choices=TipoPerfilGlobal.choices,
-        default=TipoPerfilGlobal.PENDENTE,  
-    )
-
-    class Meta:
-        db_table = "usuario"
-        verbose_name = "Usuário"
-        verbose_name_plural = "Usuários"
+__all__ = ["Usuario"]

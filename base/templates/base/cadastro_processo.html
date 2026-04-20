@@ -1,0 +1,260 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Processo Judicial - Cadastro de Processo Comum{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+{% endblock %}
+
+
+
+{% block content %}
+    <!-- Navigation Bar -->
+    <nav class="bg-fundo-caixa border-b border-borda px-10 py-2 flex items-center justify-between text-[12px] relative z-50">
+        <div class="flex items-center gap-5">
+            <a href="#" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
+
+            <!-- Processos com Dropdown -->
+            <div class="relative group">
+                <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
+
+                <!-- Dropdown Menu -->
+                <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Recadastramento Civel</a>
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Recadastramento Criminal</a>
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
+
+                    <!-- Certidao com sub-menu -->
+                    <div class="relative group/certidao">
+                        <a href="#" class="flex items-center justify-between px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">
+                            <span>Certidao</span>
+                            <i class="fas fa-caret-right text-texto-secundario ml-4"></i>
+                        </a>
+                        <div class="hidden group-hover/certidao:block absolute left-full top-0 bg-fundo-container border border-borda shadow-md min-w-[180px] rounded">
+                            <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Certidao Civel</a>
+                            <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Certidao Criminal</a>
+                        </div>
+                    </div>
+
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Classificar Processos</a>
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Jurisprudencia</a>
+
+                    <!-- Outras Consultas com sub-menu -->
+                    <div class="relative group/outras">
+                        <a href="#" class="flex items-center justify-between px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">
+                            <span>Outras Consultas</span>
+                            <i class="fas fa-caret-right text-texto-secundario ml-4"></i>
+                        </a>
+                        <div class="hidden group-hover/outras:block absolute left-full top-0 bg-fundo-container border border-borda shadow-md min-w-[180px] rounded">
+                            <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Consulta 1</a>
+                            <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Consulta 2</a>
+                        </div>
+                    </div>
+
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Redistribuicao em Lote</a>
+                </div>
+            </div>
+
+            <a href="#" class="hover:underline text-texto-principal font-medium">Audiencias</a>
+            <a href="#" class="hover:underline text-texto-principal font-medium">Cadastros</a>
+            <a href="#" class="hover:underline text-texto-principal font-medium">Cumprimentos</a>
+            <a href="#" class="hover:underline text-texto-principal font-medium">Estatisticas</a>
+            <a href="#" class="hover:underline text-texto-principal font-medium">Seguranca</a>
+            <a href="#" class="hover:underline text-texto-principal font-medium">Certificados</a>
+        </div>
+        <div class="flex items-center gap-1 text-texto-secundario">
+            <i class="fas fa-times text-[11px]"></i>
+            <span>29:53</span>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-container mx-auto px-10 py-8">
+
+        <!-- Title -->
+        <h2 class="text-azul-primario font-bold text-[20px] mb-6">&raquo; Cadastro de Processo Comum</h2>
+
+        <!-- Passo 1 Tab -->
+        <div class="flex items-center gap-2.5 mb-4">
+            <i class="far fa-calendar-alt text-azul-primario text-[14px]"></i>
+            <span class="bg-fundo-container border border-borda px-4 py-1.5 text-[12px] font-bold rounded shadow-sm text-texto-principal">Passo 1</span>
+        </div>
+
+        <!-- PASSO 1 - DADOS DO PROCESSO -->
+        <fieldset class="p-6 mb-6">
+            <legend class="text-texto-principal text-[14px]">PASSO 1 - DADOS DO PROCESSO</legend>
+
+            <!-- TIPO DO PROCESSO -->
+            <fieldset class="p-5 mb-5">
+                <legend class="text-texto-principal">TIPO DO PROCESSO</legend>
+
+                <div class="space-y-3">
+                    <!-- Grau -->
+                    <div class="flex items-center gap-3">
+                        <label class="w-28 font-bold text-texto-principal">*Grau</label>
+                        <div class="flex items-center gap-5">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="grau" value="1grau" checked class="accent-azul-primario">
+                                <span>1o Grau</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="grau" value="2grau" class="accent-azul-primario">
+                                <span>2o Grau</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="grau" value="turma" class="accent-azul-primario">
+                                <span>Turma Recursal</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Tipo -->
+                    <div class="flex items-center gap-3">
+                        <label class="w-28 font-bold text-texto-principal">*Tipo</label>
+                        <div class="flex items-center gap-5">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="tipo" value="civel" checked class="accent-azul-primario">
+                                <span>Civel</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="tipo" value="criminal" class="accent-azul-primario">
+                                <span>Criminal</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Gratuidade -->
+                    <div class="flex items-center gap-3">
+                        <label class="w-28 font-bold text-texto-principal">*Gratuidade</label>
+                        <div class="flex items-center gap-5">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="gratuidade" value="gratuidade" class="accent-azul-primario">
+                                <span>Com Gratuidade da Justica</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="gratuidade" value="custas" class="accent-azul-primario">
+                                <span>Com custas</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="gratuidade" value="isento" checked class="accent-azul-primario">
+                                <span>Isento</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Dependencia -->
+                    <div class="flex items-center gap-3">
+                        <label class="w-28 font-bold text-texto-principal">*Dependencia</label>
+                        <div class="flex items-center gap-5">
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="dependencia" value="com" class="accent-azul-primario">
+                                <span>Com Dependencia</span>
+                            </label>
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                <input type="radio" name="dependencia" value="sem" class="accent-azul-primario">
+                                <span>Sem Dependencia</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- CARACTERISTICAS -->
+            <fieldset class="p-5 mb-5">
+                <legend class="text-texto-principal">CARACTERISTICAS</legend>
+
+                <div class="grid grid-cols-2 gap-5 mb-5">
+                    <!-- Comarca -->
+                    <div>
+                        <label class="font-bold text-azul-primario text-[12px]">
+                            *Comarca
+                            <i class="fas fa-search text-[11px] ml-1 text-texto-secundario"></i>
+                            <i class="fas fa-times-circle text-[11px] ml-0.5 text-texto-secundario"></i>
+                        </label>
+                        <input type="text" placeholder="Digite a Comarca" class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none placeholder-texto-secundario mt-1">
+                    </div>
+
+                    <!-- Area Distribuicao -->
+                    <div>
+                        <label class="font-bold text-texto-principal text-[12px]">
+                            *Area Distribuicao
+                            <i class="fas fa-search text-[11px] ml-1 text-texto-secundario"></i>
+                            <i class="fas fa-times-circle text-[11px] ml-0.5 text-texto-secundario"></i>
+                        </label>
+                        <input type="text" placeholder="Digite a Area de Distribuicao" class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none placeholder-texto-secundario mt-1">
+                    </div>
+                </div>
+
+                <!-- Classe -->
+                <div class="mb-2">
+                    <label class="font-bold text-azul-primario text-[12px]">
+                        *Classe
+                        <i class="fas fa-search text-[11px] ml-1 text-texto-secundario"></i>
+                        <i class="fas fa-times-circle text-[11px] ml-0.5 text-texto-secundario"></i>
+                    </label>
+                    <input type="text" placeholder="Digite a Classe" class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none placeholder-texto-secundario mt-1">
+                </div>
+            </fieldset>
+
+            <!-- ASSUNTO(S) -->
+            <fieldset class="p-5 mb-5">
+                <legend class="text-azul-primario font-bold">*ASSUNTO(S) <i class="fas fa-search text-[11px] text-texto-secundario"></i></legend>
+                <p class="text-texto-secundario italic text-[13px]">Insira um Assunto.</p>
+            </fieldset>
+
+            <!-- Prioridade e Valor -->
+            <div class="grid grid-cols-2 gap-5 mb-5">
+                <div>
+                    <label class="font-bold text-texto-principal text-[12px]">
+                        *Prioridade
+                        <i class="fas fa-search text-[11px] ml-1 text-texto-secundario"></i>
+                    </label>
+                    <input type="text" value="Normal" class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                </div>
+                <div>
+                    <label class="font-bold text-texto-principal text-[12px]">*Valor</label>
+                    <input type="text" placeholder="Digite o Valor" class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none placeholder-texto-secundario mt-1">
+                </div>
+            </div>
+
+            <!-- POLO ATIVO -->
+            <fieldset class="p-5 mb-5">
+                <legend class="font-bold text-texto-principal">POLO ATIVO* <i class="fas fa-search text-[11px] text-texto-secundario"></i></legend>
+                <p class="text-texto-secundario italic text-[13px]">Insira uma parte promovente.</p>
+            </fieldset>
+
+            <!-- POLO PASSIVO -->
+            <fieldset class="p-5 mb-5">
+                <legend class="font-bold text-texto-principal">POLO PASSIVO* <i class="fas fa-search text-[11px] text-texto-secundario"></i></legend>
+                <p class="text-texto-secundario italic text-[13px]">Insira uma parte promovida.</p>
+            </fieldset>
+
+            <!-- SUBSTITUTO PROCESSUAL -->
+            <fieldset class="p-5 mb-5">
+                <legend class="font-bold text-texto-principal">SUBSTITUTO PROCESSUAL / OUTRAS PARTES / SUJEITOS <i class="fas fa-search text-[11px] text-texto-secundario"></i></legend>
+                <p class="text-texto-secundario italic text-[13px]">Insira Substituto Processual / Outras Partes.</p>
+            </fieldset>
+
+            <!-- ADVOGADO(S) / PROMOTOR -->
+            <fieldset class="p-5 mb-2">
+                <legend class="font-bold text-texto-principal">ADVOGADO(S) / PROMOTOR <i class="fas fa-search text-[11px] text-texto-secundario"></i></legend>
+                <p class="text-texto-secundario italic text-[13px]">Insira Advogado(s) no processo.</p>
+            </fieldset>
+        </fieldset>
+
+        <!-- Buttons -->
+        <div class="flex items-center justify-center gap-3 mt-10 mb-10">
+            <button class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
+                Avancar
+            </button>
+            <button class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
+                Limpar
+            </button>
+            <button class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
+                Salvar Rascunho
+            </button>
+        </div>
+    </main>
+{% endblock %}

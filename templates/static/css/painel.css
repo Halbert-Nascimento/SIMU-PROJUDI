@@ -1,0 +1,10 @@
+/* Animações de modal — exclusivo do painel administrativo */
+.modal-overlay {
+    transition: opacity 0.2s ease-in-out;
+}
+.modal-content {
+    transition: transform 0.2s ease-in-out;
+    transform: scale(0.95);
+}
+.modal-active .modal-overlay { opacity: 1; pointer-events: auto; }
+.modal-active .modal-content { transform: scale(1); }

@@ -3,30 +3,22 @@
 {% block title %} Processo Judicial {% endblock %}
 
 {% block content %}
-<!-- Header / Barra Superior -->
-    <header class="bg-tjgo-navy text-white h-[45px] flex items-center justify-between px-6 sticky top-0 z-50">
-        <div class="flex items-center gap-2">
-            <i class="fa-solid fa-scale-balanced text-xl"></i> <!-- Símbolo Brasão -->
-            <span class="font-bold text-lg tracking-wide">Processo Judicial</span>
-        </div>
-        <div class="flex items-center text-gray-200">
-            <div class="flex items-center gap-1 mr-4 border-r border-gray-500 pr-4">
-                <i class="fa-solid fa-circle-half-stroke top-bar-icon" title="Alto Contraste"></i>
-                <span class="font-bold ml-2 text-sm cursor-pointer">A+</span>
-                <span class="font-bold ml-1 text-sm cursor-pointer">A-</span>
-            </div>
-            <i class="fa-solid fa-magnifying-glass top-bar-icon"></i>
-            <i class="fa-solid fa-file-lines top-bar-icon"></i>
-            <i class="fa-solid fa-dollar-sign top-bar-icon"></i>
-            <i class="fa-solid fa-list-check top-bar-icon"></i>
-            <i class="fa-solid fa-circle-question top-bar-icon"></i>
-            <i class="fa-solid fa-download top-bar-icon"></i>
-            <i class="fa-solid fa-right-from-bracket top-bar-icon ml-6"></i>
-        </div>
-    </header>
-
     <!-- Container Principal -->
     <main class="main-container px-10 py-8">
+
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+            <div class="p-2.5 text-xs border rounded flex items-center gap-2
+                {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
+                {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
+                {% else %} bg-blue-50 border-blue-200 text-blue-800 {% endif %}">
+                <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
         
         <div class="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-x-[5%]">
             
@@ -46,8 +38,8 @@
                         </div>
                         <!-- Card 2 -->
                         <div class="bg-tjgo-gray-card hover:bg-gray-300 transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <i class="fa-solid fa-pen-to-square text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-xs font-bold leading-tight text-gray-800">Acordo Aqui</span>
+                            <a class="fa-solid fa-pen-to-square text-2xl text-tjgo-navy mb-2" href="{% url 'acesso:cadastro' %}"></a>
+                            <a class="text-xs font-bold leading-tight text-gray-800" href="{% url 'acesso:cadastro' %}">Cadastro</a>
                         </div>
                         <!-- Card 3 -->
                         <div class="bg-tjgo-gray-card hover:bg-gray-300 transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
@@ -347,30 +339,50 @@
                     </h2>
                     
                     <div class="flex flex-col items-center">
-                        <form class="w-full max-w-[280px]">
+                        <form id="login-form" class="w-full max-w-[280px]" method="post" action="{% url 'acesso:login' %}">
+                            {% csrf_token %}
                             <!-- Campo Usuário -->
                             <div class="relative mb-3">
                                 <i class="fa-solid fa-user input-group-icon"></i>
-                                <input type="text" placeholder="Usuário" class="w-full border border-gray-300 pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue">
+                                <input 
+                                type="text" 
+                                name="username" 
+                                value="{{ form.username.value|default_if_none:'' }}"
+                                placeholder="Usuário" 
+                                class="w-full border border-gray-300 pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue">
                             </div>
                             
                             <!-- Campo Senha -->
                             <div class="relative mb-4 flex items-center">
                                 <div class="relative w-full">
-                                    <i class="fa-solid fa-lock input-group-icon"></i>
-                                    <input type="password" placeholder="Senha" class="w-full border border-gray-300 pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue">
+                                    <i class="fa-solid fa-lock input-group-icon"></i>                                    
+                                    <input 
+                                    type="password" 
+                                    name="password" 
+                                    value="{{ form.password.value|default_if_none:'' }}"
+                                    placeholder="Senha" 
+                                    class="w-full border border-gray-300 pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue">
                                 </div>
-                                <i class="fa-solid fa-keyboard text-tjgo-blue ml-2 cursor-pointer text-lg" title="Teclado Virtual"></i>
+                                {% comment %} <i class="fa-solid fa-keyboard text-tjgo-blue ml-2 cursor-pointer text-lg" title="Teclado Virtual"></i> {% endcomment %}
                             </div>
 
                             <!-- Botões de Ação -->
                             <div class="flex justify-center gap-2 mb-4">
-                                <button type="button" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">Entrar</button>
-                                <button type="button" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">Limpar</button>
+                                <button type="submit" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">Entrar</button>
+                                <button id="btn-limpar-login" type="button" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">Limpar</button>
                             </div>
                             
                             <div class="text-center mb-8">
                                 <a href="#" class="text-tjgo-blue text-xs hover:underline">Esqueceu a sua senha?</a>
+                            </div>
+                            <div id="login-errors-wrapper">
+                                {% if form.non_field_errors %}
+                                    <div id="login-errors" class="bg-red-100 text-red-700 p-2 rounded mb-3">
+                                        {{ form.non_field_errors }}
+                                    </div>
+                                {% endif %}                               
+
+                                
                             </div>
 
                             <!-- Outras formas de acesso -->
@@ -378,25 +390,29 @@
                                 <p class="text-xs font-bold text-gray-700 mb-3">Você também pode:</p>
                                 
                                 <div class="space-y-3">
-                                    <button type="button" class="w-full bg-[#1e5894] hover:bg-[#1a4b7f] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
+                                    <button type="button" class="simulacao-opcao w-full bg-[#1e5894] hover:bg-[#1a4b7f] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
                                         Acesso Corporativo
                                     </button>
                                     
-                                    <button type="button" class="w-full bg-[#1e5894] hover:bg-[#1a4b7f] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
+                                    <button type="button" class="simulacao-opcao w-full bg-[#1e5894] hover:bg-[#1a4b7f] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
                                         Acessar com PDPJ
                                     </button>
                                     
                                     <div class="flex items-center gap-1">
-                                        <button type="button" class="w-full bg-[#1e5894] hover:bg-[#1a4b7f] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
+                                        <button type="button" class="simulacao-opcao w-full bg-[#1e5894] hover:bg-[#1a4b7f] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
                                             Acessar com Certificado Digital
-                                            <i class="fa-solid fa-circle-question text-t jgo-blue cursor-pointer text-sm"></i>
+                                            {% comment %} <i class="fa-solid fa-circle-question text-t jgo-blue cursor-pointer text-sm"></i> {% endcomment %}
                                         </button>
                                     </div>
                                     
-                                    <button type="button" class="w-full bg-[#1e5894] hover:bg-[#1a4b7f] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
+                                    <button type="button" class="simulacao-opcao w-full bg-[#1e5894] hover:bg-[#1a4b7f] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
                                         Cadastro com Certificado Digital
                                     </button>
                                 </div>
+
+                                <p id="aviso-simulacao-opcao" class="mt-2 hidden rounded border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] text-amber-800 opacity-0 translate-y-1 transition-all duration-300">
+                                    Opcao desativada para simulacao. Use apenas o login do sistema.
+                                </p>
                             </div>
                         </form>
                     </div>
@@ -414,6 +430,12 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const accordionItems = document.querySelectorAll('.accordion-item');
+            const loginForm = document.getElementById('login-form');
+            const btnLimparLogin = document.getElementById('btn-limpar-login');
+            const loginErrors = document.getElementById('login-errors');
+            const botoesSimulacao = document.querySelectorAll('.simulacao-opcao');
+            const avisoSimulacao = document.getElementById('aviso-simulacao-opcao');
+            let avisoTimeoutId;
             
             accordionItems.forEach(item => {
                 const header = item.querySelector('.accordion-header');
@@ -447,6 +469,43 @@
                     }
                 });
             });
+
+            if (btnLimparLogin && loginForm) {
+                btnLimparLogin.addEventListener('click', function() {
+                    loginForm.reset();
+
+                    if (loginErrors) {
+                        loginErrors.classList.add('hidden');
+                    }
+
+                    const usuarioInput = loginForm.querySelector('input[name="username"]');
+                    if (usuarioInput) {
+                        usuarioInput.focus();
+                    }
+                });
+            }
+
+            if (botoesSimulacao.length && avisoSimulacao) {
+                botoesSimulacao.forEach((botao) => {
+                    botao.addEventListener('click', function() {
+                        clearTimeout(avisoTimeoutId);
+
+                        avisoSimulacao.classList.remove('hidden', 'opacity-0', 'translate-y-1', '-translate-y-2');
+                        avisoSimulacao.classList.add('opacity-100', 'translate-y-0');
+
+                        avisoTimeoutId = setTimeout(() => {
+                            avisoSimulacao.classList.remove('opacity-100', 'translate-y-0');
+                            avisoSimulacao.classList.add('opacity-0', '-translate-y-2');
+
+                            setTimeout(() => {
+                                avisoSimulacao.classList.add('hidden');
+                                avisoSimulacao.classList.remove('-translate-y-2');
+                                avisoSimulacao.classList.add('translate-y-1');
+                            }, 300);
+                        }, 2000);
+                    });
+                });
+            }
         });
     </script>
 {% endblock %}

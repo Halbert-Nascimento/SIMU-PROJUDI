@@ -1,0 +1,73 @@
+/* Estilos adicionais finos para replicação exata */
+body { background-color: #f7f7f7; }
+.main-container { max-width: 1200px; margin: 0 auto; background-color: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
+.top-bar-icon { font-size: 14px; margin-left: 12px; cursor: pointer; }
+
+/* Ícones customizados simbolizando imagens específicas */
+.icon-sessao-virtual {
+    display: flex; justify-content: center; align-items: center;
+    width: 100px; height: 70px; background-color: #2c6eb5; color: white;
+    border-radius: 4px; font-size: 40px; border: 3px solid #143d6b;
+    position: relative;
+}
+.icon-sessao-virtual::after {
+    content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 5px; background-color: #143d6b; border-radius: 2px;
+}
+
+/* Estilização específica do Accordion (Informações Importantes) */
+.accordion-item-closed {
+    background-color: #e8e8e8;
+    color: #1a5b9e;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    border-bottom: 2px solid white;
+    cursor: pointer;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    transition: background-color 0.2s;
+}
+.accordion-item-closed:hover { background-color: #dcdcdc; }
+.accordion-item-closed i { font-size: 10px; margin-right: 6px; color: #1a5b9e; }
+
+.input-group-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #555; font-size: 14px;
+}
+
+/* Estilização do rodapé */
+.footer {
+    background-color: #153a61;
+    color: #b8c5d6;
+    padding: 20px 0;
+    margin-top: 40px;
+    border-top: 3px solid #1a5b9e;
+}
+.footer-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 11px;
+}
+.footer-badge {
+    display: inline-block;
+    background-color: #e67e22;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-left: 8px;
+}
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 10px;
+    }
+}
