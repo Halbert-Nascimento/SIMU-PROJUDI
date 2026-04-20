@@ -1,7 +1,10 @@
 import logging
 
+from django.contrib import messages
 from django.contrib.auth import login
+from django.contrib.auth import logout as auth_logout
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
 from usuarios.forms import CadastroPublicoForm
 from usuarios.models import Usuario
@@ -28,13 +31,13 @@ def login_view(request):
 
         # todo: redirecionar para pagina de acordo com perfil
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ADMIN:
-            return redirect("admin:index")
+            return redirect("acesso:painel_administrativo")
 
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.COORDENADOR:
             return redirect("acesso:painel_administrativo")
 
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.PROFESSOR:
-            return redirect("acesso:usuario_lista")
+            return redirect("acesso:painel_administrativo")
 
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO:
             return redirect("base:cadastro_processo")
@@ -45,6 +48,13 @@ def login_view(request):
 
 
 
+
+
+@require_POST
+def logout_view(request):
+    auth_logout(request)
+    messages.success(request, "Você saiu com sucesso.")
+    return redirect("acesso:login")
 
 
 def cadastrar(request):

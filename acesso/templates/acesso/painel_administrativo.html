@@ -12,9 +12,9 @@
 {% block header_saudacao %}
 <a href="#" class="relative mr-6 text-gray-200 hover:text-white transition-colors" title="Notificações do Sistema">
     <i class="fa-solid fa-bell text-lg"></i>
-    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full border border-tjgo-navy">3</span>
+    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full border border-tjgo-navy flex items-center justify-center leading-none">3</span>
 </a>
-    <span class="text-xs mr-4 font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
+    <span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
         <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> Olá, {{ user.tipo_perfil_global }} - {{ user.first_name }} 
     </span>
     
@@ -23,10 +23,9 @@
 
 
 {% block content %}
-<main class="main-container px-10 py-8">
-    <div id="view-ciclos">
+<main class="main-container px-10 py-8 mt-10">
 
-        <!-- Cabeçalho da Página -->
+    <!-- Cabeçalho da Página -->
         <div class="mb-4 border-b border-gray-100 pb-4">
             <h2 class="text-tjgo-blue text-2xl font-bold flex items-center gap-2">
                 <i class="fa-solid fa-chart-line"></i> Painel de Controle
@@ -34,8 +33,23 @@
             <p class="text-gray-500 text-sm mt-1">Visão geral dos ciclos de simulação, turmas e avaliações pendentes.</p>
         </div>
 
-        <!-- BANNER DE ALERTA DE UX (Aprovações Pendentes) -->
-        {% comment %} <!-- No Django, você envolverá isso em um {% if usuarios_pendentes_count > 0 %} --> {% endcomment %}
+        <!-- Mensagens de feedback -->
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+            <div class="p-2.5 text-xs border rounded flex items-center gap-2
+                {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
+                {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
+                {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
+                <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- BANNER DE ALERTA (Aprovações Pendentes) -->
+        {% if usuarios_pendentes_count %}
         <div class="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 shadow-sm flex items-center justify-between rounded-r-sm">
             <div class="flex items-center gap-4">
                 <div class="bg-yellow-100 p-2 rounded-full">
@@ -43,13 +57,17 @@
                 </div>
                 <div>
                     <p class="text-sm font-bold text-yellow-800">Aprovações de Cadastro Pendentes</p>
-                    <p class="text-xs text-yellow-700 mt-0.5">Existem <strong>3 novos alunos</strong> que criaram conta e aguardam a liberação do perfil para acessar o sistema.</p>
+                    <p class="text-xs text-yellow-700 mt-0.5">
+                        Existem <strong>{{ usuarios_pendentes_count }} novo{{ usuarios_pendentes_count|pluralize }} aluno{{ usuarios_pendentes_count|pluralize }}</strong> aguardando liberação de perfil.
+                    </p>
                 </div>
             </div>
-            <a href="{% url 'acesso:usuario_lista' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold py-2 px-4 rounded shadow-sm transition-colors uppercase flex items-center gap-2">
+            <button type="button" onclick="openModal('modal-usuarios'); switchTab('pendentes')"
+                class="bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold py-2 px-4 rounded shadow-sm transition-colors uppercase flex items-center gap-2">
                 Analisar Cadastros <i class="fa-solid fa-arrow-right"></i>
-            </a>
+            </button>
         </div>
+        {% endif %}
 
         <div class="grid grid-cols-1 lg:grid-cols-[65%_32%] gap-x-[3%]">
 
@@ -62,11 +80,14 @@
                         <div class="flex items-center">
                             <i class="fa-solid fa-folder-tree mr-2 text-sm"></i> GESTÃO DE CICLOS DE SIMULAÇÃO
                         </div>
+                        {% if status_ciclo_opcoes %}
                         <button type="button" onclick="openModal('modal-ciclo')" class="bg-[#1e5894] hover:bg-[#1a4b7f] text-white px-3 py-1 rounded-sm transition-colors text-xs lowercase flex items-center gap-1 shadow-sm">
                             <i class="fa-solid fa-plus"></i> novo ciclo
                         </button>
+                        {% endif %}
                     </div>
                     <div class="p-5 text-[13px] leading-relaxed text-gray-800 overflow-x-auto">
+                        {% if ciclos %}
                         <table class="w-full text-left border-collapse">
                             <thead>
                                 <tr class="text-[11px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
@@ -77,35 +98,63 @@
                                 </tr>
                             </thead>
                             <tbody>
+                                {% for ciclo in ciclos %}
                                 <tr class="border-b border-gray-100 text-sm hover:bg-blue-50/30 transition-colors">
-                                    <td class="py-3 pr-3 pl-2 font-bold text-tjgo-blue">Simulação NPJ - 2026.1</td>
-                                    <td class="py-3 pr-3">
-                                        <span class="bg-green-100 text-green-800 border border-green-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">Em Andamento</span>
+                                    <td class="py-3 pr-3 pl-2">
+                                        <span class="font-bold
+                                            {% if ciclo.status.nome_status == 'em andamento' %}text-tjgo-blue
+                                            {% elif ciclo.status.nome_status == 'finalizado' %}text-tjgo-navy
+                                            {% else %}text-gray-400{% endif %}">
+                                            {{ ciclo.nome_edicao }}
+                                        </span>
+                                        <span class="block text-[10px] text-gray-400 mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %} - Responsável: {{ ciclo.coordenador.first_name | capfirst }} </span>
                                     </td>
-                                    <td class="py-3 pr-3 font-semibold text-gray-700">12 Grupos</td>
-                                    <td class="py-3 pr-3 flex justify-end gap-3">
-                                        <button type="button" onclick="openViewGrupos('Simulação NPJ - 2026.1')" class="text-tjgo-blue text-[11px] font-bold hover:underline flex items-center gap-1" title="Gerenciar Grupos">
-                                            <i class="fa-solid fa-users"></i> Gerenciar Grupos
-                                        </button>
-                                        <a href="#" class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1" title="Editar Ciclo">
-                                            <i class="fa-solid fa-pen"></i> Editar
-                                        </a>
+                                    <td class="py-3 pr-3">
+                                        {% if ciclo.status.nome_status == 'em andamento' %}
+                                        <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 border border-green-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>{{ ciclo.status }}
+                                        </span>
+                                        {% elif ciclo.status.nome_status == 'finalizado' %}
+                                        <span class="inline-flex items-center gap-1 bg-blue-50 text-[#1a5b9e] border border-blue-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-[#1a5b9e] inline-block"></span>{{ ciclo.status }}
+                                        </span>
+                                        {% elif ciclo.status.nome_status == 'arquivado' %}
+                                        <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 border border-gray-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>{{ ciclo.status }}
+                                        </span>
+                                        {% else %}
+                                        <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 border border-gray-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>{{ ciclo.status }}
+                                        </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="py-3 pr-3 font-semibold text-gray-700">{{ ciclo.grupos.count }} Grupo{{ ciclo.grupos.count|pluralize }}</td>
+                                    <td class="py-3 pr-3 align-middle">
+                                        <div class="flex justify-end items-center gap-3">
+                                            <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
+                                               class="text-tjgo-blue text-[11px] font-bold hover:underline flex items-center gap-1">
+                                                <i class="fa-solid fa-users"></i> Gerenciar Grupos
+                                            </a>
+                                            {% if ciclo.pk in ciclos_editaveis %}
+                                            <a href="{% url 'ciclos:editar_ciclo' ciclo.pk %}"
+                                               class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
+                                                <i class="fa-solid fa-pen"></i> Editar
+                                            </a>
+                                            {% else %}
+                                            <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
+                                               class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
+                                                <i class="fa-solid fa-eye"></i> Visualizar
+                                            </a>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
-                                <tr class="border-b border-gray-100 text-sm hover:bg-blue-50/30 transition-colors">
-                                    <td class="py-3 pr-3 pl-2 font-bold text-gray-600">Simulação NPJ - 2025.2</td>
-                                    <td class="py-3 pr-3">
-                                        <span class="bg-gray-200 text-gray-700 border border-gray-300 text-[10px] font-bold px-2.5 py-1 rounded uppercase">Finalizado</span>
-                                    </td>
-                                    <td class="py-3 pr-3 font-semibold text-gray-700">10 Grupos</td>
-                                    <td class="py-3 pr-3 flex justify-end gap-3">
-                                        <button type="button" onclick="openViewGrupos('Simulação NPJ - 2025.2')" class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
-                                            <i class="fa-solid fa-eye"></i> Visualizar
-                                        </button>
-                                    </td>
-                                </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
+                        {% else %}
+                        <p class="text-sm text-gray-400 italic text-center py-6">Nenhum ciclo de simulação cadastrado.</p>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -194,7 +243,7 @@
                                 <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Grupos de<br>Trabalho</span>
                             </div>
                             <div class="bg-white border border-gray-200 p-3 rounded text-center shadow-sm flex flex-col justify-center items-center">
-                                <span class="block text-3xl font-bold text-gray-700 mb-1">64</span>
+                                <span class="block text-3xl font-bold text-gray-700 mb-1">{{ total_alunos_vinculados }}</span>
                                 <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Alunos<br>Vinculados</span>
                             </div>
                         </div>
@@ -210,10 +259,11 @@
                             <i class="fa-solid fa-file-circle-plus text-2xl text-tjgo-navy mb-2"></i>
                             <span class="text-[11px] font-bold leading-tight text-gray-800">Distribuir<br>Novo Processo</span>
                         </a>
-                        <a href="{% url 'acesso:usuario_lista' %}" class="bg-tjgo-gray-card hover:bg-gray-300 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-gray-300">
+                        <button type="button" onclick="openModal('modal-usuarios'); switchTab('todos')"
+                            class="bg-tjgo-gray-card hover:bg-gray-300 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-gray-300 w-full">
                             <i class="fa-solid fa-users-gear text-2xl text-tjgo-navy mb-2"></i>
                             <span class="text-[11px] font-bold leading-tight text-gray-800">Gerir<br>Usuários</span>
-                        </a>
+                        </button>
                         <a href="#" class="bg-tjgo-gray-card hover:bg-gray-300 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-gray-300">
                             <i class="fa-solid fa-calendar-days text-2xl text-tjgo-navy mb-2"></i>
                             <span class="text-[11px] font-bold leading-tight text-gray-800">Agendar<br>Audiência</span>
@@ -226,208 +276,256 @@
                 </div>
             </aside>
         </div>
-    </div>
 
-    <div id="view-grupos" class="hidden">
-        <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4">
-            <div>
-                <button type="button" onclick="closeViewGrupos()" class="text-gray-500 hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors">
-                    <i class="fa-solid fa-arrow-left"></i> Voltar para Ciclos
-                </button>
-                <h2 class="text-tjgo-navy text-xl font-bold flex items-center gap-2">
-                    <i class="fa-solid fa-users-gear"></i> Grupos: <span id="titulo-ciclo-grupos" class="text-tjgo-blue">Simulação NPJ</span>
-                </h2>
-            </div>
-            <div class="text-right">
-                <span class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1 rounded border border-blue-100 shadow-sm">
-                    <i class="fa-solid fa-graduation-cap"></i> 120 Alunos Matriculados
-                </span>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 lg:grid-cols-[30%_68%] gap-[2%] items-start">
-            <div class="border border-gray-200 bg-white shadow-sm rounded-sm flex flex-col h-[550px]">
-                <div class="bg-tjgo-gray-card p-3 border-b border-gray-200 flex justify-between items-center">
-                    <span class="text-[11px] font-bold uppercase text-gray-700">Equipes Criadas (3)</span>
-                    <button type="button" onclick="openModal('modal-novo-grupo')" class="bg-white hover:bg-gray-50 text-tjgo-blue border border-gray-300 px-2 py-1 rounded text-[10px] font-bold uppercase transition-colors shadow-sm">
-                        + Novo
-                    </button>
-                </div>
-                <div class="overflow-y-auto flex-1 p-2 space-y-2">
-                    <div onclick="selecionarGrupo(this, 'Gabinete do Juiz - 1ª Vara Cível', 'Gabinete do Juiz')" class="grupo-item border border-tjgo-blue bg-blue-50 cursor-pointer p-3 rounded-sm transition-colors relative">
-                        <div class="absolute left-0 top-0 bottom-0 w-1 bg-tjgo-blue rounded-l-sm"></div>
-                        <h3 class="text-xs font-bold text-tjgo-navy mb-1">Gabinete do Juiz - 1ª Vara Cível</h3>
-                        <div class="flex justify-between items-center">
-                            <span class="text-[10px] text-gray-500">Papel: Gabinete do Juiz</span>
-                            <span class="bg-white text-blue-700 border border-blue-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">3 Alunos</span>
-                        </div>
-                    </div>
-                    <div onclick="selecionarGrupo(this, 'Escritório Advocacia Ativo 01', 'Advogados Polo Ativo')" class="grupo-item border border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer p-3 rounded-sm transition-colors">
-                        <h3 class="text-xs font-bold text-gray-700 mb-1">Escritório Advocacia Ativo 01</h3>
-                        <div class="flex justify-between items-center">
-                            <span class="text-[10px] text-gray-500">Papel: Advogados Polo Ativo</span>
-                            <span class="bg-gray-100 text-gray-600 border border-gray-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">0 Alunos</span>
-                        </div>
-                    </div>
-                    <div onclick="selecionarGrupo(this, 'Ministério Público Estadual', 'Ministério Público')" class="grupo-item border border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer p-3 rounded-sm transition-colors">
-                        <h3 class="text-xs font-bold text-gray-700 mb-1">Ministério Público Estadual</h3>
-                        <div class="flex justify-between items-center">
-                            <span class="text-[10px] text-gray-500">Papel: Ministério Público</span>
-                            <span class="bg-gray-100 text-gray-600 border border-gray-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">1 Aluno</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm flex flex-col h-[550px]">
-                <div class="bg-tjgo-navy text-white p-3 flex justify-between items-center">
-                    <div>
-                        <span class="text-[10px] font-bold text-gray-300 uppercase block mb-0.5">Editando Grupo:</span>
-                        <h3 id="nome-grupo-selecionado" class="text-sm font-bold">Gabinete do Juiz - 1ª Vara Cível</h3>
-                    </div>
-                    <div class="text-right">
-                        <span class="text-[10px] font-bold text-gray-300 uppercase block mb-0.5">Papel Processual:</span>
-                        <span id="papel-grupo-selecionado" class="text-xs font-bold text-yellow-400">Gabinete do Juiz</span>
-                    </div>
-                </div>
-                <div class="flex-1 flex overflow-hidden">
-                    <div class="w-1/2 border-r border-gray-200 flex flex-col bg-gray-50/50">
-                        <div class="p-3 border-b border-gray-200">
-                            <span class="text-[11px] font-bold uppercase text-gray-700">Membros da Equipe (3)</span>
-                        </div>
-                        <div class="flex-1 overflow-y-auto p-3 space-y-2">
-                            <div class="bg-white border border-gray-200 p-2 text-xs flex justify-between items-center rounded shadow-sm">
-                                <div>
-                                    <span class="font-bold text-tjgo-navy block">João da Silva</span>
-                                    <span class="text-[10px] text-gray-500">Matrícula: 2026001</span>
-                                </div>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Remover aluno"><i class="fa-solid fa-trash-can text-sm"></i></button>
-                            </div>
-                            <div class="bg-white border border-gray-200 p-2 text-xs flex justify-between items-center rounded shadow-sm">
-                                <div>
-                                    <span class="font-bold text-tjgo-navy block">Maria Oliveira</span>
-                                    <span class="text-[10px] text-gray-500">Matrícula: 2026045</span>
-                                </div>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Remover aluno"><i class="fa-solid fa-trash-can text-sm"></i></button>
-                            </div>
-                            <div class="bg-white border border-gray-200 p-2 text-xs flex justify-between items-center rounded shadow-sm">
-                                <div>
-                                    <span class="font-bold text-tjgo-navy block">Carlos Souza</span>
-                                    <span class="text-[10px] text-gray-500">Matrícula: 2026089</span>
-                                </div>
-                                <button class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Remover aluno"><i class="fa-solid fa-trash-can text-sm"></i></button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="w-1/2 flex flex-col bg-white">
-                        <div class="p-3 border-b border-gray-200 bg-gray-50">
-                            <span class="text-[11px] font-bold uppercase text-gray-700 block mb-2">Adicionar ao Grupo</span>
-                            <div class="relative">
-                                <i class="fa-solid fa-search absolute left-2.5 top-2.5 text-gray-400 text-xs"></i>
-                                <input type="text" id="pesquisa-alunos" onkeyup="filtrarAlunos()" placeholder="Buscar por nome ou matrícula..." class="w-full border border-gray-300 pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                            </div>
-                        </div>
-                        <div class="flex-1 overflow-y-auto p-3 space-y-1" id="lista-alunos-disponiveis">
-                            <p class="text-[10px] text-gray-400 font-bold uppercase mb-2">Alunos sem grupo (117):</p>
-                            <div class="aluno-item border-b border-gray-100 py-2 flex justify-between items-center hover:bg-gray-50 pr-2 transition-colors">
-                                <div>
-                                    <span class="font-bold text-gray-700 text-xs block nome-aluno">Ana Beatriz Machado</span>
-                                    <span class="text-[10px] text-gray-500 mat-aluno">Matrícula: 2026012</span>
-                                </div>
-                                <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold uppercase transition-colors shadow-sm">+ Add</button>
-                            </div>
-                            <div class="aluno-item border-b border-gray-100 py-2 flex justify-between items-center hover:bg-gray-50 pr-2 transition-colors">
-                                <div>
-                                    <span class="font-bold text-gray-700 text-xs block nome-aluno">Bruno Carvalho</span>
-                                    <span class="text-[10px] text-gray-500 mat-aluno">Matrícula: 2026033</span>
-                                </div>
-                                <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold uppercase transition-colors shadow-sm">+ Add</button>
-                            </div>
-                            <div class="aluno-item border-b border-gray-100 py-2 flex justify-between items-center hover:bg-gray-50 pr-2 transition-colors">
-                                <div>
-                                    <span class="font-bold text-gray-700 text-xs block nome-aluno">Daniela Costa</span>
-                                    <span class="text-[10px] text-gray-500 mat-aluno">Matrícula: 2026056</span>
-                                </div>
-                                <button class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded text-[10px] font-bold uppercase transition-colors shadow-sm">+ Add</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
 </main>
 
+<!-- Modal: Gestão de Usuários -->
+{% if usuarios %}
+<div id="modal-usuarios" class="fixed inset-0 z-[60] hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="closeModal('modal-usuarios')"></div>
+    <div class="relative bg-white w-full max-w-4xl shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
+
+        <!-- Cabeçalho -->
+        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center shrink-0">
+            <span><i class="fa-solid fa-users-gear mr-2"></i> Gestão de Usuários</span>
+            <button onclick="closeModal('modal-usuarios')" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Abas -->
+        <div class="border-b border-gray-200 px-5 flex gap-0 shrink-0 bg-white">
+            <button id="tab-btn-pendentes" onclick="switchTab('pendentes')"
+                class="tab-btn px-5 py-3 text-xs font-bold border-b-2 border-tjgo-blue text-tjgo-blue transition-colors -mb-px">
+                <i class="fa-solid fa-user-clock mr-1"></i> Pendentes
+                <span id="badge-pendentes" class="ml-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ usuarios_pendentes_count }}</span>
+            </button>
+            <button id="tab-btn-todos" onclick="switchTab('todos')"
+                class="tab-btn px-5 py-3 text-xs font-bold border-b-2 border-transparent text-gray-500 hover:text-tjgo-blue transition-colors -mb-px">
+                <i class="fa-solid fa-list mr-1"></i> Todos os Usuários
+            </button>
+        </div>
+
+        <!-- Conteúdo rolável -->
+        <div class="overflow-y-auto flex-1">
+
+            <!-- Aba: Pendentes -->
+            <div id="tab-pendentes" class="p-5">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-[10px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
+                            <th class="py-2 pr-3 pl-2">Usuário</th>
+                            <th class="py-2 pr-3">Email</th>
+                            <th class="py-2 pr-3">Data do Cadastro</th>
+                            <th class="py-2 pr-3 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}{% if not u.is_active %}
+                        <tr class="border-b border-gray-100 hover:bg-yellow-50/40 transition-colors">
+                            <td class="py-2.5 pr-3 pl-2">
+                                <span class="font-bold text-tjgo-navy text-xs block">{{ u.username }}</span>
+                                <span class="text-[10px] text-gray-500">{{ u.get_full_name }}</span>
+                            </td>
+                            <td class="py-2.5 pr-3 text-xs text-gray-600">{{ u.email }}</td>
+                            <td class="py-2.5 pr-3 text-xs text-gray-500">{{ u.date_joined|date:"d/m/Y H:i" }}</td>
+                            <td class="py-2.5 pr-3 text-right">
+                                <button type="button"
+                                    class="bg-yellow-500 hover:bg-yellow-600 text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition-colors uppercase"
+                                    onclick="abrirEdicao('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.tipo_perfil_global }}', false)">
+                                    <i class="fa-solid fa-user-check mr-1"></i> Aprovar / Editar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endif %}{% empty %}
+                        <tr><td colspan="4" class="py-8 text-center text-sm text-gray-400 italic">Nenhum cadastro pendente de aprovação.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Aba: Todos -->
+            <div id="tab-todos" class="p-5 hidden">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="text-[10px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
+                            <th class="py-2 pr-3 pl-2">Usuário</th>
+                            <th class="py-2 pr-3">Email</th>
+                            <th class="py-2 pr-3">Tipo de Perfil</th>
+                            <th class="py-2 pr-3">Status</th>
+                            <th class="py-2 pr-3 text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                            <td class="py-2.5 pr-3 pl-2">
+                                <span class="font-bold text-tjgo-navy text-xs block">{{ u.username }}</span>
+                                <span class="text-[10px] text-gray-500">{{ u.get_full_name }}</span>
+                            </td>
+                            <td class="py-2.5 pr-3 text-xs text-gray-600">{{ u.email }}</td>
+                            <td class="py-2.5 pr-3 text-xs text-gray-600">{{ u.get_tipo_perfil_global_display }}</td>
+                            <td class="py-2.5 pr-3">
+                                {% if u.is_active %}
+                                <span class="bg-green-100 text-green-800 border border-green-200 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Ativo</span>
+                                {% else %}
+                                <span class="bg-red-100 text-red-800 border border-red-200 text-[9px] font-bold px-2 py-0.5 rounded uppercase">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td class="py-2.5 pr-3 text-right">
+                                <button type="button"
+                                    class="text-tjgo-blue text-[11px] font-bold hover:underline"
+                                    onclick="abrirEdicao('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.tipo_perfil_global }}', {% if u.is_active %}true{% else %}false{% endif %})">
+                                    <i class="fa-solid fa-pen text-[10px]"></i> editar
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="py-8 text-center text-sm text-gray-400 italic">Nenhum usuário encontrado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Usuário (aninhado, z maior) -->
+<div id="modal-editar-usuario" class="fixed inset-0 z-[70] hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/30" onclick="fecharEdicao()"></div>
+    <div class="relative bg-white w-full max-w-sm shadow-modal rounded-sm overflow-hidden modal-content flex flex-col">
+        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center">
+            <span><i class="fa-solid fa-user-pen mr-2"></i> Editar / Aprovar Usuário</span>
+            <button onclick="fecharEdicao()" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="p-5 text-sm">
+            <div class="mb-4 pb-3 border-b border-gray-100">
+                <span class="font-bold text-tjgo-navy text-sm block mb-0.5" id="edicao-username">-</span>
+                <span class="text-xs text-gray-500" id="edicao-email">-</span>
+            </div>
+            <form method="post" action="{% url 'acesso:usuario_atualizar' %}" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="edicao-user-id">
+                <input type="hidden" name="next" value="{% url 'acesso:painel_administrativo' %}">
+                <div>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Tipo de Perfil</label>
+                    <select id="edicao-tipo" name="tipo_perfil_global"
+                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                        {% for value, label in tipos_opcoes %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 p-3 rounded">
+                    <input id="edicao-ativo" name="is_active" type="checkbox" value="on"
+                        class="h-4 w-4 border-gray-300 text-tjgo-blue focus:ring-tjgo-blue rounded">
+                    <label for="edicao-ativo" class="text-xs font-bold text-gray-700 uppercase cursor-pointer">Ativo (liberar acesso ao sistema)</label>
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button type="submit"
+                        class="flex-1 bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-2 text-xs rounded shadow-sm transition uppercase">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar
+                    </button>
+                    <button type="button" onclick="fecharEdicao()"
+                        class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2 text-xs rounded shadow-sm transition uppercase">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Modal: Novo Ciclo -->
+{% if status_ciclo_opcoes %}
 <div id="modal-ciclo" class="fixed inset-0 z-[60] hidden items-center justify-center">
     <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="closeModal('modal-ciclo')"></div>
     <div class="relative bg-white w-full max-w-lg shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
-        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center">
+        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center shrink-0">
             <span><i class="fa-solid fa-folder-plus mr-2"></i> Novo Ciclo de Simulação</span>
             <button onclick="closeModal('modal-ciclo')" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="p-6 overflow-y-auto text-sm">
-            <form class="space-y-4">
+        <form method="post" action="{% url 'ciclos:criar_ciclo' %}" class="flex flex-col overflow-hidden">
+            {% csrf_token %}
+            <div class="p-6 overflow-y-auto space-y-4 text-sm">
+
+                <!-- Nome da Edição -->
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Nome / Edição do Ciclo *</label>
-                    <input type="text" placeholder="Ex: Simulação NPJ - Turma A" class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">
+                        Nome / Edição do Ciclo *
+                    </label>
+                    <input
+                        type="text"
+                        name="nome_edicao"
+                        placeholder="Ex: Simulação NPJ - Turma A"
+                        maxlength="150"
+                        required
+                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
                 </div>
+
+                <!-- Semestre e Ano -->
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Semestre / Ano *</label>
-                        <input type="text" placeholder="Ex: 2026.1" class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Status *</label>
-                        <select class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                            <option value="Em Andamento" selected>Em Andamento</option>
-                            <option value="Finalizado">Finalizado</option>
-                            <option value="Arquivado">Arquivado</option>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Semestre *</label>
+                        <select
+                            name="semestre"
+                            required
+                            class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                            <option value="">Selecione...</option>
+                            <option value="1">1º Semestre</option>
+                            <option value="2">2º Semestre</option>
                         </select>
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Ano *</label>
+                        <input
+                            type="number"
+                            name="ano"
+                            value="{{ ano_atual }}"
+                            min="2000"
+                            max="{{ ano_atual|add:5 }}"
+                            required
+                            class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                    </div>
                 </div>
-            </form>
-        </div>
-        <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-end gap-2">
-            <button onclick="closeModal('modal-ciclo')" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-4 text-xs rounded shadow-sm transition-colors uppercase">Cancelar</button>
-            <button onclick="closeModal('modal-ciclo')" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-6 text-xs rounded shadow-sm transition-colors uppercase">Salvar Ciclo</button>
-        </div>
-    </div>
-</div>
 
-<!-- Modal: Novo Grupo -->
-<div id="modal-novo-grupo" class="fixed inset-0 z-[60] hidden items-center justify-center">
-    <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="closeModal('modal-novo-grupo')"></div>
-    <div class="relative bg-white w-full max-w-md shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
-        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center">
-            <span><i class="fa-solid fa-layer-group mr-2"></i> Cadastrar Novo Grupo</span>
-            <button onclick="closeModal('modal-novo-grupo')" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="p-6 overflow-y-auto text-sm">
-            <form class="space-y-4">
+                
+
+                <!-- Status -->
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Nome do Grupo *</label>
-                    <input type="text" placeholder="Ex: Escritório Polo Ativo 01" class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Papel na Simulação *</label>
-                    <select class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                        <option value="" disabled selected>Selecione o papel...</option>
-                        <option value="Gabinete do Juiz">Gabinete do Juiz</option>
-                        <option value="Serventia/Cartório">Serventia/Cartório</option>
-                        <option value="Advogados Polo Ativo">Advogados Polo Ativo</option>
-                        <option value="Advogados Polo Passivo">Advogados Polo Passivo</option>
-                        <option value="Ministério Público">Ministério Público</option>
+                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Status *</label>
+                    <select
+                        name="status"
+                        required
+                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                        <option value="">Selecione...</option>
+                        {% for s in status_ciclo_opcoes %}
+                        <option value="{{ s.pk }}">{{ s.nome_status }}</option>
+                        {% endfor %}
                     </select>
                 </div>
-            </form>
-        </div>
-        <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-end gap-2">
-            <button onclick="closeModal('modal-novo-grupo')" class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-4 text-xs rounded shadow-sm transition-colors uppercase">Cancelar</button>
-            <button onclick="closeModal('modal-novo-grupo')" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-6 text-xs rounded shadow-sm transition-colors uppercase">Salvar Grupo</button>
-        </div>
+
+                <!-- Info coordenador (somente leitura) -->
+                <div class="bg-blue-50 border border-blue-100 rounded px-3 py-2 text-xs text-blue-700 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Você será registrado automaticamente como <strong class="ml-1">coordenador</strong> deste ciclo.
+                </div>
+
+            </div>
+            <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-end gap-2 shrink-0">
+                <button type="button" onclick="closeModal('modal-ciclo')"
+                    class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-4 text-xs rounded shadow-sm transition-colors uppercase">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-6 text-xs rounded shadow-sm transition-colors uppercase flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar Ciclo
+                </button>
+            </div>
+        </form>
     </div>
 </div>
+{% endif %}
 
 <script>
     function openModal(modalId) {
@@ -446,41 +544,58 @@
         }, 200);
     }
 
-    function openViewGrupos(nomeCiclo) {
-        document.getElementById('view-ciclos').classList.add('hidden');
-        document.getElementById('view-grupos').classList.remove('hidden');
-        document.getElementById('titulo-ciclo-grupos').innerText = nomeCiclo;
-    }
-
-    function closeViewGrupos() {
-        document.getElementById('view-grupos').classList.add('hidden');
-        document.getElementById('view-ciclos').classList.remove('hidden');
-    }
-
-    function selecionarGrupo(elemento, nomeGrupo, papel) {
-        document.querySelectorAll('.grupo-item').forEach(el => {
-            el.classList.remove('border-tjgo-blue', 'bg-blue-50');
-            el.classList.add('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
-            const indicador = el.querySelector('.bg-tjgo-blue');
-            if (indicador) { indicador.remove(); }
+    function switchTab(tab) {
+        const tabs = ['pendentes', 'todos'];
+        tabs.forEach(t => {
+            document.getElementById('tab-' + t).classList.add('hidden');
+            const btn = document.getElementById('tab-btn-' + t);
+            btn.classList.remove('border-tjgo-blue', 'text-tjgo-blue');
+            btn.classList.add('border-transparent', 'text-gray-500');
         });
-        elemento.classList.remove('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
-        elemento.classList.add('border-tjgo-blue', 'bg-blue-50', 'relative');
-        elemento.insertAdjacentHTML('afterbegin', '<div class="absolute left-0 top-0 bottom-0 w-1 bg-tjgo-blue rounded-l-sm"></div>');
-        document.getElementById('nome-grupo-selecionado').innerText = nomeGrupo;
-        document.getElementById('papel-grupo-selecionado').innerText = papel;
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        const activeBtn = document.getElementById('tab-btn-' + tab);
+        activeBtn.classList.remove('border-transparent', 'text-gray-500');
+        activeBtn.classList.add('border-tjgo-blue', 'text-tjgo-blue');
     }
 
-    function filtrarAlunos() {
-        const input = document.getElementById('pesquisa-alunos');
-        const filter = input.value.toLowerCase();
-        const lista = document.getElementById('lista-alunos-disponiveis');
-        const itens = lista.getElementsByClassName('aluno-item');
-        for (let i = 0; i < itens.length; i++) {
-            const nome = itens[i].querySelector('.nome-aluno').innerText.toLowerCase();
-            const mat = itens[i].querySelector('.mat-aluno').innerText.toLowerCase();
-            itens[i].style.display = (nome.includes(filter) || mat.includes(filter)) ? 'flex' : 'none';
-        }
+    function abrirEdicao(id, username, email, tipo, ativo) {
+        document.getElementById('edicao-user-id').value = id;
+        document.getElementById('edicao-username').textContent = username;
+        document.getElementById('edicao-email').textContent = email;
+        document.getElementById('edicao-tipo').value = tipo;
+        document.getElementById('edicao-ativo').checked = ativo;
+        const modal = document.getElementById('modal-editar-usuario');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => { modal.classList.add('modal-active'); }, 10);
     }
+
+    function fecharEdicao() {
+        const modal = document.getElementById('modal-editar-usuario');
+        modal.classList.remove('modal-active');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+
+    {% if messages %}
+    document.addEventListener('DOMContentLoaded', () => {
+        let abrirCiclo = false;
+        let abrirUsuarios = false;
+        {% for message in messages %}
+            {% if 'ciclo' in message.tags %}abrirCiclo = true;{% endif %}
+            {% if 'usuario' in message.tags %}abrirUsuarios = true;{% endif %}
+        {% endfor %}
+        if (abrirCiclo) {
+            const m = document.getElementById('modal-ciclo');
+            if (m) openModal('modal-ciclo');
+        }
+        if (abrirUsuarios) {
+            const m = document.getElementById('modal-usuarios');
+            if (m) { openModal('modal-usuarios'); switchTab('todos'); }
+        }
+    });
+    {% endif %}
 </script>
 {% endblock %}
