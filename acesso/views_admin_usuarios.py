@@ -130,6 +130,17 @@ def painel_administrativo(request):
             if pode_editar_ciclo(request.user, ciclo)
         )
 
+    context["total_alunos_vinculados"] = (
+        Usuario.objects
+        .filter(
+            is_active=True,
+            tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+            ciclos_participados__status__nome_status__in=["em andamento"],
+        )
+        .distinct()
+        .count()
+    )
+
     return render(request, "acesso/painel_administrativo.html", context)
 
 
