@@ -1,0 +1,309 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Processo Judicial - Cadastro de Processo Comum{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+{% endblock %}
+
+{% block content %}
+    <!-- Navigation Bar -->
+    <nav class="bg-fundo-caixa border-b border-borda sticky top-[45px] z-40">
+        <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
+            <div class="flex items-center gap-5">
+                <a href="{% url 'acesso:painel_administrativo' %}" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
+
+                <!-- Processos com Dropdown -->
+                <div class="relative group">
+                    <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
+
+                    <!-- Dropdown Menu -->
+                    <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
+                        <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
+                        <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Recadastramento Civel</a>
+                        <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Recadastramento Criminal</a>
+                        <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
+
+                        <!-- Certidao com sub-menu -->
+                        <div class="relative group/certidao">
+                            <a href="#" class="flex items-center justify-between px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">
+                                <span>Certidao</span>
+                                <i class="fas fa-caret-right text-texto-secundario ml-4"></i>
+                            </a>
+                            <div class="hidden group-hover/certidao:block absolute left-full top-0 bg-fundo-container border border-borda shadow-md min-w-[180px] rounded">
+                                <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Certidao Civel</a>
+                                <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Certidao Criminal</a>
+                            </div>
+                        </div>
+
+                        <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Classificar Processos</a>
+                        <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Jurisprudencia</a>
+
+                        <!-- Outras Consultas com sub-menu -->
+                        <div class="relative group/outras">
+                            <a href="#" class="flex items-center justify-between px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">
+                                <span>Outras Consultas</span>
+                                <i class="fas fa-caret-right text-texto-secundario ml-4"></i>
+                            </a>
+                            <div class="hidden group-hover/outras:block absolute left-full top-0 bg-fundo-container border border-borda shadow-md min-w-[180px] rounded">
+                                <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Consulta 1</a>
+                                <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Consulta 2</a>
+                            </div>
+                        </div>
+
+                        <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa transition-colors">Redistribuicao em Lote</a>
+                    </div>
+                </div>
+
+                <a href="#" class="hover:underline text-texto-principal font-medium">Audiencias</a>
+                <a href="#" class="hover:underline text-texto-principal font-medium">Cadastros</a>
+                <a href="#" class="hover:underline text-texto-principal font-medium">Cumprimentos</a>
+                <a href="#" class="hover:underline text-texto-principal font-medium">Estatisticas</a>
+                <a href="#" class="hover:underline text-texto-principal font-medium">Seguranca</a>
+                <a href="#" class="hover:underline text-texto-principal font-medium">Certificados</a>
+            </div>
+            <div class="flex items-center gap-1 text-texto-secundario">
+                <i class="fas fa-times text-[11px]"></i>
+                <span>29:53</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-container mx-auto px-10 py-8">
+
+        <!-- Title -->
+        <h2 class="text-azul-primario font-bold text-[20px] mb-6">&raquo; Cadastro de Processo Comum</h2>
+
+        <!-- Mensagens de feedback -->
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+            <div class="p-2.5 text-xs border rounded flex items-center gap-2
+                {% if 'success' in message.tags %} bg-green-50 border-green-200 text-green-800
+                {% elif 'error' in message.tags %} bg-red-50 border-red-200 text-red-800
+                {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
+                <i class="fa-solid {% if 'success' in message.tags %}fa-circle-check{% elif 'error' in message.tags %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <!-- Info do Ciclo Ativo -->
+        <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-6 text-[12px] text-blue-800 flex items-center gap-2">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Ciclo ativo: <strong>{{ ciclo }}</strong></span>
+        </div>
+
+        <!-- Passo 1 Tab -->
+        <div class="flex items-center gap-2.5 mb-4">
+            <i class="far fa-calendar-alt text-azul-primario text-[14px]"></i>
+            <span class="bg-fundo-container border border-borda px-4 py-1.5 text-[12px] font-bold rounded shadow-sm text-texto-principal">Passo 1</span>
+        </div>
+
+        <!-- FORMULARIO DE CADASTRO -->
+        <form method="POST" action="{% url 'processos:cadastrar_processo' %}" id="form-cadastro-processo">
+            {% csrf_token %}
+
+            <fieldset class="p-6 mb-6">
+                <legend class="text-texto-principal text-[14px]">PASSO 1 - DADOS DO PROCESSO</legend>
+
+                <!-- TIPO DO PROCESSO -->
+                <fieldset class="p-5 mb-5">
+                    <legend class="text-texto-principal">TIPO DO PROCESSO</legend>
+                    <div class="flex items-center gap-3">
+                        <label class="w-40 font-bold text-texto-principal">*Tipo</label>
+                        <div class="flex items-center gap-5">
+                            {% for radio in form.tipo_processo %}
+                            <label class="flex items-center gap-1.5 cursor-pointer">
+                                {{ radio.tag }}
+                                <span>{{ radio.choice_label }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% if form.tipo_processo.errors %}
+                    <p class="text-red-600 text-[11px] mt-1 ml-[172px]">{{ form.tipo_processo.errors.0 }}</p>
+                    {% endif %}
+                </fieldset>
+
+                <!-- CARACTERISTICAS -->
+                <fieldset class="p-5 mb-5">
+                    <legend class="text-texto-principal">CARACTERISTICAS</legend>
+
+                    <div class="grid grid-cols-2 gap-5 mb-5">
+                        <!-- Comarca -->
+                        <div>
+                            <label for="id_comarca" class="font-bold text-azul-primario text-[12px]">*Comarca</label>
+                            <select
+                                id="id_comarca"
+                                name="comarca"
+                                required
+                                class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                                <option value="">Selecione a comarca...</option>
+                                {% for comarca in comarcas %}
+                                <option value="{{ comarca.id }}" {% if form.comarca.value|stringformat:"s" == comarca.id|stringformat:"s" %}selected{% endif %}>{{ comarca.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.comarca.errors %}
+                            <p class="text-red-600 text-[11px] mt-1">{{ form.comarca.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Vara / Serventia -->
+                        <div>
+                            <label for="id_vara" class="font-bold text-azul-primario text-[12px]">*Vara / Serventia</label>
+                            <select
+                                id="id_vara"
+                                name="vara"
+                                required
+                                class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                                <option value="">Selecione a vara...</option>
+                                {% for vara in form.vara.field.queryset %}
+                                <option value="{{ vara.id }}" {% if form.vara.value|stringformat:"s" == vara.id|stringformat:"s" %}selected{% endif %}>{{ vara.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if form.vara.errors %}
+                            <p class="text-red-600 text-[11px] mt-1">{{ form.vara.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Classe -->
+                    <div class="mb-2">
+                        <label for="id_classe" class="font-bold text-azul-primario text-[12px]">*Classe Processual</label>
+                        <select
+                            id="id_classe"
+                            name="classe"
+                            required
+                            class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                            <option value="">Selecione a classe...</option>
+                            {% for classe in form.classe.field.queryset %}
+                            <option value="{{ classe.id }}" {% if form.classe.value|stringformat:"s" == classe.id|stringformat:"s" %}selected{% endif %}>{{ classe.nome }}</option>
+                            {% endfor %}
+                        </select>
+                        {% if form.classe.errors %}
+                        <p class="text-red-600 text-[11px] mt-1">{{ form.classe.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </fieldset>
+
+                <!-- ASSUNTO(S) - Placeholder visual -->
+                <fieldset class="p-5 mb-5">
+                    <legend class="text-azul-primario font-bold">*ASSUNTO(S) <i class="fas fa-search text-[11px] text-texto-secundario"></i></legend>
+                    <p class="text-texto-secundario italic text-[13px]">Insira um Assunto.</p>
+                </fieldset>
+
+                <!-- Valor da Causa e Segredo de Justica -->
+                <div class="grid grid-cols-2 gap-5 mb-5">
+                    <div>
+                        <label for="id_valor_causa" class="font-bold text-texto-principal text-[12px]">Valor da Causa (R$)</label>
+                        <input
+                            type="number"
+                            id="id_valor_causa"
+                            name="valor_causa"
+                            value="{{ form.valor_causa.value|default:'0.00' }}"
+                            step="0.01"
+                            min="0"
+                            class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                    </div>
+                    <div class="flex items-end pb-2">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input
+                                type="checkbox"
+                                id="id_segredo_justica"
+                                name="segredo_justica"
+                                {% if form.segredo_justica.value %}checked{% endif %}
+                                class="accent-azul-primario w-4 h-4">
+                            <span class="font-bold text-texto-principal text-[12px]">Segredo de Justiça</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- POLO ATIVO -->
+                <fieldset class="p-5 mb-5">
+                    <legend class="font-bold text-texto-principal">POLO ATIVO*</legend>
+                    <p class="text-texto-secundario italic text-[13px]">
+                        <a href="#" class="text-azul-primario hover:underline">
+                            <i class="fas fa-plus-circle mr-1"></i>Inserir parte promovente
+                        </a>
+                    </p>
+                </fieldset>
+
+                <!-- POLO PASSIVO -->
+                <fieldset class="p-5 mb-5">
+                    <legend class="font-bold text-texto-principal">POLO PASSIVO*</legend>
+                    <p class="text-texto-secundario italic text-[13px]">
+                        <a href="#" class="text-azul-primario hover:underline">
+                            <i class="fas fa-plus-circle mr-1"></i>Inserir parte promovida
+                        </a>
+                    </p>
+                </fieldset>
+
+                <!-- SUBSTITUTO PROCESSUAL -->
+                <fieldset class="p-5 mb-5">
+                    <legend class="font-bold text-texto-principal">SUBSTITUTO PROCESSUAL / OUTRAS PARTES / SUJEITOS</legend>
+                    <p class="text-texto-secundario italic text-[13px]">
+                        <a href="#" class="text-azul-primario hover:underline">
+                            <i class="fas fa-plus-circle mr-1"></i>Inserir Substituto Processual / Outras Partes
+                        </a>
+                    </p>
+                </fieldset>
+
+                <!-- ADVOGADO(S) / PROMOTOR -->
+                <fieldset class="p-5 mb-2">
+                    <legend class="font-bold text-texto-principal">ADVOGADO(S) / PROMOTOR</legend>
+                    <p class="text-texto-secundario italic text-[13px]">
+                        <a href="#" class="text-azul-primario hover:underline">
+                            <i class="fas fa-plus-circle mr-1"></i>Inserir Advogado(s) no processo
+                        </a>
+                    </p>
+                </fieldset>
+            </fieldset>
+
+            <!-- Buttons -->
+            <div class="flex items-center justify-center gap-3 mt-10 mb-10">
+                <button type="submit" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
+                    Cadastrar
+                </button>
+                <button type="reset" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
+                    Limpar
+                </button>
+            </div>
+        </form>
+    </main>
+
+    <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const comarcaSelect = document.getElementById("id_comarca");
+        const varaSelect = document.getElementById("id_vara");
+
+        comarcaSelect.addEventListener("change", function () {
+            const comarcaId = this.value;
+            varaSelect.innerHTML = '<option value="">Carregando...</option>';
+
+            if (!comarcaId) {
+                varaSelect.innerHTML = '<option value="">Selecione a vara...</option>';
+                return;
+            }
+
+            fetch(`/processos/api/varas/${comarcaId}/`)
+                .then(response => response.json())
+                .then(varas => {
+                    varaSelect.innerHTML = '<option value="">Selecione a vara...</option>';
+                    varas.forEach(vara => {
+                        const option = document.createElement("option");
+                        option.value = vara.id;
+                        option.textContent = vara.nome;
+                        varaSelect.appendChild(option);
+                    });
+                })
+                .catch(() => {
+                    varaSelect.innerHTML = '<option value="">Erro ao carregar varas</option>';
+                });
+        });
+    });
+    </script>
+{% endblock %}
