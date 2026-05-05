@@ -126,6 +126,29 @@ class ProcessoJudicial(models.Model):
         return self.numero
 
 
+class GrupoProcesso(models.Model):
+    processo = models.ForeignKey(
+        ProcessoJudicial,
+        on_delete=models.CASCADE,
+        related_name="grupo_processos",
+        db_column="processojudicial_id",
+    )
+    grupo = models.ForeignKey(
+        "ciclos.GrupoTrabalho",
+        on_delete=models.CASCADE,
+        related_name="grupo_processos",
+        db_column="grupotrabalho_id",
+    )
+
+    class Meta:
+        db_table = "grupo_processo"
+        verbose_name = "Grupo do Processo"
+        verbose_name_plural = "Grupos dos Processos"
+
+    def __str__(self):
+        return f"{self.grupo} — {self.processo}"
+
+
 class ParteFicticia(models.Model):
     nome_razao = models.CharField(max_length=150)
     cpf_cnpj = models.CharField(max_length=20, unique=True)

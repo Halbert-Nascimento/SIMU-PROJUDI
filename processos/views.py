@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import datetime
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Q
@@ -10,6 +12,15 @@ from ciclos.models import CicloSimulacao
 
 from .forms import ProcessoJudicialForm
 from .models import Comarca, ProcessoJudicial, StatusProcessoJudicial, VaraServentia
+
+
+def _saudacao():
+    hora = datetime.datetime.now().hour
+    if hora < 12:
+        return "Bom Dia"
+    if hora < 18:
+        return "Boa Tarde"
+    return "Boa Noite"
 
 
 @login_required
@@ -59,6 +70,56 @@ def cadastrar_processo(request):
             "form": form,
             "ciclo": ciclo,
             "comarcas": Comarca.objects.all().order_by("nome"),
+        },
+    )
+
+
+@login_required
+def pagina_aluno(request):
+    usuario = request.user
+
+    grupo = (
+        usuario.grupos_trabalho
+        .filter(ciclo__status__nome_status__iexact="em andamento")
+        .select_related("cargo_simulacao", "ciclo")
+        .first()
+    )
+
+    processos = (
+        ProcessoJudicial.objects.filter(
+            grupo_processos__grupo__membros=usuario,
+            ciclo__status__nome_status__iexact="em andamento",
+        )
+        .select_related("classe", "status_atual", "vara", "vara__comarca")
+        .distinct()
+    )
+
+    serventia = ""
+    cargo = ""
+    if grupo:
+        serventia = grupo.nome
+        cargo = grupo.cargo_simulacao.nome
+
+    total_ativos = processos.filter(
+        status_atual__nome_status__iexact="ativo",
+    ).count()
+    total_arquivados = processos.filter(
+        status_atual__nome_status__iexact="arquivado",
+    ).count()
+    total_processos = processos.count()
+
+    return render(
+        request,
+        "processos/pagina_aluno.html",
+        {
+            "saudacao": _saudacao(),
+            "usuario": usuario,
+            "serventia": serventia,
+            "cargo": cargo,
+            "processos": processos,
+            "total_ativos": total_ativos,
+            "total_arquivados": total_arquivados,
+            "total_processos": total_processos,
         },
     )
 

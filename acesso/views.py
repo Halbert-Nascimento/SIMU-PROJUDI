@@ -40,7 +40,7 @@ def login_view(request):
             return redirect("acesso:painel_administrativo")
 
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO:
-            return redirect("base:cadastro_processo")
+            return redirect("processos:pagina_aluno")
 
         return redirect("base:redirecionamento_teste_sucesso")
 
