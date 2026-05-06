@@ -1,7 +1,13 @@
+from __future__ import annotations
+
 import random
 
 from django.db import models
 
+
+# ---------------------------------------------------------------------------
+# Tabelas de domínio / lookup
+# ---------------------------------------------------------------------------
 
 class Comarca(models.Model):
     nome = models.CharField(max_length=100)
@@ -10,8 +16,9 @@ class Comarca(models.Model):
         db_table = "comarca"
         verbose_name = "Comarca"
         verbose_name_plural = "Comarcas"
+        ordering = ["nome"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.nome
 
 
@@ -27,21 +34,10 @@ class VaraServentia(models.Model):
         db_table = "vara_serventia"
         verbose_name = "Vara / Serventia"
         verbose_name_plural = "Varas / Serventias"
+        ordering = ["comarca__nome", "nome"]
 
-    def __str__(self):
-        return self.nome
-
-
-class TipoProcesso(models.Model):
-    nome = models.CharField(max_length=45)
-
-    class Meta:
-        db_table = "tipo_processo"
-        verbose_name = "Tipo de Processo"
-        verbose_name_plural = "Tipos de Processo"
-
-    def __str__(self):
-        return self.nome
+    def __str__(self) -> str:
+        return f"{self.nome} — {self.comarca}"
 
 
 class ClasseProcessual(models.Model):
@@ -51,8 +47,9 @@ class ClasseProcessual(models.Model):
         db_table = "classe_processual"
         verbose_name = "Classe Processual"
         verbose_name_plural = "Classes Processuais"
+        ordering = ["nome"]
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.nome
 
 
@@ -61,20 +58,87 @@ class StatusProcessoJudicial(models.Model):
 
     class Meta:
         db_table = "status_processo_judicial"
-        verbose_name = "Status do Processo Judicial"
-        verbose_name_plural = "Status dos Processos Judiciais"
+        verbose_name = "Status do Processo"
+        verbose_name_plural = "Status dos Processos"
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.nome_status
 
 
+class TipoProcesso(models.Model):
+    nome = models.CharField(max_length=45)
+
+    class Meta:
+        db_table = "tipo_processo"
+        verbose_name = "Tipo de Processo"
+        verbose_name_plural = "Tipos de Processo"
+        ordering = ["nome"]
+
+    def __str__(self) -> str:
+        return self.nome
+
+
+class StatusAudiencia(models.Model):
+    nome_status_audiencia = models.CharField(max_length=45)
+
+    class Meta:
+        db_table = "status_audiencia"
+        verbose_name = "Status de Audiência"
+        verbose_name_plural = "Status de Audiências"
+
+    def __str__(self) -> str:
+        return self.nome_status_audiencia
+
+
+class TipoAudiencia(models.Model):
+    nome_audiencia = models.CharField(max_length=45)
+
+    class Meta:
+        db_table = "tipo_audiencia"
+        verbose_name = "Tipo de Audiência"
+        verbose_name_plural = "Tipos de Audiência"
+        ordering = ["nome_audiencia"]
+
+    def __str__(self) -> str:
+        return self.nome_audiencia
+
+
+# ---------------------------------------------------------------------------
+# Parte fictícia (litigantes simulados)
+# ---------------------------------------------------------------------------
+
+class ParteFicticia(models.Model):
+    class TipoPessoa(models.TextChoices):
+        FISICA = "Física", "Física"
+        JURIDICA = "Jurídica", "Jurídica"
+
+    nome_razao = models.CharField(max_length=150)
+    cpf_cnpj = models.CharField(max_length=20, unique=True)
+    tipo_pessoa = models.CharField(max_length=8, choices=TipoPessoa.choices)
+
+    class Meta:
+        db_table = "parte_ficticia"
+        verbose_name = "Parte Fictícia"
+        verbose_name_plural = "Partes Fictícias"
+        ordering = ["nome_razao"]
+
+    def __str__(self) -> str:
+        return f"{self.nome_razao} ({self.cpf_cnpj})"
+
+
+# ---------------------------------------------------------------------------
+# Processo judicial
+# ---------------------------------------------------------------------------
+
 class ProcessoJudicial(models.Model):
     numero = models.CharField(max_length=30, unique=True)
+
     ciclo = models.ForeignKey(
         "ciclos.CicloSimulacao",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="processos",
     )
+
     vara = models.ForeignKey(
         VaraServentia,
         on_delete=models.PROTECT,
@@ -90,24 +154,39 @@ class ProcessoJudicial(models.Model):
         on_delete=models.PROTECT,
         related_name="processos",
     )
-    valor_causa = models.DecimalField(
-        max_digits=15,
-        decimal_places=2,
-        default=0,
-        blank=True,
-    )
-    segredo_justica = models.BooleanField(default=False)
+
     status_atual = models.ForeignKey(
         StatusProcessoJudicial,
         on_delete=models.PROTECT,
         related_name="processos",
     )
+
+    valor_causa = models.DecimalField(
+        max_digits=15, decimal_places=2,
+        null=True, blank=True, default="0.00",
+    )
+    segredo_justica = models.BooleanField(default=False)
     data_autuacao = models.DateTimeField(auto_now_add=True)
+
+    grupos = models.ManyToManyField(
+        "ciclos.GrupoTrabalho",
+        related_name="processos",
+        blank=True,
+        db_table="grupo_processo",
+    )
+
+    partes = models.ManyToManyField(
+        ParteFicticia,
+        through="PoloProcessual",
+        related_name="processos",
+        blank=True,
+    )
 
     class Meta:
         db_table = "processo_judicial"
         verbose_name = "Processo Judicial"
         verbose_name_plural = "Processos Judiciais"
+        ordering = ["-data_autuacao"]
 
     @staticmethod
     def gerar_numero_unico():
@@ -122,51 +201,54 @@ class ProcessoJudicial(models.Model):
             if not ProcessoJudicial.objects.filter(numero=numero).exists():
                 return numero
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.numero
 
 
-class GrupoProcesso(models.Model):
+# ---------------------------------------------------------------------------
+# Audiência
+# ---------------------------------------------------------------------------
+
+class Audiencia(models.Model):
     processo = models.ForeignKey(
         ProcessoJudicial,
         on_delete=models.CASCADE,
-        related_name="grupo_processos",
-        db_column="processojudicial_id",
+        related_name="audiencias",
     )
-    grupo = models.ForeignKey(
-        "ciclos.GrupoTrabalho",
-        on_delete=models.CASCADE,
-        related_name="grupo_processos",
-        db_column="grupotrabalho_id",
+    tipo_audiencia = models.ForeignKey(
+        TipoAudiencia,
+        on_delete=models.PROTECT,
+        related_name="audiencias",
     )
+    status_audiencia = models.ForeignKey(
+        StatusAudiencia,
+        on_delete=models.PROTECT,
+        related_name="audiencias",
+    )
+    data_hora = models.DateTimeField()
+    link_sala_virtual = models.CharField(max_length=255, null=True, blank=True)
+    data_hora_realizacao = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        db_table = "grupo_processo"
-        verbose_name = "Grupo do Processo"
-        verbose_name_plural = "Grupos dos Processos"
+        db_table = "audiencia"
+        verbose_name = "Audiência"
+        verbose_name_plural = "Audiências"
+        ordering = ["data_hora"]
 
-    def __str__(self):
-        return f"{self.grupo} — {self.processo}"
+    def __str__(self) -> str:
+        return f"{self.tipo_audiencia} — {self.processo} ({self.data_hora:%d/%m/%Y %H:%M})"
 
 
-class ParteFicticia(models.Model):
-    nome_razao = models.CharField(max_length=150)
-    cpf_cnpj = models.CharField(max_length=20, unique=True)
-    tipo_pessoa = models.CharField(
-        max_length=10,
-        choices=[("Física", "Física"), ("Jurídica", "Jurídica")],
-    )
-
-    class Meta:
-        db_table = "parte_ficticia"
-        verbose_name = "Parte Fictícia"
-        verbose_name_plural = "Partes Fictícias"
-
-    def __str__(self):
-        return self.nome_razao
-
+# ---------------------------------------------------------------------------
+# Polo processual (tabela de ligação com campo extra → through model)
+# ---------------------------------------------------------------------------
 
 class PoloProcessual(models.Model):
+    class TipoPolo(models.TextChoices):
+        ATIVO = "Ativo", "Ativo"
+        PASSIVO = "Passivo", "Passivo"
+        TERCEIRO = "Terceiro", "Terceiro"
+
     processo = models.ForeignKey(
         ProcessoJudicial,
         on_delete=models.CASCADE,
@@ -177,15 +259,18 @@ class PoloProcessual(models.Model):
         on_delete=models.PROTECT,
         related_name="polos",
     )
-    tipo_polo = models.CharField(
-        max_length=10,
-        choices=[("Ativo", "Ativo"), ("Passivo", "Passivo"), ("Terceiro", "Terceiro")],
-    )
+    tipo_polo = models.CharField(max_length=8, choices=TipoPolo.choices)
 
     class Meta:
         db_table = "polo_processual"
         verbose_name = "Polo Processual"
         verbose_name_plural = "Polos Processuais"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["processo", "parte", "tipo_polo"],
+                name="unique_polo_por_processo_e_parte",
+            )
+        ]
 
-    def __str__(self):
-        return f"{self.parte} — {self.tipo_polo}"
+    def __str__(self) -> str:
+        return f"{self.get_tipo_polo_display()} — {self.parte} › {self.processo}"

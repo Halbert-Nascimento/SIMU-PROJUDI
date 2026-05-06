@@ -87,7 +87,7 @@ def pagina_aluno(request):
 
     processos = (
         ProcessoJudicial.objects.filter(
-            grupo_processos__grupo__membros=usuario,
+            grupos__membros=usuario,
             ciclo__status__nome_status__iexact="em andamento",
         )
         .select_related("classe", "status_atual", "vara", "vara__comarca")
