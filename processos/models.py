@@ -162,8 +162,7 @@ class ProcessoJudicial(models.Model):
     )
 
     valor_causa = models.DecimalField(
-        max_digits=15, decimal_places=2,
-        null=True, blank=True, default="0.00",
+        max_digits=15, decimal_places=2, default=0,
     )
     segredo_justica = models.BooleanField(default=False)
     data_autuacao = models.DateTimeField(auto_now_add=True)
