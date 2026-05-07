@@ -19,8 +19,8 @@ from django.urls import path, include
 from django.views.generic import RedirectView
 
 urlpatterns = [
-    # path('', RedirectView.as_view(url='/acesso/', permanent=False)), # redireciona automaticamente a raiz para a página de acesso
-    path('', include('base.urls')),
+    path('', RedirectView.as_view(url='/acesso/', permanent=False)),
+    path('base/', include('base.urls')),
     path('admin/', admin.site.urls),
     path('acesso/', include('acesso.urls')),
     path('ciclos/', include('ciclos.urls')),

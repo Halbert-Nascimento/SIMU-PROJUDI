@@ -49,4 +49,4 @@ class ProcessoJudicialForm(forms.ModelForm):
         self.fields["tipo_processo"].empty_label = None
         self.fields["classe"].empty_label = "Selecione a classe..."
         self.fields["classe"].queryset = self.fields["classe"].queryset.order_by("nome")
-        self.fields["valor_causa"].required = False
+        self.fields["valor_causa"].required = True

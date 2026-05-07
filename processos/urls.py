@@ -1,6 +1,12 @@
 from django.urls import path
 
-from .views import cadastrar_processo, pagina_aluno, varas_por_comarca
+from .views import (
+    buscar_partes,
+    cadastrar_processo,
+    criar_parte,
+    pagina_aluno,
+    varas_por_comarca,
+)
 
 app_name = "processos"
 
@@ -12,4 +18,6 @@ urlpatterns = [
         varas_por_comarca,
         name="varas_por_comarca",
     ),
+    path("api/partes/buscar/", buscar_partes, name="buscar_partes"),
+    path("api/partes/criar/", criar_parte, name="criar_parte"),
 ]
