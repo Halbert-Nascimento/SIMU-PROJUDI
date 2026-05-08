@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .views import (
+    atribuir_grupo_processos,
     buscar_partes,
     cadastrar_processo,
     criar_parte,
@@ -20,4 +21,9 @@ urlpatterns = [
     ),
     path("api/partes/buscar/", buscar_partes, name="buscar_partes"),
     path("api/partes/criar/", criar_parte, name="criar_parte"),
+    path(
+        "api/atribuir-grupo/",
+        atribuir_grupo_processos,
+        name="atribuir_grupo_processos",
+    ),
 ]

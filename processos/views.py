@@ -1,18 +1,23 @@
 from __future__ import annotations
 
 import datetime
+import json
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
 
-from ciclos.models import CicloSimulacao
+from ciclos.models import CicloSimulacao, GrupoTrabalho
 
 from .forms import ProcessoJudicialForm
 from .models import (
+    ClasseProcessual,
     Comarca,
+    DocumentoProcesso,
     ParteFicticia,
     PoloProcessual,
     ProcessoJudicial,
@@ -70,7 +75,9 @@ def cadastrar_processo(request):
             processo.status_atual = StatusProcessoJudicial.objects.first()
             processo.save()
 
-            processo.grupos.set(ciclo.grupos.all())
+            grupo_criador = request.user.grupos_trabalho.filter(ciclo=ciclo).first()
+            if grupo_criador:
+                processo.grupos.add(grupo_criador)
 
             for tipo_polo, ids in (("Ativo", polo_ativo_ids), ("Passivo", polo_passivo_ids)):
                 for parte_id in ids:
@@ -86,6 +93,23 @@ def cadastrar_processo(request):
                         parte_id=int(parte_id),
                         tipo_polo="Terceiro",
                     )
+
+            max_size = 7 * 1024 * 1024
+            arquivos = request.FILES.getlist("documentos")
+            nomes_docs = request.POST.getlist("documento_nomes")
+            for i, arquivo in enumerate(arquivos):
+                if arquivo.size > max_size:
+                    continue
+                nome_doc = (
+                    nomes_docs[i].strip()
+                    if i < len(nomes_docs) and nomes_docs[i].strip()
+                    else arquivo.name
+                )
+                DocumentoProcesso.objects.create(
+                    processo=processo,
+                    nome=nome_doc,
+                    arquivo=arquivo,
+                )
 
             messages.success(
                 request,
@@ -122,28 +146,60 @@ def pagina_aluno(request):
         .first()
     )
 
-    processos = (
-        ProcessoJudicial.objects.filter(
-            grupos__membros=usuario,
-            ciclo__status__nome_status__iexact="em andamento",
-        )
-        .select_related("classe", "status_atual", "vara", "vara__comarca")
-        .distinct()
-    )
-
     serventia = ""
     cargo = ""
+    is_serventia = False
+    grupos_ciclo = []
     if grupo:
         serventia = grupo.nome
         cargo = grupo.cargo_simulacao.nome
+        if grupo.cargo_simulacao.cod == "SC":
+            is_serventia = True
+            grupos_ciclo = list(
+                grupo.ciclo.grupos
+                .select_related("cargo_simulacao")
+                .order_by("nome")
+            )
 
-    total_arquivados = processos.filter(
-        status_atual__nome_status__iexact="arquivado",
-    ).count()
-    total_em_andamento = processos.exclude(
-        status_atual__nome_status__iexact="arquivado",
-    ).count()
+    if is_serventia:
+        processos = (
+            ProcessoJudicial.objects.filter(
+                ciclo=grupo.ciclo,
+            )
+            .select_related("classe", "status_atual", "vara", "vara__comarca")
+            .prefetch_related("polos__parte")
+        )
+    else:
+        processos = (
+            ProcessoJudicial.objects.filter(
+                grupos__membros=usuario,
+                ciclo__status__nome_status__iexact="em andamento",
+            )
+            .select_related("classe", "status_atual", "vara", "vara__comarca")
+            .prefetch_related("polos__parte")
+            .distinct()
+        )
+
+    # Filtros
+    filtro_numero = request.GET.get("numero", "").strip()
+    filtro_classe = request.GET.get("classe", "").strip()
+    filtro_situacao = request.GET.get("situacao", "").strip()
+
+    if filtro_numero:
+        processos = processos.filter(numero__icontains=filtro_numero)
+    if filtro_classe:
+        processos = processos.filter(classe_id=filtro_classe)
+    if filtro_situacao:
+        processos = processos.filter(status_atual_id=filtro_situacao)
+
     total_processos = processos.count()
+
+    # Paginação
+    paginator = Paginator(processos, 10)
+    page_obj = paginator.get_page(request.GET.get("page", 1))
+
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    ip = x_forwarded_for.split(",")[0].strip() if x_forwarded_for else request.META.get("REMOTE_ADDR", "")
 
     return render(
         request,
@@ -153,10 +209,16 @@ def pagina_aluno(request):
             "usuario": usuario,
             "serventia": serventia,
             "cargo": cargo,
-            "processos": processos,
-            "total_em_andamento": total_em_andamento,
-            "total_arquivados": total_arquivados,
+            "page_obj": page_obj,
             "total_processos": total_processos,
+            "ip_acesso": ip,
+            "classes": ClasseProcessual.objects.all().order_by("nome"),
+            "status_opcoes": StatusProcessoJudicial.objects.all(),
+            "filtro_numero": filtro_numero,
+            "filtro_classe": filtro_classe,
+            "filtro_situacao": filtro_situacao,
+            "is_serventia": is_serventia,
+            "grupos_ciclo": grupos_ciclo,
         },
     )
 
@@ -213,3 +275,51 @@ def criar_parte(request):
         "cpf_cnpj": parte.cpf_cnpj,
         "tipo_pessoa": parte.tipo_pessoa,
     })
+
+
+@login_required
+@require_POST
+def atribuir_grupo_processos(request):
+    try:
+        dados = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"erro": "JSON inválido."}, status=400)
+
+    processo_ids = dados.get("processo_ids", [])
+    grupo_id = dados.get("grupo_id")
+
+    if not processo_ids:
+        return JsonResponse({"erro": "Nenhum processo selecionado."}, status=400)
+
+    grupo_usuario = (
+        request.user.grupos_trabalho
+        .filter(
+            ciclo__status__nome_status__iexact="em andamento",
+            cargo_simulacao__cod="SC",
+        )
+        .first()
+    )
+    if not grupo_usuario:
+        return JsonResponse({"erro": "Permissão negada."}, status=403)
+
+    processos = ProcessoJudicial.objects.filter(
+        pk__in=processo_ids,
+        ciclo=grupo_usuario.ciclo,
+    )
+
+    if grupo_id:
+        try:
+            grupo_atribuir = GrupoTrabalho.objects.get(
+                pk=grupo_id,
+                ciclo=grupo_usuario.ciclo,
+            )
+        except GrupoTrabalho.DoesNotExist:
+            return JsonResponse({"erro": "Grupo não encontrado."}, status=404)
+
+        for processo in processos:
+            processo.grupos.add(grupo_atribuir)
+    else:
+        for processo in processos:
+            processo.grupos.clear()
+
+    return JsonResponse({"sucesso": True, "atualizados": processos.count()})
