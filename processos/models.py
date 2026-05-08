@@ -167,6 +167,14 @@ class ProcessoJudicial(models.Model):
     segredo_justica = models.BooleanField(default=False)
     data_autuacao = models.DateTimeField(auto_now_add=True)
 
+    grupo_atribuido = models.ForeignKey(
+        "ciclos.GrupoTrabalho",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="processos_atribuidos",
+    )
+
     grupos = models.ManyToManyField(
         "ciclos.GrupoTrabalho",
         related_name="processos",
@@ -199,6 +207,15 @@ class ProcessoJudicial(models.Model):
             numero = f"{seq:07d}-{dd:02d}.{ano}.{j}.{tr:02d}.{origem:04d}"
             if not ProcessoJudicial.objects.filter(numero=numero).exists():
                 return numero
+
+    @property
+    def partes_resumo(self):
+        polos = self.polos.all()
+        ativos = [p.parte.nome_razao for p in polos if p.tipo_polo == "Ativo"]
+        passivos = [p.parte.nome_razao for p in polos if p.tipo_polo == "Passivo"]
+        ativo_str = ", ".join(ativos) if ativos else "—"
+        passivo_str = ", ".join(passivos) if passivos else "—"
+        return f"{ativo_str} × {passivo_str}"
 
     def __str__(self) -> str:
         return self.numero
@@ -273,3 +290,26 @@ class PoloProcessual(models.Model):
 
     def __str__(self) -> str:
         return f"{self.get_tipo_polo_display()} — {self.parte} › {self.processo}"
+
+
+# ---------------------------------------------------------------------------
+# Documento do processo
+# ---------------------------------------------------------------------------
+
+class DocumentoProcesso(models.Model):
+    processo = models.ForeignKey(
+        ProcessoJudicial,
+        on_delete=models.CASCADE,
+        related_name="documentos",
+    )
+    nome = models.CharField(max_length=255)
+    arquivo = models.FileField(upload_to="documentos_processos/")
+    data_upload = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "documento_processo"
+        verbose_name = "Documento do Processo"
+        verbose_name_plural = "Documentos do Processo"
+
+    def __str__(self) -> str:
+        return f"{self.nome} — {self.processo}"

@@ -5,6 +5,55 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<style>
+    .step-bar { display:flex; align-items:center; gap:0; margin-bottom:24px; }
+    .step-item {
+        display:flex; align-items:center; gap:8px; padding:8px 18px;
+        font-size:12px; font-weight:bold; color:#999; cursor:default;
+        border:1px solid #d1d1d1; background:#f4f4f4; position:relative;
+    }
+    .step-item:first-child { border-radius:4px 0 0 4px; }
+    .step-item:last-child { border-radius:0 4px 4px 0; }
+    .step-item + .step-item { border-left:0; }
+    .step-item .step-num {
+        width:22px; height:22px; border-radius:50%;
+        display:flex; align-items:center; justify-content:center;
+        font-size:11px; font-weight:bold; color:#fff; background:#bbb;
+    }
+    .step-item.active { background:#fff; color:#1a5b9e; border-color:#1a5b9e; }
+    .step-item.active .step-num { background:#1a5b9e; }
+    .step-item.done { background:#e8f5e9; color:#2e7d32; border-color:#a5d6a7; }
+    .step-item.done .step-num { background:#2e7d32; }
+
+    .doc-card {
+        display:flex; align-items:center; gap:12px;
+        background:#f9f9f9; border:1px solid #d1d1d1; border-radius:4px;
+        padding:10px 14px; margin-bottom:8px;
+    }
+    .doc-card .doc-icon {
+        width:36px; height:36px; border-radius:4px; background:#1a5b9e;
+        display:flex; align-items:center; justify-content:center;
+        color:#fff; font-size:16px; flex-shrink:0;
+    }
+    .doc-card .doc-size { font-size:10px; color:#888; }
+
+    .resumo-section {
+        background:#f9f9f9; border:1px solid #d1d1d1;
+        border-radius:4px; padding:14px 18px; margin-bottom:12px;
+    }
+    .resumo-section h4 {
+        font-size:12px; font-weight:bold; color:#1a5b9e;
+        text-transform:uppercase; margin-bottom:8px;
+        border-bottom:1px solid #e0e0e0; padding-bottom:4px;
+    }
+    .resumo-row {
+        display:flex; font-size:12px; padding:3px 0;
+    }
+    .resumo-row .resumo-label {
+        font-weight:bold; color:#555; width:180px; flex-shrink:0;
+    }
+    .resumo-row .resumo-value { color:#333; }
+</style>
 {% endblock %}
 
 {% block content %}
@@ -13,18 +62,13 @@
         <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
             <div class="flex items-center gap-5">
                 <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
-
-                <!-- Processos com Dropdown -->
                 <div class="relative group">
                     <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
-
-                    <!-- Dropdown Menu -->
                     <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
                         <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
                         <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
                     </div>
                 </div>
-
                 <a href="#" class="hover:underline text-texto-principal font-medium">Audiencias</a>
             </div>
             <div class="flex items-center gap-1 text-texto-secundario">
@@ -37,10 +81,8 @@
     <!-- Main Content -->
     <main class="max-w-container mx-auto px-10 py-8">
 
-        <!-- Title -->
         <h2 class="text-azul-primario font-bold text-[20px] mb-6">&raquo; Cadastro de Processo Comum</h2>
 
-        <!-- Mensagens de feedback -->
         {% if messages %}
         <div class="mb-4 space-y-2">
             {% for message in messages %}
@@ -55,291 +97,256 @@
         </div>
         {% endif %}
 
-        <!-- Info do Ciclo Ativo -->
         <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-6 text-[12px] text-blue-800 flex items-center gap-2">
             <i class="fa-solid fa-circle-info"></i>
             <span>Ciclo ativo: <strong>{{ ciclo }}</strong></span>
         </div>
 
-        <!-- Passo 1 Tab -->
-        <div class="flex items-center gap-2.5 mb-4">
-            <i class="far fa-calendar-alt text-azul-primario text-[14px]"></i>
-            <span class="bg-fundo-container border border-borda px-4 py-1.5 text-[12px] font-bold rounded shadow-sm text-texto-principal">Passo 1</span>
+        <!-- Step Indicators -->
+        <div class="step-bar" id="stepBar">
+            <div class="step-item active" data-step="1">
+                <span class="step-num">1</span> Dados do Processo
+            </div>
+            <div class="step-item" data-step="2">
+                <span class="step-num">2</span> Documentos
+            </div>
+            <div class="step-item" data-step="3">
+                <span class="step-num">3</span> Resumo
+            </div>
         </div>
 
-        <!-- FORMULARIO DE CADASTRO -->
-        <form method="POST" action="{% url 'processos:cadastrar_processo' %}" id="form-cadastro-processo">
+        <!-- FORMULARIO -->
+        <form method="POST" action="{% url 'processos:cadastrar_processo' %}" id="form-cadastro-processo" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <fieldset class="p-6 mb-6">
-                <legend class="text-texto-principal text-[14px]">PASSO 1 - DADOS DO PROCESSO</legend>
+            <!-- ==================== PASSO 1 ==================== -->
+            <div id="step1">
+                <fieldset class="p-6 mb-6">
+                    <legend class="text-texto-principal text-[14px]">PASSO 1 - DADOS DO PROCESSO</legend>
 
-                <!-- TIPO DO PROCESSO -->
-                <fieldset class="p-5 mb-5">
-                    <legend class="text-texto-principal">TIPO DO PROCESSO</legend>
-                    <div class="flex items-center gap-3">
-                        <label class="w-40 font-bold text-texto-principal">*Tipo</label>
-                        <div class="flex items-center gap-5">
-                            {% for radio in form.tipo_processo %}
-                            <label class="flex items-center gap-1.5 cursor-pointer">
-                                {{ radio.tag }}
-                                <span>{{ radio.choice_label }}</span>
-                            </label>
-                            {% endfor %}
-                        </div>
-                    </div>
-                    {% if form.tipo_processo.errors %}
-                    <p class="text-red-600 text-[11px] mt-1 ml-[172px]">{{ form.tipo_processo.errors.0 }}</p>
-                    {% endif %}
-                </fieldset>
-
-                <!-- CARACTERISTICAS -->
-                <fieldset class="p-5 mb-5">
-                    <legend class="text-texto-principal">CARACTERISTICAS</legend>
-
-                    <div class="grid grid-cols-2 gap-5 mb-5">
-                        <!-- Comarca -->
-                        <div>
-                            <label for="id_comarca" class="font-bold text-azul-primario text-[12px]">*Comarca</label>
-                            <select
-                                id="id_comarca"
-                                name="comarca"
-                                required
-                                class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
-                                <option value="">Selecione a comarca...</option>
-                                {% for comarca in comarcas %}
-                                <option value="{{ comarca.id }}" {% if form.comarca.value|stringformat:"s" == comarca.id|stringformat:"s" %}selected{% endif %}>{{ comarca.nome }}</option>
+                    <!-- TIPO DO PROCESSO -->
+                    <fieldset class="p-5 mb-5">
+                        <legend class="text-texto-principal">TIPO DO PROCESSO</legend>
+                        <div class="flex items-center gap-3">
+                            <label class="w-40 font-bold text-texto-principal">*Tipo</label>
+                            <div class="flex items-center gap-5">
+                                {% for radio in form.tipo_processo %}
+                                <label class="flex items-center gap-1.5 cursor-pointer">
+                                    {{ radio.tag }}
+                                    <span>{{ radio.choice_label }}</span>
+                                </label>
                                 {% endfor %}
-                            </select>
-                            {% if form.comarca.errors %}
-                            <p class="text-red-600 text-[11px] mt-1">{{ form.comarca.errors.0 }}</p>
-                            {% endif %}
+                            </div>
                         </div>
-
-                        <!-- Vara / Serventia -->
-                        <div>
-                            <label for="id_vara" class="font-bold text-azul-primario text-[12px]">*Vara / Serventia</label>
-                            <select
-                                id="id_vara"
-                                name="vara"
-                                required
-                                class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
-                                <option value="">Selecione a vara...</option>
-                                {% for vara in form.vara.field.queryset %}
-                                <option value="{{ vara.id }}" {% if form.vara.value|stringformat:"s" == vara.id|stringformat:"s" %}selected{% endif %}>{{ vara.nome }}</option>
-                                {% endfor %}
-                            </select>
-                            {% if form.vara.errors %}
-                            <p class="text-red-600 text-[11px] mt-1">{{ form.vara.errors.0 }}</p>
-                            {% endif %}
-                        </div>
-                    </div>
-
-                    <!-- Classe -->
-                    <div class="mb-2">
-                        <label for="id_classe" class="font-bold text-azul-primario text-[12px]">*Classe Processual</label>
-                        <select
-                            id="id_classe"
-                            name="classe"
-                            required
-                            class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
-                            <option value="">Selecione a classe...</option>
-                            {% for classe in form.classe.field.queryset %}
-                            <option value="{{ classe.id }}" {% if form.classe.value|stringformat:"s" == classe.id|stringformat:"s" %}selected{% endif %}>{{ classe.nome }}</option>
-                            {% endfor %}
-                        </select>
-                        {% if form.classe.errors %}
-                        <p class="text-red-600 text-[11px] mt-1">{{ form.classe.errors.0 }}</p>
+                        {% if form.tipo_processo.errors %}
+                        <p class="text-red-600 text-[11px] mt-1 ml-[172px]">{{ form.tipo_processo.errors.0 }}</p>
                         {% endif %}
+                    </fieldset>
+
+                    <!-- CARACTERISTICAS -->
+                    <fieldset class="p-5 mb-5">
+                        <legend class="text-texto-principal">CARACTERISTICAS</legend>
+                        <div class="grid grid-cols-2 gap-5 mb-5">
+                            <div>
+                                <label for="id_comarca" class="font-bold text-azul-primario text-[12px]">*Comarca</label>
+                                <select id="id_comarca" name="comarca" required class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                                    <option value="">Selecione a comarca...</option>
+                                    {% for comarca in comarcas %}
+                                    <option value="{{ comarca.id }}" {% if form.comarca.value|stringformat:"s" == comarca.id|stringformat:"s" %}selected{% endif %}>{{ comarca.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div>
+                                <label for="id_vara" class="font-bold text-azul-primario text-[12px]">*Vara / Serventia</label>
+                                <select id="id_vara" name="vara" required class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                                    <option value="">Selecione a vara...</option>
+                                    {% for vara in form.vara.field.queryset %}
+                                    <option value="{{ vara.id }}" {% if form.vara.value|stringformat:"s" == vara.id|stringformat:"s" %}selected{% endif %}>{{ vara.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="id_classe" class="font-bold text-azul-primario text-[12px]">*Classe Processual</label>
+                            <select id="id_classe" name="classe" required class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                                <option value="">Selecione a classe...</option>
+                                {% for classe in form.classe.field.queryset %}
+                                <option value="{{ classe.id }}" {% if form.classe.value|stringformat:"s" == classe.id|stringformat:"s" %}selected{% endif %}>{{ classe.nome }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </fieldset>
+
+                    <!-- ASSUNTO(S) -->
+                    <fieldset class="p-5 mb-5">
+                        <legend class="text-azul-primario font-bold">*ASSUNTO(S) <i class="fas fa-search text-[11px] text-texto-secundario"></i></legend>
+                        <p class="text-texto-secundario italic text-[13px]">Insira um Assunto.</p>
+                    </fieldset>
+
+                    <!-- Valor da Causa e Segredo de Justica -->
+                    <div class="grid grid-cols-2 gap-5 mb-5">
+                        <div>
+                            <label for="id_valor_causa" class="font-bold text-texto-principal text-[12px]">Valor da Causa (R$)</label>
+                            <input type="number" id="id_valor_causa" name="valor_causa" value="{{ form.valor_causa.value|default:'0.00' }}" step="0.01" min="0" class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                        </div>
+                        <div class="flex items-end pb-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="id_segredo_justica" name="segredo_justica" {% if form.segredo_justica.value %}checked{% endif %} class="accent-azul-primario w-4 h-4">
+                                <span class="font-bold text-texto-principal text-[12px]">Segredo de Justiça</span>
+                            </label>
+                        </div>
                     </div>
+
+                    <!-- POLO ATIVO -->
+                    <fieldset class="p-5 mb-5" data-polo="ativo">
+                        <legend class="font-bold text-texto-principal">POLO ATIVO*</legend>
+                        <div class="mb-3">
+                            <div class="flex gap-2 items-end">
+                                <div class="flex-1 relative">
+                                    <label class="font-bold text-azul-primario text-[12px]">Buscar parte existente</label>
+                                    <input type="text" class="polo-busca w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1" placeholder="Digite o nome ou CPF/CNPJ..." autocomplete="off">
+                                    <div class="polo-resultados hidden absolute left-0 right-0 top-full bg-fundo-container border border-borda shadow-md rounded max-h-[200px] overflow-y-auto z-50"></div>
+                                </div>
+                                <button type="button" class="btn-nova-parte bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm whitespace-nowrap">
+                                    <i class="fas fa-plus mr-1"></i>Cadastrar nova
+                                </button>
+                            </div>
+                        </div>
+                        <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
+                            <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
+                            <div class="grid grid-cols-3 gap-3 mb-3">
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label><input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*CPF / CNPJ</label><input type="text" class="nova-cpf w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label><select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"><option value="">Selecione...</option><option value="Física">Física</option><option value="Jurídica">Jurídica</option></select></div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
+                                <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">Cancelar</button>
+                            </div>
+                            <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
+                        </div>
+                        <div class="polo-lista"></div>
+                    </fieldset>
+
+                    <!-- POLO PASSIVO -->
+                    <fieldset class="p-5 mb-5" data-polo="passivo">
+                        <legend class="font-bold text-texto-principal">POLO PASSIVO*</legend>
+                        <div class="mb-3">
+                            <div class="flex gap-2 items-end">
+                                <div class="flex-1 relative">
+                                    <label class="font-bold text-azul-primario text-[12px]">Buscar parte existente</label>
+                                    <input type="text" class="polo-busca w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1" placeholder="Digite o nome ou CPF/CNPJ..." autocomplete="off">
+                                    <div class="polo-resultados hidden absolute left-0 right-0 top-full bg-fundo-container border border-borda shadow-md rounded max-h-[200px] overflow-y-auto z-50"></div>
+                                </div>
+                                <button type="button" class="btn-nova-parte bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm whitespace-nowrap">
+                                    <i class="fas fa-plus mr-1"></i>Cadastrar nova
+                                </button>
+                            </div>
+                        </div>
+                        <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
+                            <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
+                            <div class="grid grid-cols-3 gap-3 mb-3">
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label><input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*CPF / CNPJ</label><input type="text" class="nova-cpf w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label><select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"><option value="">Selecione...</option><option value="Física">Física</option><option value="Jurídica">Jurídica</option></select></div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
+                                <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">Cancelar</button>
+                            </div>
+                            <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
+                        </div>
+                        <div class="polo-lista"></div>
+                    </fieldset>
+
+                    <!-- SUBSTITUTO PROCESSUAL -->
+                    <fieldset class="p-5 mb-5" data-polo="terceiro">
+                        <legend class="font-bold text-texto-principal">SUBSTITUTO PROCESSUAL / OUTRAS PARTES / SUJEITOS</legend>
+                        <div class="mb-3">
+                            <div class="flex gap-2 items-end">
+                                <div class="flex-1 relative">
+                                    <label class="font-bold text-azul-primario text-[12px]">Buscar parte existente</label>
+                                    <input type="text" class="polo-busca w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1" placeholder="Digite o nome ou CPF/CNPJ..." autocomplete="off">
+                                    <div class="polo-resultados hidden absolute left-0 right-0 top-full bg-fundo-container border border-borda shadow-md rounded max-h-[200px] overflow-y-auto z-50"></div>
+                                </div>
+                                <button type="button" class="btn-nova-parte bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm whitespace-nowrap">
+                                    <i class="fas fa-plus mr-1"></i>Cadastrar nova
+                                </button>
+                            </div>
+                        </div>
+                        <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
+                            <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
+                            <div class="grid grid-cols-3 gap-3 mb-3">
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label><input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*CPF / CNPJ</label><input type="text" class="nova-cpf w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label><select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"><option value="">Selecione...</option><option value="Física">Física</option><option value="Jurídica">Jurídica</option></select></div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
+                                <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">Cancelar</button>
+                            </div>
+                            <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
+                        </div>
+                        <div class="polo-lista"></div>
+                    </fieldset>
                 </fieldset>
 
-                <!-- ASSUNTO(S) - Placeholder visual -->
-                <fieldset class="p-5 mb-5">
-                    <legend class="text-azul-primario font-bold">*ASSUNTO(S) <i class="fas fa-search text-[11px] text-texto-secundario"></i></legend>
-                    <p class="text-texto-secundario italic text-[13px]">Insira um Assunto.</p>
-                </fieldset>
-
-                <!-- Valor da Causa e Segredo de Justica -->
-                <div class="grid grid-cols-2 gap-5 mb-5">
-                    <div>
-                        <label for="id_valor_causa" class="font-bold text-texto-principal text-[12px]">Valor da Causa (R$)</label>
-                        <input
-                            type="number"
-                            id="id_valor_causa"
-                            name="valor_causa"
-                            value="{{ form.valor_causa.value|default:'0.00' }}"
-                            step="0.01"
-                            min="0"
-                            class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
-                    </div>
-                    <div class="flex items-end pb-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input
-                                type="checkbox"
-                                id="id_segredo_justica"
-                                name="segredo_justica"
-                                {% if form.segredo_justica.value %}checked{% endif %}
-                                class="accent-azul-primario w-4 h-4">
-                            <span class="font-bold text-texto-principal text-[12px]">Segredo de Justiça</span>
-                        </label>
-                    </div>
+                <div class="flex items-center justify-center gap-3 mt-10 mb-10">
+                    <button type="button" id="btnStep1Next" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
+                        Próximo <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                    <button type="reset" class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm">
+                        Limpar
+                    </button>
                 </div>
+            </div>
 
-                <!-- POLO ATIVO -->
-                <fieldset class="p-5 mb-5" data-polo="ativo">
-                    <legend class="font-bold text-texto-principal">POLO ATIVO*</legend>
-                    <div class="mb-3">
-                        <div class="flex gap-2 items-end">
-                            <div class="flex-1 relative">
-                                <label class="font-bold text-azul-primario text-[12px]">Buscar parte existente</label>
-                                <input type="text" class="polo-busca w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1" placeholder="Digite o nome ou CPF/CNPJ..." autocomplete="off">
-                                <div class="polo-resultados hidden absolute left-0 right-0 top-full bg-fundo-container border border-borda shadow-md rounded max-h-[200px] overflow-y-auto z-50"></div>
-                            </div>
-                            <button type="button" class="btn-nova-parte bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm whitespace-nowrap">
-                                <i class="fas fa-plus mr-1"></i>Cadastrar nova
-                            </button>
-                        </div>
-                    </div>
-                    <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
-                        <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
-                        <div class="grid grid-cols-3 gap-3 mb-3">
-                            <div>
-                                <label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label>
-                                <input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5">
-                            </div>
-                            <div>
-                                <label class="text-[11px] font-bold text-texto-principal">*CPF / CNPJ</label>
-                                <input type="text" class="nova-cpf w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5">
-                            </div>
-                            <div>
-                                <label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label>
-                                <select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5">
-                                    <option value="">Selecione...</option>
-                                    <option value="Física">Física</option>
-                                    <option value="Jurídica">Jurídica</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors">
-                                <i class="fas fa-check mr-1"></i>Salvar
-                            </button>
-                            <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">
-                                Cancelar
-                            </button>
-                        </div>
-                        <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
-                    </div>
-                    <div class="polo-lista"></div>
+            <!-- ==================== PASSO 2 ==================== -->
+            <div id="step2" style="display:none;">
+                <fieldset class="p-6 mb-6">
+                    <legend class="text-texto-principal text-[14px]">PASSO 2 - DOCUMENTOS</legend>
+
+                    <p class="text-texto-secundario text-[12px] mb-4">
+                        Anexe os documentos do processo. Cada arquivo deve ter no máximo <strong>7 MB</strong>.
+                    </p>
+
+                    <div id="docLista"></div>
+
+                    <button type="button" id="btnAddDoc" class="bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm mt-2">
+                        <i class="fas fa-plus mr-1"></i> Adicionar Documento
+                    </button>
+
+                    <p id="docErro" class="text-red-600 text-[11px] mt-2 hidden"></p>
                 </fieldset>
 
-                <!-- POLO PASSIVO -->
-                <fieldset class="p-5 mb-5" data-polo="passivo">
-                    <legend class="font-bold text-texto-principal">POLO PASSIVO*</legend>
-                    <div class="mb-3">
-                        <div class="flex gap-2 items-end">
-                            <div class="flex-1 relative">
-                                <label class="font-bold text-azul-primario text-[12px]">Buscar parte existente</label>
-                                <input type="text" class="polo-busca w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1" placeholder="Digite o nome ou CPF/CNPJ..." autocomplete="off">
-                                <div class="polo-resultados hidden absolute left-0 right-0 top-full bg-fundo-container border border-borda shadow-md rounded max-h-[200px] overflow-y-auto z-50"></div>
-                            </div>
-                            <button type="button" class="btn-nova-parte bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm whitespace-nowrap">
-                                <i class="fas fa-plus mr-1"></i>Cadastrar nova
-                            </button>
-                        </div>
-                    </div>
-                    <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
-                        <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
-                        <div class="grid grid-cols-3 gap-3 mb-3">
-                            <div>
-                                <label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label>
-                                <input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5">
-                            </div>
-                            <div>
-                                <label class="text-[11px] font-bold text-texto-principal">*CPF / CNPJ</label>
-                                <input type="text" class="nova-cpf w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5">
-                            </div>
-                            <div>
-                                <label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label>
-                                <select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5">
-                                    <option value="">Selecione...</option>
-                                    <option value="Física">Física</option>
-                                    <option value="Jurídica">Jurídica</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors">
-                                <i class="fas fa-check mr-1"></i>Salvar
-                            </button>
-                            <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">
-                                Cancelar
-                            </button>
-                        </div>
-                        <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
-                    </div>
-                    <div class="polo-lista"></div>
+                <div class="flex items-center justify-center gap-3 mt-10 mb-10">
+                    <button type="button" id="btnStep2Prev" class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm">
+                        <i class="fas fa-arrow-left mr-1"></i> Anterior
+                    </button>
+                    <button type="button" id="btnStep2Next" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
+                        Próximo <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==================== PASSO 3 ==================== -->
+            <div id="step3" style="display:none;">
+                <fieldset class="p-6 mb-6">
+                    <legend class="text-texto-principal text-[14px]">PASSO 3 - RESUMO DO PROCESSO</legend>
+                    <p class="text-texto-secundario text-[12px] mb-4">
+                        Confira os dados antes de cadastrar o processo.
+                    </p>
+                    <div id="resumoConteudo"></div>
                 </fieldset>
 
-                <!-- SUBSTITUTO PROCESSUAL -->
-                <fieldset class="p-5 mb-5" data-polo="terceiro">
-                    <legend class="font-bold text-texto-principal">SUBSTITUTO PROCESSUAL / OUTRAS PARTES / SUJEITOS</legend>
-                    <div class="mb-3">
-                        <div class="flex gap-2 items-end">
-                            <div class="flex-1 relative">
-                                <label class="font-bold text-azul-primario text-[12px]">Buscar parte existente</label>
-                                <input type="text" class="polo-busca w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1" placeholder="Digite o nome ou CPF/CNPJ..." autocomplete="off">
-                                <div class="polo-resultados hidden absolute left-0 right-0 top-full bg-fundo-container border border-borda shadow-md rounded max-h-[200px] overflow-y-auto z-50"></div>
-                            </div>
-                            <button type="button" class="btn-nova-parte bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm whitespace-nowrap">
-                                <i class="fas fa-plus mr-1"></i>Cadastrar nova
-                            </button>
-                        </div>
-                    </div>
-                    <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
-                        <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
-                        <div class="grid grid-cols-3 gap-3 mb-3">
-                            <div>
-                                <label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label>
-                                <input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5">
-                            </div>
-                            <div>
-                                <label class="text-[11px] font-bold text-texto-principal">*CPF / CNPJ</label>
-                                <input type="text" class="nova-cpf w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5">
-                            </div>
-                            <div>
-                                <label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label>
-                                <select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5">
-                                    <option value="">Selecione...</option>
-                                    <option value="Física">Física</option>
-                                    <option value="Jurídica">Jurídica</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors">
-                                <i class="fas fa-check mr-1"></i>Salvar
-                            </button>
-                            <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">
-                                Cancelar
-                            </button>
-                        </div>
-                        <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
-                    </div>
-                    <div class="polo-lista"></div>
-                </fieldset>
-
-            </fieldset>
-
-            <!-- Buttons -->
-            <div class="flex items-center justify-center gap-3 mt-10 mb-10">
-                <button type="submit" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
-                    Cadastrar
-                </button>
-                <button type="reset" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
-                    Limpar
-                </button>
+                <div class="flex items-center justify-center gap-3 mt-10 mb-10">
+                    <button type="button" id="btnStep3Prev" class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm">
+                        <i class="fas fa-arrow-left mr-1"></i> Anterior
+                    </button>
+                    <button type="submit" class="bg-green-600 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-green-700 transition-colors shadow-sm">
+                        <i class="fas fa-check mr-1"></i> Cadastrar Processo
+                    </button>
+                </div>
             </div>
         </form>
     </main>
@@ -347,8 +354,188 @@
     <script>
     document.addEventListener("DOMContentLoaded", function () {
         const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+        const MAX_FILE_SIZE = 7 * 1024 * 1024;
 
-        // --- Comarca → Vara ---
+        // ===================== STEP NAVIGATION =====================
+        let currentStep = 1;
+        const steps = [document.getElementById("step1"), document.getElementById("step2"), document.getElementById("step3")];
+        const stepItems = document.querySelectorAll(".step-item");
+
+        function goToStep(n) {
+            steps.forEach(s => s.style.display = "none");
+            steps[n - 1].style.display = "block";
+            stepItems.forEach((item, i) => {
+                item.classList.remove("active", "done");
+                if (i + 1 < n) item.classList.add("done");
+                if (i + 1 === n) item.classList.add("active");
+            });
+            currentStep = n;
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function validateStep1() {
+            const tipo = document.querySelector('input[name="tipo_processo"]:checked');
+            const comarca = document.getElementById("id_comarca").value;
+            const vara = document.getElementById("id_vara").value;
+            const classe = document.getElementById("id_classe").value;
+            const poloAtivo = document.querySelectorAll('input[name="polo_ativo"]');
+            const poloPassivo = document.querySelectorAll('input[name="polo_passivo"]');
+
+            const erros = [];
+            if (!tipo) erros.push("Selecione o tipo do processo.");
+            if (!comarca) erros.push("Selecione a comarca.");
+            if (!vara) erros.push("Selecione a vara.");
+            if (!classe) erros.push("Selecione a classe processual.");
+            if (poloAtivo.length === 0) erros.push("Insira pelo menos uma parte no Polo Ativo.");
+            if (poloPassivo.length === 0) erros.push("Insira pelo menos uma parte no Polo Passivo.");
+
+            if (erros.length > 0) {
+                alert(erros.join("\n"));
+                return false;
+            }
+            return true;
+        }
+
+        document.getElementById("btnStep1Next").addEventListener("click", function () {
+            if (validateStep1()) goToStep(2);
+        });
+        document.getElementById("btnStep2Prev").addEventListener("click", () => goToStep(1));
+        document.getElementById("btnStep2Next").addEventListener("click", function () {
+            buildSummary();
+            goToStep(3);
+        });
+        document.getElementById("btnStep3Prev").addEventListener("click", () => goToStep(2));
+
+        // ===================== DOCUMENTS (STEP 2) =====================
+        const docLista = document.getElementById("docLista");
+        const docErro = document.getElementById("docErro");
+        let docCount = 0;
+
+        document.getElementById("btnAddDoc").addEventListener("click", function () {
+            const idx = docCount++;
+            const card = document.createElement("div");
+            card.className = "doc-card";
+            card.dataset.idx = idx;
+            card.innerHTML = `
+                <div class="doc-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="flex-1">
+                    <div class="mb-1">
+                        <input type="file" name="documentos" class="doc-file-input text-[12px]" accept="*/*">
+                    </div>
+                    <div class="doc-info hidden">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="doc-filename text-[12px] font-bold text-gray-700"></span>
+                            <span class="doc-size"></span>
+                        </div>
+                        <input type="text" name="documento_nomes" placeholder="Nome do documento..." class="doc-nome-input w-full bg-white border border-gray-300 rounded py-1.5 px-2 text-[12px] outline-none focus:border-[#1a5b9e]">
+                    </div>
+                </div>
+                <button type="button" class="doc-remover text-red-500 hover:text-red-700 text-[13px] font-bold px-2" title="Remover">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            const fileInput = card.querySelector(".doc-file-input");
+            const infoDiv = card.querySelector(".doc-info");
+            const filenameSpan = card.querySelector(".doc-filename");
+            const sizeSpan = card.querySelector(".doc-size");
+            const nomeInput = card.querySelector(".doc-nome-input");
+
+            fileInput.addEventListener("change", function () {
+                const file = this.files[0];
+                if (!file) { infoDiv.classList.add("hidden"); return; }
+                if (file.size > MAX_FILE_SIZE) {
+                    docErro.textContent = `O arquivo "${file.name}" excede o limite de 7 MB.`;
+                    docErro.classList.remove("hidden");
+                    this.value = "";
+                    infoDiv.classList.add("hidden");
+                    return;
+                }
+                docErro.classList.add("hidden");
+                filenameSpan.textContent = file.name;
+                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
+                sizeSpan.textContent = sizeMB + " MB";
+                nomeInput.value = file.name.replace(/\.[^/.]+$/, "");
+                infoDiv.classList.remove("hidden");
+                this.style.display = "none";
+            });
+
+            card.querySelector(".doc-remover").addEventListener("click", () => card.remove());
+
+            docLista.appendChild(card);
+        });
+
+        // ===================== SUMMARY (STEP 3) =====================
+        function buildSummary() {
+            const resumo = document.getElementById("resumoConteudo");
+            let html = "";
+
+            // Dados do Processo
+            const tipoRadio = document.querySelector('input[name="tipo_processo"]:checked');
+            const tipo = tipoRadio ? tipoRadio.parentElement.querySelector("span").textContent : "—";
+            const comarca = document.getElementById("id_comarca");
+            const comarcaTxt = comarca.selectedIndex > 0 ? comarca.options[comarca.selectedIndex].text : "—";
+            const vara = document.getElementById("id_vara");
+            const varaTxt = vara.selectedIndex > 0 ? vara.options[vara.selectedIndex].text : "—";
+            const classe = document.getElementById("id_classe");
+            const classeTxt = classe.selectedIndex > 0 ? classe.options[classe.selectedIndex].text : "—";
+            const valor = document.getElementById("id_valor_causa").value || "0.00";
+            const segredo = document.getElementById("id_segredo_justica").checked ? "Sim" : "Não";
+
+            html += `<div class="resumo-section">
+                <h4><i class="fas fa-gavel mr-1"></i> Dados do Processo</h4>
+                <div class="resumo-row"><span class="resumo-label">Tipo:</span><span class="resumo-value">${tipo}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Comarca:</span><span class="resumo-value">${comarcaTxt}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Vara / Serventia:</span><span class="resumo-value">${varaTxt}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Classe Processual:</span><span class="resumo-value">${classeTxt}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Valor da Causa:</span><span class="resumo-value">R$ ${parseFloat(valor).toFixed(2)}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Segredo de Justiça:</span><span class="resumo-value">${segredo}</span></div>
+            </div>`;
+
+            // Partes
+            function getPartes(polo) {
+                const items = document.querySelectorAll(`[data-polo="${polo}"] .polo-lista [data-parte-id]`);
+                if (items.length === 0) return "<em>Nenhuma parte</em>";
+                return [...items].map(el => {
+                    const nome = el.querySelector("strong").textContent;
+                    const extra = el.querySelector(".text-texto-secundario").textContent;
+                    return `${nome} <span style="color:#888">${extra}</span>`;
+                }).join("<br>");
+            }
+
+            html += `<div class="resumo-section">
+                <h4><i class="fas fa-users mr-1"></i> Partes</h4>
+                <div class="resumo-row"><span class="resumo-label">Polo Ativo:</span><span class="resumo-value">${getPartes("ativo")}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Polo Passivo:</span><span class="resumo-value">${getPartes("passivo")}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Terceiros:</span><span class="resumo-value">${getPartes("terceiro")}</span></div>
+            </div>`;
+
+            // Documentos
+            const docs = document.querySelectorAll("#docLista .doc-card");
+            let docsHtml = "";
+            if (docs.length === 0) {
+                docsHtml = '<p class="text-[12px] text-gray-500 italic">Nenhum documento anexado.</p>';
+            } else {
+                docs.forEach(card => {
+                    const nomeDoc = card.querySelector(".doc-nome-input").value || "Sem nome";
+                    const filename = card.querySelector(".doc-filename").textContent || "—";
+                    const size = card.querySelector(".doc-size").textContent || "";
+                    docsHtml += `<div class="flex items-center gap-3 py-1 text-[12px]">
+                        <i class="fas fa-file-alt text-[#1a5b9e]"></i>
+                        <strong>${nomeDoc}</strong>
+                        <span class="text-gray-500">(${filename} — ${size})</span>
+                    </div>`;
+                });
+            }
+            html += `<div class="resumo-section">
+                <h4><i class="fas fa-paperclip mr-1"></i> Documentos</h4>
+                ${docsHtml}
+            </div>`;
+
+            resumo.innerHTML = html;
+        }
+
+        // ===================== COMARCA → VARA =====================
         const comarcaSelect = document.getElementById("id_comarca");
         const varaSelect = document.getElementById("id_vara");
 
@@ -375,9 +562,7 @@
                 });
         });
 
-        // --- Polos ---
-        const poloMap = { ativo: "Ativo", passivo: "Passivo", terceiro: "Terceiro" };
-
+        // ===================== POLOS =====================
         document.querySelectorAll("[data-polo]").forEach(fieldset => {
             const tipo = fieldset.dataset.polo;
             const inputName = `polo_${tipo}`;
@@ -412,8 +597,9 @@
                 lista.appendChild(item);
             }
 
-            // Busca
+            let completando = false;
             busca.addEventListener("input", function () {
+                if (completando) return;
                 clearTimeout(debounce);
                 const q = this.value.trim();
                 if (q.length < 2) { resultados.classList.add("hidden"); return; }
@@ -425,6 +611,15 @@
                             if (partes.length === 0) {
                                 resultados.innerHTML = '<p class="px-3 py-2 text-texto-secundario text-[12px] italic">Nenhuma parte encontrada.</p>';
                             } else {
+                                const primeiro = partes[0];
+                                const nome = primeiro.nome_razao;
+                                const digitado = busca.value;
+                                if (nome.toLowerCase().startsWith(digitado.toLowerCase())) {
+                                    completando = true;
+                                    busca.value = digitado + nome.substring(digitado.length);
+                                    busca.setSelectionRange(digitado.length, busca.value.length);
+                                    completando = false;
+                                }
                                 partes.forEach(p => {
                                     const div = document.createElement("div");
                                     div.className = "px-3 py-2 hover:bg-fundo-caixa cursor-pointer text-[12px] border-b border-borda/30";
@@ -442,11 +637,22 @@
                 }, 300);
             });
 
+            busca.addEventListener("keydown", function (e) {
+                if (e.key === "Backspace" || e.key === "Delete") {
+                    const start = this.selectionStart;
+                    const end = this.selectionEnd;
+                    if (start !== end) {
+                        e.preventDefault();
+                        this.value = this.value.substring(0, start);
+                        resultados.classList.add("hidden");
+                    }
+                }
+            });
+
             document.addEventListener("click", (e) => {
                 if (!fieldset.contains(e.target)) resultados.classList.add("hidden");
             });
 
-            // Cadastrar nova parte
             btnNova.addEventListener("click", () => {
                 formNova.classList.toggle("hidden");
                 formErro.classList.add("hidden");
@@ -462,13 +668,11 @@
                 const nome = fieldset.querySelector(".nova-nome").value.trim();
                 const cpf = fieldset.querySelector(".nova-cpf").value.trim();
                 const tipoPessoa = fieldset.querySelector(".nova-tipo").value;
-
                 if (!nome || !cpf || !tipoPessoa) {
                     formErro.textContent = "Preencha todos os campos.";
                     formErro.classList.remove("hidden");
                     return;
                 }
-
                 fetch("/processos/api/partes/criar/", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
@@ -476,20 +680,13 @@
                 })
                 .then(r => r.json().then(data => ({ ok: r.ok, data })))
                 .then(({ ok, data }) => {
-                    if (!ok) {
-                        formErro.textContent = data.erro;
-                        formErro.classList.remove("hidden");
-                        return;
-                    }
+                    if (!ok) { formErro.textContent = data.erro; formErro.classList.remove("hidden"); return; }
                     adicionarParte(data);
                     formNova.classList.add("hidden");
                     formNova.querySelectorAll("input, select").forEach(el => el.value = "");
                     formErro.classList.add("hidden");
                 })
-                .catch(() => {
-                    formErro.textContent = "Erro ao criar parte.";
-                    formErro.classList.remove("hidden");
-                });
+                .catch(() => { formErro.textContent = "Erro ao criar parte."; formErro.classList.remove("hidden"); });
             });
         });
     });
