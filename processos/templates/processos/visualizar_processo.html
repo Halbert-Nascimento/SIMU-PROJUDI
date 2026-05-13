@@ -1,0 +1,445 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Processo {{ processo.numero }} — Simulador Projudi{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<style>
+    .section-title {
+        color: #1a5b9e; font-size: 12px; font-weight: bold;
+        text-transform: uppercase; padding: 4px 0 4px 8px;
+        border-left: 3px solid #1a5b9e; background: #f4f4f4;
+        margin: 10px 0 0 0;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .autos-title {
+        color: #1a5b9e; font-size: 11px; font-weight: bold;
+        text-transform: uppercase; padding: 2px 0 2px 4px;
+        display: flex; align-items: center; gap: 4px;
+    }
+    .panel {
+        border: 1px solid #cdd9e6; background: #eef4fb;
+        padding: 12px 14px; margin-top: 4px;
+    }
+    .panel-inner {
+        background: #ffffff; border: 1px solid #cdd9e6;
+        padding: 10px 12px; margin-top: 6px;
+    }
+    .field-label { color: #666; font-size: 11px; }
+    .field-value { font-weight: bold; color: #222; font-size: 12px; }
+    .pill {
+        display: inline-block; padding: 1px 7px;
+        font-size: 10px; font-weight: bold;
+        border-radius: 10px; text-transform: uppercase;
+    }
+    .pill.ok { background: #dff5e1; color: #2e7d32; border: 1px solid #bee0c2; }
+    .pill.gray { background: #eee; color: #555; border: 1px solid #ccc; }
+    .pill.warn { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
+    .btn-blue {
+        background: linear-gradient(to bottom, #2e6cab, #1c4b80);
+        color: #fff; padding: 5px 14px;
+        font-size: 11px; font-weight: bold;
+        border: 1px solid #154170; border-radius: 2px; cursor: pointer;
+        text-transform: uppercase;
+    }
+    .btn-blue:hover { background: linear-gradient(to bottom, #3679b8, #21568f); }
+    .tbl-mov { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .tbl-mov thead th {
+        background: #dcdcdc; text-align: left; font-weight: bold; color: #333;
+        padding: 5px 8px; border: 1px solid #c0c0c0;
+    }
+    .tbl-mov tbody td {
+        padding: 5px 8px; border: 1px solid #d8d8d8;
+        background: #fff; vertical-align: top; line-height: 1.45;
+    }
+    .tbl-mov tbody tr:nth-child(even) td { background: #f3f3f3; }
+    .tbl-mov tbody tr:hover td { background: #fffbe5; }
+    .tbl-mov .num-col { width: 32px; color: #666; text-align: right; padding-right: 6px; }
+    .tbl-mov .data-col { width: 140px; white-space: nowrap; }
+    .tbl-mov .user-col { width: 180px; }
+    .tbl-mov .arq-col { width: 70px; text-align: center; }
+    .tbl-mov .sub { color: #1a5b9e; font-weight: bold; }
+    .tbl-mov .sub-evt { color: #444; font-style: italic; }
+    .tbl-mov a { color: #1a5b9e; }
+    .tbl-mov a:hover { text-decoration: underline; }
+    .grupo-badge {
+        display: inline-flex; align-items: center; gap: 4px;
+        background: #e9f1fa; border: 1px solid #b8d4ef;
+        padding: 2px 8px; border-radius: 3px;
+        font-size: 11px; font-weight: bold; color: #1a5b9e;
+    }
+    .autos-actions {
+        display: flex; align-items: center; gap: 6px;
+    }
+    .autos-actions .ai {
+        width: 26px; height: 26px; display: inline-flex;
+        align-items: center; justify-content: center;
+        cursor: default; font-size: 18px;
+    }
+    .info-actions { display: flex; align-items: center; gap: 8px; }
+    .info-actions i { font-size: 16px; color: #1a5b9e; cursor: default; }
+    .info-actions .red { color: #c0392b; }
+    .polo-actions { display: flex; align-items: center; gap: 10px; }
+    .polo-actions .pa { color: #1a5b9e; font-size: 14px; cursor: default; font-weight: bold; }
+    .icon-action {
+        color: #1a5b9e; cursor: default; font-size: 14px; margin: 0 2px;
+    }
+    .tabs {
+        display: flex; gap: 0; background: #e8e8e8;
+        border: 1px solid #c8c8c8; border-bottom: 0;
+        padding: 4px 4px 0 4px;
+    }
+    .tabs .tab {
+        padding: 6px 14px; font-size: 11px; font-weight: bold;
+        color: #1a5b9e; cursor: default;
+        border: 1px solid transparent;
+        border-radius: 3px 3px 0 0;
+        background: transparent;
+    }
+    .tabs .tab.active {
+        background: #fff; color: #222;
+        border-color: #c8c8c8;
+        border-bottom: 1px solid #fff;
+        margin-bottom: -1px;
+    }
+    .filters {
+        background: #e8e8e8; border: 1px solid #c8c8c8;
+        padding: 8px 10px;
+        display: flex; flex-wrap: wrap; gap: 6px 18px;
+        align-items: center; font-size: 11px;
+    }
+    .filters label { display: flex; align-items: center; gap: 5px; color: #333; }
+    .filters input[type="radio"] { accent-color: #1a5b9e; }
+    .tbl-mov .opc-col { width: 70px; text-align: center; }
+    .lock-area { display: flex; align-items: center; gap: 5px; }
+    .lock-area input { accent-color: #1a5b9e; }
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+        content: attr(data-tip);
+        position: absolute; bottom: calc(100% + 6px); left: 50%;
+        transform: translateX(-50%);
+        background: #222; color: #fff; padding: 4px 8px;
+        font-size: 10px; white-space: nowrap; border-radius: 3px;
+        z-index: 50; font-weight: normal;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navigation Bar -->
+<nav class="bg-fundo-caixa border-b border-borda sticky top-[45px] z-40">
+    <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
+        <div class="flex items-center gap-5">
+            <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
+            <div class="relative group">
+                <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
+                <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
+                    <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
+                </div>
+            </div>
+            <a href="#" class="hover:underline text-texto-principal font-medium">Audiencias</a>
+        </div>
+        <div class="flex items-center gap-1 text-texto-secundario">
+            <i class="fas fa-times text-[11px]"></i>
+            <span>29:53</span>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-container mx-auto px-6 py-5">
+
+    <!-- AUTOS -->
+    <div class="flex items-start justify-between">
+        <div class="flex-1">
+            <div class="autos-title"><i class="fa-solid fa-folder-open"></i> AUTOS</div>
+            <div class="ml-4 mt-1 text-[12px] leading-tight">
+                <div>
+                    <span class="text-gray-700">Número</span>
+                    <span class="font-bold ml-1 font-mono">{{ processo.numero }}</span>
+                    <i class="fa-regular fa-clipboard text-[#1a5b9e] ml-2 cursor-pointer" data-tip="Copiar"></i>
+                    <i class="fa-regular fa-copy text-[#1a5b9e] ml-1 cursor-pointer" data-tip="Duplicar"></i>
+                </div>
+                <div class="mt-0.5">
+                    <span class="text-gray-700">Área</span>
+                    <span class="font-bold">{{ processo.tipo_processo.nome }}</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-2 mt-3 ml-4">
+                <a href="{% url 'processos:pagina_aluno' %}" class="btn-blue">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Voltar
+                </a>
+                <button type="button" class="btn-blue" disabled>Opções Processo</button>
+                <button type="button" class="btn-blue" disabled>Outras</button>
+            </div>
+        </div>
+        <div class="mt-2 flex flex-col items-end gap-2">
+            {% if processo.status_atual.nome_status == "Arquivado" %}
+                <span class="pill gray">{{ processo.status_atual.nome_status }}</span>
+            {% elif processo.status_atual.nome_status == "Suspenso" %}
+                <span class="pill warn">{{ processo.status_atual.nome_status }}</span>
+            {% else %}
+                <span class="pill ok">{{ processo.status_atual.nome_status }}</span>
+            {% endif %}
+            <div class="autos-actions">
+                <span class="ai" data-tip="Relatório do Processo"><i class="fa-solid fa-folder-open" style="color:#d97706;"></i></span>
+                <span class="ai" data-tip="Pin Vermelho"><i class="fa-solid fa-thumbtack" style="color:#c0392b;"></i></span>
+                <span class="ai" data-tip="Pin Azul"><i class="fa-solid fa-thumbtack" style="color:#1a5b9e;"></i></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- DADOS DO PROCESSO -->
+    <div class="section-title"><i class="fa-solid fa-file-lines"></i> DADOS DO PROCESSO</div>
+
+    <div class="panel">
+        <!-- POLO ATIVO -->
+        <div class="autos-title"><i class="fa-solid fa-user"></i> POLO ATIVO | REQUERENTE</div>
+        {% for polo in polos_ativo %}
+        <div class="panel-inner {% if not forloop.first %}mt-2{% endif %}">
+            <div class="grid grid-cols-12 gap-3 items-start">
+                <div class="col-span-4">
+                    <div class="field-label">Nome / Razão Social</div>
+                    <div class="field-value">{{ polo.parte.nome_razao|upper }}</div>
+                </div>
+                <div class="col-span-3">
+                    <div class="field-label">CPF / CNPJ</div>
+                    <div class="field-value">{{ polo.parte.cpf_cnpj }}</div>
+                </div>
+                <div class="col-span-3">
+                    <div class="field-label">Tipo de Pessoa</div>
+                    <div class="field-value">{{ polo.parte.tipo_pessoa }}</div>
+                </div>
+                <div class="col-span-2 flex justify-end pt-1">
+                    <div class="polo-actions">
+                        <i class="fa-solid fa-lock-open pa" data-tip="Acesso Liberado"></i>
+                        <i class="fa-solid fa-envelope pa" data-tip="Mensagem"></i>
+                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="panel-inner">
+            <div class="text-gray-400 italic text-[11px]">Nenhuma parte cadastrada no polo ativo.</div>
+        </div>
+        {% endfor %}
+
+        <!-- POLO PASSIVO -->
+        <div class="autos-title mt-3"><i class="fa-solid fa-user"></i> POLO PASSIVO | REQUERIDO</div>
+        {% for polo in polos_passivo %}
+        <div class="panel-inner {% if not forloop.first %}mt-2{% endif %}">
+            <div class="grid grid-cols-12 gap-3 items-start">
+                <div class="col-span-4">
+                    <div class="field-label">Nome / Razão Social</div>
+                    <div class="field-value">{{ polo.parte.nome_razao|upper }}</div>
+                </div>
+                <div class="col-span-3">
+                    <div class="field-label">CPF / CNPJ</div>
+                    <div class="field-value">{{ polo.parte.cpf_cnpj }}</div>
+                </div>
+                <div class="col-span-3">
+                    <div class="field-label">Tipo de Pessoa</div>
+                    <div class="field-value">{{ polo.parte.tipo_pessoa }}</div>
+                </div>
+                <div class="col-span-2 flex justify-end pt-1">
+                    <div class="polo-actions">
+                        <i class="fa-solid fa-lock pa" data-tip="Acesso Bloqueado"></i>
+                        <i class="fa-solid fa-envelope pa" data-tip="Mensagem"></i>
+                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span>
+                        <i class="fa-solid fa-table-cells pa" data-tip="Detalhes"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="panel-inner">
+            <div class="text-gray-400 italic text-[11px]">Nenhuma parte cadastrada no polo passivo.</div>
+        </div>
+        {% endfor %}
+
+        <!-- POLO TERCEIRO -->
+        {% if polos_terceiro %}
+        <div class="autos-title mt-3"><i class="fa-solid fa-user"></i> TERCEIROS INTERESSADOS</div>
+        {% for polo in polos_terceiro %}
+        <div class="panel-inner {% if not forloop.first %}mt-2{% endif %}">
+            <div class="grid grid-cols-12 gap-3 items-start">
+                <div class="col-span-4">
+                    <div class="field-label">Nome / Razão Social</div>
+                    <div class="field-value">{{ polo.parte.nome_razao|upper }}</div>
+                </div>
+                <div class="col-span-3">
+                    <div class="field-label">CPF / CNPJ</div>
+                    <div class="field-value">{{ polo.parte.cpf_cnpj }}</div>
+                </div>
+                <div class="col-span-3">
+                    <div class="field-label">Tipo de Pessoa</div>
+                    <div class="field-value">{{ polo.parte.tipo_pessoa }}</div>
+                </div>
+                <div class="col-span-2 flex justify-end pt-1">
+                    <div class="polo-actions">
+                        <i class="fa-solid fa-lock-open pa" data-tip="Acesso Liberado"></i>
+                        <i class="fa-solid fa-envelope pa" data-tip="Mensagem"></i>
+                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+        <!-- OUTRAS INFORMAÇÕES -->
+        <div class="section-title" style="margin-top: 14px; background: #eef4fb;">
+            <i class="fa-solid fa-circle-info"></i> OUTRAS INFORMAÇÕES
+        </div>
+        <div class="panel-inner mt-0">
+            <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-[12px]">
+                <div class="flex">
+                    <div class="w-40 text-gray-700">Serventia</div>
+                    <div class="font-bold flex-1">
+                        {% if grupo_serventia %}{{ grupo_serventia.nome }}{% else %}—{% endif %}
+                    </div>
+                </div>
+                <div class="flex">
+                    <div class="w-40 text-gray-700">Vara / Comarca</div>
+                    <div class="font-bold flex-1">{{ processo.vara.nome }} — {{ processo.vara.comarca.nome }}</div>
+                </div>
+
+                <div class="flex col-span-2">
+                    <div class="w-40 text-gray-700">Classe</div>
+                    <div class="font-bold flex-1">{{ processo.classe.nome }}</div>
+                </div>
+
+                <div class="flex">
+                    <div class="w-40 text-gray-700">Tipo de Processo</div>
+                    <div class="font-bold">{{ processo.tipo_processo.nome }}</div>
+                </div>
+                <div class="flex">
+                    <div class="w-40 text-gray-700">Valor da Causa</div>
+                    <div class="font-bold">R$ {{ processo.valor_causa|floatformat:2 }}</div>
+                </div>
+
+                <div class="flex">
+                    <div class="w-40 text-gray-700">Dt. Autuação</div>
+                    <div class="font-bold">{{ processo.data_autuacao|date:"d/m/Y H:i:s" }}</div>
+                </div>
+                <div class="flex">
+                    <div class="w-40 text-gray-700">Segredo de Justiça</div>
+                    <div class="font-bold">{% if processo.segredo_justica %}Sim{% else %}Não{% endif %}</div>
+                </div>
+
+                <div class="flex">
+                    <div class="w-40 text-gray-700">Status</div>
+                    <div class="font-bold">{{ processo.status_atual.nome_status }}</div>
+                </div>
+                <div class="flex">
+                    <div class="w-40 text-gray-700">Ciclo</div>
+                    <div class="font-bold">{{ processo.ciclo }}</div>
+                </div>
+
+                {% if grupos_vinculados %}
+                <div class="flex col-span-2">
+                    <div class="w-40 text-gray-700">Grupos Vinculados</div>
+                    <div class="flex-1 flex flex-wrap gap-2">
+                        {% for g in grupos_vinculados %}
+                        <span class="grupo-badge">
+                            <i class="fa-solid fa-users text-[10px]"></i>
+                            {{ g.nome }} ({{ g.cargo_simulacao.nome }})
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="flex justify-end gap-3 mt-3 pt-2 border-t border-gray-200 info-actions">
+                <i class="fa-regular fa-calendar" data-tip="Agenda do processo"></i>
+                <i class="fa-solid fa-circle-exclamation red" data-tip="Pendências"></i>
+                <i class="fa-solid fa-user-group" data-tip="Partes envolvidas"></i>
+                <i class="fa-solid fa-file-pdf red" data-tip="Exportar PDF"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- EVENTOS DO PROCESSO -->
+    <div class="mt-5">
+        <div class="tabs">
+            <div class="tab active">Eventos do Processo</div>
+            <div class="tab">Índice Processo</div>
+            <div class="tab">Navegação de Arquivo</div>
+        </div>
+
+        <div class="filters">
+            <label><input type="radio" name="evf" checked disabled> TODOS</label>
+            <label><input type="radio" name="evf" disabled> Cadastro do Processo</label>
+            <label><input type="radio" name="evf" disabled> Juntada de Documentos</label>
+            <label><input type="radio" name="evf" disabled> Certidão Expedida</label>
+            <label><input type="radio" name="evf" disabled> Processo Distribuído</label>
+            <label><input type="radio" name="evf" disabled> Petição Enviada</label>
+            <div class="lock-area ml-auto">
+                <input type="checkbox" id="bloqChk" disabled>
+                <label for="bloqChk" style="font-weight:normal;">Bloquear/Desbloquear</label>
+            </div>
+        </div>
+
+        <table class="tbl-mov">
+            <thead>
+                <tr>
+                    <th class="num-col">Nº</th>
+                    <th>Movimentação</th>
+                    <th class="data-col">Data</th>
+                    <th class="user-col">Usuário</th>
+                    <th class="arq-col">Arquivo(s)</th>
+                    <th class="opc-col">Opções</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for mov in movimentacoes %}
+                <tr>
+                    <td class="num-col">{{ forloop.revcounter }}</td>
+                    <td>
+                        <div class="sub">{{ mov.nome }}</div>
+                        <div class="sub-evt mt-0.5">{{ mov.descricao }}</div>
+                    </td>
+                    <td class="data-col">{{ mov.data|date:"d/m/Y H:i:s" }}</td>
+                    <td class="user-col">{{ mov.autor_nome|upper }}</td>
+                    <td class="arq-col">
+                        {% if mov.documentos %}
+                            {% for doc in mov.documentos %}
+                            <a href="{{ doc.caminho_arquivo.url }}" target="_blank" title="{{ doc.titulo_arquivo }}">
+                                <i class="fa-solid fa-angles-down icon-action" data-tip="Expandir"></i>
+                            </a>
+                            {% endfor %}
+                        {% else %}
+                            <span class="text-gray-400">—</span>
+                        {% endif %}
+                    </td>
+                    <td class="opc-col">
+                        <i class="fa-solid fa-pen icon-action" data-tip="Editar"></i>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center italic py-4" style="color: #666;">
+                        Nenhuma movimentação registrada.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if movimentacoes %}
+        <div class="flex items-center justify-between mt-3 text-[11px] text-gray-600">
+            <div>Exibindo <strong>{{ movimentacoes|length }}</strong> movimentaç{{ movimentacoes|length|pluralize:"ão,ões" }}</div>
+            <div class="flex items-center gap-1">
+                <button class="px-2 py-0.5 border border-gray-300 bg-white" disabled><i class="fa-solid fa-angle-left"></i></button>
+                <span class="px-2 py-0.5 bg-[#1a5b9e] text-white font-bold rounded-sm">1</span>
+                <button class="px-2 py-0.5 border border-gray-300 bg-white" disabled><i class="fa-solid fa-angle-right"></i></button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</main>
+{% endblock %}
