@@ -268,7 +268,7 @@
                 {% for processo in page_obj %}
                 <tr data-id="{{ processo.id }}">
                     {% if is_serventia %}<td><input type="checkbox" class="rowChk" value="{{ processo.id }}"></td>{% endif %}
-                    <td class="font-mono text-[11px]"><a href="#">{{ processo.numero }}</a></td>
+                    <td class="font-mono text-[11px]"><a href="{% url 'processos:visualizar_processo' processo.id %}">{{ processo.numero }}</a></td>
                     <td class="text-[11px]">{{ processo.partes_resumo }}</td>
                     <td class="text-[11px]">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
                     <td>
@@ -377,7 +377,7 @@
                 <div id="modalProcClass" class="text-gray-600">—</div>
             </div>
 
-            <div class="text-[11px] font-bold uppercase text-gray-600 mb-2">Selecione o grupo responsável</div>
+            <div class="text-[11px] font-bold uppercase text-gray-600 mb-2">Selecione os grupos responsáveis</div>
 
             <div class="space-y-2 max-h-[280px] overflow-y-auto pr-1" id="grpList">
                 {% for g in grupos_ciclo %}
@@ -423,7 +423,8 @@ document.addEventListener("DOMContentLoaded", function () {
     const selAllChk = document.getElementById("selAll");
     const selCountEl = document.getElementById("selCount");
     let modalProcessos = [];
-    let selectedGrupoId = null;
+    let selectedGrupoIds = new Set();
+    let removeMode = false;
 
     // --- Checkbox select all ---
     selAllChk.addEventListener("change", function () {
@@ -449,7 +450,8 @@ document.addEventListener("DOMContentLoaded", function () {
         modalProcessos = processoIds;
         document.getElementById("modalProcNum").textContent = titulo;
         document.getElementById("modalProcClass").textContent = subtitulo;
-        selectedGrupoId = null;
+        selectedGrupoIds.clear();
+        removeMode = false;
         renderGrpSelection();
         modal.classList.add("open");
     }
@@ -461,7 +463,12 @@ document.addEventListener("DOMContentLoaded", function () {
     function renderGrpSelection() {
         document.querySelectorAll("#grpList .grp-card").forEach(card => {
             const id = card.dataset.grupoId;
-            const isSelected = (selectedGrupoId === id) || (selectedGrupoId === null && id === "");
+            let isSelected;
+            if (id === "") {
+                isSelected = removeMode;
+            } else {
+                isSelected = selectedGrupoIds.has(id);
+            }
             card.classList.toggle("selected", isSelected);
             const icon = card.querySelector(".check");
             icon.className = `fa-solid ${isSelected ? "fa-circle-check" : "fa-circle"} check`;
@@ -470,7 +477,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.querySelectorAll("#grpList .grp-card").forEach(card => {
         card.addEventListener("click", function () {
-            selectedGrupoId = this.dataset.grupoId;
+            const id = this.dataset.grupoId;
+            if (id === "") {
+                removeMode = !removeMode;
+                if (removeMode) selectedGrupoIds.clear();
+            } else {
+                removeMode = false;
+                if (selectedGrupoIds.has(id)) {
+                    selectedGrupoIds.delete(id);
+                } else {
+                    selectedGrupoIds.add(id);
+                }
+            }
             renderGrpSelection();
         });
     });
@@ -499,7 +517,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Confirmar atribuição
     document.getElementById("modalConfirm").addEventListener("click", function () {
-        const grupoId = selectedGrupoId || "";
+        const grupoIds = removeMode ? [] : [...selectedGrupoIds].map(Number);
+        if (!removeMode && grupoIds.length === 0) {
+            showToast("Selecione ao menos um grupo.", true);
+            return;
+        }
         fetch("{% url 'processos:atribuir_grupo_processos' %}", {
             method: "POST",
             headers: {
@@ -508,7 +530,7 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             body: JSON.stringify({
                 processo_ids: modalProcessos,
-                grupo_id: grupoId || null,
+                grupo_ids: grupoIds,
             }),
         })
         .then(r => r.json().then(data => ({ ok: r.ok, data })))
@@ -518,9 +540,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
             showToast(
-                modalProcessos.length === 1
-                    ? "Grupo atribuído com sucesso!"
-                    : `Atribuição em lote concluída! (${data.atualizados} processos)`
+                removeMode
+                    ? "Atribuições removidas com sucesso!"
+                    : modalProcessos.length === 1
+                        ? `${grupoIds.length} grupo(s) atribuído(s) com sucesso!`
+                        : `Atribuição em lote concluída! (${data.atualizados} processos)`
             );
             closeModal();
             selAllChk.checked = false;

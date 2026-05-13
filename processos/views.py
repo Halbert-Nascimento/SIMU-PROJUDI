@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from ciclos.models import CicloSimulacao, GrupoTrabalho
@@ -17,11 +17,13 @@ from .forms import ProcessoJudicialForm
 from .models import (
     ClasseProcessual,
     Comarca,
-    DocumentoProcesso,
+    DocumentoAnexado,
+    MovimentacaoProcessual,
     ParteFicticia,
     PoloProcessual,
     ProcessoJudicial,
     StatusProcessoJudicial,
+    TipoMovimentacao,
     VaraServentia,
 )
 
@@ -94,22 +96,44 @@ def cadastrar_processo(request):
                         tipo_polo="Terceiro",
                     )
 
-            max_size = 7 * 1024 * 1024
+            tipo_cadastro, _ = TipoMovimentacao.objects.get_or_create(
+                nome_movimentacao="Cadastro do Processo",
+            )
+            mov_cadastro = MovimentacaoProcessual.objects.create(
+                descricao_evento=f'Processo "{processo.numero}" cadastrado.',
+                processo=processo,
+                autor=request.user,
+                tipo_movimento=tipo_cadastro,
+            )
+
             arquivos = request.FILES.getlist("documentos")
             nomes_docs = request.POST.getlist("documento_nomes")
-            for i, arquivo in enumerate(arquivos):
-                if arquivo.size > max_size:
-                    continue
-                nome_doc = (
-                    nomes_docs[i].strip()
-                    if i < len(nomes_docs) and nomes_docs[i].strip()
-                    else arquivo.name
+            max_size = 7 * 1024 * 1024
+
+            if arquivos:
+                tipo_juntada, _ = TipoMovimentacao.objects.get_or_create(
+                    nome_movimentacao="Juntada de Documentos",
                 )
-                DocumentoProcesso.objects.create(
+                mov_juntada = MovimentacaoProcessual.objects.create(
+                    descricao_evento="Documentos anexados ao processo.",
                     processo=processo,
-                    nome=nome_doc,
-                    arquivo=arquivo,
+                    autor=request.user,
+                    tipo_movimento=tipo_juntada,
+                    movimentacao_origem=mov_cadastro,
                 )
+                for i, arquivo in enumerate(arquivos):
+                    if arquivo.size > max_size:
+                        continue
+                    titulo = (
+                        nomes_docs[i].strip()
+                        if i < len(nomes_docs) and nomes_docs[i].strip()
+                        else arquivo.name
+                    )
+                    DocumentoAnexado.objects.create(
+                        titulo_arquivo=titulo,
+                        caminho_arquivo=arquivo,
+                        movimentacao=mov_juntada,
+                    )
 
             messages.success(
                 request,
@@ -278,6 +302,98 @@ def criar_parte(request):
 
 
 @login_required
+def visualizar_processo(request, processo_id):
+    processo = get_object_or_404(
+        ProcessoJudicial.objects
+        .select_related("classe", "status_atual", "vara", "vara__comarca", "tipo_processo", "ciclo")
+        .prefetch_related("polos__parte"),
+        pk=processo_id,
+    )
+
+    polos_ativo = [p for p in processo.polos.all() if p.tipo_polo == "Ativo"]
+    polos_passivo = [p for p in processo.polos.all() if p.tipo_polo == "Passivo"]
+    polos_terceiro = [p for p in processo.polos.all() if p.tipo_polo == "Terceiro"]
+
+    grupo_serventia = (
+        GrupoTrabalho.objects.filter(
+            ciclo=processo.ciclo,
+            cargo_simulacao__cod="SC",
+        )
+        .select_related("cargo_simulacao")
+        .first()
+    )
+
+    grupos_vinculados = (
+        processo.grupos
+        .select_related("cargo_simulacao")
+        .order_by("nome")
+    )
+
+    movimentacoes_qs = list(
+        processo.movimentacoes
+        .select_related("tipo_movimento", "autor")
+        .prefetch_related("documentos")
+        .order_by("-data_movimento")
+    )
+
+    mov_cadastro = None
+    mov_juntada = None
+    for mov in movimentacoes_qs:
+        if mov.tipo_movimento.nome_movimentacao == "Cadastro do Processo":
+            mov_cadastro = mov
+        elif (
+            mov_cadastro
+            and mov.movimentacao_origem_id == mov_cadastro.id
+            and mov.tipo_movimento.nome_movimentacao == "Juntada de Documentos"
+        ):
+            mov_juntada = mov
+
+    skip_ids = set()
+    if mov_cadastro:
+        skip_ids.add(mov_cadastro.id)
+    if mov_juntada:
+        skip_ids.add(mov_juntada.id)
+
+    movimentacoes = []
+    for mov in movimentacoes_qs:
+        if mov.id in skip_ids:
+            continue
+        movimentacoes.append({
+            "nome": mov.tipo_movimento.nome_movimentacao,
+            "descricao": mov.descricao_evento,
+            "data": mov.data_movimento,
+            "autor_nome": mov.autor.get_full_name() or mov.autor.username,
+            "documentos": list(mov.documentos.all()),
+        })
+
+    if mov_cadastro:
+        docs = list(mov_cadastro.documentos.all())
+        if mov_juntada:
+            docs.extend(list(mov_juntada.documentos.all()))
+        movimentacoes.append({
+            "nome": "Petição Inicial",
+            "descricao": mov_cadastro.descricao_evento,
+            "data": mov_cadastro.data_movimento,
+            "autor_nome": mov_cadastro.autor.get_full_name() or mov_cadastro.autor.username,
+            "documentos": docs,
+        })
+
+    return render(
+        request,
+        "processos/visualizar_processo.html",
+        {
+            "processo": processo,
+            "polos_ativo": polos_ativo,
+            "polos_passivo": polos_passivo,
+            "polos_terceiro": polos_terceiro,
+            "grupo_serventia": grupo_serventia,
+            "grupos_vinculados": grupos_vinculados,
+            "movimentacoes": movimentacoes,
+        },
+    )
+
+
+@login_required
 @require_POST
 def atribuir_grupo_processos(request):
     try:
@@ -286,7 +402,7 @@ def atribuir_grupo_processos(request):
         return JsonResponse({"erro": "JSON inválido."}, status=400)
 
     processo_ids = dados.get("processo_ids", [])
-    grupo_id = dados.get("grupo_id")
+    grupo_ids = dados.get("grupo_ids", [])
 
     if not processo_ids:
         return JsonResponse({"erro": "Nenhum processo selecionado."}, status=400)
@@ -307,17 +423,13 @@ def atribuir_grupo_processos(request):
         ciclo=grupo_usuario.ciclo,
     )
 
-    if grupo_id:
-        try:
-            grupo_atribuir = GrupoTrabalho.objects.get(
-                pk=grupo_id,
-                ciclo=grupo_usuario.ciclo,
-            )
-        except GrupoTrabalho.DoesNotExist:
-            return JsonResponse({"erro": "Grupo não encontrado."}, status=404)
-
+    if grupo_ids:
+        grupos = GrupoTrabalho.objects.filter(
+            pk__in=grupo_ids,
+            ciclo=grupo_usuario.ciclo,
+        )
         for processo in processos:
-            processo.grupos.add(grupo_atribuir)
+            processo.grupos.add(*grupos)
     else:
         for processo in processos:
             processo.grupos.clear()

@@ -4,6 +4,7 @@ from .models import (
     Audiencia,
     ClasseProcessual,
     Comarca,
+    GrupoProcesso,
     ParteFicticia,
     PoloProcessual,
     ProcessoJudicial,
@@ -73,13 +74,17 @@ class PoloProcessualInline(admin.TabularInline):
     fields = ("parte", "tipo_polo")
 
 
+class GrupoProcessoInline(admin.TabularInline):
+    model = GrupoProcesso
+    extra = 0
+
+
 @admin.register(ProcessoJudicial)
 class ProcessoJudicialAdmin(admin.ModelAdmin):
     list_display = ("numero", "ciclo", "vara", "tipo_processo", "status_atual", "data_autuacao")
     list_filter = ("status_atual", "tipo_processo", "vara__comarca")
     search_fields = ("numero",)
-    inlines = [PoloProcessualInline, AudienciaInline]
-    filter_horizontal = ("grupos",)
+    inlines = [PoloProcessualInline, GrupoProcessoInline, AudienciaInline]
 
 
 @admin.register(Audiencia)

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 
+from django.conf import settings
 from django.db import models
 
 
@@ -167,19 +168,11 @@ class ProcessoJudicial(models.Model):
     segredo_justica = models.BooleanField(default=False)
     data_autuacao = models.DateTimeField(auto_now_add=True)
 
-    grupo_atribuido = models.ForeignKey(
-        "ciclos.GrupoTrabalho",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="processos_atribuidos",
-    )
-
     grupos = models.ManyToManyField(
         "ciclos.GrupoTrabalho",
+        through="GrupoProcesso",
         related_name="processos",
         blank=True,
-        db_table="grupo_processo",
     )
 
     partes = models.ManyToManyField(
@@ -219,6 +212,20 @@ class ProcessoJudicial(models.Model):
 
     def __str__(self) -> str:
         return self.numero
+
+
+class GrupoProcesso(models.Model):
+    processo = models.ForeignKey(
+        ProcessoJudicial,
+        on_delete=models.CASCADE,
+    )
+    grupo = models.ForeignKey(
+        "ciclos.GrupoTrabalho",
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        db_table = "grupo_processo"
 
 
 # ---------------------------------------------------------------------------
@@ -293,23 +300,85 @@ class PoloProcessual(models.Model):
 
 
 # ---------------------------------------------------------------------------
-# Documento do processo
+# Movimentação processual
 # ---------------------------------------------------------------------------
 
-class DocumentoProcesso(models.Model):
+class TipoMovimentacao(models.Model):
+    nome_movimentacao = models.CharField(max_length=45)
+
+    class Meta:
+        db_table = "tipo_movimentacao"
+        verbose_name = "Tipo de Movimentação"
+        verbose_name_plural = "Tipos de Movimentação"
+
+    def __str__(self) -> str:
+        return self.nome_movimentacao
+
+
+class MovimentacaoProcessual(models.Model):
+    descricao_evento = models.TextField()
+    data_movimento = models.DateTimeField(auto_now_add=True)
     processo = models.ForeignKey(
         ProcessoJudicial,
         on_delete=models.CASCADE,
-        related_name="documentos",
+        related_name="movimentacoes",
     )
-    nome = models.CharField(max_length=255)
-    arquivo = models.FileField(upload_to="documentos_processos/")
-    data_upload = models.DateTimeField(auto_now_add=True)
+    autor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name="movimentacoes",
+    )
+    tipo_movimento = models.ForeignKey(
+        TipoMovimentacao,
+        on_delete=models.PROTECT,
+        related_name="movimentacoes",
+    )
+    movimentacao_origem = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="movimentacoes_derivadas",
+    )
+    antecedente_logico = models.ForeignKey(
+        "self",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="consequentes",
+    )
 
     class Meta:
-        db_table = "documento_processo"
-        verbose_name = "Documento do Processo"
-        verbose_name_plural = "Documentos do Processo"
+        db_table = "movimentacao_processual"
+        verbose_name = "Movimentação Processual"
+        verbose_name_plural = "Movimentações Processuais"
+        ordering = ["-data_movimento"]
 
     def __str__(self) -> str:
-        return f"{self.nome} — {self.processo}"
+        return f"{self.tipo_movimento} — {self.processo}"
+
+
+# ---------------------------------------------------------------------------
+# Documento anexado (vinculado a uma movimentação)
+# ---------------------------------------------------------------------------
+
+class DocumentoAnexado(models.Model):
+    titulo_arquivo = models.CharField(max_length=150)
+    caminho_arquivo = models.FileField(
+        upload_to="documentos_processos/",
+        max_length=255,
+    )
+    data_upload = models.DateTimeField(auto_now_add=True)
+    movimentacao = models.ForeignKey(
+        MovimentacaoProcessual,
+        on_delete=models.CASCADE,
+        related_name="documentos",
+    )
+
+    class Meta:
+        db_table = "documento_anexado"
+        verbose_name = "Documento Anexado"
+        verbose_name_plural = "Documentos Anexados"
+
+    def __str__(self) -> str:
+        return f"{self.titulo_arquivo} — {self.movimentacao}"
