@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'ciclos',
     'movimentacoes',
     'processos',
+    'private_storage',
 ]
 
 MIDDLEWARE = [
@@ -145,8 +146,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-# Mídia PROTEGIDA (documentos)
+# Mídia PROTEGIDA (documentos processuais)
 PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')
+PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_authenticated'
+PRIVATE_STORAGE_SERVER = 'django'   # dev; em produção substituir por 'nginx' com X-Accel-Redirect
 
 
 # ─── Upload de Arquivos ───────────────────────────────────────────────────────

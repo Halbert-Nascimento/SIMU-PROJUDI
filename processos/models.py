@@ -4,6 +4,7 @@ import random
 
 from django.conf import settings
 from django.db import models
+from private_storage.fields import PrivateFileField
 
 
 # ---------------------------------------------------------------------------
@@ -362,10 +363,16 @@ class MovimentacaoProcessual(models.Model):
 # Documento anexado (vinculado a uma movimentação)
 # ---------------------------------------------------------------------------
 
+def _upload_to_documento(instance, filename):
+    """Gera o caminho: processos/{numero_processo}/{nome_arquivo}"""
+    numero = instance.movimentacao.processo.numero
+    return f"processos/{numero}/{filename}"
+
+
 class DocumentoAnexado(models.Model):
     titulo_arquivo = models.CharField(max_length=150)
-    caminho_arquivo = models.FileField(
-        upload_to="documentos_processos/",
+    caminho_arquivo = PrivateFileField(
+        upload_to=_upload_to_documento,
         max_length=255,
     )
     data_upload = models.DateTimeField(auto_now_add=True)
