@@ -10,12 +10,14 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
 from ciclos.models import CicloSimulacao, GrupoTrabalho
 
 from .forms import ProcessoJudicialForm
+from .permissions import pode_visualizar_processo
 from .utils import validar_multiplos_arquivos
 from .models import (
     ClasseProcessual,
@@ -350,7 +352,6 @@ def criar_parte(request):
     })
 
 
-@login_required
 def visualizar_processo(request, processo_id):
     processo = get_object_or_404(
         ProcessoJudicial.objects
@@ -358,6 +359,9 @@ def visualizar_processo(request, processo_id):
         .prefetch_related("polos__parte"),
         pk=processo_id,
     )
+
+    if not pode_visualizar_processo(request.user, processo):
+        raise PermissionDenied
 
     polos_ativo = [p for p in processo.polos.all() if p.tipo_polo == "Ativo"]
     polos_passivo = [p for p in processo.polos.all() if p.tipo_polo == "Passivo"]
