@@ -141,6 +141,7 @@
                         {% if form.tipo_processo.errors %}
                         <p class="text-red-600 text-[11px] mt-1 ml-[172px]">{{ form.tipo_processo.errors.0 }}</p>
                         {% endif %}
+                        <p id="erroTipo" class="campo-erro-inline text-red-600 text-[11px] mt-1 ml-[172px] hidden"></p>
                     </fieldset>
 
                     <!-- CARACTERISTICAS -->
@@ -155,6 +156,7 @@
                                     <option value="{{ comarca.id }}" {% if form.comarca.value|stringformat:"s" == comarca.id|stringformat:"s" %}selected{% endif %}>{{ comarca.nome }}</option>
                                     {% endfor %}
                                 </select>
+                                <p id="erroComarca" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
                             </div>
                             <div>
                                 <label for="id_vara" class="font-bold text-azul-primario text-[12px]">*Vara / Serventia</label>
@@ -164,6 +166,7 @@
                                     <option value="{{ vara.id }}" {% if form.vara.value|stringformat:"s" == vara.id|stringformat:"s" %}selected{% endif %}>{{ vara.nome }}</option>
                                     {% endfor %}
                                 </select>
+                                <p id="erroVara" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
                             </div>
                         </div>
                         <div class="mb-2">
@@ -174,6 +177,7 @@
                                 <option value="{{ classe.id }}" {% if form.classe.value|stringformat:"s" == classe.id|stringformat:"s" %}selected{% endif %}>{{ classe.nome }}</option>
                                 {% endfor %}
                             </select>
+                            <p id="erroClasse" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
                         </div>
                     </fieldset>
 
@@ -225,7 +229,22 @@
                             </div>
                             <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
                         </div>
-                        <div class="polo-lista"></div>
+                        <div class="polo-lista">
+                            {% for parte in polo_ativo_partes %}
+                            <div class="flex items-center justify-between bg-fundo-container border border-borda rounded px-3 py-2 mb-1.5 text-[12px]" data-parte-id="{{ parte.id }}">
+                                <div>
+                                    <strong>{{ parte.nome_razao }}</strong>
+                                    <span class="text-texto-secundario ml-2">{{ parte.cpf_cnpj }}</span>
+                                    <span class="text-texto-secundario ml-1">({{ parte.tipo_pessoa }})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="hidden" name="polo_ativo" value="{{ parte.id }}">
+                                    <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <p id="erroPoloAtivo" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
                     </fieldset>
 
                     <!-- POLO PASSIVO -->
@@ -256,7 +275,22 @@
                             </div>
                             <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
                         </div>
-                        <div class="polo-lista"></div>
+                        <div class="polo-lista">
+                            {% for parte in polo_passivo_partes %}
+                            <div class="flex items-center justify-between bg-fundo-container border border-borda rounded px-3 py-2 mb-1.5 text-[12px]" data-parte-id="{{ parte.id }}">
+                                <div>
+                                    <strong>{{ parte.nome_razao }}</strong>
+                                    <span class="text-texto-secundario ml-2">{{ parte.cpf_cnpj }}</span>
+                                    <span class="text-texto-secundario ml-1">({{ parte.tipo_pessoa }})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="hidden" name="polo_passivo" value="{{ parte.id }}">
+                                    <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <p id="erroPoloPassivo" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
                     </fieldset>
 
                     <!-- SUBSTITUTO PROCESSUAL -->
@@ -287,7 +321,21 @@
                             </div>
                             <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
                         </div>
-                        <div class="polo-lista"></div>
+                        <div class="polo-lista">
+                            {% for parte in polo_terceiro_partes %}
+                            <div class="flex items-center justify-between bg-fundo-container border border-borda rounded px-3 py-2 mb-1.5 text-[12px]" data-parte-id="{{ parte.id }}">
+                                <div>
+                                    <strong>{{ parte.nome_razao }}</strong>
+                                    <span class="text-texto-secundario ml-2">{{ parte.cpf_cnpj }}</span>
+                                    <span class="text-texto-secundario ml-1">({{ parte.tipo_pessoa }})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="hidden" name="polo_terceiro" value="{{ parte.id }}">
+                                    <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
                     </fieldset>
                 </fieldset>
 
@@ -307,8 +355,15 @@
                     <legend class="text-texto-principal text-[14px]">PASSO 2 - DOCUMENTOS</legend>
 
                     <p class="text-texto-secundario text-[12px] mb-4">
-                        Anexe os documentos do processo. Cada arquivo deve ter no máximo <strong>7 MB</strong>.
+                        Anexe os documentos do processo. Formatos aceitos: <strong>{{ upload_accept_attr }}</strong>. Tamanho máximo por arquivo: <strong>{{ upload_max_mb }}MB</strong>.
                     </p>
+
+                    {% if step_inicial == 2 %}
+                    <div class="bg-yellow-50 border border-yellow-300 rounded p-3 mb-4 text-[12px] text-yellow-800 flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                        <span>Os dados do processo e as partes foram preservados. Por segurança do navegador, os arquivos precisam ser selecionados novamente.</span>
+                    </div>
+                    {% endif %}
 
                     <div id="docLista"></div>
 
@@ -354,12 +409,28 @@
     <script>
     document.addEventListener("DOMContentLoaded", function () {
         const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
-        const MAX_FILE_SIZE = 7 * 1024 * 1024;
+
+        // Constantes de upload vindas do settings.py via contexto Django
+        const MAX_FILE_SIZE_MB = {{ upload_max_mb|default:7 }};
+        const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+        const ALLOWED_EXTENSIONS = {{ upload_allowed_extensions_json|default:'[".pdf",".docx",".jpg",".jpeg"]'|safe }};
 
         // ===================== STEP NAVIGATION =====================
         let currentStep = 1;
         const steps = [document.getElementById("step1"), document.getElementById("step2"), document.getElementById("step3")];
         const stepItems = document.querySelectorAll(".step-item");
+        const docErro = document.getElementById("docErro");
+
+        function limparErrosStep1() {
+            document.querySelectorAll(".campo-erro-inline").forEach(el => {
+                el.textContent = "";
+                el.classList.add("hidden");
+            });
+            ["id_comarca", "id_vara", "id_classe"].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove("border-red-500");
+            });
+        }
 
         function goToStep(n) {
             steps.forEach(s => s.style.display = "none");
@@ -370,30 +441,36 @@
                 if (i + 1 === n) item.classList.add("active");
             });
             currentStep = n;
+            if (n !== 2) docErro.classList.add("hidden");
+            if (n !== 1) limparErrosStep1();
             window.scrollTo({ top: 0, behavior: "smooth" });
         }
 
+        function mostrarErroInline(elementoId, mensagem, inputEl) {
+            const el = document.getElementById(elementoId);
+            if (el) { el.textContent = mensagem; el.classList.remove("hidden"); }
+            if (inputEl) inputEl.classList.add("border-red-500");
+        }
+
         function validateStep1() {
-            const tipo = document.querySelector('input[name="tipo_processo"]:checked');
-            const comarca = document.getElementById("id_comarca").value;
-            const vara = document.getElementById("id_vara").value;
-            const classe = document.getElementById("id_classe").value;
-            const poloAtivo = document.querySelectorAll('input[name="polo_ativo"]');
+            limparErrosStep1();
+            const tipo    = document.querySelector('input[name="tipo_processo"]:checked');
+            const comarca = document.getElementById("id_comarca");
+            const vara    = document.getElementById("id_vara");
+            const classe  = document.getElementById("id_classe");
+            const poloAtivo   = document.querySelectorAll('input[name="polo_ativo"]');
             const poloPassivo = document.querySelectorAll('input[name="polo_passivo"]');
 
-            const erros = [];
-            if (!tipo) erros.push("Selecione o tipo do processo.");
-            if (!comarca) erros.push("Selecione a comarca.");
-            if (!vara) erros.push("Selecione a vara.");
-            if (!classe) erros.push("Selecione a classe processual.");
-            if (poloAtivo.length === 0) erros.push("Insira pelo menos uma parte no Polo Ativo.");
-            if (poloPassivo.length === 0) erros.push("Insira pelo menos uma parte no Polo Passivo.");
+            let valido = true;
+            if (!tipo)           { mostrarErroInline("erroTipo",        "Selecione o tipo do processo.");                 valido = false; }
+            if (!comarca.value)  { mostrarErroInline("erroComarca",     "Selecione a comarca.",            comarca);     valido = false; }
+            if (!vara.value)     { mostrarErroInline("erroVara",        "Selecione a vara.",               vara);        valido = false; }
+            if (!classe.value)   { mostrarErroInline("erroClasse",      "Selecione a classe processual.",  classe);      valido = false; }
+            if (poloAtivo.length   === 0) { mostrarErroInline("erroPoloAtivo",   "Insira pelo menos uma parte no Polo Ativo.");   valido = false; }
+            if (poloPassivo.length === 0) { mostrarErroInline("erroPoloPassivo", "Insira pelo menos uma parte no Polo Passivo."); valido = false; }
 
-            if (erros.length > 0) {
-                alert(erros.join("\n"));
-                return false;
-            }
-            return true;
+            if (!valido) window.scrollTo({ top: 0, behavior: "smooth" });
+            return valido;
         }
 
         document.getElementById("btnStep1Next").addEventListener("click", function () {
@@ -401,6 +478,13 @@
         });
         document.getElementById("btnStep2Prev").addEventListener("click", () => goToStep(1));
         document.getElementById("btnStep2Next").addEventListener("click", function () {
+            const cardErros = document.querySelectorAll("#docLista .doc-card-erro:not(.hidden)");
+            if (cardErros.length > 0) {
+                docErro.textContent = "Corrija os arquivos indicados com erro antes de avançar.";
+                docErro.classList.remove("hidden");
+                return;
+            }
+            docErro.classList.add("hidden");
             buildSummary();
             goToStep(3);
         });
@@ -408,8 +492,8 @@
 
         // ===================== DOCUMENTS (STEP 2) =====================
         const docLista = document.getElementById("docLista");
-        const docErro = document.getElementById("docErro");
         let docCount = 0;
+        const acceptAttr = ALLOWED_EXTENSIONS.join(",");
 
         document.getElementById("btnAddDoc").addEventListener("click", function () {
             const idx = docCount++;
@@ -420,12 +504,13 @@
                 <div class="doc-icon"><i class="fas fa-file-alt"></i></div>
                 <div class="flex-1">
                     <div class="mb-1">
-                        <input type="file" name="documentos" class="doc-file-input text-[12px]" accept="*/*">
+                        <input type="file" name="documentos" class="doc-file-input text-[12px]" accept="${acceptAttr}">
                     </div>
+                    <p class="doc-card-erro text-red-600 text-[11px] mt-1 hidden"></p>
                     <div class="doc-info hidden">
                         <div class="flex items-center gap-3 mb-1">
                             <span class="doc-filename text-[12px] font-bold text-gray-700"></span>
-                            <span class="doc-size"></span>
+                            <span class="doc-size text-gray-500 text-[11px]"></span>
                         </div>
                         <input type="text" name="documento_nomes" placeholder="Nome do documento..." class="doc-nome-input w-full bg-white border border-gray-300 rounded py-1.5 px-2 text-[12px] outline-none focus:border-[#1a5b9e]">
                     </div>
@@ -435,32 +520,48 @@
                 </button>
             `;
 
-            const fileInput = card.querySelector(".doc-file-input");
-            const infoDiv = card.querySelector(".doc-info");
+            const fileInput  = card.querySelector(".doc-file-input");
+            const cardErro   = card.querySelector(".doc-card-erro");
+            const infoDiv    = card.querySelector(".doc-info");
             const filenameSpan = card.querySelector(".doc-filename");
-            const sizeSpan = card.querySelector(".doc-size");
-            const nomeInput = card.querySelector(".doc-nome-input");
+            const sizeSpan   = card.querySelector(".doc-size");
+            const nomeInput  = card.querySelector(".doc-nome-input");
 
             fileInput.addEventListener("change", function () {
                 const file = this.files[0];
-                if (!file) { infoDiv.classList.add("hidden"); return; }
-                if (file.size > MAX_FILE_SIZE) {
-                    docErro.textContent = `O arquivo "${file.name}" excede o limite de 7 MB.`;
-                    docErro.classList.remove("hidden");
+                if (!file) { infoDiv.classList.add("hidden"); cardErro.classList.add("hidden"); return; }
+
+                const ext = "." + file.name.split(".").pop().toLowerCase();
+                if (!ALLOWED_EXTENSIONS.includes(ext)) {
+                    cardErro.textContent = `O arquivo "${file.name}" não está em formato permitido. Aceitos: ${ALLOWED_EXTENSIONS.join(", ")}.`;
+                    cardErro.classList.remove("hidden");
                     this.value = "";
                     infoDiv.classList.add("hidden");
                     return;
                 }
+                if (file.size > MAX_FILE_SIZE) {
+                    cardErro.textContent = `O arquivo "${file.name}" excede o limite de ${MAX_FILE_SIZE_MB}MB (tamanho enviado: ${(file.size / (1024 * 1024)).toFixed(1)}MB).`;
+                    cardErro.classList.remove("hidden");
+                    this.value = "";
+                    infoDiv.classList.add("hidden");
+                    return;
+                }
+
+                cardErro.classList.add("hidden");
                 docErro.classList.add("hidden");
                 filenameSpan.textContent = file.name;
-                const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-                sizeSpan.textContent = sizeMB + " MB";
+                sizeSpan.textContent = (file.size / (1024 * 1024)).toFixed(2) + " MB";
                 nomeInput.value = file.name.replace(/\.[^/.]+$/, "");
                 infoDiv.classList.remove("hidden");
                 this.style.display = "none";
             });
 
-            card.querySelector(".doc-remover").addEventListener("click", () => card.remove());
+            card.querySelector(".doc-remover").addEventListener("click", () => {
+                card.remove();
+                if (document.querySelectorAll("#docLista .doc-card-erro:not(.hidden)").length === 0) {
+                    docErro.classList.add("hidden");
+                }
+            });
 
             docLista.appendChild(card);
         });
@@ -470,7 +571,6 @@
             const resumo = document.getElementById("resumoConteudo");
             let html = "";
 
-            // Dados do Processo
             const tipoRadio = document.querySelector('input[name="tipo_processo"]:checked');
             const tipo = tipoRadio ? tipoRadio.parentElement.querySelector("span").textContent : "—";
             const comarca = document.getElementById("id_comarca");
@@ -492,7 +592,6 @@
                 <div class="resumo-row"><span class="resumo-label">Segredo de Justiça:</span><span class="resumo-value">${segredo}</span></div>
             </div>`;
 
-            // Partes
             function getPartes(polo) {
                 const items = document.querySelectorAll(`[data-polo="${polo}"] .polo-lista [data-parte-id]`);
                 if (items.length === 0) return "<em>Nenhuma parte</em>";
@@ -510,23 +609,20 @@
                 <div class="resumo-row"><span class="resumo-label">Terceiros:</span><span class="resumo-value">${getPartes("terceiro")}</span></div>
             </div>`;
 
-            // Documentos
             const docs = document.querySelectorAll("#docLista .doc-card");
-            let docsHtml = "";
-            if (docs.length === 0) {
-                docsHtml = '<p class="text-[12px] text-gray-500 italic">Nenhum documento anexado.</p>';
-            } else {
-                docs.forEach(card => {
-                    const nomeDoc = card.querySelector(".doc-nome-input").value || "Sem nome";
-                    const filename = card.querySelector(".doc-filename").textContent || "—";
-                    const size = card.querySelector(".doc-size").textContent || "";
-                    docsHtml += `<div class="flex items-center gap-3 py-1 text-[12px]">
-                        <i class="fas fa-file-alt text-[#1a5b9e]"></i>
-                        <strong>${nomeDoc}</strong>
-                        <span class="text-gray-500">(${filename} — ${size})</span>
-                    </div>`;
-                });
-            }
+            let docsHtml = docs.length === 0
+                ? '<p class="text-[12px] text-gray-500 italic">Nenhum documento anexado.</p>'
+                : "";
+            docs.forEach(c => {
+                const nomeDoc  = c.querySelector(".doc-nome-input").value || "Sem nome";
+                const filename = c.querySelector(".doc-filename").textContent || "—";
+                const size     = c.querySelector(".doc-size").textContent || "";
+                docsHtml += `<div class="flex items-center gap-3 py-1 text-[12px]">
+                    <i class="fas fa-file-alt text-[#1a5b9e]"></i>
+                    <strong>${nomeDoc}</strong>
+                    <span class="text-gray-500">(${filename} — ${size})</span>
+                </div>`;
+            });
             html += `<div class="resumo-section">
                 <h4><i class="fas fa-paperclip mr-1"></i> Documentos</h4>
                 ${docsHtml}
@@ -537,15 +633,12 @@
 
         // ===================== COMARCA → VARA =====================
         const comarcaSelect = document.getElementById("id_comarca");
-        const varaSelect = document.getElementById("id_vara");
+        const varaSelect    = document.getElementById("id_vara");
 
         comarcaSelect.addEventListener("change", function () {
             const comarcaId = this.value;
             varaSelect.innerHTML = '<option value="">Carregando...</option>';
-            if (!comarcaId) {
-                varaSelect.innerHTML = '<option value="">Selecione a vara...</option>';
-                return;
-            }
+            if (!comarcaId) { varaSelect.innerHTML = '<option value="">Selecione a vara...</option>'; return; }
             fetch(`/processos/api/varas/${comarcaId}/`)
                 .then(r => r.json())
                 .then(varas => {
@@ -557,24 +650,27 @@
                         varaSelect.appendChild(opt);
                     });
                 })
-                .catch(() => {
-                    varaSelect.innerHTML = '<option value="">Erro ao carregar varas</option>';
-                });
+                .catch(() => { varaSelect.innerHTML = '<option value="">Erro ao carregar varas</option>'; });
         });
 
         // ===================== POLOS =====================
         document.querySelectorAll("[data-polo]").forEach(fieldset => {
-            const tipo = fieldset.dataset.polo;
+            const tipo      = fieldset.dataset.polo;
             const inputName = `polo_${tipo}`;
-            const busca = fieldset.querySelector(".polo-busca");
+            const busca     = fieldset.querySelector(".polo-busca");
             const resultados = fieldset.querySelector(".polo-resultados");
-            const lista = fieldset.querySelector(".polo-lista");
-            const formNova = fieldset.querySelector(".polo-form-nova");
-            const formErro = fieldset.querySelector(".polo-form-erro");
-            const btnNova = fieldset.querySelector(".btn-nova-parte");
+            const lista     = fieldset.querySelector(".polo-lista");
+            const formNova  = fieldset.querySelector(".polo-form-nova");
+            const formErro  = fieldset.querySelector(".polo-form-erro");
+            const btnNova   = fieldset.querySelector(".btn-nova-parte");
             const btnSalvar = fieldset.querySelector(".btn-salvar-parte");
             const btnCancelar = fieldset.querySelector(".btn-cancelar-parte");
             let debounce = null;
+
+            // Ativa o botão "Remover" nos itens pré-renderizados pelo servidor (reload com erro)
+            lista.querySelectorAll("[data-parte-id]").forEach(item => {
+                item.querySelector(".btn-remover").addEventListener("click", () => item.remove());
+            });
 
             function adicionarParte(parte) {
                 if (lista.querySelector(`[data-parte-id="${parte.id}"]`)) return;
@@ -639,25 +735,14 @@
 
             busca.addEventListener("keydown", function (e) {
                 if (e.key === "Backspace" || e.key === "Delete") {
-                    const start = this.selectionStart;
-                    const end = this.selectionEnd;
-                    if (start !== end) {
-                        e.preventDefault();
-                        this.value = this.value.substring(0, start);
-                        resultados.classList.add("hidden");
-                    }
+                    const start = this.selectionStart, end = this.selectionEnd;
+                    if (start !== end) { e.preventDefault(); this.value = this.value.substring(0, start); resultados.classList.add("hidden"); }
                 }
             });
 
-            document.addEventListener("click", (e) => {
-                if (!fieldset.contains(e.target)) resultados.classList.add("hidden");
-            });
+            document.addEventListener("click", e => { if (!fieldset.contains(e.target)) resultados.classList.add("hidden"); });
 
-            btnNova.addEventListener("click", () => {
-                formNova.classList.toggle("hidden");
-                formErro.classList.add("hidden");
-            });
-
+            btnNova.addEventListener("click", () => { formNova.classList.toggle("hidden"); formErro.classList.add("hidden"); });
             btnCancelar.addEventListener("click", () => {
                 formNova.classList.add("hidden");
                 formNova.querySelectorAll("input, select").forEach(el => el.value = "");
@@ -666,13 +751,9 @@
 
             btnSalvar.addEventListener("click", () => {
                 const nome = fieldset.querySelector(".nova-nome").value.trim();
-                const cpf = fieldset.querySelector(".nova-cpf").value.trim();
+                const cpf  = fieldset.querySelector(".nova-cpf").value.trim();
                 const tipoPessoa = fieldset.querySelector(".nova-tipo").value;
-                if (!nome || !cpf || !tipoPessoa) {
-                    formErro.textContent = "Preencha todos os campos.";
-                    formErro.classList.remove("hidden");
-                    return;
-                }
+                if (!nome || !cpf || !tipoPessoa) { formErro.textContent = "Preencha todos os campos."; formErro.classList.remove("hidden"); return; }
                 fetch("/processos/api/partes/criar/", {
                     method: "POST",
                     headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
@@ -689,6 +770,10 @@
                 .catch(() => { formErro.textContent = "Erro ao criar parte."; formErro.classList.remove("hidden"); });
             });
         });
+
+        // ===================== INICIALIZAÇÃO =====================
+        // Restaura o passo correto após recarregamento com erros do servidor
+        goToStep({{ step_inicial|default:1 }});
     });
     </script>
 {% endblock %}
