@@ -190,8 +190,11 @@
                     <!-- Valor da Causa e Segredo de Justica -->
                     <div class="grid grid-cols-2 gap-5 mb-5">
                         <div>
-                            <label for="id_valor_causa" class="font-bold text-texto-principal text-[12px]">Valor da Causa (R$)</label>
-                            <input type="number" id="id_valor_causa" name="valor_causa" value="{{ form.valor_causa.value|default:'0.00' }}" step="0.01" min="0" class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                            <label for="id_valor_causa_display" class="font-bold text-texto-principal text-[12px]">Valor da Causa (R$)</label>
+                            <input type="text" id="id_valor_causa_display" inputmode="numeric" autocomplete="off"
+                                   value="R$ 0,00"
+                                   class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                            <input type="hidden" id="id_valor_causa" name="valor_causa" value="{{ form.valor_causa.value|default:'0.00' }}">
                         </div>
                         <div class="flex items-end pb-2">
                             <label class="flex items-center gap-2 cursor-pointer">
@@ -407,6 +410,49 @@
     </main>
 
     <script>
+    // ===================== MÁSCARA MONETÁRIA ATM =====================
+    function formatarMoedaBR(valor) {
+        return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    (function initMascaraMoeda() {
+        const display = document.getElementById("id_valor_causa_display");
+        const hidden  = document.getElementById("id_valor_causa");
+
+        // centavos acumulados como inteiro (evita ponto flutuante)
+        let centavos = Math.round(parseFloat(hidden.value || "0") * 100);
+
+        function atualizar() {
+            display.value = formatarMoedaBR(centavos / 100);
+            hidden.value  = (centavos / 100).toFixed(2);
+        }
+
+        atualizar(); // aplica valor inicial vindo do servidor
+
+        display.addEventListener("keydown", function (e) {
+            if (e.key >= "0" && e.key <= "9") {
+                e.preventDefault();
+                if (centavos < 999_999_999_99) {   // limite: R$ 9.999.999.999,99
+                    centavos = centavos * 10 + parseInt(e.key);
+                    atualizar();
+                }
+            } else if (e.key === "Backspace") {
+                e.preventDefault();
+                centavos = Math.floor(centavos / 10);
+                atualizar();
+            } else if (e.key === "Delete") {
+                e.preventDefault();
+                centavos = 0;
+                atualizar();
+            }
+            // ignora qualquer outra tecla
+        });
+
+        // bloqueia paste e entrada direta não numérica
+        display.addEventListener("paste", e => e.preventDefault());
+        display.addEventListener("input",  e => { display.value = formatarMoedaBR(centavos / 100); });
+    })();
+
     document.addEventListener("DOMContentLoaded", function () {
         const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
 
@@ -579,7 +625,7 @@
             const varaTxt = vara.selectedIndex > 0 ? vara.options[vara.selectedIndex].text : "—";
             const classe = document.getElementById("id_classe");
             const classeTxt = classe.selectedIndex > 0 ? classe.options[classe.selectedIndex].text : "—";
-            const valor = document.getElementById("id_valor_causa").value || "0.00";
+            const valorHidden = document.getElementById("id_valor_causa").value || "0.00";
             const segredo = document.getElementById("id_segredo_justica").checked ? "Sim" : "Não";
 
             html += `<div class="resumo-section">
@@ -588,7 +634,7 @@
                 <div class="resumo-row"><span class="resumo-label">Comarca:</span><span class="resumo-value">${comarcaTxt}</span></div>
                 <div class="resumo-row"><span class="resumo-label">Vara / Serventia:</span><span class="resumo-value">${varaTxt}</span></div>
                 <div class="resumo-row"><span class="resumo-label">Classe Processual:</span><span class="resumo-value">${classeTxt}</span></div>
-                <div class="resumo-row"><span class="resumo-label">Valor da Causa:</span><span class="resumo-value">R$ ${parseFloat(valor).toFixed(2)}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Valor da Causa:</span><span class="resumo-value">${formatarMoedaBR(parseFloat(valorHidden) || 0)}</span></div>
                 <div class="resumo-row"><span class="resumo-label">Segredo de Justiça:</span><span class="resumo-value">${segredo}</span></div>
             </div>`;
 
