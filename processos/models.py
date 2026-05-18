@@ -134,13 +134,13 @@ class ParteFicticia(models.Model):
 
 class ProcessoJudicial(models.Model):
     numero = models.CharField(max_length=30, unique=True)
-
+    # FK para app ciclos
     ciclo = models.ForeignKey(
         "ciclos.CicloSimulacao",
         on_delete=models.PROTECT,
         related_name="processos",
     )
-
+    # FKs internas ao app processos
     vara = models.ForeignKey(
         VaraServentia,
         on_delete=models.PROTECT,
@@ -164,7 +164,7 @@ class ProcessoJudicial(models.Model):
     )
 
     valor_causa = models.DecimalField(
-        max_digits=15, decimal_places=2, default=0,
+        max_digits=15, decimal_places=2, null=True, blank=True, default="0.00",
     )
     segredo_justica = models.BooleanField(default=False)
     data_autuacao = models.DateTimeField(auto_now_add=True)
