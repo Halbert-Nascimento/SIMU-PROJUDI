@@ -352,12 +352,12 @@ def criar_parte(request):
     })
 
 
-def visualizar_processo(request, processo_id):
+def visualizar_processo(request, numero):
     processo = get_object_or_404(
         ProcessoJudicial.objects
         .select_related("classe", "status_atual", "vara", "vara__comarca", "tipo_processo", "ciclo")
         .prefetch_related("polos__parte"),
-        pk=processo_id,
+        numero=numero,
     )
 
     if not pode_visualizar_processo(request.user, processo):

@@ -268,7 +268,7 @@
                 {% for processo in page_obj %}
                 <tr data-id="{{ processo.id }}">
                     {% if is_serventia %}<td><input type="checkbox" class="rowChk" value="{{ processo.id }}"></td>{% endif %}
-                    <td class="font-mono text-[11px]"><a href="{% url 'processos:visualizar_processo' processo.id %}">{{ processo.numero }}</a></td>
+                    <td class="font-mono text-[11px]"><a href="{% url 'processos:visualizar_processo' processo.numero %}">{{ processo.numero }}</a></td>
                     <td class="text-[11px]">{{ processo.partes_resumo }}</td>
                     <td class="text-[11px]">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
                     <td>

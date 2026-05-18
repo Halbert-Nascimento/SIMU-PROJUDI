@@ -15,7 +15,7 @@ app_name = "processos"
 urlpatterns = [
     path("cadastrar/", cadastrar_processo, name="cadastrar_processo"),
     path("area-servidor/", pagina_aluno, name="pagina_aluno"),
-    path("<int:processo_id>/", visualizar_processo, name="visualizar_processo"),
+    path("<str:numero>/", visualizar_processo, name="visualizar_processo"),
     path(
         "api/varas/<int:comarca_id>/",
         varas_por_comarca,
