@@ -147,3 +147,24 @@ MEDIA_URL = '/media/'
 
 # Mídia PROTEGIDA (documentos)
 PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')
+
+
+# ─── Upload de Arquivos ───────────────────────────────────────────────────────
+UPLOAD_CONFIG = {
+    # Tamanho máximo em MB por arquivo
+    "MAX_FILE_SIZE_MB": 7,
+    # Extensões permitidas (sempre em minúsculo, com ponto)
+    "ALLOWED_EXTENSIONS": [".pdf", ".docx", ".jpg", ".jpeg"],
+    # MIMEs reais aceitos (detectados pelos bytes do arquivo, não pelo nome)
+    "ALLOWED_MIME_TYPES": [
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "image/jpeg",
+    ],
+    # Prefixos de MIME bloqueados mesmo que a extensão seja permitida
+    "BLOCKED_MIME_PREFIXES": [
+        "application/x-",           # executáveis genéricos
+        "application/octet-stream", # binários arbitrários
+        "text/x-",                  # scripts de shell/bat
+    ],
+}

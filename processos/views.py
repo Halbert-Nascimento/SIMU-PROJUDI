@@ -3,9 +3,11 @@ from __future__ import annotations
 import datetime
 import json
 
+from django.conf import settings as django_settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
+from django.db import transaction
 from django.db.models import Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -14,6 +16,7 @@ from django.views.decorators.http import require_POST
 from ciclos.models import CicloSimulacao, GrupoTrabalho
 
 from .forms import ProcessoJudicialForm
+from .utils import validar_multiplos_arquivos
 from .models import (
     ClasseProcessual,
     Comarca,
@@ -37,6 +40,17 @@ def _saudacao():
     return "Boa Noite"
 
 
+def _upload_ctx() -> dict:
+    """Retorna as constantes de upload do settings para uso nos templates."""
+    cfg = getattr(django_settings, "UPLOAD_CONFIG", {})
+    exts = cfg.get("ALLOWED_EXTENSIONS", [".pdf", ".docx", ".jpg", ".jpeg"])
+    return {
+        "upload_max_mb": cfg.get("MAX_FILE_SIZE_MB", 7),
+        "upload_allowed_extensions_json": json.dumps(exts),
+        "upload_accept_attr": ",".join(exts),
+    }
+
+
 @login_required
 def cadastrar_processo(request):
     ciclo = (
@@ -56,12 +70,19 @@ def cadastrar_processo(request):
         )
         return redirect("acesso:painel_administrativo")
 
+    # Listas usadas tanto no POST (erro) quanto no GET (vazias)
+    polo_ativo_partes: list = []
+    polo_passivo_partes: list = []
+    polo_terceiro_partes: list = []
+
     if request.method == "POST":
         form = ProcessoJudicialForm(request.POST)
 
-        polo_ativo_ids = [v for v in request.POST.getlist("polo_ativo") if v]
-        polo_passivo_ids = [v for v in request.POST.getlist("polo_passivo") if v]
+        polo_ativo_ids   = [v for v in request.POST.getlist("polo_ativo")    if v]
+        polo_passivo_ids = [v for v in request.POST.getlist("polo_passivo")  if v]
+        polo_terceiro_ids = [v for v in request.POST.getlist("polo_terceiro") if v]
 
+        # Validação de polos (passo 1) — separada da validação de arquivos (passo 2)
         polo_erro = False
         if not polo_ativo_ids:
             messages.error(request, "Insira pelo menos uma parte no Polo Ativo.", extra_tags="processo")
@@ -70,69 +91,79 @@ def cadastrar_processo(request):
             messages.error(request, "Insira pelo menos uma parte no Polo Passivo.", extra_tags="processo")
             polo_erro = True
 
-        if form.is_valid() and not polo_erro:
-            processo = form.save(commit=False)
-            processo.numero = ProcessoJudicial.gerar_numero_unico()
-            processo.ciclo = ciclo
-            processo.status_atual = StatusProcessoJudicial.objects.first()
-            processo.save()
+        # Validação de arquivos (passo 2) — feita antes da transação
+        arquivos_raw = request.FILES.getlist("documentos")
+        nomes_docs   = request.POST.getlist("documento_nomes")
+        arquivos_validos: list = []
+        arquivo_erro = False
+        if arquivos_raw:
+            arquivos_validos, erros_upload = validar_multiplos_arquivos(arquivos_raw, nomes_docs)
+            for msg in erros_upload:
+                messages.error(request, msg, extra_tags="processo arquivo")
+            if erros_upload:
+                arquivo_erro = True
 
-            grupo_criador = request.user.grupos_trabalho.filter(ciclo=ciclo).first()
-            if grupo_criador:
-                processo.grupos.add(grupo_criador)
+        tem_erro = polo_erro or arquivo_erro or not form.is_valid()
 
-            for tipo_polo, ids in (("Ativo", polo_ativo_ids), ("Passivo", polo_passivo_ids)):
-                for parte_id in ids:
-                    PoloProcessual.objects.create(
-                        processo=processo,
-                        parte_id=int(parte_id),
-                        tipo_polo=tipo_polo,
-                    )
-            for parte_id in request.POST.getlist("polo_terceiro"):
-                if parte_id:
+        if not tem_erro:
+            try:
+                status_autuado = StatusProcessoJudicial.objects.get(
+                    nome_status__iexact="Autuado"
+                )
+            except StatusProcessoJudicial.DoesNotExist:
+                messages.error(
+                    request,
+                    'Status "Autuado" não encontrado. Contate o administrador do sistema.',
+                    extra_tags="processo",
+                )
+                return render(
+                    request,
+                    "processos/cadastro_processo.html",
+                    {"form": form, "ciclo": ciclo, "comarcas": Comarca.objects.all().order_by("nome"),
+                     "step_inicial": 1, **_upload_ctx(),
+                     "polo_ativo_partes": [], "polo_passivo_partes": [], "polo_terceiro_partes": []},
+                )
+
+            with transaction.atomic():
+                processo = form.save(commit=False)
+                processo.numero = ProcessoJudicial.gerar_numero_unico()
+                processo.ciclo = ciclo
+                processo.status_atual = status_autuado
+                processo.save()
+
+                grupo_criador = request.user.grupos_trabalho.filter(ciclo=ciclo).first()
+                if grupo_criador:
+                    processo.grupos.add(grupo_criador)
+
+                for tipo_polo, ids in (("Ativo", polo_ativo_ids), ("Passivo", polo_passivo_ids)):
+                    for parte_id in ids:
+                        PoloProcessual.objects.create(
+                            processo=processo,
+                            parte_id=int(parte_id),
+                            tipo_polo=tipo_polo,
+                        )
+                for parte_id in polo_terceiro_ids:
                     PoloProcessual.objects.create(
                         processo=processo,
                         parte_id=int(parte_id),
                         tipo_polo="Terceiro",
                     )
 
-            tipo_cadastro, _ = TipoMovimentacao.objects.get_or_create(
-                nome_movimentacao="Cadastro do Processo",
-            )
-            mov_cadastro = MovimentacaoProcessual.objects.create(
-                descricao_evento=f'Processo "{processo.numero}" cadastrado.',
-                processo=processo,
-                autor=request.user,
-                tipo_movimento=tipo_cadastro,
-            )
-
-            arquivos = request.FILES.getlist("documentos")
-            nomes_docs = request.POST.getlist("documento_nomes")
-            max_size = 7 * 1024 * 1024
-
-            if arquivos:
-                tipo_juntada, _ = TipoMovimentacao.objects.get_or_create(
-                    nome_movimentacao="Juntada de Documentos",
+                tipo_cadastro, _ = TipoMovimentacao.objects.get_or_create(
+                    nome_movimentacao="Cadastro do Processo",
                 )
-                mov_juntada = MovimentacaoProcessual.objects.create(
-                    descricao_evento="Documentos anexados ao processo.",
+                mov_cadastro = MovimentacaoProcessual.objects.create(
+                    descricao_evento=f'Processo "{processo.numero}" cadastrado.',
                     processo=processo,
                     autor=request.user,
-                    tipo_movimento=tipo_juntada,
-                    movimentacao_origem=mov_cadastro,
+                    tipo_movimento=tipo_cadastro,
                 )
-                for i, arquivo in enumerate(arquivos):
-                    if arquivo.size > max_size:
-                        continue
-                    titulo = (
-                        nomes_docs[i].strip()
-                        if i < len(nomes_docs) and nomes_docs[i].strip()
-                        else arquivo.name
-                    )
+
+                for arquivo, titulo in arquivos_validos:
                     DocumentoAnexado.objects.create(
                         titulo_arquivo=titulo,
                         caminho_arquivo=arquivo,
-                        movimentacao=mov_juntada,
+                        movimentacao=mov_cadastro,
                     )
 
             messages.success(
@@ -145,8 +176,21 @@ def cadastrar_processo(request):
             for erros in form.errors.values():
                 for erro in erros:
                     messages.error(request, erro, extra_tags="processo")
+
+            # Restaura os polos no contexto para re-renderização com os dados preservados
+            if polo_ativo_ids:
+                polo_ativo_partes = list(ParteFicticia.objects.filter(id__in=polo_ativo_ids))
+            if polo_passivo_ids:
+                polo_passivo_partes = list(ParteFicticia.objects.filter(id__in=polo_passivo_ids))
+            if polo_terceiro_ids:
+                polo_terceiro_partes = list(ParteFicticia.objects.filter(id__in=polo_terceiro_ids))
+
+        # Determina em qual passo abrir o formulário ao reexibir com erros:
+        # passo 2 apenas quando o formulário e os polos estão OK e só os arquivos falharam
+        step_inicial = 2 if (arquivo_erro and not polo_erro and form.is_valid()) else 1
     else:
         form = ProcessoJudicialForm()
+        step_inicial = 1
 
     return render(
         request,
@@ -155,6 +199,11 @@ def cadastrar_processo(request):
             "form": form,
             "ciclo": ciclo,
             "comarcas": Comarca.objects.all().order_by("nome"),
+            "step_inicial": step_inicial,
+            "polo_ativo_partes": polo_ativo_partes,
+            "polo_passivo_partes": polo_passivo_partes,
+            "polo_terceiro_partes": polo_terceiro_partes,
+            **_upload_ctx(),
         },
     )
 
@@ -336,23 +385,12 @@ def visualizar_processo(request, processo_id):
         .order_by("-data_movimento")
     )
 
-    mov_cadastro = None
-    mov_juntada = None
-    for mov in movimentacoes_qs:
-        if mov.tipo_movimento.nome_movimentacao == "Cadastro do Processo":
-            mov_cadastro = mov
-        elif (
-            mov_cadastro
-            and mov.movimentacao_origem_id == mov_cadastro.id
-            and mov.tipo_movimento.nome_movimentacao == "Juntada de Documentos"
-        ):
-            mov_juntada = mov
+    mov_cadastro = next(
+        (m for m in movimentacoes_qs if m.tipo_movimento.nome_movimentacao == "Cadastro do Processo"),
+        None,
+    )
 
-    skip_ids = set()
-    if mov_cadastro:
-        skip_ids.add(mov_cadastro.id)
-    if mov_juntada:
-        skip_ids.add(mov_juntada.id)
+    skip_ids = {mov_cadastro.id} if mov_cadastro else set()
 
     movimentacoes = []
     for mov in movimentacoes_qs:
@@ -367,15 +405,12 @@ def visualizar_processo(request, processo_id):
         })
 
     if mov_cadastro:
-        docs = list(mov_cadastro.documentos.all())
-        if mov_juntada:
-            docs.extend(list(mov_juntada.documentos.all()))
         movimentacoes.append({
             "nome": "Petição Inicial",
             "descricao": mov_cadastro.descricao_evento,
             "data": mov_cadastro.data_movimento,
             "autor_nome": mov_cadastro.autor.get_full_name() or mov_cadastro.autor.username,
-            "documentos": docs,
+            "documentos": list(mov_cadastro.documentos.all()),
         })
 
     return render(
