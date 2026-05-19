@@ -22,7 +22,14 @@ def criar_ciclo(request):
     if request.method != "POST":
         raise Http404()
 
-    form = CicloSimulacaoForm(request.POST)
+    post_data = request.POST.copy()
+    status_em_andamento = StatusCiclo.objects.filter(
+        nome_status__iexact="em andamento"
+    ).first()
+    if status_em_andamento:
+        post_data["status"] = status_em_andamento.pk
+
+    form = CicloSimulacaoForm(post_data)
     if form.is_valid():
         ciclo = form.save(commit=False)
         ciclo.coordenador = request.user

@@ -41,7 +41,7 @@ body { background-color: #f7f7f7; }
     background-color: #153a61;
     color: #b8c5d6;
     padding: 20px 0;
-    margin-top: 40px;
+    margin-top: auto;
     border-top: 3px solid #1a5b9e;
 }
 .footer-content {

@@ -1,0 +1,568 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Processo Judicial - Área do Servidor{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<style>
+    .section-title {
+        color: #1a5b9e;
+        font-size: 13px;
+        font-weight: bold;
+        text-transform: uppercase;
+        padding: 6px 0 6px 8px;
+        border-left: 4px solid #1a5b9e;
+        background: #f4f4f4;
+        margin-bottom: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .tbl-projudi {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+    }
+    .tbl-projudi thead th {
+        background: #e0e0e0;
+        text-align: left;
+        font-weight: bold;
+        color: #333;
+        padding: 6px 10px;
+        border: 1px solid #c8c8c8;
+        font-size: 12px;
+    }
+    .tbl-projudi tbody td {
+        padding: 6px 10px;
+        border: 1px solid #d8d8d8;
+        background: #fff;
+        vertical-align: middle;
+    }
+    .tbl-projudi tbody tr:nth-child(even) td { background: #ececec; }
+    .tbl-projudi tbody tr:hover td { background: #fffbe5; }
+    .tbl-projudi a { color: #1a5b9e; font-weight: bold; }
+    .tbl-projudi a:hover { text-decoration: underline; }
+    .pill {
+        display: inline-block;
+        padding: 1px 7px;
+        font-size: 10px;
+        font-weight: bold;
+        border-radius: 10px;
+        text-transform: uppercase;
+    }
+    .pill.ok { background: #dff5e1; color: #2e7d32; border: 1px solid #bee0c2; }
+    .pill.gray { background: #eee; color: #555; border: 1px solid #ccc; }
+    .pill.warn { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
+
+    .filtros {
+        background: #f4f4f4;
+        border: 1px solid #d1d1d1;
+        padding: 10px 12px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+    .filtros label {
+        font-size: 11px;
+        font-weight: bold;
+        color: #444;
+        display: block;
+        margin-bottom: 3px;
+        text-transform: uppercase;
+    }
+    .filtros input, .filtros select {
+        border: 1px solid #b8b8b8;
+        padding: 4px 6px;
+        font-size: 12px;
+        background: #fff;
+        border-radius: 2px;
+    }
+    .filtros input:focus, .filtros select:focus {
+        outline: none;
+        border-color: #1a5b9e;
+        box-shadow: 0 0 0 1px #1a5b9e;
+    }
+    .btn-proj {
+        background: #1e5894;
+        color: #fff;
+        padding: 5px 14px;
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        border: 1px solid #154170;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+    .btn-proj:hover { background: #226bb8; }
+    .btn-sec {
+        background: #fff;
+        color: #333;
+        border: 1px solid #b8b8b8;
+        padding: 5px 14px;
+        font-size: 11px;
+        font-weight: bold;
+        text-transform: uppercase;
+        border-radius: 2px;
+        cursor: pointer;
+    }
+    .btn-sec:hover { background: #eee; }
+
+    /* Modal */
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,.45);
+        display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+        background: #fff; width: 580px; max-width: 92vw;
+        border-radius: 4px; overflow: hidden;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+        transform: scale(.96); transition: transform .15s ease;
+    }
+    .modal-overlay.open .modal { transform: scale(1); }
+
+    .grp-card {
+        border: 1px solid #d1d1d1; border-radius: 3px; padding: 10px;
+        display: flex; align-items: center; gap: 10px; cursor: pointer;
+        background: #fff; transition: all .12s;
+    }
+    .grp-card:hover { background: #f4f9ff; border-color: #1a5b9e; }
+    .grp-card.selected { background: #e9f1fa; border-color: #1a5b9e; box-shadow: inset 0 0 0 1px #1a5b9e; }
+    .grp-avatar {
+        width: 36px; height: 36px; border-radius: 50%;
+        background: #1a5b9e; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 13px; flex-shrink: 0;
+    }
+    .grp-card .check { color: #ccc; font-size: 18px; }
+    .grp-card.selected .check { color: #1a5b9e; }
+
+    /* Toast */
+    .toast {
+        position: fixed; bottom: 24px; right: 24px;
+        background: #2e7d32; color: #fff; padding: 12px 18px;
+        border-radius: 3px; font-size: 13px; font-weight: bold;
+        box-shadow: 0 6px 16px rgba(0,0,0,.2);
+        display: flex; align-items: center; gap: 8px;
+        transform: translateY(20px); opacity: 0; pointer-events: none;
+        transition: all .25s ease; z-index: 200;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Navigation Bar -->
+<nav class="bg-fundo-caixa border-b border-borda sticky top-[45px] z-40">
+    <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
+        <div class="flex items-center gap-5">
+            <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
+
+            <!-- Processos com Dropdown -->
+            <div class="relative group">
+                <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
+                <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
+                    <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
+                </div>
+            </div>
+
+            <a href="#" class="hover:underline text-texto-principal font-medium">Audiencias</a>
+        </div>
+        <div class="flex items-center gap-1 text-texto-secundario">
+            <i class="fas fa-times text-[11px]"></i>
+            <span>29:53</span>
+        </div>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="max-w-container mx-auto px-6 py-5">
+
+    <!-- Cabecalho -->
+    <div class="mb-4 pb-3 border-b border-gray-200 flex items-end gap-4">
+        <div class="flex-1">
+            <h1 class="text-[#1a5b9e] text-2xl font-bold flex items-center gap-2">
+                {% if is_serventia %}
+                <i class="fa-solid fa-user-tie"></i> Área do Serventuário
+                {% else %}
+                <i class="fa-solid fa-user"></i> Área do Servidor
+                {% endif %}
+            </h1>
+            <p class="text-[12px] text-gray-700 mt-1">
+                {{ saudacao }}, <strong>{% if usuario.get_full_name %}{{ usuario.get_full_name|upper }}{% else %}{{ usuario.username|upper }}{% endif %}</strong> | Seja bem vindo ao <strong>Processo Judicial</strong>
+            </p>
+            {% if serventia %}
+            <p class="text-[12px] text-gray-700">{{ serventia }}{% if cargo %} — {{ cargo }}{% endif %}</p>
+            {% endif %}
+            <p class="text-[12px] text-gray-700">E-mail: <span class="text-[#1a5b9e]">{{ usuario.email }}</span></p>
+        </div>
+        <div class="text-[11px] text-gray-500 text-right">
+            {% if usuario.last_login %}
+            <div>Último acesso: <strong>{{ usuario.last_login|date:"d/m/Y" }} às {{ usuario.last_login|date:"H:i" }}</strong></div>
+            {% endif %}
+            <div>IP: {{ ip_acesso }}</div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <h2 class="section-title">
+        <i class="fa-solid fa-magnifying-glass"></i> CONSULTAR PROCESSOS
+    </h2>
+    <form method="GET" action="{% url 'processos:pagina_aluno' %}" class="filtros mb-5">
+        <div>
+            <label>Nº do Processo</label>
+            <input type="text" name="numero" value="{{ filtro_numero }}" placeholder="0000000-00.0000.0.00.0000" style="width:220px;">
+        </div>
+        <div>
+            <label>Classe</label>
+            <select name="classe" style="width:200px;">
+                <option value="">Todas</option>
+                {% for classe in classes %}
+                <option value="{{ classe.id }}" {% if filtro_classe == classe.id|stringformat:"s" %}selected{% endif %}>{{ classe.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label>Situação</label>
+            <select name="situacao" style="width:140px;">
+                <option value="">Todas</option>
+                {% for st in status_opcoes %}
+                <option value="{{ st.id }}" {% if filtro_situacao == st.id|stringformat:"s" %}selected{% endif %}>{{ st.nome_status }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="flex gap-2">
+            <button type="submit" class="btn-proj"><i class="fa-solid fa-magnifying-glass mr-1"></i> Pesquisar</button>
+            <a href="{% url 'processos:pagina_aluno' %}" class="btn-sec">Limpar</a>
+        </div>
+    </form>
+
+    <!-- Tabela de processos -->
+    <div class="flex items-center justify-between mb-2">
+        <h2 class="section-title flex-1" style="margin:0;">
+            <i class="fa-solid fa-list"></i> {% if is_serventia %}PROCESSOS DA VARA{% else %}PROCESSOS VINCULADOS{% endif %}
+        </h2>
+        {% if page_obj %}
+        <div class="text-[11px] text-gray-600 ml-2">
+            Exibindo <strong>{{ page_obj|length }}</strong> de <strong>{{ total_processos }}</strong> processo{{ total_processos|pluralize:"s" }}
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="tbl-projudi">
+            <thead>
+                <tr>
+                    {% if is_serventia %}<th style="width:30px;"><input type="checkbox" id="selAll"></th>{% endif %}
+                    <th>Nº Processo</th>
+                    <th>Partes</th>
+                    <th>Última Movimentação</th>
+                    <th>Situação</th>
+                    {% if is_serventia %}<th style="width:60px;">Ações</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for processo in page_obj %}
+                <tr data-id="{{ processo.id }}">
+                    {% if is_serventia %}<td><input type="checkbox" class="rowChk" value="{{ processo.id }}"></td>{% endif %}
+                    <td class="font-mono text-[11px]"><a href="{% url 'processos:visualizar_processo' processo.numero %}">{{ processo.numero }}</a></td>
+                    <td class="text-[11px]">{{ processo.partes_resumo }}</td>
+                    <td class="text-[11px]">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
+                    <td>
+                        {% if processo.status_atual.nome_status == "Arquivado" %}
+                            <span class="pill gray">{{ processo.status_atual.nome_status }}</span>
+                        {% elif processo.status_atual.nome_status == "Suspenso" %}
+                            <span class="pill warn">{{ processo.status_atual.nome_status }}</span>
+                        {% else %}
+                            <span class="pill ok">{{ processo.status_atual.nome_status }}</span>
+                        {% endif %}
+                    </td>
+                    {% if is_serventia %}
+                    <td class="text-center">
+                        <button type="button" class="text-[#1a5b9e] hover:text-[#226bb8] btn-atribuir-row" data-id="{{ processo.id }}" data-num="{{ processo.numero }}" data-classe="{{ processo.classe.nome }}" title="Atribuir grupo">
+                            <i class="fa-solid fa-users-gear"></i>
+                        </button>
+                    </td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="{% if is_serventia %}6{% else %}4{% endif %}" class="text-center italic py-4" style="color: #666;">
+                        Nenhum processo vinculado ao seu usuário.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Ações em lote (serventia) -->
+    {% if is_serventia and page_obj %}
+    <div class="flex items-center justify-between mt-4 text-[12px]">
+        <div class="flex items-center gap-2">
+            <button type="button" class="btn-sec" id="bulkAssign">
+                <i class="fa-solid fa-users-gear mr-1"></i> Atribuir grupo aos selecionados
+            </button>
+            <span id="selCount" class="text-gray-500">0 selecionados</span>
+        </div>
+
+        <!-- Paginação -->
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="flex items-center gap-1">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-left"></i></a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-left"></i></a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                <span class="px-3 py-1 bg-[#1a5b9e] text-white font-bold text-[11px]">{{ num }}</span>
+                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-3 text-[11px]">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-right"></i></a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-right"></i></a>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <!-- Paginação (sem serventia) -->
+    {% if page_obj.paginator.num_pages > 1 %}
+    <div class="flex items-center justify-end mt-4 text-[12px]">
+        <div class="flex items-center gap-1">
+            {% if page_obj.has_previous %}
+            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-left"></i></a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-left"></i></a>
+            {% endif %}
+            {% for num in page_obj.paginator.page_range %}
+                {% if num == page_obj.number %}
+                <span class="px-3 py-1 bg-[#1a5b9e] text-white font-bold text-[11px]">{{ num }}</span>
+                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
+                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-3 text-[11px]">{{ num }}</a>
+                {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-right"></i></a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-right"></i></a>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+
+</main>
+
+{% if is_serventia %}
+<!-- Modal: Atribuir Grupo -->
+<div class="modal-overlay" id="grpModal">
+    <div class="modal">
+        <div class="bg-[#153a61] text-white p-3 flex items-center justify-between">
+            <div class="text-[12px] font-bold uppercase flex items-center gap-2">
+                <i class="fa-solid fa-users-gear"></i> Atribuir Grupo ao Processo
+            </div>
+            <button type="button" id="modalClose" class="text-white hover:text-gray-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <div class="p-5">
+            <div class="mb-3 text-[12px]">
+                <div class="text-gray-500 uppercase text-[10px] font-bold">Processo</div>
+                <div id="modalProcNum" class="font-bold text-[#1a5b9e]">—</div>
+                <div id="modalProcClass" class="text-gray-600">—</div>
+            </div>
+
+            <div class="text-[11px] font-bold uppercase text-gray-600 mb-2">Selecione os grupos responsáveis</div>
+
+            <div class="space-y-2 max-h-[280px] overflow-y-auto pr-1" id="grpList">
+                {% for g in grupos_ciclo %}
+                <div class="grp-card" data-grupo-id="{{ g.id }}">
+                    <div class="grp-avatar">{{ g.nome|truncatechars:1 }}</div>
+                    <div class="flex-1">
+                        <div class="text-[13px] font-bold text-gray-800">{{ g.nome }}</div>
+                        <div class="text-[11px] text-gray-500">{{ g.cargo_simulacao.nome }}</div>
+                    </div>
+                    <i class="fa-solid fa-circle check"></i>
+                </div>
+                {% endfor %}
+                <div class="grp-card" data-grupo-id="">
+                    <div class="grp-avatar" style="background:#aaa;"><i class="fa-solid fa-ban"></i></div>
+                    <div class="flex-1">
+                        <div class="text-[13px] font-bold text-gray-800">Remover atribuição</div>
+                        <div class="text-[11px] text-gray-500">Processo ficará sem grupo definido</div>
+                    </div>
+                    <i class="fa-solid fa-circle check"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-gray-50 px-5 py-3 flex justify-end gap-2 border-t border-gray-200">
+            <button type="button" class="btn-sec" id="modalCancel">Cancelar</button>
+            <button type="button" class="btn-proj" id="modalConfirm">
+                <i class="fa-solid fa-check mr-1"></i> Confirmar Atribuição
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg"></span>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const csrfToken = "{{ csrf_token }}";
+    const modal = document.getElementById("grpModal");
+    const selAllChk = document.getElementById("selAll");
+    const selCountEl = document.getElementById("selCount");
+    let modalProcessos = [];
+    let selectedGrupoIds = new Set();
+    let removeMode = false;
+
+    // --- Checkbox select all ---
+    selAllChk.addEventListener("change", function () {
+        document.querySelectorAll(".rowChk").forEach(c => c.checked = this.checked);
+        updateSelCount();
+    });
+
+    document.querySelectorAll(".rowChk").forEach(c => {
+        c.addEventListener("change", updateSelCount);
+    });
+
+    function getSelectedIds() {
+        return [...document.querySelectorAll(".rowChk:checked")].map(c => parseInt(c.value));
+    }
+
+    function updateSelCount() {
+        const n = getSelectedIds().length;
+        selCountEl.textContent = `${n} selecionado${n !== 1 ? "s" : ""}`;
+    }
+
+    // --- Modal ---
+    function openModal(processoIds, titulo, subtitulo) {
+        modalProcessos = processoIds;
+        document.getElementById("modalProcNum").textContent = titulo;
+        document.getElementById("modalProcClass").textContent = subtitulo;
+        selectedGrupoIds.clear();
+        removeMode = false;
+        renderGrpSelection();
+        modal.classList.add("open");
+    }
+
+    function closeModal() {
+        modal.classList.remove("open");
+    }
+
+    function renderGrpSelection() {
+        document.querySelectorAll("#grpList .grp-card").forEach(card => {
+            const id = card.dataset.grupoId;
+            let isSelected;
+            if (id === "") {
+                isSelected = removeMode;
+            } else {
+                isSelected = selectedGrupoIds.has(id);
+            }
+            card.classList.toggle("selected", isSelected);
+            const icon = card.querySelector(".check");
+            icon.className = `fa-solid ${isSelected ? "fa-circle-check" : "fa-circle"} check`;
+        });
+    }
+
+    document.querySelectorAll("#grpList .grp-card").forEach(card => {
+        card.addEventListener("click", function () {
+            const id = this.dataset.grupoId;
+            if (id === "") {
+                removeMode = !removeMode;
+                if (removeMode) selectedGrupoIds.clear();
+            } else {
+                removeMode = false;
+                if (selectedGrupoIds.has(id)) {
+                    selectedGrupoIds.delete(id);
+                } else {
+                    selectedGrupoIds.add(id);
+                }
+            }
+            renderGrpSelection();
+        });
+    });
+
+    // Botão atribuir por linha
+    document.querySelectorAll(".btn-atribuir-row").forEach(btn => {
+        btn.addEventListener("click", function () {
+            const id = parseInt(this.dataset.id);
+            openModal([id], this.dataset.num, this.dataset.classe);
+        });
+    });
+
+    // Botão atribuir em lote
+    document.getElementById("bulkAssign").addEventListener("click", function () {
+        const ids = getSelectedIds();
+        if (ids.length === 0) {
+            showToast("Selecione ao menos um processo.", true);
+            return;
+        }
+        openModal(ids, `${ids.length} processo(s) selecionado(s)`, "Atribuição em lote");
+    });
+
+    // Fechar modal
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+    document.getElementById("modalCancel").addEventListener("click", closeModal);
+
+    // Confirmar atribuição
+    document.getElementById("modalConfirm").addEventListener("click", function () {
+        const grupoIds = removeMode ? [] : [...selectedGrupoIds].map(Number);
+        if (!removeMode && grupoIds.length === 0) {
+            showToast("Selecione ao menos um grupo.", true);
+            return;
+        }
+        fetch("{% url 'processos:atribuir_grupo_processos' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+            },
+            body: JSON.stringify({
+                processo_ids: modalProcessos,
+                grupo_ids: grupoIds,
+            }),
+        })
+        .then(r => r.json().then(data => ({ ok: r.ok, data })))
+        .then(({ ok, data }) => {
+            if (!ok) {
+                showToast(data.erro || "Erro ao atribuir grupo.", true);
+                return;
+            }
+            showToast(
+                removeMode
+                    ? "Atribuições removidas com sucesso!"
+                    : modalProcessos.length === 1
+                        ? `${grupoIds.length} grupo(s) atribuído(s) com sucesso!`
+                        : `Atribuição em lote concluída! (${data.atualizados} processos)`
+            );
+            closeModal();
+            selAllChk.checked = false;
+            document.querySelectorAll(".rowChk").forEach(c => c.checked = false);
+            updateSelCount();
+        })
+        .catch(() => showToast("Erro de conexão.", true));
+    });
+
+    // --- Toast ---
+    function showToast(msg, err) {
+        const t = document.getElementById("toast");
+        document.getElementById("toastMsg").textContent = msg;
+        t.style.background = err ? "#c0392b" : "#2e7d32";
+        t.classList.add("show");
+        setTimeout(() => t.classList.remove("show"), 2800);
+    }
+});
+</script>
+{% endif %}
+{% endblock %}
