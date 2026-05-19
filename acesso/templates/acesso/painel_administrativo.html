@@ -81,8 +81,8 @@
                             <i class="fa-solid fa-folder-tree mr-2 text-sm"></i> GESTÃO DE CICLOS DE SIMULAÇÃO
                         </div>
                         {% if status_ciclo_opcoes %}
-                        <button type="button" onclick="openModal('modal-ciclo')" class="bg-[#1e5894] hover:bg-[#1a4b7f] text-white px-3 py-1 rounded-sm transition-colors text-xs lowercase flex items-center gap-1 shadow-sm">
-                            <i class="fa-solid fa-plus"></i> novo ciclo
+                        <button type="button" onclick="openModal('modal-ciclo')" class="bg-[#1e5894] hover:bg-[#1a4b7f] text-white px-3 py-1 rounded-sm transition-colors text-xs flex items-center gap-1 shadow-sm">
+                            <i class="fa-solid fa-plus"></i> Novo ciclo
                         </button>
                         {% endif %}
                     </div>
@@ -243,7 +243,8 @@
                                 <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Grupos de<br>Trabalho</span>
                             </div>
                             <div class="bg-white border border-gray-200 p-3 rounded text-center shadow-sm flex flex-col justify-center items-center">
-                                <span class="block text-3xl font-bold text-gray-700 mb-1">{{ total_alunos_vinculados }}</span>
+                                <span class="block text-3xl font-bold text-gray-700 mb-1">20</span>
+                                {% comment %} <span class="block text-3xl font-bold text-gray-700 mb-1">{{ total_alunos_vinculados }}</span> {% endcomment %}
                                 <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Alunos<br>Vinculados</span>
                             </div>
                         </div>
@@ -491,24 +492,10 @@
 
                 
 
-                <!-- Status -->
-                <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Status *</label>
-                    <select
-                        name="status"
-                        required
-                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                        <option value="">Selecione...</option>
-                        {% for s in status_ciclo_opcoes %}
-                        <option value="{{ s.pk }}">{{ s.nome_status }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
                 <!-- Info coordenador (somente leitura) -->
                 <div class="bg-blue-50 border border-blue-100 rounded px-3 py-2 text-xs text-blue-700 flex items-center gap-2">
                     <i class="fa-solid fa-circle-info"></i>
-                    Você será registrado automaticamente como <strong class="ml-1">coordenador</strong> deste ciclo.
+                    Você será registrado automaticamente como <strong>Coordenador</strong> deste ciclo.
                 </div>
 
             </div>

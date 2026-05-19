@@ -7,9 +7,6 @@ from django.urls import URLPattern, URLResolver, get_resolver
 def home(request):
     return render(request, "acesso/login.html")
 
-def cadastro_processo(request):
-    return render(request, "base/cadastro_processo.html")
-
 
 def _collect_routes(urlpatterns, prefix=""):
     routes = []
