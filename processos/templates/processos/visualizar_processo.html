@@ -386,7 +386,7 @@
 
     <div class="panel">
         <!-- POLO ATIVO -->
-        <div class="autos-title"><i class="fa-solid fa-user"></i> POLO ATIVO | REQUERENTE</div>
+        <div class="autos-title" id="secao-polos"><i class="fa-solid fa-user"></i> POLO ATIVO | REQUERENTE</div>
         {% for polo in polos_ativo %}
         <div class="panel-inner {% if not forloop.first %}mt-2{% endif %}">
             <div class="grid grid-cols-12 gap-3 items-start">
@@ -404,9 +404,9 @@
                 </div>
                 <div class="col-span-2 flex justify-end pt-1">
                     <div class="polo-actions">
-                        <i class="fa-solid fa-lock-open pa" data-tip="Acesso Liberado"></i>
+                        {% comment %} <i class="fa-solid fa-lock-open pa" data-tip="Acesso Liberado"></i>
                         <i class="fa-solid fa-envelope pa" data-tip="Mensagem"></i>
-                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span>
+                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span> {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -436,10 +436,10 @@
                 </div>
                 <div class="col-span-2 flex justify-end pt-1">
                     <div class="polo-actions">
-                        <i class="fa-solid fa-lock pa" data-tip="Acesso Bloqueado"></i>
+                        {% comment %} <i class="fa-solid fa-lock pa" data-tip="Acesso Bloqueado"></i>
                         <i class="fa-solid fa-envelope pa" data-tip="Mensagem"></i>
                         <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span>
-                        <i class="fa-solid fa-table-cells pa" data-tip="Detalhes"></i>
+                        <i class="fa-solid fa-table-cells pa" data-tip="Detalhes"></i> {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -470,9 +470,9 @@
                 </div>
                 <div class="col-span-2 flex justify-end pt-1">
                     <div class="polo-actions">
-                        <i class="fa-solid fa-lock-open pa" data-tip="Acesso Liberado"></i>
+                        {% comment %} <i class="fa-solid fa-lock-open pa" data-tip="Acesso Liberado"></i>
                         <i class="fa-solid fa-envelope pa" data-tip="Mensagem"></i>
-                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span>
+                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span> {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -547,8 +547,12 @@
             <div class="flex justify-end gap-3 mt-3 pt-2 border-t border-gray-200 info-actions">
                 <i class="fa-regular fa-calendar" data-tip="Agenda do processo"></i>
                 <i class="fa-solid fa-circle-exclamation red" data-tip="Pendencias"></i>
-                <i class="fa-solid fa-user-group" data-tip="Partes envolvidas"></i>
-                <i class="fa-solid fa-file-pdf red" data-tip="Exportar PDF"></i>
+                <i class="fa-solid fa-user-group" data-tip="Partes envolvidas"
+                   style="cursor:pointer;"
+                   onclick="document.getElementById('secao-polos').scrollIntoView({behavior:'smooth',block:'start'})"></i>
+                <i class="fa-solid fa-file-pdf red" data-tip="Exportar PDF"
+                   style="cursor:pointer;"
+                   onclick="window.print()"></i>
             </div>
         </div>
     </div>
