@@ -8,12 +8,14 @@ from .views import (
     pagina_aluno,
     varas_por_comarca,
     visualizar_processo,
+    movimentar_processo,
 )
 
 app_name = "processos"
 
 urlpatterns = [
     path("cadastrar/", cadastrar_processo, name="cadastrar_processo"),
+    path("movimentar/", movimentar_processo, name="movimentar_processo"),
     path("area-servidor/", pagina_aluno, name="pagina_aluno"),
     path("<str:numero>/", visualizar_processo, name="visualizar_processo"),
     path(
