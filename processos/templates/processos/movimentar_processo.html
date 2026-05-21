@@ -174,19 +174,26 @@
 
         <!-- Tipo Movimentação -->
         <div class="mb-3">
-            <label class="lbl">
+            <label class="lbl" for="tipoMovInput">
                 <span class="req">*</span>Tipo Movimentação
                 <span class="hint-error ml-2">Preencher conforme TPU CNJ para alimentar estatística de produtividade</span>
             </label>
-            <select id="tipoMov" name="tipo_movimento"
-                    class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none">
-                <option value="">— Selecione o Tipo de Movimentação —</option>
-                {% for tipo in tipos_movimentacao %}
-                <option value="{{ tipo.id }}">{{ tipo.nome_movimentacao }}</option>
-                {% empty %}
-                <option disabled>Nenhum tipo cadastrado</option>
-                {% endfor %}
-            </select>
+            <div class="relative" id="tipoMovWrapper">
+                <input type="text" id="tipoMovInput" autocomplete="off"
+                       placeholder="— Digite ou selecione o Tipo de Movimentação —"
+                       class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none pr-8"/>
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-texto-secundario text-[10px]">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </span>
+                <input type="hidden" id="tipoMov" name="tipo_movimento"/>
+                <div id="tipoMovDropdown"
+                     class="hidden absolute left-0 right-0 top-full mt-0.5 bg-fundo-container border border-borda rounded shadow-md z-50 max-h-56 overflow-y-auto text-[12px]">
+                </div>
+            </div>
+            {# dados dos tipos para o combobox JS #}
+            <script id="tipoMovData" type="application/json">
+            [{% for tipo in tipos_movimentacao %}{"id":"{{ tipo.id }}","nome":"{{ tipo.nome_movimentacao|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+            </script>
         </div>
 
         <!-- Descrição Movimentação -->
@@ -397,6 +404,99 @@
 </div>
 
 <script>
+// ── Combobox: Tipo Movimentação ───────────────────────
+(function () {
+    const TIPOS = JSON.parse(document.getElementById('tipoMovData').textContent);
+    const input    = document.getElementById('tipoMovInput');
+    const hidden   = document.getElementById('tipoMov');
+    const dropdown = document.getElementById('tipoMovDropdown');
+    let highlighted = -1;
+
+    function buildItems(lista) {
+        dropdown.innerHTML = '';
+        highlighted = -1;
+        if (lista.length === 0) {
+            dropdown.innerHTML = '<div class="px-3 py-2 text-texto-secundario italic">Nenhum resultado encontrado</div>';
+            return;
+        }
+        lista.forEach((t, i) => {
+            const d = document.createElement('div');
+            d.className = 'px-3 py-2 cursor-pointer hover:bg-fundo-caixa';
+            d.dataset.id   = t.id;
+            d.dataset.nome = t.nome;
+            d.dataset.idx  = i;
+            d.textContent  = t.nome;
+            d.addEventListener('mousedown', e => {
+                e.preventDefault();
+                selectOption(t.id, t.nome);
+            });
+            dropdown.appendChild(d);
+        });
+    }
+
+    function openDropdown(query) {
+        const q = (query || '').toLowerCase().trim();
+        const lista = q ? TIPOS.filter(t => t.nome.toLowerCase().includes(q)) : TIPOS;
+        buildItems(lista);
+        dropdown.classList.remove('hidden');
+    }
+
+    function closeDropdown() {
+        dropdown.classList.add('hidden');
+        highlighted = -1;
+    }
+
+    function selectOption(id, nome) {
+        hidden.value  = id;
+        input.value   = nome;
+        input.dataset.selected = id;
+        closeDropdown();
+    }
+
+    function highlight(dir) {
+        const items = dropdown.querySelectorAll('[data-id]');
+        if (!items.length) return;
+        if (highlighted >= 0) items[highlighted].classList.remove('bg-fundo-caixa');
+        highlighted = Math.max(0, Math.min(items.length - 1, highlighted + dir));
+        items[highlighted].classList.add('bg-fundo-caixa');
+        items[highlighted].scrollIntoView({ block: 'nearest' });
+    }
+
+    input.addEventListener('focus', () => openDropdown(input.value));
+    input.addEventListener('input', () => {
+        hidden.value = '';
+        input.dataset.selected = '';
+        openDropdown(input.value);
+    });
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            closeDropdown();
+            // Se digitou mas não selecionou nada, limpa o campo
+            if (!hidden.value) input.value = '';
+        }, 150);
+    });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown')  { e.preventDefault(); highlight(+1); return; }
+        if (e.key === 'ArrowUp')    { e.preventDefault(); highlight(-1); return; }
+        if (e.key === 'Escape')     { closeDropdown(); input.blur(); return; }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const items = dropdown.querySelectorAll('[data-id]');
+            if (highlighted >= 0 && items[highlighted]) {
+                selectOption(items[highlighted].dataset.id, items[highlighted].dataset.nome);
+            }
+        }
+    });
+
+    // Fecha ao clicar fora
+    document.addEventListener('click', e => {
+        if (!document.getElementById('tipoMovWrapper').contains(e.target)) closeDropdown();
+    });
+
+    // Expõe para uso externo (pré-preenchimento no modo edição)
+    window._tipoMovSelect = selectOption;
+})();
+
 // ── State ─────────────────────────────────────────────
 let pendingFiles = [];
 let savedFiles   = [];   // { id, desc, name, file: File }
@@ -738,14 +838,10 @@ function avancar() {
     if (pendingFiles.length > 0) {
         showToast('Confirme ou remova os arquivos pendentes antes de avançar', true); return;
     }
-    if (savedFiles.length === 0) {
-        showToast('Adicione ao menos um documento antes de avançar', true); return;
-    }
 
     // Preenche card de revisão
-    const sel   = document.getElementById('tipoMov');
     const desc  = document.getElementById('descMov').value.trim();
-    document.getElementById('rev-tipo').textContent      = sel.options[sel.selectedIndex].text;
+    document.getElementById('rev-tipo').textContent      = document.getElementById('tipoMovInput').value;
     document.getElementById('rev-descricao').textContent = desc || '(sem descrição)';
 
     const ul = document.getElementById('rev-arquivos');
@@ -799,8 +895,9 @@ function confirmarMovimentacao() {
 // ── Pré-preenchimento modo edição ─────────────────────
 {% if movimentacao_origem_id %}
 document.addEventListener('DOMContentLoaded', function () {
-    const sel = document.getElementById('tipoMov');
-    sel.value = '{{ edicao_tipo_id }}';
+    const TIPOS = JSON.parse(document.getElementById('tipoMovData').textContent);
+    const tipo  = TIPOS.find(t => t.id === '{{ edicao_tipo_id }}');
+    if (tipo) window._tipoMovSelect(tipo.id, tipo.nome);
     const ta = document.getElementById('descMov');
     ta.value = `{{ edicao_descricao|escapejs }}`;
     ta.dispatchEvent(new Event('input'));
