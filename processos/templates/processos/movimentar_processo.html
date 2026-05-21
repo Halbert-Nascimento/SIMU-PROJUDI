@@ -124,7 +124,26 @@
 
     <h2 class="text-azul-primario font-bold text-[20px] mb-4">&raquo; Movimentar Processo</h2>
 
-    <span class="step-badge mb-3 inline-block">Passo 1</span>
+    {% if messages %}
+    <div class="mb-3">
+        {% for msg in messages %}{% if 'movimentacao' in msg.tags %}
+        <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-2 rounded text-[12px] mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-circle-xmark"></i> {{ msg }}
+        </div>
+        {% endif %}{% endfor %}
+    </div>
+    {% endif %}
+
+    <form id="formMovimentar" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if movimentacao_origem_id %}
+    <input type="hidden" name="movimentacao_origem_id" value="{{ movimentacao_origem_id }}">
+    {% endif %}
+    {# campos ocultos para documentos gerados pelo editor #}
+    <textarea name="editor_html" id="editorHtmlHidden" class="hidden"></textarea>
+    <input type="hidden" name="editor_html_nome" id="editorHtmlNome">
+
+    <span class="step-badge mb-3 inline-block" id="stepBadge">Passo 1</span>
 
     <!-- ====== PASSO 1 - DADOS MOVIMENTAÇÃO ====== -->
     <fieldset class="p-5 mb-4 mt-3">
@@ -159,7 +178,7 @@
                 <span class="req">*</span>Tipo Movimentação
                 <span class="hint-error ml-2">Preencher conforme TPU CNJ para alimentar estatística de produtividade</span>
             </label>
-            <select id="tipoMov"
+            <select id="tipoMov" name="tipo_movimento"
                     class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none">
                 <option value="">— Selecione o Tipo de Movimentação —</option>
                 {% for tipo in tipos_movimentacao %}
@@ -176,26 +195,14 @@
                 Descrição Movimentação
                 <i class="fa-solid fa-circle-xmark lbl-x"></i>
             </label>
-            <textarea id="descMov" rows="3"
+            <textarea id="descMov" name="descricao_evento" rows="3"
                       class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none resize-none overflow-hidden"
                       oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
         </div>
 
-        <!-- ====== ASSINATURA DO LADO DO SERVIDOR ====== -->
+        <!-- ====== DOCUMENTOS DA MOVIMENTAÇÃO ====== -->
         <fieldset class="p-4 mt-4">
-            <legend class="text-texto-principal text-[12px]">ASSINATURA DO LADO DO SERVIDOR</legend>
-
-            <!-- Tipo de Arquivos -->
-            <div class="mb-3 mt-2">
-                <label class="lbl">
-                    <span class="req">*</span>Tipo de Arquivos
-                    <i class="fa-solid fa-magnifying-glass lbl-icon"></i>
-                    <i class="fa-solid fa-circle-xmark lbl-x"></i>
-                </label>
-                <input id="tipoArq" type="text"
-                       class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none"
-                       placeholder="Digite o Tipo de Arquivo"/>
-            </div>
+            <legend class="text-texto-principal text-[12px]">DOCUMENTOS DA MOVIMENTAÇÃO</legend>
 
             <!-- Tabs -->
             <div class="tab-bar">
@@ -212,7 +219,7 @@
                         <div class="ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                         <div class="font-bold text-azul-primario text-[13px]">Arraste arquivos aqui ou clique para selecionar</div>
                         <div class="text-[11px] text-texto-secundario mt-1">Tamanho máximo: 10MB por arquivo • PDF, DOC, DOCX, ODT, JPG, PNG</div>
-                        <input id="fileInput" type="file" multiple class="hidden" accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png"/>
+                        <input id="fileInput" name="documentos" type="file" multiple class="hidden" accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png"/>
                     </div>
                     <div id="pendingFiles" class="mt-4 space-y-2"></div>
                 </div>
@@ -273,14 +280,14 @@
                             <i class="fa-solid fa-signature"></i> Assinar
                         </button>
                         <button type="button"
-                                class="bg-yellow-600 text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-yellow-700 transition-colors shadow-sm flex items-center gap-1.5"
-                                onclick="salvarRascunho()">
+                                class="bg-gray-600 text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-gray-700 transition-colors shadow-sm flex items-center gap-1.5"
+                                onclick="salvarRascunho()" title="Salva localmente como .html para continuar depois">
                             <i class="fa-solid fa-clock-rotate-left"></i> Salvar Rascunho
                         </button>
                         <button type="button"
-                                class="bg-azul-primario text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm flex items-center gap-1.5"
-                                onclick="carregarDocumento()">
-                            <i class="fa-solid fa-floppy-disk"></i> Carregar Documento
+                                class="bg-green-700 text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-green-800 transition-colors shadow-sm flex items-center gap-1.5"
+                                onclick="incluirNaMovimentacao()" title="Adiciona este documento à lista de anexos da movimentação">
+                            <i class="fa-solid fa-paperclip"></i> Incluir na Movimentação
                         </button>
                     </div>
                 </div>
@@ -289,9 +296,9 @@
         </fieldset>
     </fieldset>
 
-    <!-- ====== LISTA DE ARQUIVOS ====== -->
+    <!-- ====== DOCUMENTOS A ANEXAR ====== -->
     <fieldset class="p-5 mb-4">
-        <legend class="text-texto-principal text-[13px]">LISTA DE ARQUIVOS</legend>
+        <legend class="text-texto-principal text-[13px]">DOCUMENTOS A ANEXAR</legend>
 
         <div class="action-icons">
             <button title="Recarregar" onclick="renderFiles()"><i class="fa-solid fa-arrows-rotate"></i></button>
@@ -315,17 +322,71 @@
         </table>
     </fieldset>
 
-    <!-- Botões finais -->
-    <div class="flex justify-center gap-3 my-6">
-        <a href="{% url 'processos:pagina_aluno' %}"
+    <!-- Botões Passo 1 -->
+    <div id="btnsPasso1" class="flex justify-center gap-3 my-6">
+        <a href="{% url 'processos:visualizar_processo' processo.numero %}"
            class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm flex items-center gap-1.5">
             <i class="fa-solid fa-arrow-left"></i> Cancelar
         </a>
-        <button class="bg-azul-primario text-white font-bold px-8 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm flex items-center gap-1.5"
+        <button type="button"
+                class="bg-azul-primario text-white font-bold px-8 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm flex items-center gap-1.5"
                 onclick="avancar()">
             Avançar <i class="fa-solid fa-arrow-right"></i>
         </button>
     </div>
+
+    <!-- ====== PASSO 2 — REVISÃO ====== -->
+    <div id="painelPasso2" class="hidden">
+        <div class="bg-fundo-container border border-borda rounded p-5 mb-4">
+            <h3 class="text-azul-primario font-bold text-[14px] mb-4 pb-2 border-b border-borda flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-check"></i> Revisão da Movimentação
+            </h3>
+
+            <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-[12px] mb-4">
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-texto-secundario w-36 shrink-0">Processo:</span>
+                    <span class="font-bold">{{ processo.numero }}</span>
+                </div>
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-texto-secundario w-36 shrink-0">Tipo de Movimentação:</span>
+                    <span id="rev-tipo" class="font-bold"></span>
+                </div>
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-texto-secundario w-36 shrink-0">Descrição:</span>
+                    <span id="rev-descricao" class="whitespace-pre-wrap"></span>
+                </div>
+                {% if movimentacao_origem_id %}
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-texto-secundario w-36 shrink-0">Modo:</span>
+                    <span class="font-bold text-yellow-700">
+                        <i class="fa-solid fa-pen mr-1"></i>Edição — nova versão da movimentação #{{ movimentacao_origem_id }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="border-t border-borda pt-3">
+                <div class="text-[12px] font-bold text-texto-secundario mb-2">Documentos a anexar:</div>
+                <ul id="rev-arquivos" class="text-[12px] space-y-1"></ul>
+            </div>
+        </div>
+
+        <!-- Botões Passo 2 -->
+        <div class="flex justify-center gap-3 my-6">
+            <button type="button"
+                    class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm flex items-center gap-1.5"
+                    onclick="voltarPasso1()">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </button>
+            <button type="button"
+                    class="bg-green-700 text-white font-bold px-8 py-2 text-[13px] rounded hover:bg-green-800 transition-colors shadow-sm flex items-center gap-1.5"
+                    onclick="confirmarMovimentacao()">
+                <i class="fa-solid fa-circle-check"></i> Confirmar Movimentação
+            </button>
+        </div>
+    </div>
+
+    </form>
 
 </main>
 
@@ -338,7 +399,7 @@
 <script>
 // ── State ─────────────────────────────────────────────
 let pendingFiles = [];
-let savedFiles   = [];
+let savedFiles   = [];   // { id, desc, name, file: File }
 let fid = 0;
 
 // ── Tabs ──────────────────────────────────────────────
@@ -390,7 +451,6 @@ function iconFor(name) {
 function renderPending() {
     const c = document.getElementById('pendingFiles');
     if (pendingFiles.length === 0) { c.innerHTML = ''; return; }
-
     c.innerHTML = `
         <div class="bg-fundo-caixa border border-borda p-2 text-[11px] font-bold uppercase text-texto-secundario flex items-center gap-2">
             <i class="fa-solid fa-circle-info text-azul-primario"></i>
@@ -415,11 +475,11 @@ function renderPending() {
                     </div>
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <button class="bg-azul-primario text-white font-bold px-3 py-1.5 text-[12px] rounded hover:bg-azul-botao transition-colors flex items-center gap-1"
+                    <button type="button" class="bg-azul-primario text-white font-bold px-3 py-1.5 text-[12px] rounded hover:bg-azul-botao transition-colors flex items-center gap-1"
                             onclick="confirmFile(${f.id})" title="Adicionar à lista">
                         <i class="fa-solid fa-check"></i>
                     </button>
-                    <button class="bg-fundo-container text-red-600 border border-borda font-bold px-3 py-1.5 text-[12px] rounded hover:bg-fundo-caixa transition-colors flex items-center gap-1"
+                    <button type="button" class="bg-fundo-container text-red-600 border border-borda font-bold px-3 py-1.5 text-[12px] rounded hover:bg-fundo-caixa transition-colors flex items-center gap-1"
                             onclick="removePending(${f.id})" title="Remover">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
@@ -443,7 +503,7 @@ function confirmFile(id) {
     const f = pendingFiles.find(x => x.id === id);
     if (!f) return;
     if (!f.title.trim()) { showToast('Informe o título do arquivo', true); return; }
-    savedFiles.push({ id: f.id, desc: f.title.trim(), name: f.name });
+    savedFiles.push({ id: f.id, desc: f.title.trim(), name: f.name, file: f.file });
     pendingFiles = pendingFiles.filter(x => x.id !== id);
     renderPending();
     renderFiles();
@@ -465,9 +525,8 @@ function renderFiles() {
                 <td>${f.desc}</td>
                 <td><i class="fa-solid ${ico} mr-1.5" style="color:${col}"></i>${f.name}</td>
                 <td>
-                    <button class="text-azul-primario hover:text-[#226bb8] mr-2" title="Visualizar"><i class="fa-solid fa-eye"></i></button>
-                    <button class="text-azul-primario hover:text-[#226bb8] mr-2" title="Editar título" onclick="editTitle(${f.id})"><i class="fa-solid fa-pen"></i></button>
-                    <button class="text-red-600 hover:text-red-700" title="Remover" onclick="removeFile(${f.id})"><i class="fa-solid fa-trash"></i></button>
+                    <button type="button" class="text-azul-primario hover:text-[#226bb8] mr-2" title="Editar título" onclick="editTitle(${f.id})"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="text-red-600 hover:text-red-700" title="Remover" onclick="removeFile(${f.id})"><i class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>
         `;
@@ -524,22 +583,14 @@ tinymce.init({
     ].join(';'),
     font_size_formats: '8pt 9pt 10pt 11pt 12pt 14pt 16pt 18pt 24pt 36pt',
     content_style: `
-        body {
-            font-family: "Times New Roman", Times, serif;
-            font-size: 12pt;
-            line-height: 2;
-            color: #000;
-            margin: 32px 48px;
-            background: #fff;
-        }
+        body { font-family: "Times New Roman", Times, serif; font-size: 12pt;
+               line-height: 2; color: #000; margin: 32px 48px; background: #fff; }
         p { text-align: justify; margin: 0 0 6px 0; }
     `,
     language: 'pt_BR',
     language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/pt_BR.js',
-    branding: false,
-    promotion: false,
-    image_uploadtab: true,
-    automatic_uploads: false,
+    branding: false, promotion: false,
+    image_uploadtab: true, automatic_uploads: false,
     file_picker_types: 'image',
     file_picker_callback: function(cb) {
         const input = document.createElement('input');
@@ -552,16 +603,29 @@ tinymce.init({
             reader.readAsDataURL(file);
         });
         input.click();
+    },
+    menu: {
+        file: { title: 'Arquivo', items: 'newdocument | preview | exportarpdf exportardoc' }
+    },
+    setup: function(editor) {
+        editor.ui.registry.addMenuItem('exportarpdf', {
+            text: 'Exportar PDF',
+            icon: 'new-document',
+            onAction: function() { exportarPdf(); }
+        });
+        editor.ui.registry.addMenuItem('exportardoc', {
+            text: 'Exportar DOC (Word)',
+            icon: 'new-document',
+            onAction: function() { exportarDoc(); }
+        });
     }
 });
 
 function getEditor() { return tinymce.get('tinymce-editor'); }
-
 function editorVazio() {
     const ed = getEditor();
     return !ed || !ed.getContent({ format: 'text' }).trim();
 }
-
 
 document.getElementById('rascunhoInput').addEventListener('change', function () {
     const file = this.files[0];
@@ -585,7 +649,6 @@ function limparEditor() {
     document.getElementById('modeloSelect').value = '';
 }
 
-// ── Ações do editor ───────────────────────────────────
 function assinarTexto() {
     if (editorVazio()) { showToast('Editor vazio', true); return; }
     showToast('Documento assinado com sucesso');
@@ -600,30 +663,149 @@ function salvarRascunho() {
     const a    = document.createElement('a');
     a.href = url; a.download = name; a.click();
     URL.revokeObjectURL(url);
-    showToast('Rascunho salvo — carregue-o novamente via "Carregar Modelo" para continuar');
+    showToast('Rascunho salvo — abra-o novamente para continuar a edição');
 }
 
-
-function carregarDocumento() {
+// ── Exportar PDF (diálogo nativo do browser, sem biblioteca) ─────────────
+function exportarPdf() {
     if (editorVazio()) { showToast('Editor vazio', true); return; }
-    const name = (document.getElementById('editorFileName').value.trim() || 'documento') + '.html';
     const html = getEditor().getContent();
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    savedFiles.push({ id: ++fid, desc: name.replace('.html', ''), name });
-    renderFiles();
-    showToast('Documento adicionado à lista de arquivos');
+    const nome = document.getElementById('editorFileName').value.trim() || 'documento';
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;border:0;';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${nome}</title>
+<style>
+body{font-family:"Times New Roman",serif;font-size:12pt;line-height:2;margin:2cm;color:#000;}
+p{text-align:justify;margin:0 0 6px 0;}
+@page{margin:2cm;}
+</style></head><body>${html}</body></html>`);
+    doc.close();
+    setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1500);
+    }, 300);
+    showToast('Diálogo de impressão aberto — selecione "Salvar como PDF"');
 }
 
-// ── Avançar ───────────────────────────────────────────
+// ── Exportar DOC (Word-HTML, sem biblioteca) ─────────────────────────────
+function exportarDoc() {
+    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    const html = getEditor().getContent();
+    const nome = (document.getElementById('editorFileName').value.trim() || 'documento') + '.doc';
+    const conteudo = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8">
+<meta name=ProgId content=Word.Document>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>
+<w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+body{font-family:"Times New Roman",serif;font-size:12pt;line-height:2;margin:2cm;color:#000;}
+p{text-align:justify;margin:0 0 6px 0;}
+</style></head><body>${html}</body></html>`;
+    const blob = new Blob(['﻿', conteudo], { type: 'application/msword' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = nome; a.click();
+    URL.revokeObjectURL(url);
+    showToast('Documento DOC exportado com sucesso');
+}
+
+// ── Incluir na Movimentação (via campo oculto — sem restrição de MIME) ───
+function incluirNaMovimentacao() {
+    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    const nome = (document.getElementById('editorFileName').value.trim() || 'documento_editor');
+    const html = getEditor().getContent();
+    document.getElementById('editorHtmlHidden').value = html;
+    document.getElementById('editorHtmlNome').value   = nome;
+    // Exibe na lista (sem File object — tratado pelo campo oculto)
+    savedFiles = savedFiles.filter(f => !f.fromEditor);
+    savedFiles.push({ id: ++fid, desc: nome, name: nome + '.html', file: null, fromEditor: true });
+    renderFiles();
+    showToast('Documento incluído na lista — será anexado ao salvar');
+}
+
+// ── Fluxo passo 1 → passo 2 ──────────────────────────
 function avancar() {
     if (!document.getElementById('tipoMov').value) {
         showToast('Selecione o Tipo de Movimentação', true); return;
     }
-    if (savedFiles.length === 0) {
-        showToast('Adicione ao menos um arquivo antes de avançar', true); return;
+    if (pendingFiles.length > 0) {
+        showToast('Confirme ou remova os arquivos pendentes antes de avançar', true); return;
     }
-    showToast('Movimentação registrada — indo para Passo 2...');
+    if (savedFiles.length === 0) {
+        showToast('Adicione ao menos um documento antes de avançar', true); return;
+    }
+
+    // Preenche card de revisão
+    const sel   = document.getElementById('tipoMov');
+    const desc  = document.getElementById('descMov').value.trim();
+    document.getElementById('rev-tipo').textContent      = sel.options[sel.selectedIndex].text;
+    document.getElementById('rev-descricao').textContent = desc || '(sem descrição)';
+
+    const ul = document.getElementById('rev-arquivos');
+    if (savedFiles.length === 0) {
+        ul.innerHTML = '<li class="text-texto-secundario italic">Nenhum documento</li>';
+    } else {
+        ul.innerHTML = savedFiles.map(f => {
+            const [ico, col] = iconFor(f.name);
+            return `<li class="flex items-center gap-2">
+                <i class="fa-solid ${ico}" style="color:${col}"></i>
+                <span>${f.desc}</span>
+                <span class="text-texto-secundario text-[10px]">(${f.name})</span>
+            </li>`;
+        }).join('');
+    }
+
+    // Troca de painel
+    document.getElementById('stepBadge').textContent = 'Passo 2';
+    document.querySelectorAll('#formMovimentar > fieldset, #btnsPasso1').forEach(el => el.classList.add('hidden'));
+    document.getElementById('painelPasso2').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+function voltarPasso1() {
+    document.getElementById('stepBadge').textContent = 'Passo 1';
+    document.querySelectorAll('#formMovimentar > fieldset, #btnsPasso1').forEach(el => el.classList.remove('hidden'));
+    document.getElementById('painelPasso2').classList.add('hidden');
+}
+
+// ── Envio real do formulário ──────────────────────────
+function confirmarMovimentacao() {
+    // Reconstrói o fileInput com todos os arquivos de savedFiles
+    const dt = new DataTransfer();
+    savedFiles.forEach(f => { if (f.file) dt.items.add(f.file); });
+    fileInput.files = dt.files;
+
+    // Remove hidden inputs de nomes antigos e injeta novos na ordem correta
+    const form = document.getElementById('formMovimentar');
+    form.querySelectorAll('input[name="documento_nomes"]').forEach(el => el.remove());
+    savedFiles.forEach(f => {
+        const inp = document.createElement('input');
+        inp.type  = 'hidden';
+        inp.name  = 'documento_nomes';
+        inp.value = f.desc;
+        form.appendChild(inp);
+    });
+
+    form.submit();
+}
+
+// ── Pré-preenchimento modo edição ─────────────────────
+{% if movimentacao_origem_id %}
+document.addEventListener('DOMContentLoaded', function () {
+    const sel = document.getElementById('tipoMov');
+    sel.value = '{{ edicao_tipo_id }}';
+    const ta = document.getElementById('descMov');
+    ta.value = `{{ edicao_descricao|escapejs }}`;
+    ta.dispatchEvent(new Event('input'));
+});
+{% endif %}
 
 // ── Toast ─────────────────────────────────────────────
 function showToast(msg, err) {
