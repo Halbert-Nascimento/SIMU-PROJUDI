@@ -474,3 +474,33 @@ def atribuir_grupo_processos(request):
             processo.grupos.clear()
 
     return JsonResponse({"sucesso": True, "atualizados": processos.count()})
+
+
+
+@login_required
+def movimentar_processo(request, numero):
+    processo = get_object_or_404(
+        ProcessoJudicial.objects
+        .select_related("tipo_processo", "classe", "status_atual", "vara", "vara__comarca")
+        .prefetch_related("polos__parte"),
+        numero=numero,
+    )
+
+    if not pode_visualizar_processo(request.user, processo):
+        raise PermissionDenied
+
+    polos_ativo   = [p for p in processo.polos.all() if p.tipo_polo == "Ativo"]
+    polos_passivo = [p for p in processo.polos.all() if p.tipo_polo == "Passivo"]
+
+    tipos_movimentacao = (
+        TipoMovimentacao.objects
+        .exclude(nome_movimentacao="Cadastro do Processo")
+        .order_by("nome_movimentacao")
+    )
+
+    return render(request, "processos/movimentar_processo.html", {
+        "processo": processo,
+        "polos_ativo": polos_ativo,
+        "polos_passivo": polos_passivo,
+        "tipos_movimentacao": tipos_movimentacao,
+    })

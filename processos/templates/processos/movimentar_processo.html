@@ -109,6 +109,19 @@
 
 <main class="max-w-container mx-auto px-6 py-5">
 
+    <!-- Breadcrumbs -->
+    <nav class="text-[11px] text-texto-secundario mb-3 flex items-center gap-1" aria-label="Navegação">
+        <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-azul-primario">Área do Servidor</a>
+        <i class="fa-solid fa-chevron-right text-[9px]"></i>
+        {% if processo %}
+        <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="hover:underline text-azul-primario">
+            Processo {{ processo.numero }}
+        </a>
+        <i class="fa-solid fa-chevron-right text-[9px]"></i>
+        {% endif %}
+        <span class="text-texto-principal font-medium">Movimentar</span>
+    </nav>
+
     <h2 class="text-azul-primario font-bold text-[20px] mb-4">&raquo; Movimentar Processo</h2>
 
     <span class="step-badge mb-3 inline-block">Passo 1</span>
@@ -121,19 +134,22 @@
         <div class="bg-fundo-caixa border border-borda p-3 mb-4 text-[12px]">
             <div class="flex items-center gap-2 mb-1">
                 <i class="fa-solid fa-folder-open text-azul-primario"></i>
-                <span class="font-bold text-azul-primario">
-                    Processo nº {% if processo %}{{ processo.numero }}{% else %}PROCESSO NÃO CARREGADO{% endif %}
-                </span>
+                <span class="font-bold text-azul-primario">Processo nº {{ processo.numero }}</span>
+                <span class="text-texto-secundario font-normal">— {{ processo.vara.nome }} / {{ processo.vara.comarca.nome }}</span>
             </div>
-            <div class="text-texto-secundario text-[11px]">
-                {% if processo %}
-                    {{ processo.tipo_processo.nome }} •
-                    {% for polo in polos_ativo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
-                    ×
-                    {% for polo in polos_passivo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
-                {% else %}
-                    Procedimento Comum Cível • <strong>M. A. Souza × Empresa XYZ Ltda</strong>
-                {% endif %}
+            <div class="text-texto-secundario text-[11px] mt-1">
+                <span class="font-medium text-texto-principal">{{ processo.tipo_processo.nome }}</span>
+                &nbsp;•&nbsp;
+                {% for polo in polos_ativo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
+                <span class="mx-1">×</span>
+                {% for polo in polos_passivo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
+            </div>
+            <div class="mt-1 text-[11px]">
+                <span class="text-texto-secundario">Classe:</span>
+                <span class="font-medium">{{ processo.classe.nome }}</span>
+                &nbsp;•&nbsp;
+                <span class="text-texto-secundario">Status:</span>
+                <span class="font-medium">{{ processo.status_atual.nome_status }}</span>
             </div>
         </div>
 
@@ -141,13 +157,17 @@
         <div class="mb-3">
             <label class="lbl">
                 <span class="req">*</span>Tipo Movimentação
-                <i class="fa-solid fa-magnifying-glass lbl-icon"></i>
-                <i class="fa-solid fa-circle-xmark lbl-x"></i>
                 <span class="hint-error ml-2">Preencher conforme TPU CNJ para alimentar estatística de produtividade</span>
             </label>
-            <input id="tipoMov" type="text"
-                   class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none"
-                   placeholder="Digite Tipo Movimentação"/>
+            <select id="tipoMov"
+                    class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none">
+                <option value="">— Selecione o Tipo de Movimentação —</option>
+                {% for tipo in tipos_movimentacao %}
+                <option value="{{ tipo.id }}">{{ tipo.nome_movimentacao }}</option>
+                {% empty %}
+                <option disabled>Nenhum tipo cadastrado</option>
+                {% endfor %}
+            </select>
         </div>
 
         <!-- Descrição Movimentação -->
@@ -596,8 +616,8 @@ function carregarDocumento() {
 
 // ── Avançar ───────────────────────────────────────────
 function avancar() {
-    if (!document.getElementById('tipoMov').value.trim()) {
-        showToast('Informe o Tipo de Movimentação', true); return;
+    if (!document.getElementById('tipoMov').value) {
+        showToast('Selecione o Tipo de Movimentação', true); return;
     }
     if (savedFiles.length === 0) {
         showToast('Adicione ao menos um arquivo antes de avançar', true); return;

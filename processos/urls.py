@@ -15,8 +15,9 @@ app_name = "processos"
 
 urlpatterns = [
     path("cadastrar/", cadastrar_processo, name="cadastrar_processo"),
-    path("movimentar/", movimentar_processo, name="movimentar_processo"),
     path("area-servidor/", pagina_aluno, name="pagina_aluno"),
+    # rotas com parâmetro <numero> — mais específica primeiro
+    path("<str:numero>/movimentar/", movimentar_processo, name="movimentar_processo"),
     path("<str:numero>/", visualizar_processo, name="visualizar_processo"),
     path(
         "api/varas/<int:comarca_id>/",
