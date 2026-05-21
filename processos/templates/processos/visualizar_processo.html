@@ -207,6 +207,33 @@
 
 <main class="max-w-container mx-auto px-6 py-5">
 
+    <!-- Breadcrumbs -->
+    <nav class="text-[11px] text-texto-secundario mb-3 flex items-center gap-1" aria-label="Navegação">
+        <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-azul-primario">Área do Servidor</a>
+        <i class="fa-solid fa-chevron-right text-[9px]"></i>
+        <span class="text-texto-principal font-medium">Processo {{ processo.numero }}</span>
+    </nav>
+
+    {% if messages %}
+    <div class="mb-4">
+        {% for msg in messages %}
+        {% if msg.tags and 'success' in msg.tags %}
+        <div class="bg-green-50 border border-green-300 text-green-800 px-4 py-2 rounded text-[12px] mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-circle-check"></i> {{ msg }}
+        </div>
+        {% elif msg.tags and 'error' in msg.tags %}
+        <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-2 rounded text-[12px] mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-circle-xmark"></i> {{ msg }}
+        </div>
+        {% else %}
+        <div class="bg-blue-50 border border-blue-300 text-blue-800 px-4 py-2 rounded text-[12px] mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-circle-info"></i> {{ msg }}
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
     <!-- AUTOS -->
     <div class="flex items-start justify-between">
         <div class="flex-1">
@@ -533,7 +560,10 @@
                         {% endif %}
                     </td>
                     <td class="opc-col">
-                        <i class="fa-solid fa-pen icon-action" data-tip="Editar"></i>
+                        <a href="{% url 'processos:editar_movimentacao' processo.numero mov.id %}"
+                           title="Editar movimentação">
+                            <i class="fa-solid fa-pen icon-action"></i>
+                        </a>
                     </td>
                 </tr>
                 {% empty %}
