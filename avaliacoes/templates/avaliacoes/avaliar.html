@@ -1,0 +1,518 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Avaliação — {{ processo.numero }} — Simulador Projudi{% endblock %}
+
+{% block extra_head %}
+<style>
+    .section-title {
+        color: #1a5b9e; font-size: 12px; font-weight: bold;
+        text-transform: uppercase; padding: 4px 0 4px 8px;
+        border-left: 3px solid #1a5b9e; background: #f4f4f4;
+        margin: 10px 0 0 0;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .section-title.green { color: #1f6020; border-left-color: #1f6020; }
+    .autos-title {
+        color: #1a5b9e; font-size: 11px; font-weight: bold;
+        text-transform: uppercase; padding: 2px 0 2px 4px;
+        display: flex; align-items: center; gap: 4px;
+    }
+    .autos-title.green { color: #1f6020; }
+    .panel {
+        border: 1px solid #cdd9e6; background: #eef4fb;
+        padding: 12px 14px; margin-top: 4px;
+    }
+    .panel.green { border-color: #c5dec5; background: #f1faee; }
+    .panel-inner {
+        background: #ffffff; border: 1px solid #cdd9e6;
+        padding: 10px 12px; margin-top: 6px;
+    }
+    .panel-inner.green { border-color: #c5dec5; }
+    .field-label { color: #666; font-size: 11px; }
+    .field-value { font-weight: bold; color: #222; font-size: 12px; }
+    .avatar {
+        width: 42px; height: 42px; border-radius: 50%;
+        background: #1a5b9e; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 14px; flex-shrink: 0;
+    }
+    .avatar.grupo { background: #7b3ba0; border-radius: 6px; }
+    .mov-text {
+        background: #fafafa; border-left: 3px solid #1a5b9e;
+        padding: 10px 12px; font-size: 12px; line-height: 1.55;
+        color: #333; white-space: pre-wrap;
+    }
+    .file-row {
+        display: flex; align-items: center; gap: 10px;
+        padding: 6px 0; border-bottom: 1px solid #eee;
+    }
+    .file-row:last-child { border-bottom: none; }
+    .file-row .ext {
+        font-size: 9px; font-weight: bold; padding: 3px 6px;
+        border-radius: 2px; text-transform: uppercase; color: #fff;
+    }
+    .file-row .ext.pdf { background: #c0392b; }
+    .file-row .ext.doc, .file-row .ext.docx { background: #2980b9; }
+    .file-row .ext.jpg, .file-row .ext.jpeg { background: #27ae60; }
+    .file-row .ext.default { background: #7f8c8d; }
+    .file-row .info-meta { font-size: 10px; color: #888; }
+    .file-row .acts { display: flex; gap: 8px; }
+    .file-row .acts i {
+        color: #1a5b9e; cursor: pointer; font-size: 13px;
+    }
+    .file-row .acts i:hover { color: #153a61; }
+    .grade-input {
+        width: 80px; font-size: 22px; font-weight: bold;
+        text-align: center; border: 2px solid #c5dec5;
+        border-radius: 3px; padding: 6px 4px;
+        color: #1f6020; outline: none;
+    }
+    .grade-input:focus { border-color: #1f6020; box-shadow: 0 0 0 2px rgba(31,96,32,.15); }
+    .grade-suffix { color: #888; font-size: 13px; font-weight: bold; }
+    .obs {
+        width: 100%; border: 1px solid #ccc; border-radius: 3px;
+        padding: 8px 10px; font-size: 12px; resize: vertical;
+        line-height: 1.5; font-family: inherit;
+    }
+    .obs:focus { border-color: #1a5b9e; outline: none; box-shadow: 0 0 0 2px rgba(26,91,158,.1); }
+    .btn-green {
+        background: linear-gradient(to bottom, #2d8b38, #1f6020);
+        color: #fff; padding: 6px 16px;
+        font-size: 11px; font-weight: bold;
+        border: 1px solid #17501a; border-radius: 2px;
+        cursor: pointer; text-transform: uppercase;
+    }
+    .btn-green:hover { background: linear-gradient(to bottom, #34a040, #257328); }
+    .btn-secondary {
+        background: linear-gradient(to bottom, #fafafa, #e8e8e8);
+        color: #333; padding: 6px 16px;
+        font-size: 11px; font-weight: bold;
+        border: 1px solid #bbb; border-radius: 2px;
+        cursor: pointer; text-transform: uppercase;
+    }
+    .btn-secondary:hover { background: linear-gradient(to bottom, #fff, #eee); }
+    .btn-blue {
+        background: linear-gradient(to bottom, #2e6cab, #1c4b80);
+        color: #fff; padding: 5px 14px;
+        font-size: 11px; font-weight: bold;
+        border: 1px solid #154170; border-radius: 2px;
+        cursor: pointer; text-transform: uppercase;
+    }
+    .btn-blue:hover { background: linear-gradient(to bottom, #3679b8, #21568f); }
+    .pill {
+        display: inline-block; padding: 1px 7px;
+        font-size: 10px; font-weight: bold;
+        border-radius: 10px; text-transform: uppercase;
+    }
+    .pill.warn { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
+    .tbl-hist { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .tbl-hist thead th {
+        background: #dcdcdc; text-align: left; font-weight: bold; color: #333;
+        padding: 5px 8px; border: 1px solid #c0c0c0;
+    }
+    .tbl-hist tbody td {
+        padding: 5px 8px; border: 1px solid #d8d8d8;
+        background: #fff; vertical-align: top; line-height: 1.45;
+    }
+    .tbl-hist tbody tr:nth-child(even) td { background: #f3f3f3; }
+    .tbl-hist tbody tr:hover td { background: #fffbe5; }
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+        content: attr(data-tip);
+        position: absolute; bottom: calc(100% + 6px); left: 50%;
+        transform: translateX(-50%);
+        background: #222; color: #fff; padding: 4px 8px;
+        font-size: 10px; white-space: nowrap; border-radius: 3px;
+        z-index: 50; font-weight: normal;
+    }
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,.45);
+        display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+        background: #fff; width: 540px; max-width: 92vw;
+        border-radius: 4px; overflow: hidden;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+    }
+    .toast {
+        position: fixed; bottom: 24px; right: 24px;
+        background: #2e7d32; color: #fff; padding: 12px 18px;
+        border-radius: 3px; font-size: 13px; font-weight: bold;
+        box-shadow: 0 6px 16px rgba(0,0,0,.2);
+        display: flex; align-items: center; gap: 8px;
+        transform: translateY(20px); opacity: 0; pointer-events: none;
+        transition: all .25s ease; z-index: 200;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="bg-[#eef1f5] border-b border-[#cdd4dc] sticky top-[45px] z-40">
+    <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
+        <div class="flex items-center gap-5">
+            <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-[#333] font-medium">Página Inicial</a>
+            <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="hover:underline text-[#333] font-medium">Voltar ao Processo</a>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-[1200px] mx-auto px-6 py-5 bg-white min-h-screen" style="box-shadow: 0 0 10px rgba(0,0,0,0.05);">
+
+    {% if messages %}
+    <div class="mb-4">
+        {% for message in messages %}
+        <div class="px-4 py-2 mb-1 text-[12px] font-bold rounded-sm
+            {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200
+            {% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200
+            {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Breadcrumb -->
+    <div class="text-[11px] text-gray-600 mb-2">
+        <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="text-[#1a5b9e] hover:underline">Processo {{ processo.numero }}</a>
+        <i class="fa-solid fa-angle-right mx-1 text-[9px]"></i>
+        <span>Avaliação de Movimentação</span>
+    </div>
+
+    <!-- Cabeçalho -->
+    <div class="flex items-start justify-between">
+        <div class="flex-1">
+            <div class="autos-title"><i class="fa-solid fa-clipboard-check"></i> AVALIAÇÃO DE MOVIMENTAÇÃO</div>
+            <div class="ml-4 mt-1 text-[12px] leading-tight">
+                <div>
+                    <span class="text-gray-700">Processo</span>
+                    <span class="font-bold ml-1">{{ processo.numero }}</span>
+                </div>
+                <div class="mt-0.5">
+                    <span class="text-gray-700">Ciclo</span>
+                    <span class="font-bold ml-1">{{ ciclo }}</span>
+                </div>
+                <div class="mt-0.5">
+                    <span class="text-gray-700">Movimentação</span>
+                    <span class="font-bold ml-1">{{ movimentacao.tipo_movimento.nome_movimentacao }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="text-right text-[11px] text-gray-600 mt-1">
+            <div>Avaliador: <strong class="text-[#1a5b9e]">{{ request.user.get_full_name|default:request.user.username|upper }}</strong></div>
+            {% if feedback_existente %}
+            <div>Última avaliação: <strong>{{ feedback_existente.data_feedback|date:"d/m/Y H:i" }}</strong></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- DADOS DA MOVIMENTAÇÃO -->
+    <div class="section-title"><i class="fa-solid fa-file-lines"></i> DADOS DA MOVIMENTAÇÃO</div>
+    <div class="panel">
+        <div class="grid grid-cols-2 gap-3">
+            <!-- Autor -->
+            <div>
+                <div class="autos-title">AUTOR DA MOVIMENTAÇÃO</div>
+                <div class="panel-inner">
+                    <div class="flex items-center gap-3">
+                        <div class="avatar">{{ autor.first_name|first|default:autor.username|first|upper }}{{ autor.last_name|first|upper }}</div>
+                        <div class="flex-1">
+                            <div class="field-value">{{ autor.get_full_name|default:autor.username|upper }}</div>
+                            <div class="field-label">{{ autor.username }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Grupo -->
+            <div>
+                <div class="autos-title">GRUPO RESPONSÁVEL</div>
+                <div class="panel-inner">
+                    {% if grupo_autor %}
+                    <div class="flex items-center gap-3">
+                        <div class="avatar grupo">{{ grupo_autor.nome|first|upper }}</div>
+                        <div class="flex-1">
+                            <div class="field-value">{{ grupo_autor.nome }}</div>
+                            <div class="field-label">{{ grupo_autor.cargo_simulacao.nome }}</div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-gray-400 italic text-[11px]">Nenhum grupo vinculado</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Dados da movimentação -->
+        <div class="autos-title mt-3">MOVIMENTAÇÃO REGISTRADA</div>
+        <div class="panel-inner">
+            <div class="grid grid-cols-2 gap-x-8 gap-y-1.5 text-[12px] mb-3">
+                <div class="flex">
+                    <div class="w-32 text-gray-700">Processo vinculado</div>
+                    <div class="font-bold flex-1">{{ processo.numero }}</div>
+                </div>
+                <div class="flex">
+                    <div class="w-32 text-gray-700">Tipo</div>
+                    <div class="font-bold">{{ movimentacao.tipo_movimento.nome_movimentacao }}</div>
+                </div>
+                <div class="flex">
+                    <div class="w-32 text-gray-700">Data/Hora</div>
+                    <div class="font-bold">{{ movimentacao.data_movimento|date:"d/m/Y H:i:s" }}</div>
+                </div>
+                <div class="flex">
+                    <div class="w-32 text-gray-700">Classe</div>
+                    <div class="font-bold">{{ processo.classe.nome }}</div>
+                </div>
+            </div>
+
+            <div class="field-label mb-1">Descrição / Texto da Movimentação</div>
+            <div class="mov-text">{{ movimentacao.descricao_evento }}</div>
+        </div>
+
+        <!-- Arquivos anexados -->
+        {% with docs=movimentacao.documentos.all %}
+        {% if docs %}
+        <div class="autos-title mt-3">ARQUIVOS ANEXADOS <span class="text-gray-500 normal-case font-normal">({{ docs|length }})</span></div>
+        <div class="panel-inner">
+            {% for doc in docs %}
+            <div class="file-row">
+                {% with ext=doc.titulo_arquivo|lower %}
+                <div class="ext {% if '.pdf' in ext %}pdf{% elif '.doc' in ext %}doc{% elif '.jpg' in ext or '.jpeg' in ext %}jpg{% else %}default{% endif %}">
+                    {{ doc.titulo_arquivo|truncatechars:3|upper }}
+                </div>
+                {% endwith %}
+                <div class="flex-1">
+                    <div class="font-bold text-[#1a5b9e] text-[12px]">{{ doc.titulo_arquivo }}</div>
+                    <div class="info-meta">Enviado em {{ doc.data_upload|date:"d/m/Y H:i:s" }}</div>
+                </div>
+                <div class="acts">
+                    <a href="{{ doc.caminho_arquivo.url }}" target="_blank" data-tip="Visualizar">
+                        <i class="fa-solid fa-eye"></i>
+                    </a>
+                    <a href="{{ doc.caminho_arquivo.url }}" download data-tip="Baixar">
+                        <i class="fa-solid fa-download"></i>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Movimentação corrigida (se esta corrige outra) -->
+        {% if mov_origem %}
+        <div class="autos-title mt-3"><i class="fa-solid fa-link"></i> MOVIMENTAÇÃO CORRIGIDA</div>
+        <div class="panel-inner">
+            <div class="text-[12px]">
+                <div class="flex gap-4 mb-1">
+                    <div>
+                        <span class="text-gray-700">Movimentação original:</span>
+                        <span class="font-bold">{{ mov_origem.tipo_movimento.nome_movimentacao }}</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-700">Data:</span>
+                        <span class="font-bold">{{ mov_origem.data_movimento|date:"d/m/Y H:i:s" }}</span>
+                    </div>
+                </div>
+                {% if feedback_origem %}
+                <div class="flex gap-4 mt-1">
+                    <div>
+                        <span class="text-gray-700">Avaliada por:</span>
+                        <span class="font-bold">{{ feedback_origem.professor.get_full_name|default:feedback_origem.professor.username }}</span>
+                    </div>
+                    {% if feedback_origem.nota is not None %}
+                    <div>
+                        <span class="text-gray-700">Nota:</span>
+                        <span class="font-bold">{{ feedback_origem.nota }}</span>
+                    </div>
+                    {% else %}
+                    <div>
+                        <span class="pill warn">Devolvida para revisão</span>
+                    </div>
+                    {% endif %}
+                </div>
+                {% else %}
+                <div class="text-gray-400 italic text-[11px] mt-1">Movimentação original ainda não avaliada.</div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- AVALIAÇÃO DO PROFESSOR -->
+    <div class="section-title green" style="margin-top: 18px;">
+        <i class="fa-solid fa-clipboard-check"></i> AVALIAÇÃO DO PROFESSOR
+    </div>
+    <form method="post" id="avaliacaoForm">
+        {% csrf_token %}
+        <div class="panel green">
+            <div class="autos-title green">NOTA E FEEDBACK</div>
+            <div class="panel-inner green">
+                <div class="flex gap-4 items-stretch">
+                    <div class="flex flex-col items-center justify-center text-center shrink-0">
+                        <div class="field-label mb-1 whitespace-nowrap">Nota (0 a 10)</div>
+                        <div class="flex items-baseline gap-2 justify-center">
+                            <input type="number" name="nota" id="gradeInput"
+                                   min="0" max="10" step="0.01"
+                                   value="{% if form.nota.value is not None %}{{ form.nota.value }}{% endif %}"
+                                   class="grade-input"
+                                   placeholder="—" />
+                            <span class="grade-suffix">/ 10,00</span>
+                        </div>
+                        {% if form.nota.errors %}
+                        <div class="text-red-600 text-[10px] mt-1">{{ form.nota.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="field-label mb-1">Comentário ao aluno (visível para {{ autor.get_full_name|default:autor.username }})</div>
+                        <textarea name="comentario" id="comentario" class="obs"
+                                  style="min-height: 160px;"
+                                  placeholder="Mensagem que será exibida para o(a) aluno(a) ao receber a avaliação..."
+                                  required>{% if form.comentario.value %}{{ form.comentario.value }}{% endif %}</textarea>
+                        {% if form.comentario.errors %}
+                        <div class="text-red-600 text-[10px] mt-1">{{ form.comentario.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end gap-2 mt-4">
+                <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="btn-secondary">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Voltar
+                </a>
+                <button type="submit" name="acao" value="devolver" class="btn-secondary">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Devolver para revisão
+                </button>
+                <button type="button" class="btn-green" onclick="openConfirm()">
+                    <i class="fa-solid fa-check mr-1"></i> Concluir Avaliação
+                </button>
+            </div>
+        </div>
+    </form>
+
+    <!-- HISTÓRICO DO ALUNO NO CICLO -->
+    {% if historico %}
+    <div class="section-title" style="margin-top: 18px;">
+        <i class="fa-solid fa-clock-rotate-left"></i> HISTÓRICO DESTE ALUNO NO CICLO
+    </div>
+    <div class="panel-inner" style="margin-top: 4px;">
+        <table class="tbl-hist">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Movimentação</th>
+                    <th>Processo</th>
+                    <th class="text-center">Nota</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fb in historico %}
+                <tr>
+                    <td>{{ fb.data_feedback|date:"d/m/Y" }}</td>
+                    <td>{{ fb.movimentacao.tipo_movimento.nome_movimentacao }}</td>
+                    <td>{{ fb.movimentacao.processo.numero }}</td>
+                    <td class="text-center font-bold">
+                        {% if fb.nota is not None %}
+                            {{ fb.nota }}
+                        {% else %}
+                            <span class="pill warn">Devolvida</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if media_notas is not None %}
+        <div class="text-right mt-2 text-[11px]">
+            Média atual do(a) aluno(a) no ciclo: <strong class="text-[#1a5b9e] text-[13px]">{{ media_notas|floatformat:2 }}</strong>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</main>
+
+<!-- Modal de Confirmação -->
+<div class="modal-overlay" id="confirmModal">
+    <div class="modal">
+        <div class="bg-[#153a61] text-white p-3 flex items-center justify-between">
+            <div class="text-[12px] font-bold uppercase flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-check"></i> Confirmar Avaliação
+            </div>
+            <button type="button" onclick="closeConfirm()" class="text-white hover:text-gray-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="p-5 text-[12px]">
+            <p class="mb-3">Você está prestes a concluir a avaliação da movimentação
+                <strong>{{ movimentacao.tipo_movimento.nome_movimentacao }}</strong>
+                do processo <strong>{{ processo.numero }}</strong>.
+            </p>
+            <div class="bg-gray-50 border border-gray-200 p-3 rounded-sm">
+                <div class="flex justify-between mb-1">
+                    <span class="text-gray-600">Aluno(a):</span>
+                    <strong>{{ autor.get_full_name|default:autor.username }}</strong>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Nota:</span>
+                    <strong class="text-[#1a5b9e] text-[14px]" id="cnfNota">—</strong>
+                </div>
+            </div>
+            <p class="mt-3 text-gray-600 text-[11px]">
+                <i class="fa-solid fa-circle-info mr-1"></i>
+                O comentário e a nota serão visíveis para o aluno.
+            </p>
+        </div>
+        <div class="bg-gray-50 px-5 py-3 flex justify-end gap-2 border-t border-gray-200">
+            <button type="button" class="btn-secondary" onclick="closeConfirm()">Cancelar</button>
+            <button type="button" class="btn-green" onclick="confirmEval()">
+                <i class="fa-solid fa-check mr-1"></i> Confirmar e Enviar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg"></span>
+</div>
+
+<script>
+function openConfirm() {
+    var comentario = document.getElementById('comentario').value.trim();
+    if (!comentario) {
+        showToast('Preencha o comentário antes de concluir.', true);
+        return;
+    }
+    var v = parseFloat(document.getElementById('gradeInput').value);
+    var notaText = isNaN(v) ? 'Sem nota' : v.toFixed(2).replace('.', ',');
+    document.getElementById('cnfNota').textContent = notaText;
+    document.getElementById('confirmModal').classList.add('open');
+}
+
+function closeConfirm() {
+    document.getElementById('confirmModal').classList.remove('open');
+}
+
+function confirmEval() {
+    closeConfirm();
+    var form = document.getElementById('avaliacaoForm');
+    var input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'acao';
+    input.value = 'concluir';
+    form.appendChild(input);
+    form.submit();
+}
+
+function showToast(msg, err) {
+    var t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.style.background = err ? '#c0392b' : '#2e7d32';
+    t.classList.add('show');
+    setTimeout(function() { t.classList.remove('show'); }, 2400);
+}
+</script>
+{% endblock %}
