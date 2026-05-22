@@ -230,6 +230,24 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <div id="paginacao-processos" class="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between hidden">
+                            <span id="paginacao-info" class="text-[11px] text-gray-400"></span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="mudarPagina('primeira')" id="btn-primeira" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Primeira página">
+                                    <i class="fa-solid fa-angles-left"></i>
+                                </button>
+                                <button onclick="mudarPagina('anterior')" id="btn-anterior" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Anterior">
+                                    <i class="fa-solid fa-angle-left"></i>
+                                </button>
+                                <span id="paginacao-paginas" class="flex items-center gap-1"></span>
+                                <button onclick="mudarPagina('proxima')" id="btn-proxima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Próxima">
+                                    <i class="fa-solid fa-angle-right"></i>
+                                </button>
+                                <button onclick="mudarPagina('ultima')" id="btn-ultima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Última página">
+                                    <i class="fa-solid fa-angles-right"></i>
+                                </button>
+                            </div>
+                        </div>
                         <p id="processos-vazio-filtro" class="text-sm text-gray-400 italic text-center py-6 hidden">Nenhum processo encontrado neste ciclo.</p>
                         {% else %}
                         <p class="text-sm text-gray-400 italic text-center py-6">Nenhum processo encontrado nos ciclos ativos.</p>
@@ -531,19 +549,86 @@
 {% endif %}
 
 <script>
-    function filtrarProcessosPorCiclo(cicloId) {
-        const rows = document.querySelectorAll('.processo-row');
-        const msgVazio = document.getElementById('processos-vazio-filtro');
-        const tabela = document.getElementById('tabela-processos-ciclo');
-        let visiveis = 0;
-        rows.forEach(row => {
-            const mostrar = cicloId === 'todos' || row.dataset.cicloId === cicloId;
-            row.style.display = mostrar ? '' : 'none';
-            if (mostrar) visiveis++;
-        });
-        if (msgVazio) msgVazio.classList.toggle('hidden', visiveis > 0);
-        if (tabela) tabela.classList.toggle('hidden', visiveis === 0);
+    const POR_PAGINA = 4;
+    let paginaAtual = 1;
+    let cicloFiltrado = 'todos';
+
+    function getRowsFiltradas() {
+        const todas = Array.from(document.querySelectorAll('.processo-row'));
+        if (cicloFiltrado === 'todos') return todas;
+        return todas.filter(r => r.dataset.cicloId === cicloFiltrado);
     }
+
+    function renderizarPaginacao() {
+        const rows = getRowsFiltradas();
+        const total = rows.length;
+        const totalPaginas = Math.ceil(total / POR_PAGINA) || 1;
+        const tabela = document.getElementById('tabela-processos-ciclo');
+        const msgVazio = document.getElementById('processos-vazio-filtro');
+        const paginacao = document.getElementById('paginacao-processos');
+
+        if (total === 0) {
+            document.querySelectorAll('.processo-row').forEach(r => r.style.display = 'none');
+            if (tabela) tabela.classList.add('hidden');
+            if (msgVazio) msgVazio.classList.remove('hidden');
+            if (paginacao) paginacao.classList.add('hidden');
+            return;
+        }
+
+        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+
+        if (tabela) tabela.classList.remove('hidden');
+        if (msgVazio) msgVazio.classList.add('hidden');
+
+        const inicio = (paginaAtual - 1) * POR_PAGINA;
+        const fim = inicio + POR_PAGINA;
+
+        document.querySelectorAll('.processo-row').forEach(r => r.style.display = 'none');
+        rows.forEach((r, i) => { r.style.display = (i >= inicio && i < fim) ? '' : 'none'; });
+
+        if (paginacao) {
+            paginacao.classList.toggle('hidden', totalPaginas <= 1);
+
+            document.getElementById('paginacao-info').textContent =
+                'Exibindo ' + (inicio + 1) + '–' + Math.min(fim, total) + ' de ' + total;
+
+            document.getElementById('btn-primeira').disabled = paginaAtual === 1;
+            document.getElementById('btn-anterior').disabled = paginaAtual === 1;
+            document.getElementById('btn-proxima').disabled = paginaAtual === totalPaginas;
+            document.getElementById('btn-ultima').disabled = paginaAtual === totalPaginas;
+
+            const container = document.getElementById('paginacao-paginas');
+            container.innerHTML = '';
+            for (let p = 1; p <= totalPaginas; p++) {
+                const btn = document.createElement('button');
+                btn.textContent = p;
+                btn.className = p === paginaAtual
+                    ? 'w-7 h-7 text-[11px] font-bold rounded bg-tjgo-blue text-white'
+                    : 'w-7 h-7 text-[11px] font-bold rounded text-gray-500 hover:bg-gray-100 hover:text-tjgo-blue transition-colors';
+                btn.onclick = () => { paginaAtual = p; renderizarPaginacao(); };
+                container.appendChild(btn);
+            }
+        }
+    }
+
+    function mudarPagina(acao) {
+        const totalPaginas = Math.ceil(getRowsFiltradas().length / POR_PAGINA) || 1;
+        if (acao === 'primeira') paginaAtual = 1;
+        else if (acao === 'anterior' && paginaAtual > 1) paginaAtual--;
+        else if (acao === 'proxima' && paginaAtual < totalPaginas) paginaAtual++;
+        else if (acao === 'ultima') paginaAtual = totalPaginas;
+        renderizarPaginacao();
+    }
+
+    function filtrarProcessosPorCiclo(cicloId) {
+        cicloFiltrado = cicloId;
+        paginaAtual = 1;
+        renderizarPaginacao();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.querySelector('.processo-row')) renderizarPaginacao();
+    });
 
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
