@@ -130,7 +130,11 @@ def cadastrar_processo(request):
 
             with transaction.atomic():
                 processo = form.save(commit=False)
-                processo.numero = ProcessoJudicial.gerar_numero_unico()
+                processo.numero = ProcessoJudicial.gerar_numero_cnj(
+                    ano=datetime.datetime.now().year,
+                    tr=26,
+                    origem=processo.vara.comarca_id,
+                )
                 processo.ciclo = ciclo
                 processo.status_atual = status_autuado
                 processo.save()
