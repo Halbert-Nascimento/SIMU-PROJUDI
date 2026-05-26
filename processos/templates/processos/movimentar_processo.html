@@ -1,0 +1,917 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Movimentar Processo — Simulador Projudi{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<style>
+    .step-badge {
+        background: #1e5894; color: #fff; padding: 5px 16px;
+        font-size: 12px; font-weight: bold; display: inline-block;
+        border-radius: 2px;
+    }
+    .lbl { display: block; font-size: 12px; font-weight: bold; color: #333; margin-bottom: 3px; }
+    .lbl .req { color: #c0392b; margin-right: 2px; }
+    .lbl-icon { color: #1a5b9e; font-size: 11px; margin-left: 2px; cursor: pointer; }
+    .lbl-x { color: #888; font-size: 11px; margin-left: 2px; cursor: pointer; }
+    .hint-error { color: #c0392b; font-weight: bold; font-size: 12px; }
+
+    .tab-bar {
+        display: flex; background: #9a9a9a; padding: 0;
+        border-radius: 2px 2px 0 0; overflow: hidden;
+    }
+    .tab-item {
+        padding: 8px 18px; font-size: 12px; font-weight: bold;
+        color: #444; cursor: pointer; background: #bcbcbc;
+        border-right: 1px solid #9a9a9a; transition: all .12s;
+    }
+    .tab-item:hover { background: #aaa; color: #222; }
+    .tab-item.active { background: #1a5b9e; color: #fff; }
+    .tab-empty { flex: 1; background: #9a9a9a; }
+    .tab-content { background: #fff; border: 1px solid #9a9a9a; border-top: 0; padding: 14px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .dropzone {
+        border: 2px dashed #b8b8b8; border-radius: 4px;
+        padding: 24px; text-align: center; background: #fafafa;
+        transition: all .15s; cursor: pointer;
+    }
+    .dropzone:hover, .dropzone.over { border-color: #1a5b9e; background: #eef5fc; }
+    .dropzone .ico { font-size: 38px; color: #1a5b9e; margin-bottom: 8px; }
+
+    .tbl-files { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
+    .tbl-files thead th {
+        background: #e0e0e0; text-align: left; font-weight: bold; color: #333;
+        padding: 6px 10px; border: 1px solid #c8c8c8;
+    }
+    .tbl-files tbody td {
+        padding: 6px 10px; border: 1px solid #d8d8d8; background: #fff;
+        vertical-align: middle;
+    }
+    .tbl-files tbody tr:nth-child(even) td { background: #ececec; }
+    .tbl-files tbody tr:hover td { background: #fffbe5; }
+    .tbl-files .empty td {
+        text-align: center; color: #999; font-style: italic;
+        padding: 18px; background: #fafafa !important;
+    }
+
+    .action-icons { display: flex; gap: 8px; margin-bottom: 4px; padding: 4px 2px; }
+    .action-icons button {
+        background: transparent; border: 0; cursor: pointer;
+        color: #1a5b9e; font-size: 14px; padding: 4px;
+    }
+    .action-icons button:hover { color: #226bb8; }
+    .action-icons button.danger { color: #c0392b; }
+
+    .toast {
+        position: fixed; bottom: 24px; right: 24px;
+        background: #2e7d32; color: #fff; padding: 12px 18px;
+        border-radius: 3px; font-size: 13px; font-weight: bold;
+        box-shadow: 0 6px 16px rgba(0,0,0,.2); display: flex;
+        align-items: center; gap: 8px;
+        transform: translateY(20px); opacity: 0; pointer-events: none;
+        transition: all .25s ease; z-index: 200;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+
+    /* Página do documento dentro do TinyMCE */
+    .tox-tinymce { border-radius: 0 0 3px 3px !important; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+<script>const STATIC_URL = "{% static '' %}";</script>
+<script src="{% static 'js/modelos_documentos.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<!-- Navigation Bar -->
+<nav class="bg-fundo-caixa border-b border-borda sticky top-[45px] z-40">
+    <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
+        <div class="flex items-center gap-5">
+            <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
+            <div class="relative group">
+                <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
+                <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
+                    <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
+                </div>
+            </div>
+            <a href="#" class="hover:underline text-texto-principal font-medium">Audiencias</a>
+        </div>
+        <div class="flex items-center gap-1 text-texto-secundario">
+            <i class="fas fa-times text-[11px]"></i>
+            <span>29:53</span>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-container mx-auto px-6 py-5">
+
+    <!-- Breadcrumbs -->
+    <nav class="text-[11px] text-texto-secundario mb-3 flex items-center gap-1" aria-label="Navegação">
+        <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-azul-primario">Área do Servidor</a>
+        <i class="fa-solid fa-chevron-right text-[9px]"></i>
+        {% if processo %}
+        <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="hover:underline text-azul-primario">
+            Processo {{ processo.numero }}
+        </a>
+        <i class="fa-solid fa-chevron-right text-[9px]"></i>
+        {% endif %}
+        <span class="text-texto-principal font-medium">Movimentar</span>
+    </nav>
+
+    <h2 class="text-azul-primario font-bold text-[20px] mb-4">&raquo; Movimentar Processo</h2>
+
+    {% if messages %}
+    <div class="mb-3">
+        {% for msg in messages %}{% if 'movimentacao' in msg.tags %}
+        <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-2 rounded text-[12px] mb-1 flex items-center gap-2">
+            <i class="fa-solid fa-circle-xmark"></i> {{ msg }}
+        </div>
+        {% endif %}{% endfor %}
+    </div>
+    {% endif %}
+
+    <form id="formMovimentar" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if movimentacao_origem_id %}
+    <input type="hidden" name="movimentacao_origem_id" value="{{ movimentacao_origem_id }}">
+    {% endif %}
+    {# campos ocultos para documentos gerados pelo editor #}
+    <textarea name="editor_html" id="editorHtmlHidden" class="hidden"></textarea>
+    <input type="hidden" name="editor_html_nome" id="editorHtmlNome">
+
+    <span class="step-badge mb-3 inline-block" id="stepBadge">Passo 1</span>
+
+    <!-- ====== PASSO 1 - DADOS MOVIMENTAÇÃO ====== -->
+    <fieldset class="p-5 mb-4 mt-3">
+        <legend class="text-texto-principal text-[13px]">PASSO 1 - DADOS MOVIMENTAÇÃO</legend>
+
+        <!-- Identificação do processo -->
+        <div class="bg-fundo-caixa border border-borda p-3 mb-4 text-[12px]">
+            <div class="flex items-center gap-2 mb-1">
+                <i class="fa-solid fa-folder-open text-azul-primario"></i>
+                <span class="font-bold text-azul-primario">Processo nº {{ processo.numero }}</span>
+                <span class="text-texto-secundario font-normal">— {{ processo.vara.nome }} / {{ processo.vara.comarca.nome }}</span>
+            </div>
+            <div class="text-texto-secundario text-[11px] mt-1">
+                <span class="font-medium text-texto-principal">{{ processo.tipo_processo.nome }}</span>
+                &nbsp;•&nbsp;
+                {% for polo in polos_ativo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
+                <span class="mx-1">×</span>
+                {% for polo in polos_passivo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
+            </div>
+            <div class="mt-1 text-[11px]">
+                <span class="text-texto-secundario">Classe:</span>
+                <span class="font-medium">{{ processo.classe.nome }}</span>
+                &nbsp;•&nbsp;
+                <span class="text-texto-secundario">Status:</span>
+                <span class="font-medium">{{ processo.status_atual.nome_status }}</span>
+            </div>
+        </div>
+
+        <!-- Tipo Movimentação -->
+        <div class="mb-3">
+            <label class="lbl" for="tipoMovInput">
+                <span class="req">*</span>Tipo Movimentação
+                <span class="hint-error ml-2">Preencher conforme TPU CNJ para alimentar estatística de produtividade</span>
+            </label>
+            <div class="relative" id="tipoMovWrapper">
+                <input type="text" id="tipoMovInput" autocomplete="off"
+                       placeholder="— Digite ou selecione o Tipo de Movimentação —"
+                       class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none pr-8"/>
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-texto-secundario text-[10px]">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </span>
+                <input type="hidden" id="tipoMov" name="tipo_movimento"/>
+                <div id="tipoMovDropdown"
+                     class="hidden absolute left-0 right-0 top-full mt-0.5 bg-fundo-container border border-borda rounded shadow-md z-50 max-h-56 overflow-y-auto text-[12px]">
+                </div>
+            </div>
+            {# dados dos tipos para o combobox JS #}
+            <script id="tipoMovData" type="application/json">
+            [{% for tipo in tipos_movimentacao %}{"id":"{{ tipo.id }}","nome":"{{ tipo.nome_movimentacao|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+            </script>
+        </div>
+
+        <!-- Descrição Movimentação -->
+        <div class="mb-3">
+            <label class="lbl">
+                Descrição Movimentação
+                <i class="fa-solid fa-circle-xmark lbl-x"></i>
+            </label>
+            <textarea id="descMov" name="descricao_evento" rows="3"
+                      class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none resize-none overflow-hidden"
+                      oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        </div>
+
+        <!-- ====== DOCUMENTOS DA MOVIMENTAÇÃO ====== -->
+        <fieldset class="p-4 mt-4">
+            <legend class="text-texto-principal text-[12px]">DOCUMENTOS DA MOVIMENTAÇÃO</legend>
+
+            <!-- Tabs -->
+            <div class="tab-bar">
+                <div class="tab-item active" data-tab="upload">Upload de Arquivos</div>
+                <div class="tab-item" data-tab="editor">Modelos, Editor on-line</div>
+                <div class="tab-empty"></div>
+            </div>
+
+            <div class="tab-content">
+
+                <!-- ===== UPLOAD ===== -->
+                <div id="panel-upload" class="tab-panel active">
+                    <div class="dropzone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <div class="ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                        <div class="font-bold text-azul-primario text-[13px]">Arraste arquivos aqui ou clique para selecionar</div>
+                        <div class="text-[11px] text-texto-secundario mt-1">Tamanho máximo: 10MB por arquivo • PDF, DOC, DOCX, ODT, JPG, PNG</div>
+                        <input id="fileInput" name="documentos" type="file" multiple class="hidden" accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png"/>
+                    </div>
+                    <div id="pendingFiles" class="mt-4 space-y-2"></div>
+                </div>
+
+                <!-- ===== EDITOR ===== -->
+                <div id="panel-editor" class="tab-panel">
+
+                    <!-- Seletor de modelos -->
+                    <div class="mb-4 p-3 bg-fundo-caixa border border-borda rounded">
+                        <label class="lbl mb-2">
+                            <i class="fa-solid fa-file-lines lbl-icon"></i>
+                            Carregar Modelo de Documento
+                        </label>
+                        <div class="flex gap-2 items-center">
+                            <select id="modeloSelect"
+                                    class="flex-1 bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none">
+                                <option value="">— Selecione um modelo —</option>
+                            </select>
+                            <button type="button" onclick="carregarModelo()"
+                                    class="bg-azul-primario text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-azul-botao transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-file-import"></i> Carregar
+                            </button>
+                            <button type="button" onclick="limparEditor()" title="Limpar editor"
+                                    class="bg-gray-400 text-white font-bold px-3 py-1.5 text-[12px] rounded hover:bg-gray-500 transition-colors">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <p class="text-texto-secundario text-[11px] mt-1.5">
+                            <i class="fa-solid fa-triangle-exclamation text-yellow-600 mr-1"></i>
+                            Ao carregar um modelo ou rascunho, o conteúdo atual do editor será substituído.
+                        </p>
+                        <div class="flex items-center gap-2 mt-2 pt-2 border-t border-borda">
+                            <span class="text-texto-secundario text-[11px]">Continuar edição de rascunho salvo:</span>
+                            <button type="button" onclick="document.getElementById('rascunhoInput').click()"
+                                    class="bg-gray-600 text-white font-bold px-3 py-1 text-[11px] rounded hover:bg-gray-700 transition-colors flex items-center gap-1.5">
+                                <i class="fa-solid fa-folder-open"></i> Abrir Rascunho (.html)
+                            </button>
+                            <input type="file" id="rascunhoInput" accept=".html" class="hidden">
+                        </div>
+                    </div>
+
+                    <!-- Nome do arquivo -->
+                    <div class="mb-3">
+                        <label class="lbl">Nome do arquivo para salvar</label>
+                        <input id="editorFileName" type="text"
+                               class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none"
+                               placeholder="Ex.: peticao_inicial_joao_silva"/>
+                    </div>
+
+                    <!-- TinyMCE -->
+                    <textarea id="tinymce-editor"></textarea>
+
+                    <!-- Botões editor -->
+                    <div class="flex flex-wrap justify-center gap-2 mt-3">
+                        <button type="button"
+                                class="bg-azul-primario text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm flex items-center gap-1.5"
+                                onclick="assinarTexto()">
+                            <i class="fa-solid fa-signature"></i> Assinar
+                        </button>
+                        <button type="button"
+                                class="bg-gray-600 text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-gray-700 transition-colors shadow-sm flex items-center gap-1.5"
+                                onclick="salvarRascunho()" title="Salva localmente como .html para continuar depois">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Salvar Rascunho
+                        </button>
+                        <button type="button"
+                                class="bg-green-700 text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-green-800 transition-colors shadow-sm flex items-center gap-1.5"
+                                onclick="incluirNaMovimentacao()" title="Adiciona este documento à lista de anexos da movimentação">
+                            <i class="fa-solid fa-paperclip"></i> Incluir na Movimentação
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </fieldset>
+    </fieldset>
+
+    <!-- ====== DOCUMENTOS A ANEXAR ====== -->
+    <fieldset class="p-5 mb-4">
+        <legend class="text-texto-principal text-[13px]">DOCUMENTOS A ANEXAR</legend>
+
+        <div class="action-icons">
+            <button title="Recarregar" onclick="renderFiles()"><i class="fa-solid fa-arrows-rotate"></i></button>
+            <button title="Remover selecionados" class="danger" onclick="removeSelected()"><i class="fa-solid fa-trash"></i></button>
+            <button title="Selecionar todos" onclick="toggleSelectAll()"><i class="fa-solid fa-arrow-pointer"></i></button>
+            <button title="Adicionar" onclick="document.getElementById('fileInput').click()"><i class="fa-solid fa-file-circle-plus"></i></button>
+        </div>
+
+        <table class="tbl-files" id="filesTable">
+            <thead>
+                <tr>
+                    <th style="width:30px;"><input type="checkbox" id="selAllFiles"/></th>
+                    <th>Descrição</th>
+                    <th>Nome do Arquivo</th>
+                    <th style="width:120px;">Opções</th>
+                </tr>
+            </thead>
+            <tbody id="filesBody">
+                <tr class="empty"><td colspan="4">Nenhum arquivo adicionado</td></tr>
+            </tbody>
+        </table>
+    </fieldset>
+
+    <!-- Botões Passo 1 -->
+    <div id="btnsPasso1" class="flex justify-center gap-3 my-6">
+        <a href="{% url 'processos:visualizar_processo' processo.numero %}"
+           class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Cancelar
+        </a>
+        <button type="button"
+                class="bg-azul-primario text-white font-bold px-8 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm flex items-center gap-1.5"
+                onclick="avancar()">
+            Avançar <i class="fa-solid fa-arrow-right"></i>
+        </button>
+    </div>
+
+    <!-- ====== PASSO 2 — REVISÃO ====== -->
+    <div id="painelPasso2" class="hidden">
+        <div class="bg-fundo-container border border-borda rounded p-5 mb-4">
+            <h3 class="text-azul-primario font-bold text-[14px] mb-4 pb-2 border-b border-borda flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-check"></i> Revisão da Movimentação
+            </h3>
+
+            <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-[12px] mb-4">
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-texto-secundario w-36 shrink-0">Processo:</span>
+                    <span class="font-bold">{{ processo.numero }}</span>
+                </div>
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-texto-secundario w-36 shrink-0">Tipo de Movimentação:</span>
+                    <span id="rev-tipo" class="font-bold"></span>
+                </div>
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-texto-secundario w-36 shrink-0">Descrição:</span>
+                    <span id="rev-descricao" class="whitespace-pre-wrap"></span>
+                </div>
+                {% if movimentacao_origem_id %}
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-texto-secundario w-36 shrink-0">Modo:</span>
+                    <span class="font-bold text-yellow-700">
+                        <i class="fa-solid fa-pen mr-1"></i>Edição — nova versão da movimentação #{{ movimentacao_origem_id }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="border-t border-borda pt-3">
+                <div class="text-[12px] font-bold text-texto-secundario mb-2">Documentos a anexar:</div>
+                <ul id="rev-arquivos" class="text-[12px] space-y-1"></ul>
+            </div>
+        </div>
+
+        <!-- Botões Passo 2 -->
+        <div class="flex justify-center gap-3 my-6">
+            <button type="button"
+                    class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm flex items-center gap-1.5"
+                    onclick="voltarPasso1()">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </button>
+            <button type="button"
+                    class="bg-green-700 text-white font-bold px-8 py-2 text-[13px] rounded hover:bg-green-800 transition-colors shadow-sm flex items-center gap-1.5"
+                    onclick="confirmarMovimentacao()">
+                <i class="fa-solid fa-circle-check"></i> Confirmar Movimentação
+            </button>
+        </div>
+    </div>
+
+    </form>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg">Salvo com sucesso</span>
+</div>
+
+<script>
+// ── Combobox: Tipo Movimentação ───────────────────────
+(function () {
+    const TIPOS = JSON.parse(document.getElementById('tipoMovData').textContent);
+    const input    = document.getElementById('tipoMovInput');
+    const hidden   = document.getElementById('tipoMov');
+    const dropdown = document.getElementById('tipoMovDropdown');
+    let highlighted = -1;
+
+    function buildItems(lista) {
+        dropdown.innerHTML = '';
+        highlighted = -1;
+        if (lista.length === 0) {
+            dropdown.innerHTML = '<div class="px-3 py-2 text-texto-secundario italic">Nenhum resultado encontrado</div>';
+            return;
+        }
+        lista.forEach((t, i) => {
+            const d = document.createElement('div');
+            d.className = 'px-3 py-2 cursor-pointer hover:bg-fundo-caixa';
+            d.dataset.id   = t.id;
+            d.dataset.nome = t.nome;
+            d.dataset.idx  = i;
+            d.textContent  = t.nome;
+            d.addEventListener('mousedown', e => {
+                e.preventDefault();
+                selectOption(t.id, t.nome);
+            });
+            dropdown.appendChild(d);
+        });
+    }
+
+    function openDropdown(query) {
+        const q = (query || '').toLowerCase().trim();
+        const lista = q ? TIPOS.filter(t => t.nome.toLowerCase().includes(q)) : TIPOS;
+        buildItems(lista);
+        dropdown.classList.remove('hidden');
+    }
+
+    function closeDropdown() {
+        dropdown.classList.add('hidden');
+        highlighted = -1;
+    }
+
+    function selectOption(id, nome) {
+        hidden.value  = id;
+        input.value   = nome;
+        input.dataset.selected = id;
+        closeDropdown();
+    }
+
+    function highlight(dir) {
+        const items = dropdown.querySelectorAll('[data-id]');
+        if (!items.length) return;
+        if (highlighted >= 0) items[highlighted].classList.remove('bg-fundo-caixa');
+        highlighted = Math.max(0, Math.min(items.length - 1, highlighted + dir));
+        items[highlighted].classList.add('bg-fundo-caixa');
+        items[highlighted].scrollIntoView({ block: 'nearest' });
+    }
+
+    input.addEventListener('focus', () => openDropdown(input.value));
+    input.addEventListener('input', () => {
+        hidden.value = '';
+        input.dataset.selected = '';
+        openDropdown(input.value);
+    });
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            closeDropdown();
+            // Se digitou mas não selecionou nada, limpa o campo
+            if (!hidden.value) input.value = '';
+        }, 150);
+    });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown')  { e.preventDefault(); highlight(+1); return; }
+        if (e.key === 'ArrowUp')    { e.preventDefault(); highlight(-1); return; }
+        if (e.key === 'Escape')     { closeDropdown(); input.blur(); return; }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const items = dropdown.querySelectorAll('[data-id]');
+            if (highlighted >= 0 && items[highlighted]) {
+                selectOption(items[highlighted].dataset.id, items[highlighted].dataset.nome);
+            }
+        }
+    });
+
+    // Fecha ao clicar fora
+    document.addEventListener('click', e => {
+        if (!document.getElementById('tipoMovWrapper').contains(e.target)) closeDropdown();
+    });
+
+    // Expõe para uso externo (pré-preenchimento no modo edição)
+    window._tipoMovSelect = selectOption;
+})();
+
+// ── State ─────────────────────────────────────────────
+let pendingFiles = [];
+let savedFiles   = [];   // { id, desc, name, file: File }
+let fid = 0;
+
+// ── Tabs ──────────────────────────────────────────────
+document.querySelectorAll('.tab-item').forEach(t => {
+    t.addEventListener('click', () => {
+        document.querySelectorAll('.tab-item').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+    });
+});
+
+// ── File upload ───────────────────────────────────────
+const fileInput = document.getElementById('fileInput');
+const dropZone  = document.getElementById('dropZone');
+
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+['dragenter','dragover'].forEach(ev =>
+    dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('over'); })
+);
+['dragleave','drop'].forEach(ev =>
+    dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('over'); })
+);
+dropZone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+
+function handleFiles(list) {
+    for (const f of list) {
+        pendingFiles.push({ id: ++fid, name: f.name, size: f.size, title: f.name.replace(/\.[^.]+$/, ''), file: f });
+    }
+    fileInput.value = '';
+    renderPending();
+}
+
+function formatSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1024 / 1024).toFixed(2) + ' MB';
+}
+
+function iconFor(name) {
+    const ext = name.split('.').pop().toLowerCase();
+    if (['pdf'].includes(ext))                    return ['fa-file-pdf', '#c0392b'];
+    if (['doc','docx','odt'].includes(ext))       return ['fa-file-word', '#2c5b9e'];
+    if (['jpg','jpeg','png','gif'].includes(ext)) return ['fa-file-image', '#7b3ba0'];
+    return ['fa-file', '#666'];
+}
+
+function renderPending() {
+    const c = document.getElementById('pendingFiles');
+    if (pendingFiles.length === 0) { c.innerHTML = ''; return; }
+    c.innerHTML = `
+        <div class="bg-fundo-caixa border border-borda p-2 text-[11px] font-bold uppercase text-texto-secundario flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-azul-primario"></i>
+            Defina o título para cada arquivo antes de incluir na lista
+        </div>
+    ` + pendingFiles.map(f => {
+        const [ico, col] = iconFor(f.name);
+        return `
+            <div class="border border-borda bg-fundo-container p-3 flex items-center gap-3">
+                <i class="fa-solid ${ico} text-2xl" style="color:${col}"></i>
+                <div class="flex-1">
+                    <div class="text-[12px] font-bold text-texto-principal">${f.name}
+                        <span class="text-texto-secundario text-[10px] font-normal">(${formatSize(f.size)})</span>
+                    </div>
+                    <div class="mt-1.5">
+                        <label class="lbl text-[11px]"><span class="req">*</span>Título do arquivo</label>
+                        <input type="text"
+                               class="w-full bg-fundo-container border border-borda rounded py-1 px-2 text-[12px] outline-none"
+                               value="${f.title}"
+                               oninput="updateTitle(${f.id}, this.value)"
+                               placeholder="Ex.: Petição inicial, Procuração, Documento pessoal..."/>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <button type="button" class="bg-azul-primario text-white font-bold px-3 py-1.5 text-[12px] rounded hover:bg-azul-botao transition-colors flex items-center gap-1"
+                            onclick="confirmFile(${f.id})" title="Adicionar à lista">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button type="button" class="bg-fundo-container text-red-600 border border-borda font-bold px-3 py-1.5 text-[12px] rounded hover:bg-fundo-caixa transition-colors flex items-center gap-1"
+                            onclick="removePending(${f.id})" title="Remover">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateTitle(id, v) {
+    const f = pendingFiles.find(x => x.id === id);
+    if (f) f.title = v;
+}
+
+function removePending(id) {
+    pendingFiles = pendingFiles.filter(f => f.id !== id);
+    renderPending();
+}
+
+function confirmFile(id) {
+    const f = pendingFiles.find(x => x.id === id);
+    if (!f) return;
+    if (!f.title.trim()) { showToast('Informe o título do arquivo', true); return; }
+    savedFiles.push({ id: f.id, desc: f.title.trim(), name: f.name, file: f.file });
+    pendingFiles = pendingFiles.filter(x => x.id !== id);
+    renderPending();
+    renderFiles();
+    showToast('Arquivo adicionado à lista');
+}
+
+// ── Lista de arquivos ─────────────────────────────────
+function renderFiles() {
+    const body = document.getElementById('filesBody');
+    if (savedFiles.length === 0) {
+        body.innerHTML = '<tr class="empty"><td colspan="4">Nenhum arquivo adicionado</td></tr>';
+        return;
+    }
+    body.innerHTML = savedFiles.map(f => {
+        const [ico, col] = iconFor(f.name);
+        return `
+            <tr data-id="${f.id}">
+                <td><input type="checkbox" class="fileChk" data-id="${f.id}"/></td>
+                <td>${f.desc}</td>
+                <td><i class="fa-solid ${ico} mr-1.5" style="color:${col}"></i>${f.name}</td>
+                <td>
+                    <button type="button" class="text-azul-primario hover:text-[#226bb8] mr-2" title="Editar título" onclick="editTitle(${f.id})"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="text-red-600 hover:text-red-700" title="Remover" onclick="removeFile(${f.id})"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function editTitle(id) {
+    const f = savedFiles.find(x => x.id === id);
+    if (!f) return;
+    const v = prompt('Novo título do arquivo:', f.desc);
+    if (v !== null && v.trim()) { f.desc = v.trim(); renderFiles(); }
+}
+
+function removeFile(id) {
+    savedFiles = savedFiles.filter(f => f.id !== id);
+    renderFiles();
+}
+
+function toggleSelectAll() {
+    const cb = document.getElementById('selAllFiles');
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+}
+document.getElementById('selAllFiles').addEventListener('change', e => {
+    document.querySelectorAll('.fileChk').forEach(c => c.checked = e.target.checked);
+});
+
+function removeSelected() {
+    const ids = [...document.querySelectorAll('.fileChk:checked')].map(c => parseInt(c.dataset.id));
+    if (ids.length === 0) { showToast('Selecione ao menos um arquivo', true); return; }
+    savedFiles = savedFiles.filter(f => !ids.includes(f.id));
+    renderFiles();
+    showToast(`${ids.length} arquivo(s) removido(s)`);
+}
+
+// ── TinyMCE ───────────────────────────────────────────
+tinymce.init({
+    selector: '#tinymce-editor',
+    height: 520,
+    menubar: true,
+    plugins: 'lists link image table pagebreak searchreplace preview fullscreen code wordcount',
+    toolbar: [
+        'undo redo | styles | fontfamily fontsize',
+        'bold italic underline strikethrough | forecolor backcolor | removeformat',
+        'alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent',
+        'table link image | pagebreak | searchreplace | fullscreen preview code'
+    ].join(' | '),
+    toolbar_mode: 'wrap',
+    font_family_formats: [
+        'Arial=arial,helvetica,sans-serif',
+        'Times New Roman=times new roman,times,serif',
+        'Courier New=courier new,courier,monospace',
+        'Verdana=verdana,geneva,sans-serif'
+    ].join(';'),
+    font_size_formats: '8pt 9pt 10pt 11pt 12pt 14pt 16pt 18pt 24pt 36pt',
+    content_style: `
+        body { font-family: "Times New Roman", Times, serif; font-size: 12pt;
+               line-height: 2; color: #000; margin: 32px 48px; background: #fff; }
+        p { text-align: justify; margin: 0 0 6px 0; }
+    `,
+    language: 'pt_BR',
+    language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/pt_BR.js',
+    branding: false, promotion: false,
+    image_uploadtab: true, automatic_uploads: false,
+    file_picker_types: 'image',
+    file_picker_callback: function(cb) {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            const reader = new FileReader();
+            reader.addEventListener('load', function() { cb(reader.result, { title: file.name }); });
+            reader.readAsDataURL(file);
+        });
+        input.click();
+    },
+    menu: {
+        file: { title: 'Arquivo', items: 'newdocument | preview | exportarpdf exportardoc' }
+    },
+    setup: function(editor) {
+        editor.ui.registry.addMenuItem('exportarpdf', {
+            text: 'Exportar PDF',
+            icon: 'new-document',
+            onAction: function() { exportarPdf(); }
+        });
+        editor.ui.registry.addMenuItem('exportardoc', {
+            text: 'Exportar DOC (Word)',
+            icon: 'new-document',
+            onAction: function() { exportarDoc(); }
+        });
+    }
+});
+
+function getEditor() { return tinymce.get('tinymce-editor'); }
+function editorVazio() {
+    const ed = getEditor();
+    return !ed || !ed.getContent({ format: 'text' }).trim();
+}
+
+document.getElementById('rascunhoInput').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const ed = getEditor();
+        if (!ed) { showToast('Editor ainda carregando, aguarde...', true); return; }
+        ed.setContent(e.target.result);
+        document.getElementById('editorFileName').value = file.name.replace(/\.html$/i, '');
+        showToast('Rascunho carregado — continue a edição');
+    };
+    reader.readAsText(file, 'UTF-8');
+    this.value = '';
+});
+
+function limparEditor() {
+    const ed = getEditor();
+    if (ed) ed.setContent('');
+    document.getElementById('editorFileName').value = '';
+    document.getElementById('modeloSelect').value = '';
+}
+
+function assinarTexto() {
+    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    showToast('Documento assinado com sucesso');
+}
+
+function salvarRascunho() {
+    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    const html = getEditor().getContent();
+    const name = (document.getElementById('editorFileName').value.trim() || 'rascunho') + '.html';
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+    showToast('Rascunho salvo — abra-o novamente para continuar a edição');
+}
+
+// ── Exportar PDF (diálogo nativo do browser, sem biblioteca) ─────────────
+function exportarPdf() {
+    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    const html = getEditor().getContent();
+    const nome = document.getElementById('editorFileName').value.trim() || 'documento';
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;border:0;';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${nome}</title>
+<style>
+body{font-family:"Times New Roman",serif;font-size:12pt;line-height:2;margin:2cm;color:#000;}
+p{text-align:justify;margin:0 0 6px 0;}
+@page{margin:2cm;}
+</style></head><body>${html}</body></html>`);
+    doc.close();
+    setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1500);
+    }, 300);
+    showToast('Diálogo de impressão aberto — selecione "Salvar como PDF"');
+}
+
+// ── Exportar DOC (Word-HTML, sem biblioteca) ─────────────────────────────
+function exportarDoc() {
+    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    const html = getEditor().getContent();
+    const nome = (document.getElementById('editorFileName').value.trim() || 'documento') + '.doc';
+    const conteudo = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8">
+<meta name=ProgId content=Word.Document>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>
+<w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+body{font-family:"Times New Roman",serif;font-size:12pt;line-height:2;margin:2cm;color:#000;}
+p{text-align:justify;margin:0 0 6px 0;}
+</style></head><body>${html}</body></html>`;
+    const blob = new Blob(['﻿', conteudo], { type: 'application/msword' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = nome; a.click();
+    URL.revokeObjectURL(url);
+    showToast('Documento DOC exportado com sucesso');
+}
+
+// ── Incluir na Movimentação (via campo oculto — sem restrição de MIME) ───
+function incluirNaMovimentacao() {
+    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    const nome = (document.getElementById('editorFileName').value.trim() || 'documento_editor');
+    const html = getEditor().getContent();
+    document.getElementById('editorHtmlHidden').value = html;
+    document.getElementById('editorHtmlNome').value   = nome;
+    // Exibe na lista (sem File object — tratado pelo campo oculto)
+    savedFiles = savedFiles.filter(f => !f.fromEditor);
+    savedFiles.push({ id: ++fid, desc: nome, name: nome + '.html', file: null, fromEditor: true });
+    renderFiles();
+    showToast('Documento incluído na lista — será anexado ao salvar');
+}
+
+// ── Fluxo passo 1 → passo 2 ──────────────────────────
+function avancar() {
+    if (!document.getElementById('tipoMov').value) {
+        showToast('Selecione o Tipo de Movimentação', true); return;
+    }
+    if (pendingFiles.length > 0) {
+        showToast('Confirme ou remova os arquivos pendentes antes de avançar', true); return;
+    }
+
+    // Preenche card de revisão
+    const desc  = document.getElementById('descMov').value.trim();
+    document.getElementById('rev-tipo').textContent      = document.getElementById('tipoMovInput').value;
+    document.getElementById('rev-descricao').textContent = desc || '(sem descrição)';
+
+    const ul = document.getElementById('rev-arquivos');
+    if (savedFiles.length === 0) {
+        ul.innerHTML = '<li class="text-texto-secundario italic">Nenhum documento</li>';
+    } else {
+        ul.innerHTML = savedFiles.map(f => {
+            const [ico, col] = iconFor(f.name);
+            return `<li class="flex items-center gap-2">
+                <i class="fa-solid ${ico}" style="color:${col}"></i>
+                <span>${f.desc}</span>
+                <span class="text-texto-secundario text-[10px]">(${f.name})</span>
+            </li>`;
+        }).join('');
+    }
+
+    // Troca de painel
+    document.getElementById('stepBadge').textContent = 'Passo 2';
+    document.querySelectorAll('#formMovimentar > fieldset, #btnsPasso1').forEach(el => el.classList.add('hidden'));
+    document.getElementById('painelPasso2').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function voltarPasso1() {
+    document.getElementById('stepBadge').textContent = 'Passo 1';
+    document.querySelectorAll('#formMovimentar > fieldset, #btnsPasso1').forEach(el => el.classList.remove('hidden'));
+    document.getElementById('painelPasso2').classList.add('hidden');
+}
+
+// ── Envio real do formulário ──────────────────────────
+function confirmarMovimentacao() {
+    // Reconstrói o fileInput com todos os arquivos de savedFiles
+    const dt = new DataTransfer();
+    savedFiles.forEach(f => { if (f.file) dt.items.add(f.file); });
+    fileInput.files = dt.files;
+
+    // Remove hidden inputs de nomes antigos e injeta novos na ordem correta
+    const form = document.getElementById('formMovimentar');
+    form.querySelectorAll('input[name="documento_nomes"]').forEach(el => el.remove());
+    savedFiles.forEach(f => {
+        const inp = document.createElement('input');
+        inp.type  = 'hidden';
+        inp.name  = 'documento_nomes';
+        inp.value = f.desc;
+        form.appendChild(inp);
+    });
+
+    form.submit();
+}
+
+// ── Pré-preenchimento modo edição ─────────────────────
+{% if movimentacao_origem_id %}
+document.addEventListener('DOMContentLoaded', function () {
+    const TIPOS = JSON.parse(document.getElementById('tipoMovData').textContent);
+    const tipo  = TIPOS.find(t => t.id === '{{ edicao_tipo_id }}');
+    if (tipo) window._tipoMovSelect(tipo.id, tipo.nome);
+    const ta = document.getElementById('descMov');
+    ta.value = `{{ edicao_descricao|escapejs }}`;
+    ta.dispatchEvent(new Event('input'));
+});
+{% endif %}
+
+// ── Toast ─────────────────────────────────────────────
+function showToast(msg, err) {
+    const t = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = msg;
+    t.style.background = err ? '#c0392b' : '#2e7d32';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2600);
+}
+</script>
+
+{% endblock %}
