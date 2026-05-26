@@ -16,7 +16,6 @@ from django.views.decorators.http import require_POST
 
 from ciclos.models import CicloSimulacao, GrupoTrabalho
 
-from avaliacoes.models import FeedbackProfessor
 from usuarios.models import Usuario
 
 from .forms import ProcessoJudicialForm
@@ -393,11 +392,8 @@ def visualizar_processo(request, numero):
     )
 
     mov_ids = [m.id for m in movimentacoes_qs]
-    feedbacks_existentes = set(
-        FeedbackProfessor.objects
-        .filter(movimentacao_id__in=mov_ids)
-        .values_list("movimentacao_id", flat=True)
-    )
+    from avaliacoes.services import feedbacks_ids_para_movimentacoes
+    feedbacks_existentes = feedbacks_ids_para_movimentacoes(mov_ids)
 
     mov_cadastro = next(
         (m for m in movimentacoes_qs if m.tipo_movimento.nome_movimentacao == "Cadastro do Processo"),
@@ -433,11 +429,8 @@ def visualizar_processo(request, numero):
             "tem_feedback": mov_cadastro.id in feedbacks_existentes,
         })
 
-    pode_avaliar = request.user.is_authenticated and request.user.tipo_perfil_global in (
-        Usuario.TipoPerfilGlobal.ADMIN,
-        Usuario.TipoPerfilGlobal.COORDENADOR,
-        Usuario.TipoPerfilGlobal.PROFESSOR,
-    )
+    from avaliacoes.permissions import perfil_pode_avaliar
+    pode_avaliar = perfil_pode_avaliar(request.user)
 
     return render(
         request,

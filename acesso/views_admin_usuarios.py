@@ -121,7 +121,7 @@ def painel_administrativo(request):
                 .select_related("status")
                 .prefetch_related("grupos")
                 .order_by("-data_criacao")
-                .filter(Q(coordenador=request.user) | Q(participantes=request.user), status__nome_status__in=["em andamento", "finalizado"])                
+                .filter(Q(coordenador=request.user) | Q(participantes=request.user), status__nome_status__in=["em andamento", "finalizado"])
             ). distinct()
 
     if "ciclos" in context:
