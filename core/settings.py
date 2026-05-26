@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'ciclos',
     'movimentacoes',
     'processos',
+    'avaliacoes',
     'private_storage',
 ]
 
