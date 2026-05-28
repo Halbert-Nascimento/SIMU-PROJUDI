@@ -152,8 +152,8 @@ MEDIA_URL = '/media/'
 # Mídia PROTEGIDA (documentos processuais)
 PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')
 PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_authenticated'
-PRIVATE_STORAGE_INTERNAL_URL = '/private-x-accel-redirect/'
-PRIVATE_STORAGE_SERVER = 'nginx'   # dev; em produção substituir por 'nginx' com X-Accel-Redirect
+PRIVATE_STORAGE_SERVER = env('PRIVATE_STORAGE_SERVER', default='django')   # dev; em produção substituir por 'nginx' com X-Accel-Redirect
+PRIVATE_STORAGE_INTERNAL_URL = '/arquivos_privados/'
 
 
 # ─── Upload de Arquivos ───────────────────────────────────────────────────────
