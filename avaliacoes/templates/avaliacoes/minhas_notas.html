@@ -1,0 +1,506 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Minhas Notas — Simulador Projudi{% endblock %}
+
+{% block extra_head %}
+<style>
+    .section-title {
+        color: #1a5b9e; font-size: 12px; font-weight: bold;
+        text-transform: uppercase; padding: 4px 0 4px 8px;
+        border-left: 3px solid #1a5b9e; background: #f4f4f4;
+        margin: 10px 0 0 0;
+        display: flex; align-items: center; gap: 6px;
+    }
+    .autos-title {
+        color: #1a5b9e; font-size: 11px; font-weight: bold;
+        text-transform: uppercase; padding: 2px 0 2px 4px;
+        display: flex; align-items: center; gap: 4px;
+    }
+    .autos-title.green { color: #1f6020; }
+    .panel {
+        border: 1px solid #cdd9e6; background: #eef4fb;
+        padding: 12px 14px; margin-top: 4px;
+    }
+    .panel-inner {
+        background: #ffffff; border: 1px solid #cdd9e6;
+        padding: 10px 12px; margin-top: 6px;
+    }
+    .field-label { color: #666; font-size: 11px; }
+    .field-value { font-weight: bold; color: #222; font-size: 12px; }
+    .avatar {
+        width: 46px; height: 46px; border-radius: 50%;
+        background: #1a5b9e; color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: bold; font-size: 16px; flex-shrink: 0;
+    }
+    .avatar.lg { width: 60px; height: 60px; font-size: 20px; }
+    .avatar.prof { background: #7b3ba0; }
+    .stat-card {
+        background: #fff; border: 1px solid #cdd9e6;
+        padding: 12px 14px; display: flex; align-items: center; gap: 12px;
+    }
+    .stat-card .ico {
+        width: 42px; height: 42px; border-radius: 4px;
+        display: flex; align-items: center; justify-content: center;
+        color: #fff; font-size: 18px; flex-shrink: 0;
+    }
+    .stat-card .lbl { color: #666; font-size: 10px; text-transform: uppercase; font-weight: bold; }
+    .stat-card .num { font-size: 22px; font-weight: bold; color: #1a5b9e; line-height: 1; }
+    .stat-card .sub { font-size: 10px; color: #888; }
+    .progress-bg {
+        width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden;
+    }
+    .progress-fill {
+        height: 100%; background: linear-gradient(to right, #1a5b9e, #226bb8);
+        border-radius: 4px; transition: width .4s ease;
+    }
+    .tbl { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .tbl thead th {
+        background: #dcdcdc; text-align: left; font-weight: bold; color: #333;
+        padding: 6px 8px; border: 1px solid #c0c0c0;
+    }
+    .tbl tbody td {
+        padding: 6px 8px; border: 1px solid #d8d8d8;
+        background: #fff; vertical-align: middle;
+    }
+    .tbl tbody tr:nth-child(even) td { background: #f3f3f3; }
+    .tbl tbody tr:hover td { background: #fffbe5; cursor: pointer; }
+    .nota-badge {
+        display: inline-block; padding: 2px 8px; font-size: 12px;
+        font-weight: bold; border-radius: 3px; min-width: 40px; text-align: center;
+    }
+    .nota-A { background: #dff5e1; color: #1f6020; border: 1px solid #bee0c2; }
+    .nota-B { background: #e9f3ff; color: #1a5b9e; border: 1px solid #bcd5ee; }
+    .nota-C { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
+    .nota-D { background: #fde8e8; color: #a52a2a; border: 1px solid #f3c2c2; }
+    .nota-pend { background: #f0f0f0; color: #666; border: 1px solid #ccc; font-style: italic; }
+    .pill {
+        display: inline-block; padding: 2px 8px; font-size: 10px; font-weight: bold;
+        border-radius: 10px; text-transform: uppercase;
+    }
+    .pill.aval { background: #dff5e1; color: #1f6020; border: 1px solid #bee0c2; }
+    .pill.pend { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
+    .chip-filter {
+        padding: 4px 12px; font-size: 11px;
+        border: 1px solid #b8b8b8; background: #fff;
+        border-radius: 14px; cursor: pointer;
+        color: #444; font-weight: bold;
+    }
+    .chip-filter:hover { background: #eef4fb; border-color: #1a5b9e; color: #1a5b9e; }
+    .chip-filter.active { background: #1a5b9e; color: #fff; border-color: #1a5b9e; }
+    .banner-ult {
+        background: linear-gradient(to right, #eef4fb, #f8fbff);
+        border: 1px solid #bcd5ee; border-left: 4px solid #1a5b9e;
+        padding: 10px 14px; display: flex; align-items: center; gap: 10px;
+        margin-bottom: 12px; font-size: 12px;
+    }
+    .banner-ult i { color: #1a5b9e; font-size: 18px; }
+    .prof-comment {
+        background: #f1faee; border-left: 3px solid #1f6020;
+        padding: 10px 12px; font-size: 12px; line-height: 1.55;
+        color: #333; font-style: italic;
+    }
+    .mov-text {
+        background: #fafafa; border-left: 3px solid #1a5b9e;
+        padding: 10px 12px; font-size: 12px; line-height: 1.55;
+        color: #333; white-space: pre-wrap;
+    }
+    .btn-blue {
+        background: linear-gradient(to bottom, #2e6cab, #1c4b80);
+        color: #fff; padding: 6px 14px;
+        font-size: 11px; font-weight: bold;
+        border: 1px solid #154170; border-radius: 2px; cursor: pointer;
+        text-transform: uppercase;
+    }
+    .btn-blue:hover { background: linear-gradient(to bottom, #3679b8, #21568f); }
+    .btn-secondary {
+        background: #fff; color: #333; border: 1px solid #b8b8b8;
+        padding: 6px 14px; font-size: 11px; font-weight: bold;
+        border-radius: 2px; cursor: pointer;
+    }
+    .btn-secondary:hover { background: #eee; }
+    [data-tip] { position: relative; }
+    [data-tip]:hover::after {
+        content: attr(data-tip);
+        position: absolute; bottom: calc(100% + 6px); left: 50%;
+        transform: translateX(-50%);
+        background: #222; color: #fff; padding: 4px 8px;
+        font-size: 10px; white-space: nowrap; border-radius: 3px;
+        z-index: 50; font-weight: normal;
+    }
+    .modal-overlay {
+        position: fixed; inset: 0; background: rgba(0,0,0,.45);
+        display: none; align-items: center; justify-content: center; z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+        background: #fff; width: 720px; max-width: 92vw; max-height: 88vh;
+        border-radius: 4px; overflow: hidden; display: flex; flex-direction: column;
+        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+    }
+    .modal-body { overflow: auto; }
+    .toast {
+        position: fixed; bottom: 24px; right: 24px;
+        background: #2e7d32; color: #fff; padding: 12px 18px;
+        border-radius: 3px; font-size: 13px; font-weight: bold;
+        box-shadow: 0 6px 16px rgba(0,0,0,.2);
+        display: flex; align-items: center; gap: 8px;
+        transform: translateY(20px); opacity: 0; pointer-events: none;
+        transition: all .25s ease; z-index: 200;
+    }
+    .toast.show { transform: translateY(0); opacity: 1; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="bg-[#eef1f5] border-b border-[#cdd4dc] sticky top-[45px] z-40">
+    <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
+        <div class="flex items-center gap-5">
+            <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-[#333] font-medium">Página Inicial</a>
+            <div class="relative group">
+                <a href="#" class="hover:underline text-[#333] font-medium py-1 inline-block">Processos</a>
+                <div class="hidden group-hover:block absolute left-0 top-full bg-white border border-[#cdd4dc] shadow-md min-w-[230px] z-50 rounded">
+                    <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-[#333] hover:bg-[#eef1f5] border-b border-[#cdd4dc]/50 transition-colors">Cadastrar Processos</a>
+                    <a href="#" class="block px-4 py-2.5 text-[#333] hover:bg-[#eef1f5] border-b border-[#cdd4dc]/50 transition-colors">Consultar Todos</a>
+                </div>
+            </div>
+            <a href="#" class="hover:underline text-[#333] font-medium">Audiências</a>
+            <a href="{% url 'avaliacoes:minhas_notas' %}" class="hover:underline text-[#1a5b9e] font-bold">Minhas Notas</a>
+        </div>
+        <div class="flex items-center gap-1 text-gray-500">
+            <i class="fas fa-times text-[11px]"></i>
+            <span>29:53</span>
+        </div>
+    </div>
+</nav>
+
+<main class="max-w-[1200px] mx-auto px-6 py-5 bg-white min-h-screen" style="box-shadow: 0 0 10px rgba(0,0,0,0.05);">
+
+    <!-- IDENTIFICAÇÃO DO ALUNO -->
+    <div class="autos-title"><i class="fa-solid fa-chart-line"></i> MEU DESEMPENHO</div>
+    <div class="panel">
+        <div class="panel-inner">
+            <div class="flex items-center gap-4">
+                <div class="avatar lg">{{ request.user.first_name|first|default:request.user.username|first|upper }}{{ request.user.last_name|first|upper }}</div>
+                <div class="flex-1">
+                    <div class="field-value text-[14px]">{{ request.user.get_full_name|default:request.user.username|upper }}</div>
+                    <div class="field-label">{{ request.user.username }}</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cards de resumo -->
+        <div class="grid grid-cols-3 gap-3 mt-3">
+            <div class="stat-card">
+                <div class="ico" style="background:#1a5b9e;"><i class="fa-solid fa-chart-line"></i></div>
+                <div>
+                    <div class="lbl">Média Geral</div>
+                    <div class="num">{% if media_geral is not None %}{{ media_geral|floatformat:2 }}{% else %}—{% endif %}</div>
+                    <div class="sub">das avaliações com nota</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="ico" style="background:#1f6020;"><i class="fa-solid fa-clipboard-check"></i></div>
+                <div>
+                    <div class="lbl">Avaliadas</div>
+                    <div class="num">{{ total_avaliadas }}</div>
+                    <div class="sub">de {{ total_movimentacoes }} movimentações</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="ico" style="background:#7b3ba0;"><i class="fa-solid fa-trophy"></i></div>
+                <div>
+                    <div class="lbl">Melhor Nota</div>
+                    <div class="num">{% if melhor_nota is not None %}{{ melhor_nota|floatformat:1 }}{% else %}—{% endif %}</div>
+                    <div class="sub">nota mais alta recebida</div>
+                </div>
+            </div>
+        </div>
+
+        {% if media_geral is not None %}
+        <div class="mt-3">
+            <div class="progress-bg">
+                <div class="progress-fill" style="width: {{ media_geral|floatformat:0 }}0%;"></div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ÚLTIMA AVALIAÇÃO -->
+    {% if ultima_avaliacao %}
+    <div class="banner-ult mt-4">
+        <i class="fa-solid fa-clipboard-check"></i>
+        <div class="flex-1">
+            <strong>Última avaliação:</strong>
+            {{ ultima_avaliacao.professor.get_full_name|default:ultima_avaliacao.professor.username }}
+            avaliou a movimentação
+            <em>"{{ ultima_avaliacao.movimentacao.tipo_movimento.nome_movimentacao }}"</em>
+            — {{ ultima_avaliacao.data_feedback|date:"d/m/Y" }}
+            {% if ultima_avaliacao.nota is not None %}
+            · Nota: <strong>{{ ultima_avaliacao.nota|floatformat:1 }}</strong>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- HISTÓRICO DE AVALIAÇÕES -->
+    <div class="section-title">
+        <i class="fa-solid fa-list-check"></i> HISTÓRICO DE AVALIAÇÕES
+    </div>
+    <div class="panel-inner" style="margin-top: 4px;">
+
+        <!-- Filtros -->
+        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
+            <div class="flex gap-2 flex-wrap" id="filterChips">
+                <button class="chip-filter active" data-filter="todas">Todas</button>
+                <button class="chip-filter" data-filter="avaliadas">Com nota</button>
+                <button class="chip-filter" data-filter="sem_nota">Sem nota</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <label class="text-[11px] text-gray-600">Ordenar:</label>
+                <select id="filterSort" class="border border-gray-300 px-2 py-1 text-[11px]">
+                    <option value="data-desc">Mais recente</option>
+                    <option value="data-asc">Mais antiga</option>
+                    <option value="nota-desc">Maior nota</option>
+                    <option value="nota-asc">Menor nota</option>
+                </select>
+            </div>
+        </div>
+
+        {% if feedbacks %}
+        <table class="tbl">
+            <thead>
+                <tr>
+                    <th style="width:90px;">Data</th>
+                    <th>Movimentação</th>
+                    <th style="width:160px;">Professor</th>
+                    <th style="width:70px;" class="text-center">Nota</th>
+                    <th style="width:60px;" class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody id="avalBody">
+            </tbody>
+        </table>
+
+        <div class="flex items-center justify-between mt-3 text-[11px] text-gray-600">
+            <div>Exibindo <strong id="showCount">0</strong> de <strong>{{ feedbacks|length }}</strong> avaliações</div>
+            <div class="flex items-center gap-1" id="paginacao"></div>
+        </div>
+        {% else %}
+        <div class="text-center py-8 text-gray-500 italic text-[12px]">
+            <i class="fa-solid fa-inbox text-3xl text-gray-300 mb-2"></i>
+            <div>Nenhuma avaliação recebida ainda.</div>
+        </div>
+        {% endif %}
+    </div>
+
+</main>
+
+<!-- Modal Detalhe -->
+<div class="modal-overlay" id="avalModal">
+    <div class="modal">
+        <div class="bg-[#153a61] text-white p-3 flex items-center justify-between">
+            <div class="text-[12px] font-bold uppercase flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-check"></i> Detalhe da Avaliação
+            </div>
+            <button type="button" onclick="closeModal()" class="text-white hover:text-gray-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="modal-body p-5 text-[12px]" id="modalContent"></div>
+        <div class="bg-gray-50 px-5 py-3 flex justify-end gap-2 border-t border-gray-200">
+            <button type="button" class="btn-secondary" onclick="closeModal()">Fechar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+    <i class="fa-solid fa-circle-check"></i>
+    <span id="toastMsg"></span>
+</div>
+
+<script>
+var avaliacoes = {{ feedbacks_json|safe }};
+var currentFilter = 'todas';
+var currentSort = 'data-desc';
+var PER_PAGE = 10;
+var currentPage = 1;
+
+function escapeHtml(s) {
+    var div = document.createElement('div');
+    div.textContent = s || '';
+    return div.innerHTML;
+}
+
+function getNotaClass(n) {
+    if (n === null) return 'nota-pend';
+    if (n >= 9) return 'nota-A';
+    if (n >= 7.5) return 'nota-B';
+    if (n >= 6) return 'nota-C';
+    return 'nota-D';
+}
+
+function parseDate(d) {
+    var parts = d.split('/');
+    return new Date(parts[2] + '-' + parts[1] + '-' + parts[0]).getTime();
+}
+
+function getFiltered() {
+    var arr = avaliacoes.filter(function(a) {
+        if (currentFilter === 'avaliadas' && a.nota === null) return false;
+        if (currentFilter === 'sem_nota' && a.nota !== null) return false;
+        return true;
+    });
+    arr.sort(function(a, b) {
+        switch (currentSort) {
+            case 'data-asc': return parseDate(a.data) - parseDate(b.data);
+            case 'nota-desc': return (b.nota === null ? -1 : b.nota) - (a.nota === null ? -1 : a.nota);
+            case 'nota-asc': return (a.nota === null ? 99 : a.nota) - (b.nota === null ? 99 : b.nota);
+            default: return parseDate(b.data) - parseDate(a.data);
+        }
+    });
+    return arr;
+}
+
+function renderAval() {
+    var arr = getFiltered();
+    var totalPages = Math.ceil(arr.length / PER_PAGE) || 1;
+    if (currentPage > totalPages) currentPage = totalPages;
+    var start = (currentPage - 1) * PER_PAGE;
+    var pageItems = arr.slice(start, start + PER_PAGE);
+
+    document.getElementById('showCount').textContent = arr.length;
+    var body = document.getElementById('avalBody');
+    body.innerHTML = pageItems.map(function(a) {
+        var notaTxt = a.nota === null ? '—' : a.nota.toFixed(1).replace('.', ',');
+        var realIdx = avaliacoes.indexOf(a);
+        return '<tr onclick="openAval(' + realIdx + ')">' +
+            '<td class="font-mono text-[11px]">' + escapeHtml(a.data) + '</td>' +
+            '<td><span class="font-bold text-[#1a5b9e]">' + escapeHtml(a.mov) + '</span>' +
+            '<div class="text-[10px] text-gray-500 font-mono">' + escapeHtml(a.proc) + '</div></td>' +
+            '<td class="text-[11px]">' + escapeHtml(a.prof) + '</td>' +
+            '<td class="text-center"><span class="nota-badge ' + getNotaClass(a.nota) + '">' + notaTxt + '</span></td>' +
+            '<td class="text-center"><i class="fa-solid fa-eye text-[#1a5b9e] cursor-pointer" data-tip="Ver detalhes" onclick="event.stopPropagation(); openAval(' + realIdx + ')"></i></td>' +
+            '</tr>';
+    }).join('');
+
+    var pagDiv = document.getElementById('paginacao');
+    if (totalPages <= 1) {
+        pagDiv.innerHTML = '';
+        return;
+    }
+    var html = '';
+    html += '<button class="px-2 py-0.5 border border-gray-300 bg-white hover:bg-gray-100' + (currentPage === 1 ? ' opacity-50' : '') + '" onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '><i class="fa-solid fa-angle-left"></i></button>';
+    for (var i = 1; i <= totalPages; i++) {
+        if (i === currentPage) {
+            html += '<span class="px-2 py-0.5 bg-[#1a5b9e] text-white font-bold rounded-sm">' + i + '</span>';
+        } else {
+            html += '<button class="px-2 py-0.5 border border-gray-300 bg-white hover:bg-gray-100" onclick="goPage(' + i + ')">' + i + '</button>';
+        }
+    }
+    html += '<button class="px-2 py-0.5 border border-gray-300 bg-white hover:bg-gray-100' + (currentPage === totalPages ? ' opacity-50' : '') + '" onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '><i class="fa-solid fa-angle-right"></i></button>';
+    pagDiv.innerHTML = html;
+}
+
+function goPage(p) {
+    var arr = getFiltered();
+    var totalPages = Math.ceil(arr.length / PER_PAGE) || 1;
+    if (p < 1 || p > totalPages) return;
+    currentPage = p;
+    renderAval();
+}
+
+// Filtros
+document.querySelectorAll('.chip-filter').forEach(function(c) {
+    c.addEventListener('click', function() {
+        document.querySelectorAll('.chip-filter').forEach(function(x) { x.classList.remove('active'); });
+        c.classList.add('active');
+        currentFilter = c.dataset.filter;
+        currentPage = 1;
+        renderAval();
+    });
+});
+document.getElementById('filterSort').addEventListener('change', function(e) {
+    currentSort = e.target.value;
+    currentPage = 1;
+    renderAval();
+});
+
+// Modal
+function openAval(idx) {
+    var a = avaliacoes[idx];
+    var notaTxt = a.nota === null ? 'Sem nota' : a.nota.toFixed(2).replace('.', ',') + ' / 10,00';
+    var notaColor = a.nota === null ? '#888' :
+        a.nota >= 9 ? '#1f6020' :
+        a.nota >= 7.5 ? '#1a5b9e' :
+        a.nota >= 6 ? '#d97706' : '#c0392b';
+    var bgColor = a.nota === null ? '#f5f5f5' : '#f1faee';
+    var bdColor = a.nota === null ? '#ddd' : '#c5dec5';
+
+    var docsHtml = '';
+    if (a.documentos && a.documentos.length > 0) {
+        docsHtml = a.documentos.map(function(d) {
+            var ext = (d.titulo || '').split('.').pop().toLowerCase();
+            var ico = ext === 'pdf' ? '<i class="fa-solid fa-file-pdf text-red-600"></i>' :
+                (ext === 'jpg' || ext === 'jpeg' || ext === 'png') ? '<i class="fa-solid fa-file-image text-purple-600"></i>' :
+                '<i class="fa-solid fa-file text-blue-600"></i>';
+            return '<div class="flex items-center gap-2 py-1 border-b border-gray-100 last:border-0">' +
+                ico + ' <span class="flex-1 text-[11px]">' + escapeHtml(d.titulo) + '</span>' +
+                (d.url ? '<a href="' + escapeHtml(d.url) + '" target="_blank" class="text-[#1a5b9e] text-[11px]"><i class="fa-solid fa-eye" data-tip="Visualizar"></i></a> ' +
+                '<a href="' + escapeHtml(d.url) + '" download class="text-[#1a5b9e] text-[11px]"><i class="fa-solid fa-download" data-tip="Baixar"></i></a>' : '') +
+                '</div>';
+        }).join('');
+    }
+
+    var html = '';
+    // Cabeçalho com nota
+    html += '<div class="flex items-center gap-4 p-4 mb-4" style="background:' + bgColor + '; border:1px solid ' + bdColor + ';">';
+    html += '<div class="text-center pr-4 border-r border-gray-300">';
+    html += '<div class="text-[10px] uppercase text-gray-600 font-bold">Nota</div>';
+    html += '<div class="text-[36px] font-bold leading-none" style="color:' + notaColor + ';">' + (a.nota === null ? '—' : a.nota.toFixed(1).replace('.', ',')) + '</div>';
+    html += '<div class="text-[10px] text-gray-500 mt-1">/ 10,00</div>';
+    html += '</div>';
+    html += '<div class="flex-1">';
+    html += '<div class="font-bold text-[#1a5b9e] text-[13px]">' + escapeHtml(a.mov) + '</div>';
+    html += '<div class="text-[11px] text-gray-600 mt-1">Processo: <span class="font-mono">' + escapeHtml(a.proc) + '</span></div>';
+    html += '<div class="text-[11px] text-gray-600">Data: <strong>' + escapeHtml(a.data) + '</strong></div>';
+    html += '</div></div>';
+
+    // Avaliador
+    html += '<div class="flex items-center gap-3 mb-4 p-3 bg-gray-50 border border-gray-200">';
+    html += '<div class="avatar prof">' + escapeHtml(a.prof_iniciais) + '</div>';
+    html += '<div class="flex-1"><div class="field-label">Avaliado por</div>';
+    html += '<div class="font-bold">Prof. ' + escapeHtml(a.prof) + '</div></div></div>';
+
+    // Comentário
+    html += '<div class="autos-title green">COMENTÁRIO DO PROFESSOR</div>';
+    html += '<div class="prof-comment mt-2">';
+    html += a.comentario ? '"' + escapeHtml(a.comentario) + '"' : '<span class="text-gray-500 not-italic">Nenhum comentário registrado.</span>';
+    html += '</div>';
+
+    // Movimentação
+    html += '<div class="autos-title mt-4">SUA MOVIMENTAÇÃO</div>';
+    html += '<div class="mov-text mt-2">' + escapeHtml(a.mov_texto) + '</div>';
+
+    // Arquivos
+    if (a.documentos && a.documentos.length > 0) {
+        html += '<div class="autos-title mt-4">ARQUIVOS ANEXADOS <span class="text-gray-500 normal-case font-normal">(' + a.documentos.length + ')</span></div>';
+        html += '<div class="border border-gray-200 p-2 mt-2 bg-white">' + docsHtml + '</div>';
+    }
+
+    document.getElementById('modalContent').innerHTML = html;
+    document.getElementById('avalModal').classList.add('open');
+}
+
+function closeModal() {
+    document.getElementById('avalModal').classList.remove('open');
+}
+
+// Init
+if (avaliacoes.length > 0) {
+    renderAval();
+}
+</script>
+{% endblock %}

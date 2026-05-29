@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import json
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db.models import Avg
+from django.db.models import Avg, Max
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ciclos.models import GrupoTrabalho
@@ -129,5 +131,75 @@ def avaliar_movimentacao(request, movimentacao_id):
             "feedback_origem": feedback_origem,
             "historico": historico,
             "media_notas": media_notas,
+        },
+    )
+
+
+@login_required
+def minhas_notas(request):
+    feedbacks = (
+        FeedbackProfessor.objects
+        .filter(movimentacao__autor=request.user)
+        .select_related(
+            "professor",
+            "movimentacao__tipo_movimento",
+            "movimentacao__processo",
+            "movimentacao__processo__ciclo",
+        )
+        .prefetch_related("movimentacao__documentos")
+        .order_by("-data_feedback")
+    )
+
+    total_movimentacoes = (
+        MovimentacaoProcessual.objects
+        .filter(autor=request.user)
+        .count()
+    )
+
+    stats = feedbacks.filter(nota__isnull=False).aggregate(
+        media=Avg("nota"),
+        melhor=Max("nota"),
+    )
+
+    total_avaliadas = feedbacks.filter(nota__isnull=False).count()
+    ultima_avaliacao = feedbacks.first()
+
+    feedbacks_data = []
+    for fb in feedbacks:
+        mov = fb.movimentacao
+        docs = [
+            {
+                "titulo": d.titulo_arquivo,
+                "url": d.caminho_arquivo.url if d.caminho_arquivo else "",
+            }
+            for d in mov.documentos.all()
+        ]
+        feedbacks_data.append({
+            "id": fb.pk,
+            "data": fb.data_feedback.strftime("%d/%m/%Y"),
+            "mov": mov.tipo_movimento.nome_movimentacao,
+            "mov_texto": mov.descricao_evento,
+            "proc": mov.processo.numero,
+            "prof": fb.professor.get_full_name() or fb.professor.username,
+            "prof_iniciais": (
+                (fb.professor.first_name[:1] + fb.professor.last_name[:1]).upper()
+                or fb.professor.username[:2].upper()
+            ),
+            "nota": float(fb.nota) if fb.nota is not None else None,
+            "comentario": fb.comentario,
+            "documentos": docs,
+        })
+
+    return render(
+        request,
+        "avaliacoes/minhas_notas.html",
+        {
+            "feedbacks": feedbacks,
+            "feedbacks_json": json.dumps(feedbacks_data),
+            "total_movimentacoes": total_movimentacoes,
+            "total_avaliadas": total_avaliadas,
+            "media_geral": stats["media"],
+            "melhor_nota": stats["melhor"],
+            "ultima_avaliacao": ultima_avaliacao,
         },
     )
