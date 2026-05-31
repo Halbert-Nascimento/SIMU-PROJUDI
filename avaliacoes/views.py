@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-import json
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
@@ -13,7 +11,7 @@ from processos.models import MovimentacaoProcessual
 
 from .forms import FeedbackForm
 from .models import FeedbackProfessor
-from .permissions import pode_avaliar_movimentacao
+from .permissions import pode_avaliar_movimentacao, pode_ver_minhas_notas
 
 
 @login_required
@@ -137,6 +135,9 @@ def avaliar_movimentacao(request, movimentacao_id):
 
 @login_required
 def minhas_notas(request):
+    if not pode_ver_minhas_notas(request.user):
+        raise PermissionDenied
+
     feedbacks = (
         FeedbackProfessor.objects
         .filter(movimentacao__autor=request.user)
@@ -195,7 +196,7 @@ def minhas_notas(request):
         "avaliacoes/minhas_notas.html",
         {
             "feedbacks": feedbacks,
-            "feedbacks_json": json.dumps(feedbacks_data),
+            "feedbacks_json": feedbacks_data,
             "total_movimentacoes": total_movimentacoes,
             "total_avaliadas": total_avaliadas,
             "media_geral": stats["media"],
