@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
-from django.db.models import Avg, Max
+from django.db.models import Avg, Count, Max
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ciclos.models import GrupoTrabalho
@@ -160,9 +160,10 @@ def minhas_notas(request):
     stats = feedbacks.filter(nota__isnull=False).aggregate(
         media=Avg("nota"),
         melhor=Max("nota"),
+        total=Count("pk"),
     )
 
-    total_avaliadas = feedbacks.filter(nota__isnull=False).count()
+    total_avaliadas = stats["total"] or 0
     ultima_avaliacao = feedbacks.first()
 
     feedbacks_data = []
