@@ -5,29 +5,8 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
 <style>
-    .section-title {
-        color: #1a5b9e; font-size: 12px; font-weight: bold;
-        text-transform: uppercase; padding: 4px 0 4px 8px;
-        border-left: 3px solid #1a5b9e; background: #f4f4f4;
-        margin: 10px 0 0 0;
-        display: flex; align-items: center; gap: 6px;
-    }
-    .autos-title {
-        color: #1a5b9e; font-size: 11px; font-weight: bold;
-        text-transform: uppercase; padding: 2px 0 2px 4px;
-        display: flex; align-items: center; gap: 4px;
-    }
-    .panel {
-        border: 1px solid #cdd9e6; background: #eef4fb;
-        padding: 12px 14px; margin-top: 4px;
-    }
-    .panel-inner {
-        background: #ffffff; border: 1px solid #cdd9e6;
-        padding: 10px 12px; margin-top: 6px;
-    }
-    .field-label { color: #666; font-size: 11px; }
-    .field-value { font-weight: bold; color: #222; font-size: 12px; }
     .pill {
         display: inline-block; padding: 1px 7px;
         font-size: 10px; font-weight: bold;
@@ -36,14 +15,6 @@
     .pill.ok { background: #dff5e1; color: #2e7d32; border: 1px solid #bee0c2; }
     .pill.gray { background: #eee; color: #555; border: 1px solid #ccc; }
     .pill.warn { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
-    .btn-blue {
-        background: linear-gradient(to bottom, #2e6cab, #1c4b80);
-        color: #fff; padding: 5px 14px;
-        font-size: 11px; font-weight: bold;
-        border: 1px solid #154170; border-radius: 2px; cursor: pointer;
-        text-transform: uppercase;
-    }
-    .btn-blue:hover { background: linear-gradient(to bottom, #3679b8, #21568f); }
     .tbl-mov { width: 100%; border-collapse: collapse; font-size: 11px; }
     .tbl-mov thead th {
         background: #dcdcdc; text-align: left; font-weight: bold; color: #333;
@@ -133,15 +104,6 @@
     .dropdown-opcoes .dropdown-menu a i { margin-right: 6px; color: #1a5b9e; width: 14px; text-align: center; }
     .lock-area { display: flex; align-items: center; gap: 5px; }
     .lock-area input { accent-color: #1a5b9e; }
-    [data-tip] { position: relative; }
-    [data-tip]:hover::after {
-        content: attr(data-tip);
-        position: absolute; bottom: calc(100% + 6px); left: 50%;
-        transform: translateX(-50%);
-        background: #222; color: #fff; padding: 4px 8px;
-        font-size: 10px; white-space: nowrap; border-radius: 3px;
-        z-index: 50; font-weight: normal;
-    }
 </style>
 {% endblock %}
 
