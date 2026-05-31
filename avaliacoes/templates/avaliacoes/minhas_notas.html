@@ -166,7 +166,9 @@
                 </div>
             </div>
             <a href="#" class="hover:underline text-[#333] font-medium">Audiências</a>
+            {% if request.user.tipo_perfil_global == "Aluno" %}
             <a href="{% url 'avaliacoes:minhas_notas' %}" class="hover:underline text-[#1a5b9e] font-bold">Minhas Notas</a>
+            {% endif %}
         </div>
         <div class="flex items-center gap-1 text-gray-500">
             <i class="fas fa-times text-[11px]"></i>
