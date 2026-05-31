@@ -4,33 +4,8 @@
 {% block title %}Avaliação — {{ processo.numero }} — Simulador Projudi{% endblock %}
 
 {% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
 <style>
-    .section-title {
-        color: #1a5b9e; font-size: 12px; font-weight: bold;
-        text-transform: uppercase; padding: 4px 0 4px 8px;
-        border-left: 3px solid #1a5b9e; background: #f4f4f4;
-        margin: 10px 0 0 0;
-        display: flex; align-items: center; gap: 6px;
-    }
-    .section-title.green { color: #1f6020; border-left-color: #1f6020; }
-    .autos-title {
-        color: #1a5b9e; font-size: 11px; font-weight: bold;
-        text-transform: uppercase; padding: 2px 0 2px 4px;
-        display: flex; align-items: center; gap: 4px;
-    }
-    .autos-title.green { color: #1f6020; }
-    .panel {
-        border: 1px solid #cdd9e6; background: #eef4fb;
-        padding: 12px 14px; margin-top: 4px;
-    }
-    .panel.green { border-color: #c5dec5; background: #f1faee; }
-    .panel-inner {
-        background: #ffffff; border: 1px solid #cdd9e6;
-        padding: 10px 12px; margin-top: 6px;
-    }
-    .panel-inner.green { border-color: #c5dec5; }
-    .field-label { color: #666; font-size: 11px; }
-    .field-value { font-weight: bold; color: #222; font-size: 12px; }
     .avatar {
         width: 42px; height: 42px; border-radius: 50%;
         background: #1a5b9e; color: #fff;
@@ -38,11 +13,6 @@
         font-weight: bold; font-size: 14px; flex-shrink: 0;
     }
     .avatar.grupo { background: #7b3ba0; border-radius: 6px; }
-    .mov-text {
-        background: #fafafa; border-left: 3px solid #1a5b9e;
-        padding: 10px 12px; font-size: 12px; line-height: 1.55;
-        color: #333; white-space: pre-wrap;
-    }
     .file-row {
         display: flex; align-items: center; gap: 10px;
         padding: 6px 0; border-bottom: 1px solid #eee;
@@ -84,22 +54,6 @@
         cursor: pointer; text-transform: uppercase;
     }
     .btn-green:hover { background: linear-gradient(to bottom, #34a040, #257328); }
-    .btn-secondary {
-        background: linear-gradient(to bottom, #fafafa, #e8e8e8);
-        color: #333; padding: 6px 16px;
-        font-size: 11px; font-weight: bold;
-        border: 1px solid #bbb; border-radius: 2px;
-        cursor: pointer; text-transform: uppercase;
-    }
-    .btn-secondary:hover { background: linear-gradient(to bottom, #fff, #eee); }
-    .btn-blue {
-        background: linear-gradient(to bottom, #2e6cab, #1c4b80);
-        color: #fff; padding: 5px 14px;
-        font-size: 11px; font-weight: bold;
-        border: 1px solid #154170; border-radius: 2px;
-        cursor: pointer; text-transform: uppercase;
-    }
-    .btn-blue:hover { background: linear-gradient(to bottom, #3679b8, #21568f); }
     .pill {
         display: inline-block; padding: 1px 7px;
         font-size: 10px; font-weight: bold;
@@ -117,15 +71,6 @@
     }
     .tbl-hist tbody tr:nth-child(even) td { background: #f3f3f3; }
     .tbl-hist tbody tr:hover td { background: #fffbe5; }
-    [data-tip] { position: relative; }
-    [data-tip]:hover::after {
-        content: attr(data-tip);
-        position: absolute; bottom: calc(100% + 6px); left: 50%;
-        transform: translateX(-50%);
-        background: #222; color: #fff; padding: 4px 8px;
-        font-size: 10px; white-space: nowrap; border-radius: 3px;
-        z-index: 50; font-weight: normal;
-    }
     .modal-overlay {
         position: fixed; inset: 0; background: rgba(0,0,0,.45);
         display: none; align-items: center; justify-content: center; z-index: 100;
