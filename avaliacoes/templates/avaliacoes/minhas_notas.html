@@ -321,8 +321,9 @@
     <span id="toastMsg"></span>
 </div>
 
+{{ feedbacks_json|json_script:"feedbacks-data" }}
 <script>
-var avaliacoes = {{ feedbacks_json|safe }};
+var avaliacoes = JSON.parse(document.getElementById('feedbacks-data').textContent);
 var currentFilter = 'todas';
 var currentSort = 'data-desc';
 var PER_PAGE = 10;
