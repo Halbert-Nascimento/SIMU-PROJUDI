@@ -37,10 +37,10 @@
                             <span class="text-xs font-bold leading-tight text-gray-800">Tabelas<br>Processuais<br>Unificadas</span>
                         </div>
                         <!-- Card 2 -->
-                        <div class="bg-tjgo-gray-card hover:bg-gray-300 transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <a class="fa-solid fa-pen-to-square text-2xl text-tjgo-navy mb-2" href="{% url 'acesso:cadastro' %}"></a>
-                            <a class="text-xs font-bold leading-tight text-gray-800" href="{% url 'acesso:cadastro' %}">Cadastro</a>
-                        </div>
+                        <a href="{% url 'acesso:cadastro' %}" class="bg-tjgo-gray-card hover:bg-gray-300 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm border border-transparent hover:border-gray-300">
+                            <i class="fa-solid fa-pen-to-square text-2xl text-tjgo-navy mb-2"></i>
+                            <span class="text-xs font-bold leading-tight text-gray-800">Cadastro</span>
+                        </a>
                         <!-- Card 3 -->
                         <div class="bg-tjgo-gray-card hover:bg-gray-300 transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
                             <i class="fa-solid fa-chart-pie text-2xl text-tjgo-navy mb-2"></i>
@@ -317,18 +317,13 @@
 
             <!-- COLUNA DIREITA -->
             <div>
-                <!-- Seção: Acesso Sessão Virtual -->
-                <section class="mb-10">
-                    <h2 class="text-tjgo-blue text-xl font-bold mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Acesso Sessão Virtual
-                    </h2>
-                    
-                    <div class="bg-tjgo-gray-card p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-300 transition">
-                        <!-- Ícone Simulado via CSS para substituir a imagem complexa -->
+                <!-- Seção: Simulador Projudi -->
+                <section class="mb-10"><br><br>
+                    <div class="bg-tjgo-gray-card p-6 flex flex-col items-center justify-center cursor-default">
                         <div class="icon-sessao-virtual mb-3">
                             <i class="fa-solid fa-users text-4xl"></i>
                         </div>
-                        <span class="text-tjgo-blue font-bold text-sm">Sessão Virtual</span>
+                        <span class="text-tjgo-blue font-bold text-sm">Simulador Projudi</span>
                     </div>
                 </section>
 
@@ -420,10 +415,7 @@
             </div>
         </div>
         
-        <!-- Pequeno ícone nni no rodapé (referência imagem 3) -->
-        <div class="flex justify-end mt-10 opacity-50">
-           <span class="text-[10px] border border-gray-400 px-1 font-bold bg-gray-100 flex items-center gap-1">nni <i class="fa-solid fa-check text-blue-500"></i></span>
-        </div>
+        
     </main>
 
     <!-- Script para Accordion -->

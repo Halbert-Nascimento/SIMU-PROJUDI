@@ -67,6 +67,40 @@
     {% endblock %}
     </div>
     
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input[type="password"]').forEach(function (input) {
+            var parent = input.parentElement;
+            if (window.getComputedStyle(parent).position === 'static') {
+                parent.style.position = 'relative';
+            }
+            input.style.paddingRight = '2rem';
+
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.tabIndex = -1;
+            btn.setAttribute('aria-label', 'Mostrar/ocultar senha');
+            btn.style.cssText = 'position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:1;';
+
+            var icon = document.createElement('i');
+            icon.className = 'fa-solid fa-eye';
+            icon.style.cssText = 'font-size:0.875rem;color:#9ca3af;transition:color 0.15s;';
+            btn.appendChild(icon);
+
+            btn.addEventListener('mouseenter', function () { icon.style.color = '#1a5b9e'; });
+            btn.addEventListener('mouseleave', function () { icon.style.color = input.type === 'text' ? '#1a5b9e' : '#9ca3af'; });
+            btn.addEventListener('click', function () {
+                var showing = input.type === 'text';
+                input.type = showing ? 'password' : 'text';
+                icon.className = showing ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+                icon.style.color = showing ? '#9ca3af' : '#1a5b9e';
+            });
+
+            parent.appendChild(btn);
+        });
+    });
+    </script>
+
     <!-- Rodapé -->
     <footer class="footer">
         <div class="footer-content">
