@@ -1,0 +1,825 @@
+{% extends 'base/base.html' %}
+{% load static %}
+
+{% block title %}Processo Judicial - Cadastro de Processo Comum{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<style>
+    .step-bar { display:flex; align-items:center; gap:0; margin-bottom:24px; }
+    .step-item {
+        display:flex; align-items:center; gap:8px; padding:8px 18px;
+        font-size:12px; font-weight:bold; color:#999; cursor:default;
+        border:1px solid #d1d1d1; background:#f4f4f4; position:relative;
+    }
+    .step-item:first-child { border-radius:4px 0 0 4px; }
+    .step-item:last-child { border-radius:0 4px 4px 0; }
+    .step-item + .step-item { border-left:0; }
+    .step-item .step-num {
+        width:22px; height:22px; border-radius:50%;
+        display:flex; align-items:center; justify-content:center;
+        font-size:11px; font-weight:bold; color:#fff; background:#bbb;
+    }
+    .step-item.active { background:#fff; color:#1a5b9e; border-color:#1a5b9e; }
+    .step-item.active .step-num { background:#1a5b9e; }
+    .step-item.done { background:#e8f5e9; color:#2e7d32; border-color:#a5d6a7; }
+    .step-item.done .step-num { background:#2e7d32; }
+
+    .doc-card {
+        display:flex; align-items:center; gap:12px;
+        background:#f9f9f9; border:1px solid #d1d1d1; border-radius:4px;
+        padding:10px 14px; margin-bottom:8px;
+    }
+    .doc-card .doc-icon {
+        width:36px; height:36px; border-radius:4px; background:#1a5b9e;
+        display:flex; align-items:center; justify-content:center;
+        color:#fff; font-size:16px; flex-shrink:0;
+    }
+    .doc-card .doc-size { font-size:10px; color:#888; }
+
+    .resumo-section {
+        background:#f9f9f9; border:1px solid #d1d1d1;
+        border-radius:4px; padding:14px 18px; margin-bottom:12px;
+    }
+    .resumo-section h4 {
+        font-size:12px; font-weight:bold; color:#1a5b9e;
+        text-transform:uppercase; margin-bottom:8px;
+        border-bottom:1px solid #e0e0e0; padding-bottom:4px;
+    }
+    .resumo-row {
+        display:flex; font-size:12px; padding:3px 0;
+    }
+    .resumo-row .resumo-label {
+        font-weight:bold; color:#555; width:180px; flex-shrink:0;
+    }
+    .resumo-row .resumo-value { color:#333; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <!-- Navigation Bar -->
+    <nav class="bg-fundo-caixa border-b border-borda sticky top-[45px] z-40">
+        <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
+            <div class="flex items-center gap-5">
+                <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
+                <div class="relative group">
+                    <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
+                    <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
+                        <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
+                        <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
+                    </div>
+                </div>
+                <a href="#" class="hover:underline text-texto-principal font-medium">Audiencias</a>
+            </div>
+            <div class="flex items-center gap-1 text-texto-secundario">
+                <i class="fas fa-times text-[11px]"></i>
+                <span>29:53</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-container mx-auto px-10 py-8">
+
+        <h2 class="text-azul-primario font-bold text-[20px] mb-6">&raquo; Cadastro de Processo Comum</h2>
+
+        {% if messages %}
+        <div class="mb-4 space-y-2">
+            {% for message in messages %}
+            <div class="p-2.5 text-xs border rounded flex items-center gap-2
+                {% if 'success' in message.tags %} bg-green-50 border-green-200 text-green-800
+                {% elif 'error' in message.tags %} bg-red-50 border-red-200 text-red-800
+                {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
+                <i class="fa-solid {% if 'success' in message.tags %}fa-circle-check{% elif 'error' in message.tags %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
+                {{ message }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-6 text-[12px] text-blue-800 flex items-center gap-2">
+            <i class="fa-solid fa-circle-info"></i>
+            <span>Ciclo ativo: <strong>{{ ciclo }}</strong></span>
+        </div>
+
+        <!-- Step Indicators -->
+        <div class="step-bar" id="stepBar">
+            <div class="step-item active" data-step="1">
+                <span class="step-num">1</span> Dados do Processo
+            </div>
+            <div class="step-item" data-step="2">
+                <span class="step-num">2</span> Documentos
+            </div>
+            <div class="step-item" data-step="3">
+                <span class="step-num">3</span> Resumo
+            </div>
+        </div>
+
+        <!-- FORMULARIO -->
+        <form method="POST" action="{% url 'processos:cadastrar_processo' %}" id="form-cadastro-processo" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- ==================== PASSO 1 ==================== -->
+            <div id="step1">
+                <fieldset class="p-6 mb-6">
+                    <legend class="text-texto-principal text-[14px]">PASSO 1 - DADOS DO PROCESSO</legend>
+
+                    <!-- TIPO DO PROCESSO -->
+                    <fieldset class="p-5 mb-5">
+                        <legend class="text-texto-principal">TIPO DO PROCESSO</legend>
+                        <div class="flex items-center gap-3">
+                            <label class="w-40 font-bold text-texto-principal">*Tipo</label>
+                            <div class="flex items-center gap-5">
+                                {% for radio in form.tipo_processo %}
+                                <label class="flex items-center gap-1.5 cursor-pointer">
+                                    {{ radio.tag }}
+                                    <span>{{ radio.choice_label }}</span>
+                                </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% if form.tipo_processo.errors %}
+                        <p class="text-red-600 text-[11px] mt-1 ml-[172px]">{{ form.tipo_processo.errors.0 }}</p>
+                        {% endif %}
+                        <p id="erroTipo" class="campo-erro-inline text-red-600 text-[11px] mt-1 ml-[172px] hidden"></p>
+                    </fieldset>
+
+                    <!-- CARACTERISTICAS -->
+                    <fieldset class="p-5 mb-5">
+                        <legend class="text-texto-principal">CARACTERISTICAS</legend>
+                        <div class="grid grid-cols-2 gap-5 mb-5">
+                            <div>
+                                <label for="id_comarca" class="font-bold text-azul-primario text-[12px]">*Comarca</label>
+                                <select id="id_comarca" name="comarca" required class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                                    <option value="">Selecione a comarca...</option>
+                                    {% for comarca in comarcas %}
+                                    <option value="{{ comarca.id }}" {% if form.comarca.value|stringformat:"s" == comarca.id|stringformat:"s" %}selected{% endif %}>{{ comarca.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                                <p id="erroComarca" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                            </div>
+                            <div>
+                                <label for="id_vara" class="font-bold text-azul-primario text-[12px]">*Vara / Serventia</label>
+                                <select id="id_vara" name="vara" required class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                                    <option value="">Selecione a vara...</option>
+                                    {% for vara in form.vara.field.queryset %}
+                                    <option value="{{ vara.id }}" {% if form.vara.value|stringformat:"s" == vara.id|stringformat:"s" %}selected{% endif %}>{{ vara.nome }}</option>
+                                    {% endfor %}
+                                </select>
+                                <p id="erroVara" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <label for="id_classe" class="font-bold text-azul-primario text-[12px]">*Classe Processual</label>
+                            <select id="id_classe" name="classe" required class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                                <option value="">Selecione a classe...</option>
+                                {% for classe in form.classe.field.queryset %}
+                                <option value="{{ classe.id }}" {% if form.classe.value|stringformat:"s" == classe.id|stringformat:"s" %}selected{% endif %}>{{ classe.nome }}</option>
+                                {% endfor %}
+                            </select>
+                            <p id="erroClasse" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                        </div>
+                    </fieldset>
+
+                    <!-- ASSUNTO(S) -->
+                    <fieldset class="p-5 mb-5">
+                        <legend class="text-azul-primario font-bold">*ASSUNTO(S) <i class="fas fa-search text-[11px] text-texto-secundario"></i></legend>
+                        <p class="text-texto-secundario italic text-[13px]">Insira um Assunto.</p>
+                    </fieldset>
+
+                    <!-- Valor da Causa e Segredo de Justica -->
+                    <div class="grid grid-cols-2 gap-5 mb-5">
+                        <div>
+                            <label for="id_valor_causa_display" class="font-bold text-texto-principal text-[12px]">Valor da Causa (R$)</label>
+                            <input type="text" id="id_valor_causa_display" inputmode="numeric" autocomplete="off"
+                                   value="R$ 0,00"
+                                   class="w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1">
+                            <input type="hidden" id="id_valor_causa" name="valor_causa" value="{{ form.valor_causa.value|default:'0.00' }}">
+                        </div>
+                        <div class="flex items-end pb-2">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="id_segredo_justica" name="segredo_justica" {% if form.segredo_justica.value %}checked{% endif %} class="accent-azul-primario w-4 h-4">
+                                <span class="font-bold text-texto-principal text-[12px]">Segredo de Justiça</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- POLO ATIVO -->
+                    <fieldset class="p-5 mb-5" data-polo="ativo">
+                        <legend class="font-bold text-texto-principal">POLO ATIVO*</legend>
+                        <div class="mb-3">
+                            <div class="flex gap-2 items-end">
+                                <div class="flex-1 relative">
+                                    <label class="font-bold text-azul-primario text-[12px]">Buscar parte existente</label>
+                                    <input type="text" class="polo-busca w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1" placeholder="Digite o nome ou CPF/CNPJ..." autocomplete="off">
+                                    <div class="polo-resultados hidden absolute left-0 right-0 top-full bg-fundo-container border border-borda shadow-md rounded max-h-[200px] overflow-y-auto z-50"></div>
+                                </div>
+                                <button type="button" class="btn-nova-parte bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm whitespace-nowrap">
+                                    <i class="fas fa-plus mr-1"></i>Cadastrar nova
+                                </button>
+                            </div>
+                        </div>
+                        <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
+                            <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
+                            <div class="grid grid-cols-3 gap-3 mb-3">
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label><input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*CPF / CNPJ</label><input type="text" class="nova-cpf w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label><select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"><option value="">Selecione...</option><option value="Física">Física</option><option value="Jurídica">Jurídica</option></select></div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
+                                <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">Cancelar</button>
+                            </div>
+                            <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
+                        </div>
+                        <div class="polo-lista">
+                            {% for parte in polo_ativo_partes %}
+                            <div class="flex items-center justify-between bg-fundo-container border border-borda rounded px-3 py-2 mb-1.5 text-[12px]" data-parte-id="{{ parte.id }}">
+                                <div>
+                                    <strong>{{ parte.nome_razao }}</strong>
+                                    <span class="text-texto-secundario ml-2">{{ parte.cpf_cnpj }}</span>
+                                    <span class="text-texto-secundario ml-1">({{ parte.tipo_pessoa }})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="hidden" name="polo_ativo" value="{{ parte.id }}">
+                                    <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <p id="erroPoloAtivo" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                    </fieldset>
+
+                    <!-- POLO PASSIVO -->
+                    <fieldset class="p-5 mb-5" data-polo="passivo">
+                        <legend class="font-bold text-texto-principal">POLO PASSIVO*</legend>
+                        <div class="mb-3">
+                            <div class="flex gap-2 items-end">
+                                <div class="flex-1 relative">
+                                    <label class="font-bold text-azul-primario text-[12px]">Buscar parte existente</label>
+                                    <input type="text" class="polo-busca w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1" placeholder="Digite o nome ou CPF/CNPJ..." autocomplete="off">
+                                    <div class="polo-resultados hidden absolute left-0 right-0 top-full bg-fundo-container border border-borda shadow-md rounded max-h-[200px] overflow-y-auto z-50"></div>
+                                </div>
+                                <button type="button" class="btn-nova-parte bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm whitespace-nowrap">
+                                    <i class="fas fa-plus mr-1"></i>Cadastrar nova
+                                </button>
+                            </div>
+                        </div>
+                        <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
+                            <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
+                            <div class="grid grid-cols-3 gap-3 mb-3">
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label><input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*CPF / CNPJ</label><input type="text" class="nova-cpf w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label><select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"><option value="">Selecione...</option><option value="Física">Física</option><option value="Jurídica">Jurídica</option></select></div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
+                                <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">Cancelar</button>
+                            </div>
+                            <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
+                        </div>
+                        <div class="polo-lista">
+                            {% for parte in polo_passivo_partes %}
+                            <div class="flex items-center justify-between bg-fundo-container border border-borda rounded px-3 py-2 mb-1.5 text-[12px]" data-parte-id="{{ parte.id }}">
+                                <div>
+                                    <strong>{{ parte.nome_razao }}</strong>
+                                    <span class="text-texto-secundario ml-2">{{ parte.cpf_cnpj }}</span>
+                                    <span class="text-texto-secundario ml-1">({{ parte.tipo_pessoa }})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="hidden" name="polo_passivo" value="{{ parte.id }}">
+                                    <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <p id="erroPoloPassivo" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                    </fieldset>
+
+                    <!-- SUBSTITUTO PROCESSUAL -->
+                    <fieldset class="p-5 mb-5" data-polo="terceiro">
+                        <legend class="font-bold text-texto-principal">SUBSTITUTO PROCESSUAL / OUTRAS PARTES / SUJEITOS</legend>
+                        <div class="mb-3">
+                            <div class="flex gap-2 items-end">
+                                <div class="flex-1 relative">
+                                    <label class="font-bold text-azul-primario text-[12px]">Buscar parte existente</label>
+                                    <input type="text" class="polo-busca w-full bg-fundo-container border border-borda rounded py-2 px-3 text-[13px] outline-none mt-1" placeholder="Digite o nome ou CPF/CNPJ..." autocomplete="off">
+                                    <div class="polo-resultados hidden absolute left-0 right-0 top-full bg-fundo-container border border-borda shadow-md rounded max-h-[200px] overflow-y-auto z-50"></div>
+                                </div>
+                                <button type="button" class="btn-nova-parte bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm whitespace-nowrap">
+                                    <i class="fas fa-plus mr-1"></i>Cadastrar nova
+                                </button>
+                            </div>
+                        </div>
+                        <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
+                            <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
+                            <div class="grid grid-cols-3 gap-3 mb-3">
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label><input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*CPF / CNPJ</label><input type="text" class="nova-cpf w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
+                                <div><label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label><select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"><option value="">Selecione...</option><option value="Física">Física</option><option value="Jurídica">Jurídica</option></select></div>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
+                                <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">Cancelar</button>
+                            </div>
+                            <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
+                        </div>
+                        <div class="polo-lista">
+                            {% for parte in polo_terceiro_partes %}
+                            <div class="flex items-center justify-between bg-fundo-container border border-borda rounded px-3 py-2 mb-1.5 text-[12px]" data-parte-id="{{ parte.id }}">
+                                <div>
+                                    <strong>{{ parte.nome_razao }}</strong>
+                                    <span class="text-texto-secundario ml-2">{{ parte.cpf_cnpj }}</span>
+                                    <span class="text-texto-secundario ml-1">({{ parte.tipo_pessoa }})</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <input type="hidden" name="polo_terceiro" value="{{ parte.id }}">
+                                    <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </fieldset>
+                </fieldset>
+
+                <div class="flex items-center justify-center gap-3 mt-10 mb-10">
+                    <button type="button" id="btnStep1Next" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
+                        Próximo <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                    <button type="reset" class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm">
+                        Limpar
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==================== PASSO 2 ==================== -->
+            <div id="step2" style="display:none;">
+                <fieldset class="p-6 mb-6">
+                    <legend class="text-texto-principal text-[14px]">PASSO 2 - DOCUMENTOS</legend>
+
+                    <p class="text-texto-secundario text-[12px] mb-4">
+                        Anexe os documentos do processo. Formatos aceitos: <strong>{{ upload_accept_attr }}</strong>. Tamanho máximo por arquivo: <strong>{{ upload_max_mb }}MB</strong>.
+                    </p>
+
+                    {% if step_inicial == 2 %}
+                    <div class="bg-yellow-50 border border-yellow-300 rounded p-3 mb-4 text-[12px] text-yellow-800 flex items-start gap-2">
+                        <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
+                        <span>Os dados do processo e as partes foram preservados. Por segurança do navegador, os arquivos precisam ser selecionados novamente.</span>
+                    </div>
+                    {% endif %}
+
+                    <div id="docLista"></div>
+
+                    <button type="button" id="btnAddDoc" class="bg-azul-primario text-white font-bold px-4 py-2 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm mt-2">
+                        <i class="fas fa-plus mr-1"></i> Adicionar Documento
+                    </button>
+
+                    <p id="docErro" class="text-red-600 text-[11px] mt-2 hidden"></p>
+                </fieldset>
+
+                <div class="flex items-center justify-center gap-3 mt-10 mb-10">
+                    <button type="button" id="btnStep2Prev" class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm">
+                        <i class="fas fa-arrow-left mr-1"></i> Anterior
+                    </button>
+                    <button type="button" id="btnStep2Next" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
+                        Próximo <i class="fas fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ==================== PASSO 3 ==================== -->
+            <div id="step3" style="display:none;">
+                <fieldset class="p-6 mb-6">
+                    <legend class="text-texto-principal text-[14px]">PASSO 3 - RESUMO DO PROCESSO</legend>
+                    <p class="text-texto-secundario text-[12px] mb-4">
+                        Confira os dados antes de cadastrar o processo.
+                    </p>
+                    <div id="resumoConteudo"></div>
+                </fieldset>
+
+                <div class="flex items-center justify-center gap-3 mt-10 mb-10">
+                    <button type="button" id="btnStep3Prev" class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm">
+                        <i class="fas fa-arrow-left mr-1"></i> Anterior
+                    </button>
+                    <button type="submit" class="bg-green-600 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-green-700 transition-colors shadow-sm">
+                        <i class="fas fa-check mr-1"></i> Cadastrar Processo
+                    </button>
+                </div>
+            </div>
+        </form>
+    </main>
+
+    <script>
+    // ===================== MÁSCARA MONETÁRIA ATM =====================
+    function formatarMoedaBR(valor) {
+        return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    }
+
+    (function initMascaraMoeda() {
+        const display = document.getElementById("id_valor_causa_display");
+        const hidden  = document.getElementById("id_valor_causa");
+
+        // centavos acumulados como inteiro (evita ponto flutuante)
+        let centavos = Math.round(parseFloat(hidden.value || "0") * 100);
+
+        function atualizar() {
+            display.value = formatarMoedaBR(centavos / 100);
+            hidden.value  = (centavos / 100).toFixed(2);
+        }
+
+        atualizar(); // aplica valor inicial vindo do servidor
+
+        display.addEventListener("keydown", function (e) {
+            if (e.key >= "0" && e.key <= "9") {
+                e.preventDefault();
+                if (centavos < 999_999_999_99) {   // limite: R$ 9.999.999.999,99
+                    centavos = centavos * 10 + parseInt(e.key);
+                    atualizar();
+                }
+            } else if (e.key === "Backspace") {
+                e.preventDefault();
+                centavos = Math.floor(centavos / 10);
+                atualizar();
+            } else if (e.key === "Delete") {
+                e.preventDefault();
+                centavos = 0;
+                atualizar();
+            }
+            // ignora qualquer outra tecla
+        });
+
+        // bloqueia paste e entrada direta não numérica
+        display.addEventListener("paste", e => e.preventDefault());
+        display.addEventListener("input",  e => { display.value = formatarMoedaBR(centavos / 100); });
+    })();
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;
+
+        // Constantes de upload vindas do settings.py via contexto Django
+        const MAX_FILE_SIZE_MB = {{ upload_max_mb|default:7 }};
+        const MAX_FILE_SIZE = MAX_FILE_SIZE_MB * 1024 * 1024;
+        const ALLOWED_EXTENSIONS = {{ upload_allowed_extensions_json|default:'[".pdf",".docx",".jpg",".jpeg"]'|safe }};
+
+        // ===================== STEP NAVIGATION =====================
+        let currentStep = 1;
+        const steps = [document.getElementById("step1"), document.getElementById("step2"), document.getElementById("step3")];
+        const stepItems = document.querySelectorAll(".step-item");
+        const docErro = document.getElementById("docErro");
+
+        function limparErrosStep1() {
+            document.querySelectorAll(".campo-erro-inline").forEach(el => {
+                el.textContent = "";
+                el.classList.add("hidden");
+            });
+            ["id_comarca", "id_vara", "id_classe"].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.remove("border-red-500");
+            });
+        }
+
+        function goToStep(n) {
+            steps.forEach(s => s.style.display = "none");
+            steps[n - 1].style.display = "block";
+            stepItems.forEach((item, i) => {
+                item.classList.remove("active", "done");
+                if (i + 1 < n) item.classList.add("done");
+                if (i + 1 === n) item.classList.add("active");
+            });
+            currentStep = n;
+            if (n !== 2) docErro.classList.add("hidden");
+            if (n !== 1) limparErrosStep1();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        function mostrarErroInline(elementoId, mensagem, inputEl) {
+            const el = document.getElementById(elementoId);
+            if (el) { el.textContent = mensagem; el.classList.remove("hidden"); }
+            if (inputEl) inputEl.classList.add("border-red-500");
+        }
+
+        function validateStep1() {
+            limparErrosStep1();
+            const tipo    = document.querySelector('input[name="tipo_processo"]:checked');
+            const comarca = document.getElementById("id_comarca");
+            const vara    = document.getElementById("id_vara");
+            const classe  = document.getElementById("id_classe");
+            const poloAtivo   = document.querySelectorAll('input[name="polo_ativo"]');
+            const poloPassivo = document.querySelectorAll('input[name="polo_passivo"]');
+
+            let valido = true;
+            if (!tipo)           { mostrarErroInline("erroTipo",        "Selecione o tipo do processo.");                 valido = false; }
+            if (!comarca.value)  { mostrarErroInline("erroComarca",     "Selecione a comarca.",            comarca);     valido = false; }
+            if (!vara.value)     { mostrarErroInline("erroVara",        "Selecione a vara.",               vara);        valido = false; }
+            if (!classe.value)   { mostrarErroInline("erroClasse",      "Selecione a classe processual.",  classe);      valido = false; }
+            if (poloAtivo.length   === 0) { mostrarErroInline("erroPoloAtivo",   "Insira pelo menos uma parte no Polo Ativo.");   valido = false; }
+            if (poloPassivo.length === 0) { mostrarErroInline("erroPoloPassivo", "Insira pelo menos uma parte no Polo Passivo."); valido = false; }
+
+            if (!valido) window.scrollTo({ top: 0, behavior: "smooth" });
+            return valido;
+        }
+
+        document.getElementById("btnStep1Next").addEventListener("click", function () {
+            if (validateStep1()) goToStep(2);
+        });
+        document.getElementById("btnStep2Prev").addEventListener("click", () => goToStep(1));
+        document.getElementById("btnStep2Next").addEventListener("click", function () {
+            const cardErros = document.querySelectorAll("#docLista .doc-card-erro:not(.hidden)");
+            if (cardErros.length > 0) {
+                docErro.textContent = "Corrija os arquivos indicados com erro antes de avançar.";
+                docErro.classList.remove("hidden");
+                return;
+            }
+            docErro.classList.add("hidden");
+            buildSummary();
+            goToStep(3);
+        });
+        document.getElementById("btnStep3Prev").addEventListener("click", () => goToStep(2));
+
+        // ===================== DOCUMENTS (STEP 2) =====================
+        const docLista = document.getElementById("docLista");
+        let docCount = 0;
+        const acceptAttr = ALLOWED_EXTENSIONS.join(",");
+
+        document.getElementById("btnAddDoc").addEventListener("click", function () {
+            const idx = docCount++;
+            const card = document.createElement("div");
+            card.className = "doc-card";
+            card.dataset.idx = idx;
+            card.innerHTML = `
+                <div class="doc-icon"><i class="fas fa-file-alt"></i></div>
+                <div class="flex-1">
+                    <div class="mb-1">
+                        <input type="file" name="documentos" class="doc-file-input text-[12px]" accept="${acceptAttr}">
+                    </div>
+                    <p class="doc-card-erro text-red-600 text-[11px] mt-1 hidden"></p>
+                    <div class="doc-info hidden">
+                        <div class="flex items-center gap-3 mb-1">
+                            <span class="doc-filename text-[12px] font-bold text-gray-700"></span>
+                            <span class="doc-size text-gray-500 text-[11px]"></span>
+                        </div>
+                        <input type="text" name="documento_nomes" placeholder="Nome do documento..." class="doc-nome-input w-full bg-white border border-gray-300 rounded py-1.5 px-2 text-[12px] outline-none focus:border-[#1a5b9e]">
+                    </div>
+                </div>
+                <button type="button" class="doc-remover text-red-500 hover:text-red-700 text-[13px] font-bold px-2" title="Remover">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+
+            const fileInput  = card.querySelector(".doc-file-input");
+            const cardErro   = card.querySelector(".doc-card-erro");
+            const infoDiv    = card.querySelector(".doc-info");
+            const filenameSpan = card.querySelector(".doc-filename");
+            const sizeSpan   = card.querySelector(".doc-size");
+            const nomeInput  = card.querySelector(".doc-nome-input");
+
+            fileInput.addEventListener("change", function () {
+                const file = this.files[0];
+                if (!file) { infoDiv.classList.add("hidden"); cardErro.classList.add("hidden"); return; }
+
+                const ext = "." + file.name.split(".").pop().toLowerCase();
+                if (!ALLOWED_EXTENSIONS.includes(ext)) {
+                    cardErro.textContent = `O arquivo "${file.name}" não está em formato permitido. Aceitos: ${ALLOWED_EXTENSIONS.join(", ")}.`;
+                    cardErro.classList.remove("hidden");
+                    this.value = "";
+                    infoDiv.classList.add("hidden");
+                    return;
+                }
+                if (file.size > MAX_FILE_SIZE) {
+                    cardErro.textContent = `O arquivo "${file.name}" excede o limite de ${MAX_FILE_SIZE_MB}MB (tamanho enviado: ${(file.size / (1024 * 1024)).toFixed(1)}MB).`;
+                    cardErro.classList.remove("hidden");
+                    this.value = "";
+                    infoDiv.classList.add("hidden");
+                    return;
+                }
+
+                cardErro.classList.add("hidden");
+                docErro.classList.add("hidden");
+                filenameSpan.textContent = file.name;
+                sizeSpan.textContent = (file.size / (1024 * 1024)).toFixed(2) + " MB";
+                nomeInput.value = file.name.replace(/\.[^/.]+$/, "");
+                infoDiv.classList.remove("hidden");
+                this.style.display = "none";
+            });
+
+            card.querySelector(".doc-remover").addEventListener("click", () => {
+                card.remove();
+                if (document.querySelectorAll("#docLista .doc-card-erro:not(.hidden)").length === 0) {
+                    docErro.classList.add("hidden");
+                }
+            });
+
+            docLista.appendChild(card);
+        });
+
+        // ===================== SUMMARY (STEP 3) =====================
+        function buildSummary() {
+            const resumo = document.getElementById("resumoConteudo");
+            let html = "";
+
+            const tipoRadio = document.querySelector('input[name="tipo_processo"]:checked');
+            const tipo = tipoRadio ? tipoRadio.parentElement.querySelector("span").textContent : "—";
+            const comarca = document.getElementById("id_comarca");
+            const comarcaTxt = comarca.selectedIndex > 0 ? comarca.options[comarca.selectedIndex].text : "—";
+            const vara = document.getElementById("id_vara");
+            const varaTxt = vara.selectedIndex > 0 ? vara.options[vara.selectedIndex].text : "—";
+            const classe = document.getElementById("id_classe");
+            const classeTxt = classe.selectedIndex > 0 ? classe.options[classe.selectedIndex].text : "—";
+            const valorHidden = document.getElementById("id_valor_causa").value || "0.00";
+            const segredo = document.getElementById("id_segredo_justica").checked ? "Sim" : "Não";
+
+            html += `<div class="resumo-section">
+                <h4><i class="fas fa-gavel mr-1"></i> Dados do Processo</h4>
+                <div class="resumo-row"><span class="resumo-label">Tipo:</span><span class="resumo-value">${tipo}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Comarca:</span><span class="resumo-value">${comarcaTxt}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Vara / Serventia:</span><span class="resumo-value">${varaTxt}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Classe Processual:</span><span class="resumo-value">${classeTxt}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Valor da Causa:</span><span class="resumo-value">${formatarMoedaBR(parseFloat(valorHidden) || 0)}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Segredo de Justiça:</span><span class="resumo-value">${segredo}</span></div>
+            </div>`;
+
+            function getPartes(polo) {
+                const items = document.querySelectorAll(`[data-polo="${polo}"] .polo-lista [data-parte-id]`);
+                if (items.length === 0) return "<em>Nenhuma parte</em>";
+                return [...items].map(el => {
+                    const nome = el.querySelector("strong").textContent;
+                    const extra = el.querySelector(".text-texto-secundario").textContent;
+                    return `${nome} <span style="color:#888">${extra}</span>`;
+                }).join("<br>");
+            }
+
+            html += `<div class="resumo-section">
+                <h4><i class="fas fa-users mr-1"></i> Partes</h4>
+                <div class="resumo-row"><span class="resumo-label">Polo Ativo:</span><span class="resumo-value">${getPartes("ativo")}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Polo Passivo:</span><span class="resumo-value">${getPartes("passivo")}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Terceiros:</span><span class="resumo-value">${getPartes("terceiro")}</span></div>
+            </div>`;
+
+            const docs = document.querySelectorAll("#docLista .doc-card");
+            let docsHtml = docs.length === 0
+                ? '<p class="text-[12px] text-gray-500 italic">Nenhum documento anexado.</p>'
+                : "";
+            docs.forEach(c => {
+                const nomeDoc  = c.querySelector(".doc-nome-input").value || "Sem nome";
+                const filename = c.querySelector(".doc-filename").textContent || "—";
+                const size     = c.querySelector(".doc-size").textContent || "";
+                docsHtml += `<div class="flex items-center gap-3 py-1 text-[12px]">
+                    <i class="fas fa-file-alt text-[#1a5b9e]"></i>
+                    <strong>${nomeDoc}</strong>
+                    <span class="text-gray-500">(${filename} — ${size})</span>
+                </div>`;
+            });
+            html += `<div class="resumo-section">
+                <h4><i class="fas fa-paperclip mr-1"></i> Documentos</h4>
+                ${docsHtml}
+            </div>`;
+
+            resumo.innerHTML = html;
+        }
+
+        // ===================== COMARCA → VARA =====================
+        const comarcaSelect = document.getElementById("id_comarca");
+        const varaSelect    = document.getElementById("id_vara");
+
+        comarcaSelect.addEventListener("change", function () {
+            const comarcaId = this.value;
+            varaSelect.innerHTML = '<option value="">Carregando...</option>';
+            if (!comarcaId) { varaSelect.innerHTML = '<option value="">Selecione a vara...</option>'; return; }
+            fetch(`/processos/api/varas/${comarcaId}/`)
+                .then(r => r.json())
+                .then(varas => {
+                    varaSelect.innerHTML = '<option value="">Selecione a vara...</option>';
+                    varas.forEach(v => {
+                        const opt = document.createElement("option");
+                        opt.value = v.id;
+                        opt.textContent = v.nome;
+                        varaSelect.appendChild(opt);
+                    });
+                })
+                .catch(() => { varaSelect.innerHTML = '<option value="">Erro ao carregar varas</option>'; });
+        });
+
+        // ===================== POLOS =====================
+        document.querySelectorAll("[data-polo]").forEach(fieldset => {
+            const tipo      = fieldset.dataset.polo;
+            const inputName = `polo_${tipo}`;
+            const busca     = fieldset.querySelector(".polo-busca");
+            const resultados = fieldset.querySelector(".polo-resultados");
+            const lista     = fieldset.querySelector(".polo-lista");
+            const formNova  = fieldset.querySelector(".polo-form-nova");
+            const formErro  = fieldset.querySelector(".polo-form-erro");
+            const btnNova   = fieldset.querySelector(".btn-nova-parte");
+            const btnSalvar = fieldset.querySelector(".btn-salvar-parte");
+            const btnCancelar = fieldset.querySelector(".btn-cancelar-parte");
+            let debounce = null;
+
+            // Ativa o botão "Remover" nos itens pré-renderizados pelo servidor (reload com erro)
+            lista.querySelectorAll("[data-parte-id]").forEach(item => {
+                item.querySelector(".btn-remover").addEventListener("click", () => item.remove());
+            });
+
+            function adicionarParte(parte) {
+                if (lista.querySelector(`[data-parte-id="${parte.id}"]`)) return;
+                const item = document.createElement("div");
+                item.className = "flex items-center justify-between bg-fundo-container border border-borda rounded px-3 py-2 mb-1.5 text-[12px]";
+                item.dataset.parteId = parte.id;
+                item.innerHTML = `
+                    <div>
+                        <strong>${parte.nome_razao}</strong>
+                        <span class="text-texto-secundario ml-2">${parte.cpf_cnpj}</span>
+                        <span class="text-texto-secundario ml-1">(${parte.tipo_pessoa})</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="hidden" name="${inputName}" value="${parte.id}">
+                        <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold">
+                            <i class="fas fa-times"></i> Remover
+                        </button>
+                    </div>`;
+                item.querySelector(".btn-remover").addEventListener("click", () => item.remove());
+                lista.appendChild(item);
+            }
+
+            let completando = false;
+            busca.addEventListener("input", function () {
+                if (completando) return;
+                clearTimeout(debounce);
+                const q = this.value.trim();
+                if (q.length < 2) { resultados.classList.add("hidden"); return; }
+                debounce = setTimeout(() => {
+                    fetch(`/processos/api/partes/buscar/?q=${encodeURIComponent(q)}`)
+                        .then(r => r.json())
+                        .then(partes => {
+                            resultados.innerHTML = "";
+                            if (partes.length === 0) {
+                                resultados.innerHTML = '<p class="px-3 py-2 text-texto-secundario text-[12px] italic">Nenhuma parte encontrada.</p>';
+                            } else {
+                                const primeiro = partes[0];
+                                const nome = primeiro.nome_razao;
+                                const digitado = busca.value;
+                                if (nome.toLowerCase().startsWith(digitado.toLowerCase())) {
+                                    completando = true;
+                                    busca.value = digitado + nome.substring(digitado.length);
+                                    busca.setSelectionRange(digitado.length, busca.value.length);
+                                    completando = false;
+                                }
+                                partes.forEach(p => {
+                                    const div = document.createElement("div");
+                                    div.className = "px-3 py-2 hover:bg-fundo-caixa cursor-pointer text-[12px] border-b border-borda/30";
+                                    div.innerHTML = `<strong>${p.nome_razao}</strong> <span class="text-texto-secundario">${p.cpf_cnpj} (${p.tipo_pessoa})</span>`;
+                                    div.addEventListener("click", () => {
+                                        adicionarParte(p);
+                                        busca.value = "";
+                                        resultados.classList.add("hidden");
+                                    });
+                                    resultados.appendChild(div);
+                                });
+                            }
+                            resultados.classList.remove("hidden");
+                        });
+                }, 300);
+            });
+
+            busca.addEventListener("keydown", function (e) {
+                if (e.key === "Backspace" || e.key === "Delete") {
+                    const start = this.selectionStart, end = this.selectionEnd;
+                    if (start !== end) { e.preventDefault(); this.value = this.value.substring(0, start); resultados.classList.add("hidden"); }
+                }
+            });
+
+            document.addEventListener("click", e => { if (!fieldset.contains(e.target)) resultados.classList.add("hidden"); });
+
+            btnNova.addEventListener("click", () => { formNova.classList.toggle("hidden"); formErro.classList.add("hidden"); });
+            btnCancelar.addEventListener("click", () => {
+                formNova.classList.add("hidden");
+                formNova.querySelectorAll("input, select").forEach(el => el.value = "");
+                formErro.classList.add("hidden");
+            });
+
+            btnSalvar.addEventListener("click", () => {
+                const nome = fieldset.querySelector(".nova-nome").value.trim();
+                const cpf  = fieldset.querySelector(".nova-cpf").value.trim();
+                const tipoPessoa = fieldset.querySelector(".nova-tipo").value;
+                if (!nome || !cpf || !tipoPessoa) { formErro.textContent = "Preencha todos os campos."; formErro.classList.remove("hidden"); return; }
+                fetch("/processos/api/partes/criar/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "X-CSRFToken": csrfToken },
+                    body: JSON.stringify({ nome_razao: nome, cpf_cnpj: cpf, tipo_pessoa: tipoPessoa }),
+                })
+                .then(r => r.json().then(data => ({ ok: r.ok, data })))
+                .then(({ ok, data }) => {
+                    if (!ok) { formErro.textContent = data.erro; formErro.classList.remove("hidden"); return; }
+                    adicionarParte(data);
+                    formNova.classList.add("hidden");
+                    formNova.querySelectorAll("input, select").forEach(el => el.value = "");
+                    formErro.classList.add("hidden");
+                })
+                .catch(() => { formErro.textContent = "Erro ao criar parte."; formErro.classList.remove("hidden"); });
+            });
+        });
+
+        // ===================== INICIALIZAÇÃO =====================
+        // Restaura o passo correto após recarregamento com erros do servidor
+        goToStep({{ step_inicial|default:1 }});
+    });
+    </script>
+{% endblock %}

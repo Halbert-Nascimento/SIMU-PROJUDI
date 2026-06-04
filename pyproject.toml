@@ -12,6 +12,8 @@ dependencies = [
     "django>=6.0",
     "django-environ>=0.12.0",
     "mysqlclient>=2.2.8",
+    "python-magic-bin>=0.4.14",
+    "django-private-storage>=3.0",
 ]
 
 [project.optional-dependencies]
