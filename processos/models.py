@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-import random
-
 from django.conf import settings
-from django.db import models
+from django.db import models, transaction
 from private_storage.fields import PrivateFileField
 
 
@@ -129,6 +127,28 @@ class ParteFicticia(models.Model):
 
 
 # ---------------------------------------------------------------------------
+# Sequência de numeração CNJ
+# ---------------------------------------------------------------------------
+
+class SequenciaNumeroProcesso(models.Model):
+    ano = models.PositiveIntegerField()
+    tr = models.PositiveSmallIntegerField()
+    origem = models.PositiveIntegerField()
+    ultimo_seq = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        db_table = "sequencia_numero_processo"
+        verbose_name = "Sequência de Número de Processo"
+        verbose_name_plural = "Sequências de Número de Processo"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["ano", "tr", "origem"],
+                name="uniq_seq_num_proc_chave",
+            )
+        ]
+
+
+# ---------------------------------------------------------------------------
 # Processo judicial
 # ---------------------------------------------------------------------------
 
@@ -190,17 +210,26 @@ class ProcessoJudicial(models.Model):
         ordering = ["-data_autuacao"]
 
     @staticmethod
-    def gerar_numero_unico():
-        while True:
-            seq = random.randint(0, 9_999_999)
-            dd = random.randint(0, 99)
-            ano = random.randint(2020, 2030)
-            j = random.randint(1, 9)
-            tr = random.randint(1, 99)
-            origem = random.randint(1, 9999)
-            numero = f"{seq:07d}-{dd:02d}.{ano}.{j}.{tr:02d}.{origem:04d}"
-            if not ProcessoJudicial.objects.filter(numero=numero).exists():
-                return numero
+    def _calcular_dv_cnj(numero_base: str) -> str:
+        dv = 98 - (int(numero_base) % 97)
+        return f"{dv:02d}"
+
+    @classmethod
+    def gerar_numero_cnj(cls, *, ano: int, tr: int, origem: int) -> str:
+        j = 8  # segmento: Justiça Estadual
+        with transaction.atomic():
+            sequencia, _ = SequenciaNumeroProcesso.objects.select_for_update().get_or_create(
+                ano=ano,
+                tr=tr,
+                origem=origem,
+                defaults={"ultimo_seq": 0},
+            )
+            sequencia.ultimo_seq += 1
+            sequencia.save(update_fields=["ultimo_seq"])
+            seq = sequencia.ultimo_seq
+        base = f"{seq:07d}{ano:04d}{j}{tr:02d}{origem:04d}00"
+        dv = cls._calcular_dv_cnj(base)
+        return f"{seq:07d}-{dv}.{ano:04d}.{j}.{tr:02d}.{origem:04d}"
 
     @property
     def partes_resumo(self):

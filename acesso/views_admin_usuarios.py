@@ -11,6 +11,7 @@ from django.db.models import Q
 from usuarios.models import Usuario
 
 from ciclos.models import CicloSimulacao, StatusCiclo
+from processos.models import ProcessoJudicial
 from ciclos.permissions import pode_criar_ciclo, pode_editar_ciclo
 from .forms_admin_usuarios import AtualizarUsuarioForm
 from .permissions import tipos_que_pode_atribuir, pode_gerenciar_usuarios
@@ -120,7 +121,7 @@ def painel_administrativo(request):
                 .select_related("status")
                 .prefetch_related("grupos")
                 .order_by("-data_criacao")
-                .filter(Q(coordenador=request.user) | Q(participantes=request.user), status__nome_status__in=["em andamento", "finalizado"])                
+                .filter(Q(coordenador=request.user) | Q(participantes=request.user), status__nome_status__in=["em andamento", "finalizado"])
             ). distinct()
 
     if "ciclos" in context:
@@ -129,6 +130,21 @@ def painel_administrativo(request):
             for ciclo in context["ciclos"]
             if pode_editar_ciclo(request.user, ciclo)
         )
+
+    ciclos_ativos_professor = list(
+        CicloSimulacao.objects
+        .filter(coordenador=request.user, status__nome_status="em andamento")
+        .select_related("status")
+        .order_by("-data_criacao")
+    )
+    context["ciclos_ativos_professor"] = ciclos_ativos_professor
+    context["processos_professor"] = (
+        ProcessoJudicial.objects
+        .filter(ciclo__in=ciclos_ativos_professor)
+        .select_related("ciclo", "status_atual", "classe")
+        .prefetch_related("polos__parte")
+        .order_by("ciclo__nome_edicao", "-data_autuacao")
+    )
 
     context["total_alunos_vinculados"] = (
         Usuario.objects
