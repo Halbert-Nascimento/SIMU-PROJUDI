@@ -4,26 +4,23 @@
 
 {% block header_titulo %}Processo Judicial{% endblock %}
 
-
-
 {% block content %}
 <main class="main-container px-10 py-8">
+
+    <div class="mb-6 border-b border-gray-100 pb-4">
+        <h2 class="text-tjgo-blue text-xl font-bold flex items-center gap-2">
+            <i class="fa-solid fa-user-plus"></i> Cadastro de Usuário
+        </h2>
+        <p class="text-gray-500 text-sm mt-1">Preencha os dados abaixo para criar sua conta no Simulador Projudi.</p>
+    </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-x-[5%]">
         <section>
-            <h2 class="text-tjgo-blue text-xl font-bold mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-user-plus"></i> Cadastro de Usuario
-            </h2>
-
             <div class="border border-gray-200 bg-white">
                 <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
-                    <i class="fa-solid fa-id-card mr-2 text-sm"></i> DADOS BASICOS DE ACESSO
+                    <i class="fa-solid fa-id-card mr-2 text-sm"></i> DADOS BÁSICOS DE ACESSO
                 </div>
                 <div class="p-5 text-[13px] leading-relaxed text-gray-800">
-                    <p class="text-gray-500 mb-4">Preencha os campos para criar um usuario base.</p>
-                    <p class="mb-4 text-justify">
-                        Este cadastro cria apenas o usuario no sistema, sem vinculo com perfil de aluno ou professor.
-                    </p>
-
                     <form method="post" class="space-y-3">
                         {% csrf_token %}
 
@@ -33,7 +30,7 @@
                                     {{ field.label }}
                                 </label>
                                 {{ field }}
-                                {% if field.help_text %}
+                                {% if field.help_text and field.html_name != 'password1' and field.html_name != 'password2' %}
                                     <p class="mt-1 text-xs text-tjgo-text-light">{{ field.help_text|safe }}</p>
                                 {% endif %}
                                 {% for error in field.errors %}
@@ -48,7 +45,7 @@
 
                         <div class="flex justify-start gap-2 pt-2">
                             <button type="submit" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">
-                                Criar usuario
+                                Criar usuário
                             </button>
                             <a href="{% url 'base:home' %}" class="bg-tjgo-gray-card hover:bg-gray-300 text-tjgo-navy font-bold py-1 px-4 text-sm rounded shadow-sm transition">
                                 Cancelar
@@ -59,18 +56,98 @@
             </div>
         </section>
 
-        <aside>
-            <h2 class="text-tjgo-blue text-xl font-bold mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-circle-info"></i> Orientacao
-            </h2>
+        <aside class="space-y-4">
 
-            <div class="bg-tjgo-gray-card p-5 border border-tjgo-gray-border text-[13px] text-gray-800 leading-relaxed">
-                <p class="font-bold mb-2">Fluxo recomendado:</p>
-                <p class="mb-2">1. Cadastre o usuario base.</p>
-                <p class="mb-2">2. Defina o perfil depois (Aluno ou Professor).</p>
-                <p>3. Evite vincular os dois perfis ao mesmo usuario.</p>
+            <!-- COMO FUNCIONA -->
+            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
+                <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
+                    <i class="fa-solid fa-circle-info mr-2 text-sm"></i> COMO FUNCIONA
+                </div>
+                <div class="p-4 space-y-3 text-xs text-gray-600">
+                    <div class="flex items-start gap-2">
+                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-navy text-white text-[10px] font-bold mt-0.5">1</span>
+                        <span><strong class="text-tjgo-text-main">Dados de Acesso</strong> — Preencha seu cadastro com os dados de login e senha.</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-gray-card text-gray-500 text-[10px] font-bold mt-0.5">2</span>
+                        <span><strong class="text-tjgo-text-main">Ativação</strong> — Um administrador, coordenador ou professor irá ativar o cadastro, liberando seu acesso.</span>
+                    </div>
+                    <div class="flex items-start gap-2">
+                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-gray-card text-gray-500 text-[10px] font-bold mt-0.5">3</span>
+                        <span><strong class="text-tjgo-text-main">Acesso Liberado</strong> — Com o acesso ativado, você já pode entrar no sistema.</span>
+                    </div>
+                </div>
             </div>
+
+            <!-- REQUISITOS DE SENHA -->
+            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
+                <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
+                    <i class="fa-solid fa-shield-halved mr-2 text-sm"></i> REQUISITOS DE SENHA
+                </div>
+                <div class="p-4">
+                    <ul class="space-y-1.5 text-xs">
+                        <li id="req_len" class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-circle text-[8px]"></i> Mínimo de 8 caracteres
+                        </li>
+                        {% comment %} <li id="req_upper" class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-circle text-[8px]"></i> Ao menos uma letra maiúscula
+                        </li> {% endcomment %}
+                        {% comment %} <li id="req_num" class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-circle text-[8px]"></i> Ao menos um número
+                        </li> {% endcomment %}
+                        {% comment %} <li id="req_special" class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-circle text-[8px]"></i> Ao menos um caractere especial
+                        </li> {% endcomment %}
+                        <li class="flex items-center gap-2 text-gray-400   ">
+                            <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser inteiramente numérica
+                        </li>
+                        <li class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser uma senha comumente utilizada
+                        </li>
+                        <li class="flex items-center gap-2 text-gray-400">
+                            <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser similar às suas informações pessoais
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- SUPORTE -->
+            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
+                <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
+                    <i class="fa-solid fa-headset mr-2 text-sm"></i> SUPORTE
+                </div>
+                <div class="p-4 text-xs text-gray-600 space-y-2">
+                    <p>Dúvidas sobre o cadastro? Entre em contato com a coordenação do simulador.</p>
+                    <a href="mailto:simulador@tjgo.jus.br" class="text-tjgo-blue font-bold hover:underline flex items-center gap-1">
+                        <i class="fa-solid fa-envelope text-[11px]"></i> simulador@tjgo.jus.br
+                    </a>
+                </div>
+            </div>
+
         </aside>
     </div>
 </main>
+
+<script>
+(function(){
+    const pwdInput = document.querySelector('input[type="password"]');
+    if(!pwdInput) return;
+
+    function setReq(id, ok){
+        const el = document.getElementById(id);
+        if(!el) return;
+        el.classList.toggle('text-green-600', ok);
+        el.classList.toggle('text-gray-400', !ok);
+        el.querySelector('i').className = 'fa-solid text-[8px] ' + (ok ? 'fa-circle-check' : 'fa-circle');
+    }
+
+    pwdInput.addEventListener('input', function(){
+        const pwd = this.value;
+        setReq('req_len',     pwd.length >= 8);
+        setReq('req_upper',   /[A-Z]/.test(pwd));
+        setReq('req_num',     /[0-9]/.test(pwd));
+        setReq('req_special', /[^A-Za-z0-9]/.test(pwd));
+    });
+})();
+</script>
 {% endblock %}

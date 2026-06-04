@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     'ciclos',
     'movimentacoes',
     'processos',
+    'avaliacoes',
+    'private_storage',
 ]
 
 MIDDLEWARE = [
@@ -145,5 +147,28 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 
 
-# Mídia PROTEGIDA (documentos)
+# Mídia PROTEGIDA (documentos processuais)
 PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')
+PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_authenticated'
+PRIVATE_STORAGE_SERVER = 'django'   # dev; em produção substituir por 'nginx' com X-Accel-Redirect
+
+
+# ─── Upload de Arquivos ───────────────────────────────────────────────────────
+UPLOAD_CONFIG = {
+    # Tamanho máximo em MB por arquivo
+    "MAX_FILE_SIZE_MB": 7,
+    # Extensões permitidas (sempre em minúsculo, com ponto)
+    "ALLOWED_EXTENSIONS": [".pdf", ".docx", ".jpg", ".jpeg"],
+    # MIMEs reais aceitos (detectados pelos bytes do arquivo, não pelo nome)
+    "ALLOWED_MIME_TYPES": [
+        "application/pdf",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        "image/jpeg",
+    ],
+    # Prefixos de MIME bloqueados mesmo que a extensão seja permitida
+    "BLOCKED_MIME_PREFIXES": [
+        "application/x-",           # executáveis genéricos
+        "application/octet-stream", # binários arbitrários
+        "text/x-",                  # scripts de shell/bat
+    ],
+}

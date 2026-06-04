@@ -17,7 +17,7 @@
 
     {% block extra_head %}{% endblock %}
 </head>
-<body class="text-tjgo-text-main font-sans text-sm antialiased">
+<body class="text-tjgo-text-main font-sans text-sm antialiased flex flex-col min-h-screen">
 
     <!-- Header / Barra Superior -->
     <header class="bg-tjgo-navy text-white h-[45px] sticky top-0 z-50">
@@ -57,9 +57,11 @@
         </div>
     </header>
 
+    <div class="flex-1">
     {% block content %}
         <!-- Conteúdo específico de cada página será inserido aqui -->
     {% endblock %}
+    </div>
     
     <!-- Rodapé -->
     <footer class="footer">

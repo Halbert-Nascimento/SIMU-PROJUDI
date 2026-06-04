@@ -19,11 +19,11 @@ class CargoSimulacao(models.Model):
     cod = models.CharField(max_length=20, unique=True, verbose_name="Código do Cargo")
 
     #        nome                   |  Códigos:
-    # ('Gabinete do Juiz',          | 'GJ'),
     # ('Serventia/Cartório',        | 'SC'),
     # ('Advogados Polo Ativo',      | 'APA'),
     # ('Advogados Polo Passivo',    | 'APP'),
-    # ('Ministério Público',        | 'MP')
+    # ('Ministério Público',        | 'MP'),
+    # ('Juiz',                      | 'JZ')
 
 
     class Meta:
@@ -41,21 +41,22 @@ class CicloSimulacao(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="ciclos_coordenados",
+        db_column="professor_id",
     )
     semestre = models.PositiveSmallIntegerField()
     ano = models.PositiveSmallIntegerField()
-    periodo = models.CharField(max_length=100, blank=True)
+    periodo = models.IntegerField(default=0, blank=True)
     status = models.ForeignKey(
         StatusCiclo,
         on_delete=models.PROTECT,
         related_name="ciclos",
-        db_column="id_status_ciclo",
+        db_column="status_ciclo_id",
     )
     participantes = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
+        through="ParticipanteCiclo",
         related_name="ciclos_participados",
         blank=True,
-        db_table="participante_ciclo",
     )
     data_criacao = models.DateTimeField(auto_now_add=True)
 
@@ -66,6 +67,21 @@ class CicloSimulacao(models.Model):
 
     def __str__(self):
         return f"{self.nome_edicao} — {self.semestre}º/{self.ano}"
+
+
+class ParticipanteCiclo(models.Model):
+    ciclo = models.ForeignKey(
+        CicloSimulacao,
+        on_delete=models.CASCADE,
+    )
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        db_table = "participante_ciclo"
+        unique_together = [("ciclo", "usuario")]
 
 
 class GrupoTrabalho(models.Model):
@@ -82,9 +98,9 @@ class GrupoTrabalho(models.Model):
     nome = models.CharField(max_length=150)
     membros = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
+        through="MembroGrupo",
         related_name="grupos_trabalho",
         blank=True,
-        db_table="membro_grupo",
     )
     data_criacao = models.DateTimeField(auto_now_add=True)
 
@@ -95,3 +111,18 @@ class GrupoTrabalho(models.Model):
 
     def __str__(self):
         return f"{self.nome} ({self.cargo_simulacao})"
+
+
+class MembroGrupo(models.Model):
+    grupo = models.ForeignKey(
+        GrupoTrabalho,
+        on_delete=models.CASCADE,
+    )
+    usuario = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+    )
+
+    class Meta:
+        db_table = "membro_grupo"
+        unique_together = [("grupo", "usuario")]
