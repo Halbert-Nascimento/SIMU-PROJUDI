@@ -494,3 +494,4 @@ def atribuir_grupo_processos(request):
             processo.grupos.clear()
 
     return JsonResponse({"sucesso": True, "atualizados": processos.count()})
+
