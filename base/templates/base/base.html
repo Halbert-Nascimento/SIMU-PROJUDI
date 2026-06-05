@@ -19,7 +19,8 @@
     <script src="{% static 'js/tailwind.config.global.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
-    {% block extra_head %}{% endblock %}
+    {% block extra_head %}{% endblock %}            
+    
 </head>
 <body class="text-tjgo-text-main font-sans text-sm antialiased flex flex-col min-h-screen">
 
@@ -32,7 +33,11 @@
             </div>
             <div class="flex items-center text-gray-200">
                 {% block header_saudacao %}
-                    
+                    {% if user.is_authenticated %}                        
+                        <span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> {{ user.tipo_perfil_global }} - {{ user.first_name }} 
+                        </span>
+                    {% endif %}
                 {% endblock %}
                 {% block header_acoes %}
                 <div class="flex items-center gap-1 border-r border-gray-500 pr-4">
