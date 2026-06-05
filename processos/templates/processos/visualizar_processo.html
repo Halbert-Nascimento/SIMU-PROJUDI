@@ -5,29 +5,8 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
 <style>
-    .section-title {
-        color: #1a5b9e; font-size: 12px; font-weight: bold;
-        text-transform: uppercase; padding: 4px 0 4px 8px;
-        border-left: 3px solid #1a5b9e; background: #f4f4f4;
-        margin: 10px 0 0 0;
-        display: flex; align-items: center; gap: 6px;
-    }
-    .autos-title {
-        color: #1a5b9e; font-size: 11px; font-weight: bold;
-        text-transform: uppercase; padding: 2px 0 2px 4px;
-        display: flex; align-items: center; gap: 4px;
-    }
-    .panel {
-        border: 1px solid #cdd9e6; background: #eef4fb;
-        padding: 12px 14px; margin-top: 4px;
-    }
-    .panel-inner {
-        background: #ffffff; border: 1px solid #cdd9e6;
-        padding: 10px 12px; margin-top: 6px;
-    }
-    .field-label { color: #666; font-size: 11px; }
-    .field-value { font-weight: bold; color: #222; font-size: 12px; }
     .pill {
         display: inline-block; padding: 1px 7px;
         font-size: 10px; font-weight: bold;
@@ -36,14 +15,6 @@
     .pill.ok { background: #dff5e1; color: #2e7d32; border: 1px solid #bee0c2; }
     .pill.gray { background: #eee; color: #555; border: 1px solid #ccc; }
     .pill.warn { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
-    .btn-blue {
-        background: linear-gradient(to bottom, #2e6cab, #1c4b80);
-        color: #fff; padding: 5px 14px;
-        font-size: 11px; font-weight: bold;
-        border: 1px solid #154170; border-radius: 2px; cursor: pointer;
-        text-transform: uppercase;
-    }
-    .btn-blue:hover { background: linear-gradient(to bottom, #3679b8, #21568f); }
     .tbl-mov { width: 100%; border-collapse: collapse; font-size: 11px; }
     .tbl-mov thead th {
         background: #dcdcdc; text-align: left; font-weight: bold; color: #333;
@@ -111,18 +82,28 @@
     }
     .filters label { display: flex; align-items: center; gap: 5px; color: #333; }
     .filters input[type="radio"] { accent-color: #1a5b9e; }
-    .tbl-mov .opc-col { width: 70px; text-align: center; }
+    .tbl-mov .opc-col { width: 70px; text-align: center; position: relative; }
+    .dropdown-opcoes { position: relative; display: inline-block; }
+    .dropdown-opcoes .dropdown-btn {
+        color: #1a5b9e; cursor: pointer; font-size: 14px;
+        background: none; border: none; padding: 2px 6px;
+    }
+    .dropdown-opcoes .dropdown-btn:hover { color: #153a61; }
+    .dropdown-opcoes .dropdown-menu {
+        display: none; position: absolute; right: 0; top: 100%;
+        background: #fff; border: 1px solid #cdd9e6;
+        box-shadow: 0 4px 12px rgba(0,0,0,.12);
+        border-radius: 3px; z-index: 30; min-width: 150px;
+    }
+    .dropdown-opcoes .dropdown-menu.open { display: block; }
+    .dropdown-opcoes .dropdown-menu a {
+        display: block; padding: 6px 12px; font-size: 11px;
+        color: #333; text-decoration: none; white-space: nowrap;
+    }
+    .dropdown-opcoes .dropdown-menu a:hover { background: #eef4fb; color: #1a5b9e; }
+    .dropdown-opcoes .dropdown-menu a i { margin-right: 6px; color: #1a5b9e; width: 14px; text-align: center; }
     .lock-area { display: flex; align-items: center; gap: 5px; }
     .lock-area input { accent-color: #1a5b9e; }
-    [data-tip] { position: relative; }
-    [data-tip]:hover::after {
-        content: attr(data-tip);
-        position: absolute; bottom: calc(100% + 6px); left: 50%;
-        transform: translateX(-50%);
-        background: #222; color: #fff; padding: 4px 8px;
-        font-size: 10px; white-space: nowrap; border-radius: 3px;
-        z-index: 50; font-weight: normal;
-    }
 </style>
 {% endblock %}
 
@@ -131,6 +112,7 @@
 <nav class="bg-fundo-caixa border-b border-borda sticky top-[45px] z-40">
     <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
         <div class="flex items-center gap-5">
+            {% if request.user.tipo_perfil_global == "Aluno" %}
             <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
             <div class="relative group">
                 <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
@@ -140,11 +122,17 @@
                 </div>
             </div>
             <a href="#" class="hover:underline text-texto-principal font-medium">Audiencias</a>
+            <a href="{% url 'avaliacoes:minhas_notas' %}" class="hover:underline text-texto-principal font-medium">Minhas Notas</a>
+            {% else %}
+            <a href="{% url 'acesso:painel_administrativo' %}" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
+            {% endif %}
         </div>
+        {% if request.user.tipo_perfil_global == "Aluno" %}
         <div class="flex items-center gap-1 text-texto-secundario">
             <i class="fas fa-times text-[11px]"></i>
             <span>29:53</span>
         </div>
+        {% endif %}
     </div>
 </nav>
 
@@ -416,7 +404,22 @@
                         {% endif %}
                     </td>
                     <td class="opc-col">
-                        <i class="fa-solid fa-pen icon-action" data-tip="Editar"></i>
+                        {% if pode_avaliar and mov.autor_id != request.user.pk %}
+                        <div class="dropdown-opcoes">
+                            <button type="button" class="dropdown-btn" onclick="toggleDropdown(this)" data-tip="Opções">
+                                <i class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                            <div class="dropdown-menu">
+                                <a href="{% url 'avaliacoes:avaliar' mov.id %}">
+                                    {% if mov.tem_feedback %}
+                                    <i class="fa-solid fa-pen-to-square"></i> Editar Avaliação
+                                    {% else %}
+                                    <i class="fa-solid fa-clipboard-check"></i> Avaliar
+                                    {% endif %}
+                                </a>
+                            </div>
+                        </div>
+                        {% endif %}
                     </td>
                 </tr>
                 {% empty %}
@@ -442,4 +445,18 @@
     </div>
 
 </main>
+
+<script>
+function toggleDropdown(btn) {
+    var menu = btn.nextElementSibling;
+    var isOpen = menu.classList.contains('open');
+    document.querySelectorAll('.dropdown-menu.open').forEach(function(m) { m.classList.remove('open'); });
+    if (!isOpen) menu.classList.add('open');
+}
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.dropdown-opcoes')) {
+        document.querySelectorAll('.dropdown-menu.open').forEach(function(m) { m.classList.remove('open'); });
+    }
+});
+</script>
 {% endblock %}
