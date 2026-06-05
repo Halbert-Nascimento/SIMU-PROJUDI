@@ -33,7 +33,9 @@ SECRET_KEY = env("SECRET_KEY", default='django-insecure-dev-only')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
+
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
 
 # Application definition
@@ -150,8 +152,8 @@ MEDIA_URL = '/media/'
 # Mídia PROTEGIDA (documentos processuais)
 PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')
 PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_authenticated'
-PRIVATE_STORAGE_SERVER = 'django'   # dev; em produção substituir por 'nginx' com X-Accel-Redirect
-
+PRIVATE_STORAGE_SERVER = env('PRIVATE_STORAGE_SERVER', default='django')   # dev; em produção substituir por 'nginx' com X-Accel-Redirect
+# PRIVATE_STORAGE_INTERNAL_URL = '/arquivos_privados/' # necessário para nginx, mas não para django; ajustar conforme o servidor de arquivos privados
 
 # ─── Upload de Arquivos ───────────────────────────────────────────────────────
 UPLOAD_CONFIG = {

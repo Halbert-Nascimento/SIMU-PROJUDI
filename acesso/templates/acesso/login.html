@@ -37,10 +37,10 @@
                             <span class="text-xs font-bold leading-tight text-gray-800">Tabelas<br>Processuais<br>Unificadas</span>
                         </div>
                         <!-- Card 2 -->
-                        <div class="bg-tjgo-gray-card hover:bg-gray-300 transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <a class="fa-solid fa-pen-to-square text-2xl text-tjgo-navy mb-2" href="{% url 'acesso:cadastro' %}"></a>
-                            <a class="text-xs font-bold leading-tight text-gray-800" href="{% url 'acesso:cadastro' %}">Cadastro</a>
-                        </div>
+                        <a href="{% url 'acesso:cadastro' %}" class="bg-tjgo-gray-card hover:bg-gray-300 transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm border border-transparent hover:border-gray-300">
+                            <i class="fa-solid fa-pen-to-square text-2xl text-tjgo-navy mb-2"></i>
+                            <span class="text-xs font-bold leading-tight text-gray-800">Cadastro</span>
+                        </a>
                         <!-- Card 3 -->
                         <div class="bg-tjgo-gray-card hover:bg-gray-300 transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
                             <i class="fa-solid fa-chart-pie text-2xl text-tjgo-navy mb-2"></i>
@@ -81,7 +81,22 @@
                     </h2>
                     
                     <div id="accordion-container" class="border border-gray-200">
-                        <!-- Item 1 -->
+                        <!-- Item 0 -->
+                        <div class="accordion-item">
+                            <div class="accordion-header bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center cursor-pointer">
+                                <i class="fa-solid fa-caret-down mr-2 text-sm accordion-icon"></i>
+                                Esqueceu a sua senha?
+                            </div>
+                            <div class="accordion-content p-5 bg-white text-[13px] leading-relaxed text-gray-800">
+                                <p class="text-gray-500 mb-4">31/05/2026</p>
+                                <p class="mb-4 text-justify">
+                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                                </p>
+                                <p class="mb-4 text-justify">
+                                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                                </p>
+                            </div>
+                        </div>
                         <div class="accordion-item">
                             <div class="accordion-header bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center cursor-pointer">
                                 <i class="fa-solid fa-caret-down mr-2 text-sm accordion-icon"></i>
@@ -140,39 +155,15 @@
                             </div>
                         </div>
 
-                        <!-- Item 5 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                NOVA FERRAMENTA DE AÇÕES JUDICIAIS ISENTAS NO PROJUDI
-                            </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
-                                <p class="text-gray-500 mb-4">15/02/2026</p>
-                                <p class="mb-4 text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Cras pulvinar, nunc non cursus fermentum, urna lorem blandit libero.
-                                </p>
-                            </div>
-                        </div>
+                    
 
-                        <!-- Item 6 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                BALCÃO VIRTUAL - DISPENSA DE PORTARIA
-                            </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
-                                <p class="text-gray-500 mb-4">10/02/2026</p>
-                                <p class="mb-4 text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse potenti. Mauris euismod, felis et facilisis consequat.
-                                </p>
-                            </div>
-                        </div>
+                      
 
                         <!-- Item 7 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
                                 <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                ERRO AO TENTAR REALIZAR LOGIN COM CERTIFICADO DIGITAL
+                                ERRO AO TENTAR REALIZAR LOGIN
                             </div>
                             <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
                                 <p class="text-gray-500 mb-4">05/02/2026</p>
@@ -182,39 +173,14 @@
                             </div>
                         </div>
 
-                        <!-- Item 8 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed hover:bg-tjgo-gray-card-hover">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                REEMISSÃO DE GUIAS DE CUSTAS FINAIS PELO JURISDICIONADO
-                            </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
-                                <p class="text-gray-500 mb-4">01/02/2026</p>
-                                <p class="mb-4 text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam quis risus eget urna mollis ornare vel eu leo.
-                                </p>
-                            </div>
-                        </div>
 
-                        <!-- Item 9 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                AVISO: DISPENSA DE CERTIDÃO DE PUBLICAÇÃO
-                            </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
-                                <p class="text-gray-500 mb-4">28/01/2026</p>
-                                <p class="mb-4 text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec sed odio dui. Etiam porta sem malesuada magna mollis euismod.
-                                </p>
-                            </div>
-                        </div>
+
 
                         <!-- Item 10 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
                                 <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                TJGO AUMENTA LIMITE DO TAMANHO DE ARQUIVOS PARA 6MB
+                                LIMITE DO TAMANHO DE ARQUIVOS 7MB
                             </div>
                             <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
                                 <p class="text-gray-500 mb-4">25/01/2026</p>
@@ -224,7 +190,7 @@
                             </div>
                         </div>
 
-                        <!-- Item 11 -->
+                        {% comment %} <!-- Item 11 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
                                 <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
@@ -236,21 +202,9 @@
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum id ligula porta felis euismod semper.
                                 </p>
                             </div>
-                        </div>
+                        </div> {% endcomment %}
 
-                        <!-- Item 12 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                GUIA DE RECURSO INOMINADO PÚBLICA
-                            </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
-                                <p class="text-gray-500 mb-4">15/01/2026</p>
-                                <p class="mb-4 text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean lacinia bibendum nulla sed consectetur.
-                                </p>
-                            </div>
-                        </div>
+
 
                         <!-- Item 13 -->
                         <div class="accordion-item">
@@ -266,47 +220,10 @@
                             </div>
                         </div>
 
-                        <!-- Item 14 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                UTILIZE O 'ASSINADOR EXTERNO'
-                            </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
-                                <p class="text-gray-500 mb-4">05/01/2026</p>
-                                <p class="mb-4 text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas sed diam eget risus varius blandit sit amet non magna.
-                                </p>
-                            </div>
-                        </div>
 
-                        <!-- Item 15 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                DIGITALIZAÇÃO DOS PROCESSOS JUDICIAIS
-                            </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
-                                <p class="text-gray-500 mb-4">01/01/2026</p>
-                                <p class="mb-4 text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce dapibus, tellus ac cursus commodo, tortor mauris condimentum nibh.
-                                </p>
-                            </div>
-                        </div>
 
-                        <!-- Item 16 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
-                                CAPTCHA - ADVOGADOS
-                            </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-gray-800">
-                                <p class="text-gray-500 mb-4">28/12/2025</p>
-                                <p class="mb-4 text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed posuere consectetur est at lobortis.
-                                </p>
-                            </div>
-                        </div>
+
+
                     </div>
                     
                     <div class="text-right mt-2">
@@ -317,18 +234,13 @@
 
             <!-- COLUNA DIREITA -->
             <div>
-                <!-- Seção: Acesso Sessão Virtual -->
-                <section class="mb-10">
-                    <h2 class="text-tjgo-blue text-xl font-bold mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Acesso Sessão Virtual
-                    </h2>
-                    
-                    <div class="bg-tjgo-gray-card p-6 flex flex-col items-center justify-center cursor-pointer hover:bg-gray-300 transition">
-                        <!-- Ícone Simulado via CSS para substituir a imagem complexa -->
+                <!-- Seção: Simulador Projudi -->
+                <section class="mb-10"><br><br>
+                    <div class="bg-tjgo-gray-card p-6 flex flex-col items-center justify-center cursor-default">
                         <div class="icon-sessao-virtual mb-3">
                             <i class="fa-solid fa-users text-4xl"></i>
                         </div>
-                        <span class="text-tjgo-blue font-bold text-sm">Sessão Virtual</span>
+                        <span class="text-tjgo-blue font-bold text-sm">Simulador Projudi</span>
                     </div>
                 </section>
 
@@ -420,10 +332,7 @@
             </div>
         </div>
         
-        <!-- Pequeno ícone nni no rodapé (referência imagem 3) -->
-        <div class="flex justify-end mt-10 opacity-50">
-           <span class="text-[10px] border border-gray-400 px-1 font-bold bg-gray-100 flex items-center gap-1">nni <i class="fa-solid fa-check text-blue-500"></i></span>
-        </div>
+        
     </main>
 
     <!-- Script para Accordion -->
