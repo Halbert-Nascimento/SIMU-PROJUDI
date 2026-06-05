@@ -16,6 +16,8 @@ from django.views.decorators.http import require_POST
 
 from ciclos.models import CicloSimulacao, GrupoTrabalho
 
+from usuarios.models import Usuario
+
 from .forms import ProcessoJudicialForm
 from .permissions import pode_visualizar_processo
 from .utils import validar_multiplos_arquivos
@@ -128,7 +130,11 @@ def cadastrar_processo(request):
 
             with transaction.atomic():
                 processo = form.save(commit=False)
-                processo.numero = ProcessoJudicial.gerar_numero_unico()
+                processo.numero = ProcessoJudicial.gerar_numero_cnj(
+                    ano=datetime.datetime.now().year,
+                    tr=26,
+                    origem=processo.vara.comarca_id,
+                )
                 processo.ciclo = ciclo
                 processo.status_atual = status_autuado
                 processo.save()
@@ -389,6 +395,10 @@ def visualizar_processo(request, numero):
         .order_by("-data_movimento")
     )
 
+    mov_ids = [m.id for m in movimentacoes_qs]
+    from avaliacoes.services import feedbacks_ids_para_movimentacoes
+    feedbacks_existentes = feedbacks_ids_para_movimentacoes(mov_ids)
+
     mov_cadastro = next(
         (m for m in movimentacoes_qs if m.tipo_movimento.nome_movimentacao == "Cadastro do Processo"),
         None,
@@ -401,21 +411,30 @@ def visualizar_processo(request, numero):
         if mov.id in skip_ids:
             continue
         movimentacoes.append({
+            "id": mov.id,
+            "autor_id": mov.autor_id,
             "nome": mov.tipo_movimento.nome_movimentacao,
             "descricao": mov.descricao_evento,
             "data": mov.data_movimento,
             "autor_nome": mov.autor.get_full_name() or mov.autor.username,
             "documentos": list(mov.documentos.all()),
+            "tem_feedback": mov.id in feedbacks_existentes,
         })
 
     if mov_cadastro:
         movimentacoes.append({
+            "id": mov_cadastro.id,
+            "autor_id": mov_cadastro.autor_id,
             "nome": "Petição Inicial",
             "descricao": mov_cadastro.descricao_evento,
             "data": mov_cadastro.data_movimento,
             "autor_nome": mov_cadastro.autor.get_full_name() or mov_cadastro.autor.username,
             "documentos": list(mov_cadastro.documentos.all()),
+            "tem_feedback": mov_cadastro.id in feedbacks_existentes,
         })
+
+    from avaliacoes.permissions import perfil_pode_avaliar
+    pode_avaliar = perfil_pode_avaliar(request.user)
 
     return render(
         request,
@@ -428,6 +447,7 @@ def visualizar_processo(request, numero):
             "grupo_serventia": grupo_serventia,
             "grupos_vinculados": grupos_vinculados,
             "movimentacoes": movimentacoes,
+            "pode_avaliar": pode_avaliar,
         },
     )
 
