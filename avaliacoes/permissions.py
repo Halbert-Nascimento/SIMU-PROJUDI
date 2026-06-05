@@ -3,10 +3,6 @@ from __future__ import annotations
 from usuarios.models import Usuario
 
 
-def pode_ver_minhas_notas(user) -> bool:
-    return user.is_authenticated and user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO
-
-
 def perfil_pode_avaliar(user) -> bool:
     return user.is_authenticated and user.tipo_perfil_global in (
         Usuario.TipoPerfilGlobal.ADMIN,
