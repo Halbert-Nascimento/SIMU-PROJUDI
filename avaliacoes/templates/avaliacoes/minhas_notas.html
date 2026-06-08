@@ -129,12 +129,7 @@
 
 <main class="max-w-[1200px] mx-auto px-6 py-5 bg-white min-h-screen" style="box-shadow: 0 0 10px rgba(0,0,0,0.05);">
 
-    <!-- Breadcrumb -->
-    <div class="text-[11px] text-gray-600 mb-2">
-        <a href="{% url 'processos:pagina_aluno' %}" class="text-[#1a5b9e] hover:underline">Página Inicial</a>
-        <i class="fa-solid fa-angle-right mx-1 text-[9px]"></i>
-        <span>Minhas Notas</span>
-    </div>
+    {% include 'base/components/_breadcrumbs.html' %}
 
     <!-- IDENTIFICAÇÃO DO ALUNO -->
     <div class="autos-title"><i class="fa-solid fa-chart-line"></i> MEU DESEMPENHO</div>
