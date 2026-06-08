@@ -238,12 +238,7 @@
 
 <main class="max-w-container mx-auto px-6 py-5">
 
-    <!-- Breadcrumbs -->
-    <nav class="text-[11px] text-texto-secundario mb-3 flex items-center gap-1" aria-label="Navegação">
-        <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-azul-primario">Área do Servidor</a>
-        <i class="fa-solid fa-chevron-right text-[9px]"></i>
-        <span class="text-texto-principal font-medium">Processo {{ processo.numero }}</span>
-    </nav>
+    {% include 'base/components/_breadcrumbs.html' %}
 
     {% if messages %}
     <div class="mb-4">
