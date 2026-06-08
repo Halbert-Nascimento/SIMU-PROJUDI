@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db import transaction
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from usuarios.models import Usuario
@@ -73,6 +74,11 @@ def editar_ciclo(request, ciclo_id):
         "ciclo": ciclo,
         "form": form,
         "status_ciclo_opcoes": StatusCiclo.objects.all(),
+        "breadcrumbs": [
+            {"label": "Painel Administrativo", "url": reverse("acesso:painel_administrativo")},
+            {"label": ciclo.nome_edicao, "url": reverse("ciclos:detalhe_ciclo", args=[ciclo.pk])},
+            {"label": "Editar Ciclo", "url": None},
+        ],
     })
 
 
@@ -105,6 +111,10 @@ def detalhe_ciclo(request, ciclo_id):
         "grupos": grupos,
         "total_membros": total_membros,
         "pode_editar": pode_editar_ciclo(request.user, ciclo),
+        "breadcrumbs": [
+            {"label": "Painel Administrativo", "url": reverse("acesso:painel_administrativo")},
+            {"label": ciclo.nome_edicao, "url": None},
+        ],
     })
 
 
@@ -201,6 +211,11 @@ def gerenciar_grupos(request, ciclo_id):
         "membros_por_grupo": membros_por_grupo,
         "alunos_lista": alunos_lista,
         "total_alunos_ativos": total_alunos_ativos,
+        "breadcrumbs": [
+            {"label": "Painel Administrativo", "url": reverse("acesso:painel_administrativo")},
+            {"label": ciclo.nome_edicao, "url": reverse("ciclos:detalhe_ciclo", args=[ciclo.pk])},
+            {"label": "Gerenciar Grupos", "url": None},
+        ],
     })
 
 
