@@ -12,6 +12,7 @@ from django.db.models import Q
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from ciclos.models import CicloSimulacao, GrupoTrabalho
@@ -448,6 +449,10 @@ def visualizar_processo(request, numero):
             "grupos_vinculados": grupos_vinculados,
             "movimentacoes": movimentacoes,
             "pode_avaliar": pode_avaliar,
+            "breadcrumbs": [
+                {"label": "Área do Servidor", "url": reverse("processos:pagina_aluno")},
+                {"label": f"Processo {processo.numero}", "url": None},
+            ],
         },
     )
 
