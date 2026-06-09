@@ -131,12 +131,30 @@ def painel_administrativo(request):
             if pode_editar_ciclo(request.user, ciclo)
         )
 
-    ciclos_ativos_professor = list(
-        CicloSimulacao.objects
-        .filter(coordenador=request.user, status__nome_status="em andamento")
-        .select_related("status")
-        .order_by("-data_criacao")
-    )
+    if request.user.tipo_perfil_global in (Usuario.TipoPerfilGlobal.ADMIN, Usuario.TipoPerfilGlobal.COORDENADOR):
+        context["ciclos_arquivados"] = (
+            CicloSimulacao.objects
+            .select_related("status", "coordenador")
+            .prefetch_related("grupos")
+            .filter(status__nome_status="arquivado")
+            .order_by("-data_criacao")
+        )
+
+    tp = request.user.tipo_perfil_global
+    if tp in (Usuario.TipoPerfilGlobal.ADMIN, Usuario.TipoPerfilGlobal.COORDENADOR):
+        ciclos_ativos_professor = list(
+            CicloSimulacao.objects
+            .filter(status__nome_status="em andamento")
+            .select_related("status")
+            .order_by("-data_criacao")
+        )
+    else:
+        ciclos_ativos_professor = list(
+            CicloSimulacao.objects
+            .filter(coordenador=request.user, status__nome_status="em andamento")
+            .select_related("status")
+            .order_by("-data_criacao")
+        )
     context["ciclos_ativos_professor"] = ciclos_ativos_professor
     context["processos_professor"] = (
         ProcessoJudicial.objects
