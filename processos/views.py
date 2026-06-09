@@ -60,22 +60,9 @@ def _upload_ctx() -> dict:
 
 @login_required
 def cadastrar_processo(request):
-    ciclo = (
-        CicloSimulacao.objects.filter(
-            Q(coordenador=request.user) | Q(participantes=request.user),
-            status__nome_status__iexact="em andamento",
-        )
-        .order_by("-data_criacao")
-        .first()
-    )
-
+    ciclo = request.ciclo_ativo
     if not ciclo:
-        messages.error(
-            request,
-            "Nenhum ciclo ativo encontrado para o seu usuário.",
-            extra_tags="processo",
-        )
-        return redirect("acesso:painel_administrativo")
+        return redirect(reverse("ciclos:selecionar_ciclo") + f"?next={request.path}")
 
     # Listas usadas tanto no POST (erro) quanto no GET (vazias)
     polo_ativo_partes: list = []
@@ -223,9 +210,13 @@ def cadastrar_processo(request):
 def pagina_aluno(request):
     usuario = request.user
 
+    ciclo = request.ciclo_ativo
+    if not ciclo:
+        return redirect(reverse("ciclos:selecionar_ciclo") + f"?next={request.path}")
+
     grupo = (
         usuario.grupos_trabalho
-        .filter(ciclo__status__nome_status__iexact="em andamento")
+        .filter(ciclo=ciclo)
         .select_related("cargo_simulacao", "ciclo")
         .first()
     )
@@ -257,7 +248,7 @@ def pagina_aluno(request):
         processos = (
             ProcessoJudicial.objects.filter(
                 grupos__membros=usuario,
-                ciclo__status__nome_status__iexact="em andamento",
+                ciclo=ciclo,
             )
             .select_related("classe", "status_atual", "vara", "vara__comarca")
             .prefetch_related("polos__parte")
@@ -285,6 +276,14 @@ def pagina_aluno(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     ip = x_forwarded_for.split(",")[0].strip() if x_forwarded_for else request.META.get("REMOTE_ADDR", "")
 
+    penultimo_login = None
+    penultimo_raw = request.session.get('penultimo_login')
+    if penultimo_raw:
+        try:
+            penultimo_login = datetime.datetime.fromisoformat(penultimo_raw)
+        except (ValueError, TypeError):
+            penultimo_login = None
+
     return render(
         request,
         "processos/pagina_aluno.html",
@@ -296,6 +295,7 @@ def pagina_aluno(request):
             "page_obj": page_obj,
             "total_processos": total_processos,
             "ip_acesso": ip,
+            "penultimo_login": penultimo_login,
             "classes": ClasseProcessual.objects.all().order_by("nome"),
             "status_opcoes": StatusProcessoJudicial.objects.all(),
             "filtro_numero": filtro_numero,
@@ -473,12 +473,13 @@ def atribuir_grupo_processos(request):
     if not processo_ids:
         return JsonResponse({"erro": "Nenhum processo selecionado."}, status=400)
 
+    ciclo = request.ciclo_ativo
+    if not ciclo:
+        return JsonResponse({"erro": "Nenhum ciclo ativo selecionado."}, status=400)
+
     grupo_usuario = (
         request.user.grupos_trabalho
-        .filter(
-            ciclo__status__nome_status__iexact="em andamento",
-            cargo_simulacao__cod="SC",
-        )
+        .filter(ciclo=ciclo, cargo_simulacao__cod="SC")
         .first()
     )
     if not grupo_usuario:

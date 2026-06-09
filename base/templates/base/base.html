@@ -33,12 +33,59 @@
             </div>
             <div class="flex items-center text-gray-200">
                 {% block header_saudacao %}
-                    {% if user.is_authenticated %}                        
+                    {% if user.is_authenticated %}
                         <span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
-                            <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> {{ user.tipo_perfil_global }} - {{ user.first_name }} 
+                            <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> {{ user.tipo_perfil_global }} - {{ user.first_name }}
                         </span>
                     {% endif %}
                 {% endblock %}
+
+                {% if user.is_authenticated and ciclos_disponiveis %}
+                    {% if ciclos_disponiveis|length == 1 %}
+                        <span class="text-xs border-r border-gray-500 pr-4 pl-4 flex items-center gap-1 text-gray-300" title="Ciclo ativo">
+                            <i class="fa-solid fa-rotate text-gray-400"></i>
+                            {{ ciclo_ativo.nome_edicao }}
+                        </span>
+                    {% else %}
+                        <div class="relative border-r border-gray-500 pr-4 pl-4" id="ciclo-switcher">
+                            <button type="button"
+                                onclick="document.getElementById('ciclo-menu').classList.toggle('hidden')"
+                                class="text-xs flex items-center gap-1 text-gray-300 hover:text-white transition-colors"
+                                title="Trocar ciclo ativo">
+                                <i class="fa-solid fa-rotate text-gray-400"></i>
+                                {% if ciclo_ativo %}{{ ciclo_ativo.nome_edicao }}{% else %}Selecionar ciclo{% endif %}
+                                <i class="fa-solid fa-chevron-down text-[10px] ml-1"></i>
+                            </button>
+                            <div id="ciclo-menu"
+                                class="hidden absolute top-full right-0 mt-1 bg-white text-tjgo-text-main rounded shadow-lg min-w-[220px] z-50 py-1">
+                                {% for c in ciclos_disponiveis %}
+                                    <form method="post" action="{% url 'ciclos:ativar_ciclo' c.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.path }}">
+                                        <button type="submit"
+                                            class="w-full text-left px-4 py-2 text-xs hover:bg-gray-100 flex items-center gap-2 {% if ciclo_ativo.pk == c.pk %}font-bold text-tjgo-blue{% endif %}">
+                                            {% if ciclo_ativo.pk == c.pk %}
+                                                <i class="fa-solid fa-circle-dot text-tjgo-blue text-[10px]"></i>
+                                            {% else %}
+                                                <i class="fa-regular fa-circle text-gray-400 text-[10px]"></i>
+                                            {% endif %}
+                                            {{ c.nome_edicao }}
+                                        </button>
+                                    </form>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <script>
+                            document.addEventListener('click', function(e) {
+                                var sw = document.getElementById('ciclo-switcher');
+                                var menu = document.getElementById('ciclo-menu');
+                                if (sw && menu && !sw.contains(e.target)) {
+                                    menu.classList.add('hidden');
+                                }
+                            });
+                        </script>
+                    {% endif %}
+                {% endif %}
                 {% block header_acoes %}
                 <div class="flex items-center gap-1 border-r border-gray-500 pr-4">
                     <i class="fa-solid fa-circle-half-stroke top-bar-icon" title="Alto Contraste"></i>
