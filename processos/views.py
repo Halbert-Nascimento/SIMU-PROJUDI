@@ -276,6 +276,14 @@ def pagina_aluno(request):
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     ip = x_forwarded_for.split(",")[0].strip() if x_forwarded_for else request.META.get("REMOTE_ADDR", "")
 
+    penultimo_login = None
+    penultimo_raw = request.session.get('penultimo_login')
+    if penultimo_raw:
+        try:
+            penultimo_login = datetime.datetime.fromisoformat(penultimo_raw)
+        except (ValueError, TypeError):
+            penultimo_login = None
+
     return render(
         request,
         "processos/pagina_aluno.html",
@@ -287,6 +295,7 @@ def pagina_aluno(request):
             "page_obj": page_obj,
             "total_processos": total_processos,
             "ip_acesso": ip,
+            "penultimo_login": penultimo_login,
             "classes": ClasseProcessual.objects.all().order_by("nome"),
             "status_opcoes": StatusProcessoJudicial.objects.all(),
             "filtro_numero": filtro_numero,
