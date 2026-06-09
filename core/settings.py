@@ -66,6 +66,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'acesso.middleware.SessionActivityMiddleware',
     'ciclos.middleware.CicloAtivoMiddleware',
 ]
 
@@ -82,6 +83,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'ciclos.context_processors.ciclo_ativo',
+                'base.context_processors.session_timeout',
             ],
         },
     },
@@ -127,6 +129,15 @@ LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
 # SESSION_COOKIE_SECURE = True    # cookie sessionid só via HTTPS
 # SESSION_COOKIE_HTTPONLY = True  # bloqueia acesso via document.cookie (XSS)
 # CSRF_COOKIE_SECURE = True       # csrftoken só via HTTPS
+
+# Configurações de sessão
+# Tempo de inatividade em segundos antes de expirar (lido do .env, padrão 900 s = 15 min)
+SESSION_COOKIE_AGE = env.int("SESSION_TIMEOUT_SECONDS", default=900)
+# Sessão expira ao fechar o navegador (segurança: sem sessões persistentes no browser)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# True  → toda requisição renova o timer (timeout conta a partir da ÚLTIMA atividade)
+# False → timer fixo desde o login (expira mesmo com o usuário ativo — não recomendado aqui)
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
