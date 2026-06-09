@@ -288,13 +288,17 @@
                                 <a href="#" class="text-tjgo-blue text-xs hover:underline">Esqueceu a sua senha?</a>
                             </div>
                             <div id="login-errors-wrapper">
+                                {% if request.GET.exp %}
+                                    <div class="bg-amber-50 border border-amber-200 text-amber-800 text-xs p-2 rounded mb-3 flex items-center gap-2">
+                                        <i class="fa-solid fa-clock-rotate-left"></i>
+                                        Sua sessão expirou por inatividade. Faça login novamente.
+                                    </div>
+                                {% endif %}
                                 {% if form.non_field_errors %}
                                     <div id="login-errors" class="bg-red-100 text-red-700 p-2 rounded mb-3">
                                         {{ form.non_field_errors }}
                                     </div>
-                                {% endif %}                               
-
-                                
+                                {% endif %}
                             </div>
 
                             <!-- Outras formas de acesso -->
