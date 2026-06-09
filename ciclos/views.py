@@ -3,16 +3,18 @@ from __future__ import annotations
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.db.models import Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.views.decorators.http import require_POST
 
 from base.breadcrumbs import home_breadcrumb
-from django.views.decorators.http import require_POST
 
 from usuarios.models import Usuario
 
 from .forms import CicloSimulacaoForm, GrupoTrabalhoForm
+from .middleware import CICLO_SESSION_KEY
 from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
 from .permissions import pode_criar_ciclo, pode_editar_ciclo, pode_gerenciar_grupos_ciclo
 
@@ -288,3 +290,49 @@ def remover_membro(request, ciclo_id, grupo_id, usuario_id):
             ciclo.participantes.remove(usuario)
 
     return JsonResponse({"sucesso": True, "removido_do_ciclo": remover_do_ciclo})
+
+
+@login_required
+def selecionar_ciclo(request):
+    """Exibe a tela para o usuário escolher em qual ciclo deseja atuar."""
+    ciclos = list(
+        CicloSimulacao.objects.filter(
+            Q(coordenador=request.user) | Q(participantes=request.user),
+            status__nome_status__iexact="em andamento",
+        )
+        .select_related("status")
+        .distinct()
+        .order_by("-data_criacao")
+    )
+
+    if not ciclos:
+        messages.warning(request, "Você não está vinculado a nenhum ciclo em andamento.")
+        return redirect("acesso:painel_administrativo")
+
+    if len(ciclos) == 1:
+        request.session[CICLO_SESSION_KEY] = ciclos[0].pk
+        return redirect(request.GET.get("next") or "acesso:painel_administrativo")
+
+    return render(request, "ciclos/selecionar_ciclo.html", {
+        "ciclos": ciclos,
+        "next": request.GET.get("next", ""),
+    })
+
+
+@login_required
+@require_POST
+def ativar_ciclo(request, ciclo_id):
+    """Salva o ciclo escolhido na sessão após validar que o usuário tem acesso."""
+    ciclo = get_object_or_404(
+        CicloSimulacao.objects.filter(
+            Q(coordenador=request.user) | Q(participantes=request.user),
+            status__nome_status__iexact="em andamento",
+        ),
+        pk=ciclo_id,
+    )
+    request.session[CICLO_SESSION_KEY] = ciclo.pk
+
+    next_url = request.POST.get("next", "").strip()
+    if next_url and next_url.startswith("/"):
+        return redirect(next_url)
+    return redirect("acesso:painel_administrativo")

@@ -203,8 +203,8 @@
             <p class="text-[12px] text-gray-700">E-mail: <span class="text-[#1a5b9e]">{{ usuario.email }}</span></p>
         </div>
         <div class="text-[11px] text-gray-500 text-right">
-            {% if usuario.last_login %}
-            <div>Último acesso: <strong>{{ usuario.last_login|date:"d/m/Y" }} às {{ usuario.last_login|date:"H:i" }}</strong></div>
+            {% if penultimo_login %}
+            <div>Último acesso: <strong>{{ penultimo_login|date:"d/m/Y" }} às {{ penultimo_login|date:"H:i" }}</strong></div>
             {% endif %}
             <div>IP: {{ ip_acesso }}</div>
         </div>
