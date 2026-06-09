@@ -2,16 +2,20 @@ from django.urls import path
 
 from .views import (
     adicionar_membro,
+    ativar_ciclo,
     criar_ciclo,
     detalhe_ciclo,
     editar_ciclo,
     gerenciar_grupos,
     remover_membro,
+    selecionar_ciclo,
 )
 
 app_name = "ciclos"
 
 urlpatterns = [
+    path("selecionar/", selecionar_ciclo, name="selecionar_ciclo"),
+    path("<int:ciclo_id>/ativar/", ativar_ciclo, name="ativar_ciclo"),
     path("criar/", criar_ciclo, name="criar_ciclo"),
     path("<int:ciclo_id>/editar/", editar_ciclo, name="editar_ciclo"),
     path("<int:ciclo_id>/detalhe/", detalhe_ciclo, name="detalhe_ciclo"),

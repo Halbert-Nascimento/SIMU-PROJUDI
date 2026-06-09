@@ -1,0 +1,46 @@
+{% extends "base/base.html" %}
+
+{% block title %}Selecionar Ciclo — Simulador Projudi{% endblock %}
+
+{% block content %}
+<div class="min-h-[calc(100vh-45px)] bg-gray-50 flex items-center justify-center px-4 py-12">
+    <div class="w-full max-w-lg">
+
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-tjgo-blue/10 mb-4">
+                <i class="fa-solid fa-rotate text-tjgo-blue text-2xl"></i>
+            </div>
+            <h1 class="text-xl font-bold text-tjgo-text-main">Selecione o Ciclo</h1>
+            <p class="text-sm text-gray-500 mt-1">
+                Você está vinculado a mais de um ciclo em andamento.<br>
+                Escolha em qual deseja atuar agora.
+            </p>
+        </div>
+
+        <div class="flex flex-col gap-3">
+            {% for ciclo in ciclos %}
+            <form method="post" action="{% url 'ciclos:ativar_ciclo' ciclo.pk %}">
+                {% csrf_token %}
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+                <button type="submit"
+                    class="w-full text-left bg-white border border-gray-200 rounded-lg px-5 py-4 hover:border-tjgo-blue hover:shadow-md transition-all group flex items-center justify-between">
+                    <div>
+                        <p class="font-semibold text-tjgo-text-main group-hover:text-tjgo-blue transition-colors">
+                            {{ ciclo.nome_edicao }}
+                        </p>
+                        <p class="text-xs text-gray-400 mt-0.5">
+                            {{ ciclo.semestre }}º semestre / {{ ciclo.ano }}
+                            {% if ciclo.periodo %} &middot; Período {{ ciclo.periodo }}{% endif %}
+                        </p>
+                    </div>
+                    <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-tjgo-blue transition-colors"></i>
+                </button>
+            </form>
+            {% endfor %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}
