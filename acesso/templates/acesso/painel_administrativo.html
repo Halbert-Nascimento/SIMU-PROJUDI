@@ -5,6 +5,7 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+<script src="{% static 'js/paginador.js' %}"></script>
 {% endblock %}
 
 {% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
@@ -138,7 +139,7 @@
                                         </span>
                                         {% endif %}
                                     </td>
-                                    <td class="py-3 pr-3 font-semibold text-gray-700">{{ ciclo.grupos.count }} Grupo{{ ciclo.grupos.count|pluralize }}</td>
+                                    <td class="py-3 pr-3 font-semibold text-gray-700">{{ ciclo.num_grupos }} Grupo{{ ciclo.num_grupos|pluralize }}</td>
                                     <td class="py-3 pr-3 align-middle">
                                         <div class="flex justify-end items-center gap-3">
                                             <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
@@ -227,7 +228,7 @@
                                                     <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>{{ ciclo.status }}
                                                 </span>
                                             </td>
-                                            <td class="py-3 pr-3 font-semibold text-gray-500">{{ ciclo.grupos.count }} Grupo{{ ciclo.grupos.count|pluralize }}</td>
+                                            <td class="py-3 pr-3 font-semibold text-gray-500">{{ ciclo.num_grupos }} Grupo{{ ciclo.num_grupos|pluralize }}</td>
                                             <td class="py-3 pr-3 align-middle">
                                                 <div class="flex justify-end items-center gap-3">
                                                     <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
@@ -692,317 +693,106 @@
 {% endif %}
 
 <script>
-    const POR_PAGINA = 4;
-    let paginaAtual = 1;
     let cicloFiltrado = 'todos';
+    let usrBusca = '';
+    let cicloBusca = '';
+    let cicloArqBusca = '';
 
     (function() {
         const sel = document.getElementById('filtro-ciclo-processos');
         if (sel) cicloFiltrado = sel.value;
     })();
 
-    function getRowsFiltradas() {
-        const todas = Array.from(document.querySelectorAll('.processo-row'));
-        if (cicloFiltrado === 'todos') return todas;
-        return todas.filter(r => r.dataset.cicloId === cicloFiltrado);
-    }
+    const paginadorProcessos = criarPaginador({
+        rowSelector: '.processo-row',
+        porPagina: 4,
+        tabelaId: 'tabela-processos-ciclo',
+        msgVazioId: 'processos-vazio-filtro',
+        paginacaoId: 'paginacao-processos',
+        infoId: 'paginacao-info',
+        paginasContainerId: 'paginacao-paginas',
+        btnPrimeiraId: 'btn-primeira',
+        btnAnteriorId: 'btn-anterior',
+        btnProximaId: 'btn-proxima',
+        btnUltimaId: 'btn-ultima',
+        filtrarRows: (todas) => cicloFiltrado === 'todos' ? todas : todas.filter(r => r.dataset.cicloId === cicloFiltrado),
+    });
 
-    function renderizarPaginacao() {
-        const rows = getRowsFiltradas();
-        const total = rows.length;
-        const totalPaginas = Math.ceil(total / POR_PAGINA) || 1;
-        const tabela = document.getElementById('tabela-processos-ciclo');
-        const msgVazio = document.getElementById('processos-vazio-filtro');
-        const paginacao = document.getElementById('paginacao-processos');
+    const paginadorUsuarios = criarPaginador({
+        rowSelector: '.usuario-row',
+        porPagina: 10,
+        tabelaId: 'tabela-todos-usuarios',
+        msgVazioId: 'usuarios-vazio-busca',
+        paginacaoId: 'paginacao-usuarios',
+        infoId: 'paginacao-usuarios-info',
+        paginasContainerId: 'paginacao-usuarios-paginas',
+        btnPrimeiraId: 'btn-usr-primeira',
+        btnAnteriorId: 'btn-usr-anterior',
+        btnProximaId: 'btn-usr-proxima',
+        btnUltimaId: 'btn-usr-ultima',
+        filtrarRows: (todas) => !usrBusca ? todas : todas.filter(r => r.dataset.nome.includes(usrBusca) || r.dataset.email.includes(usrBusca)),
+    });
 
-        if (total === 0) {
-            document.querySelectorAll('.processo-row').forEach(r => r.style.display = 'none');
-            if (tabela) tabela.classList.add('hidden');
-            if (msgVazio) msgVazio.classList.remove('hidden');
-            if (paginacao) paginacao.classList.add('hidden');
-            return;
-        }
+    const paginadorCiclos = criarPaginador({
+        rowSelector: '.ciclo-row',
+        porPagina: 5,
+        tabelaId: 'tabela-ciclos',
+        msgVazioId: 'ciclos-vazio-busca',
+        paginacaoId: 'paginacao-ciclos',
+        infoId: 'paginacao-ciclos-info',
+        paginasContainerId: 'paginacao-ciclos-paginas',
+        btnPrimeiraId: 'btn-ciclo-primeira',
+        btnAnteriorId: 'btn-ciclo-anterior',
+        btnProximaId: 'btn-ciclo-proxima',
+        btnUltimaId: 'btn-ciclo-ultima',
+        filtrarRows: (todas) => !cicloBusca ? todas : todas.filter(r => r.dataset.nome.includes(cicloBusca)),
+    });
 
-        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+    const paginadorCiclosArq = criarPaginador({
+        rowSelector: '.ciclo-arq-row',
+        porPagina: 5,
+        tabelaId: 'tabela-ciclos-arq',
+        msgVazioId: 'ciclos-arq-vazio-busca',
+        paginacaoId: 'paginacao-ciclos-arq',
+        infoId: 'paginacao-ciclos-arq-info',
+        paginasContainerId: 'paginacao-ciclos-arq-paginas',
+        btnPrimeiraId: 'btn-ciclo-arq-primeira',
+        btnAnteriorId: 'btn-ciclo-arq-anterior',
+        btnProximaId: 'btn-ciclo-arq-proxima',
+        btnUltimaId: 'btn-ciclo-arq-ultima',
+        filtrarRows: (todas) => !cicloArqBusca ? todas : todas.filter(r => r.dataset.nome.includes(cicloArqBusca)),
+    });
 
-        if (tabela) tabela.classList.remove('hidden');
-        if (msgVazio) msgVazio.classList.add('hidden');
-
-        const inicio = (paginaAtual - 1) * POR_PAGINA;
-        const fim = inicio + POR_PAGINA;
-
-        document.querySelectorAll('.processo-row').forEach(r => r.style.display = 'none');
-        rows.forEach((r, i) => { r.style.display = (i >= inicio && i < fim) ? '' : 'none'; });
-
-        if (paginacao) {
-            paginacao.classList.toggle('hidden', totalPaginas <= 1);
-
-            document.getElementById('paginacao-info').textContent =
-                'Exibindo ' + (inicio + 1) + '–' + Math.min(fim, total) + ' de ' + total;
-
-            document.getElementById('btn-primeira').disabled = paginaAtual === 1;
-            document.getElementById('btn-anterior').disabled = paginaAtual === 1;
-            document.getElementById('btn-proxima').disabled = paginaAtual === totalPaginas;
-            document.getElementById('btn-ultima').disabled = paginaAtual === totalPaginas;
-
-            const container = document.getElementById('paginacao-paginas');
-            container.innerHTML = '';
-            for (let p = 1; p <= totalPaginas; p++) {
-                const btn = document.createElement('button');
-                btn.textContent = p;
-                btn.className = p === paginaAtual
-                    ? 'w-7 h-7 text-[11px] font-bold rounded bg-tjgo-blue text-white'
-                    : 'w-7 h-7 text-[11px] font-bold rounded text-gray-500 hover:bg-gray-100 hover:text-tjgo-blue transition-colors';
-                btn.onclick = () => { paginaAtual = p; renderizarPaginacao(); };
-                container.appendChild(btn);
-            }
-        }
-    }
-
-    function mudarPagina(acao) {
-        const totalPaginas = Math.ceil(getRowsFiltradas().length / POR_PAGINA) || 1;
-        if (acao === 'primeira') paginaAtual = 1;
-        else if (acao === 'anterior' && paginaAtual > 1) paginaAtual--;
-        else if (acao === 'proxima' && paginaAtual < totalPaginas) paginaAtual++;
-        else if (acao === 'ultima') paginaAtual = totalPaginas;
-        renderizarPaginacao();
-    }
+    function mudarPagina(acao) { paginadorProcessos.mudarPagina(acao); }
+    function mudarPaginaUsuarios(acao) { paginadorUsuarios.mudarPagina(acao); }
+    function mudarPaginaCiclos(acao) { paginadorCiclos.mudarPagina(acao); }
+    function mudarPaginaCiclosArq(acao) { paginadorCiclosArq.mudarPagina(acao); }
 
     function filtrarProcessosPorCiclo(cicloId) {
         cicloFiltrado = cicloId;
-        paginaAtual = 1;
-        renderizarPaginacao();
-    }
-
-    const USR_POR_PAGINA = 10;
-    let usrPaginaAtual = 1;
-    let usrBusca = '';
-
-    function getUsuariosFiltrados() {
-        const todas = Array.from(document.querySelectorAll('.usuario-row'));
-        if (!usrBusca) return todas;
-        return todas.filter(r => r.dataset.nome.includes(usrBusca) || r.dataset.email.includes(usrBusca));
-    }
-
-    function renderizarPaginacaoUsuarios() {
-        const rows = getUsuariosFiltrados();
-        const total = rows.length;
-        const totalPaginas = Math.ceil(total / USR_POR_PAGINA) || 1;
-        const tabela = document.getElementById('tabela-todos-usuarios');
-        const msgVazio = document.getElementById('usuarios-vazio-busca');
-        const paginacao = document.getElementById('paginacao-usuarios');
-
-        if (total === 0) {
-            document.querySelectorAll('.usuario-row').forEach(r => r.style.display = 'none');
-            if (tabela) tabela.classList.add('hidden');
-            if (msgVazio) msgVazio.classList.remove('hidden');
-            if (paginacao) paginacao.classList.add('hidden');
-            return;
-        }
-
-        if (usrPaginaAtual > totalPaginas) usrPaginaAtual = totalPaginas;
-
-        if (tabela) tabela.classList.remove('hidden');
-        if (msgVazio) msgVazio.classList.add('hidden');
-
-        const inicio = (usrPaginaAtual - 1) * USR_POR_PAGINA;
-        const fim = inicio + USR_POR_PAGINA;
-
-        document.querySelectorAll('.usuario-row').forEach(r => r.style.display = 'none');
-        rows.forEach((r, i) => { r.style.display = (i >= inicio && i < fim) ? '' : 'none'; });
-
-        if (paginacao) {
-            paginacao.classList.toggle('hidden', totalPaginas <= 1);
-            document.getElementById('paginacao-usuarios-info').textContent =
-                'Exibindo ' + (inicio + 1) + '–' + Math.min(fim, total) + ' de ' + total;
-            document.getElementById('btn-usr-primeira').disabled = usrPaginaAtual === 1;
-            document.getElementById('btn-usr-anterior').disabled = usrPaginaAtual === 1;
-            document.getElementById('btn-usr-proxima').disabled = usrPaginaAtual === totalPaginas;
-            document.getElementById('btn-usr-ultima').disabled = usrPaginaAtual === totalPaginas;
-
-            const container = document.getElementById('paginacao-usuarios-paginas');
-            container.innerHTML = '';
-            for (let p = 1; p <= totalPaginas; p++) {
-                const btn = document.createElement('button');
-                btn.textContent = p;
-                btn.className = p === usrPaginaAtual
-                    ? 'w-7 h-7 text-[11px] font-bold rounded bg-tjgo-blue text-white'
-                    : 'w-7 h-7 text-[11px] font-bold rounded text-gray-500 hover:bg-gray-100 hover:text-tjgo-blue transition-colors';
-                btn.onclick = () => { usrPaginaAtual = p; renderizarPaginacaoUsuarios(); };
-                container.appendChild(btn);
-            }
-        }
-    }
-
-    function mudarPaginaUsuarios(acao) {
-        const totalPaginas = Math.ceil(getUsuariosFiltrados().length / USR_POR_PAGINA) || 1;
-        if (acao === 'primeira') usrPaginaAtual = 1;
-        else if (acao === 'anterior' && usrPaginaAtual > 1) usrPaginaAtual--;
-        else if (acao === 'proxima' && usrPaginaAtual < totalPaginas) usrPaginaAtual++;
-        else if (acao === 'ultima') usrPaginaAtual = totalPaginas;
-        renderizarPaginacaoUsuarios();
+        paginadorProcessos.resetar();
     }
 
     function filtrarUsuarios() {
         usrBusca = document.getElementById('busca-usuarios').value.toLowerCase().trim();
-        usrPaginaAtual = 1;
-        renderizarPaginacaoUsuarios();
-    }
-
-    const CICLO_POR_PAGINA = 5;
-    let cicloPaginaAtual = 1;
-    let cicloBusca = '';
-
-    function getCiclosFiltrados() {
-        const todas = Array.from(document.querySelectorAll('.ciclo-row'));
-        if (!cicloBusca) return todas;
-        return todas.filter(r => r.dataset.nome.includes(cicloBusca));
-    }
-
-    function renderizarPaginacaoCiclos() {
-        const rows = getCiclosFiltrados();
-        const total = rows.length;
-        const totalPaginas = Math.ceil(total / CICLO_POR_PAGINA) || 1;
-        const tabela = document.getElementById('tabela-ciclos');
-        const msgVazio = document.getElementById('ciclos-vazio-busca');
-        const paginacao = document.getElementById('paginacao-ciclos');
-
-        if (total === 0) {
-            document.querySelectorAll('.ciclo-row').forEach(r => r.style.display = 'none');
-            if (tabela) tabela.classList.add('hidden');
-            if (msgVazio) msgVazio.classList.remove('hidden');
-            if (paginacao) paginacao.classList.add('hidden');
-            return;
-        }
-
-        if (cicloPaginaAtual > totalPaginas) cicloPaginaAtual = totalPaginas;
-
-        if (tabela) tabela.classList.remove('hidden');
-        if (msgVazio) msgVazio.classList.add('hidden');
-
-        const inicio = (cicloPaginaAtual - 1) * CICLO_POR_PAGINA;
-        const fim = inicio + CICLO_POR_PAGINA;
-
-        document.querySelectorAll('.ciclo-row').forEach(r => r.style.display = 'none');
-        rows.forEach((r, i) => { r.style.display = (i >= inicio && i < fim) ? '' : 'none'; });
-
-        if (paginacao) {
-            paginacao.classList.toggle('hidden', totalPaginas <= 1);
-            document.getElementById('paginacao-ciclos-info').textContent =
-                'Exibindo ' + (inicio + 1) + '–' + Math.min(fim, total) + ' de ' + total;
-            document.getElementById('btn-ciclo-primeira').disabled = cicloPaginaAtual === 1;
-            document.getElementById('btn-ciclo-anterior').disabled = cicloPaginaAtual === 1;
-            document.getElementById('btn-ciclo-proxima').disabled = cicloPaginaAtual === totalPaginas;
-            document.getElementById('btn-ciclo-ultima').disabled = cicloPaginaAtual === totalPaginas;
-
-            const container = document.getElementById('paginacao-ciclos-paginas');
-            container.innerHTML = '';
-            for (let p = 1; p <= totalPaginas; p++) {
-                const btn = document.createElement('button');
-                btn.textContent = p;
-                btn.className = p === cicloPaginaAtual
-                    ? 'w-7 h-7 text-[11px] font-bold rounded bg-tjgo-blue text-white'
-                    : 'w-7 h-7 text-[11px] font-bold rounded text-gray-500 hover:bg-gray-100 hover:text-tjgo-blue transition-colors';
-                btn.onclick = () => { cicloPaginaAtual = p; renderizarPaginacaoCiclos(); };
-                container.appendChild(btn);
-            }
-        }
-    }
-
-    function mudarPaginaCiclos(acao) {
-        const totalPaginas = Math.ceil(getCiclosFiltrados().length / CICLO_POR_PAGINA) || 1;
-        if (acao === 'primeira') cicloPaginaAtual = 1;
-        else if (acao === 'anterior' && cicloPaginaAtual > 1) cicloPaginaAtual--;
-        else if (acao === 'proxima' && cicloPaginaAtual < totalPaginas) cicloPaginaAtual++;
-        else if (acao === 'ultima') cicloPaginaAtual = totalPaginas;
-        renderizarPaginacaoCiclos();
+        paginadorUsuarios.resetar();
     }
 
     function filtrarCiclos() {
         cicloBusca = document.getElementById('busca-ciclos').value.toLowerCase().trim();
-        cicloPaginaAtual = 1;
-        renderizarPaginacaoCiclos();
-    }
-
-    let cicloArqPaginaAtual = 1;
-    let cicloArqBusca = '';
-
-    function getCiclosArqFiltrados() {
-        const todas = Array.from(document.querySelectorAll('.ciclo-arq-row'));
-        if (!cicloArqBusca) return todas;
-        return todas.filter(r => r.dataset.nome.includes(cicloArqBusca));
-    }
-
-    function renderizarPaginacaoCiclosArq() {
-        const rows = getCiclosArqFiltrados();
-        const total = rows.length;
-        const totalPaginas = Math.ceil(total / CICLO_POR_PAGINA) || 1;
-        const tabela = document.getElementById('tabela-ciclos-arq');
-        const msgVazio = document.getElementById('ciclos-arq-vazio-busca');
-        const paginacao = document.getElementById('paginacao-ciclos-arq');
-
-        if (total === 0) {
-            document.querySelectorAll('.ciclo-arq-row').forEach(r => r.style.display = 'none');
-            if (tabela) tabela.classList.add('hidden');
-            if (msgVazio) msgVazio.classList.remove('hidden');
-            if (paginacao) paginacao.classList.add('hidden');
-            return;
-        }
-
-        if (cicloArqPaginaAtual > totalPaginas) cicloArqPaginaAtual = totalPaginas;
-
-        if (tabela) tabela.classList.remove('hidden');
-        if (msgVazio) msgVazio.classList.add('hidden');
-
-        const inicio = (cicloArqPaginaAtual - 1) * CICLO_POR_PAGINA;
-        const fim = inicio + CICLO_POR_PAGINA;
-
-        document.querySelectorAll('.ciclo-arq-row').forEach(r => r.style.display = 'none');
-        rows.forEach((r, i) => { r.style.display = (i >= inicio && i < fim) ? '' : 'none'; });
-
-        if (paginacao) {
-            paginacao.classList.toggle('hidden', totalPaginas <= 1);
-            document.getElementById('paginacao-ciclos-arq-info').textContent =
-                'Exibindo ' + (inicio + 1) + '–' + Math.min(fim, total) + ' de ' + total;
-            document.getElementById('btn-ciclo-arq-primeira').disabled = cicloArqPaginaAtual === 1;
-            document.getElementById('btn-ciclo-arq-anterior').disabled = cicloArqPaginaAtual === 1;
-            document.getElementById('btn-ciclo-arq-proxima').disabled = cicloArqPaginaAtual === totalPaginas;
-            document.getElementById('btn-ciclo-arq-ultima').disabled = cicloArqPaginaAtual === totalPaginas;
-
-            const container = document.getElementById('paginacao-ciclos-arq-paginas');
-            container.innerHTML = '';
-            for (let p = 1; p <= totalPaginas; p++) {
-                const btn = document.createElement('button');
-                btn.textContent = p;
-                btn.className = p === cicloArqPaginaAtual
-                    ? 'w-7 h-7 text-[11px] font-bold rounded bg-tjgo-blue text-white'
-                    : 'w-7 h-7 text-[11px] font-bold rounded text-gray-500 hover:bg-gray-100 hover:text-tjgo-blue transition-colors';
-                btn.onclick = () => { cicloArqPaginaAtual = p; renderizarPaginacaoCiclosArq(); };
-                container.appendChild(btn);
-            }
-        }
-    }
-
-    function mudarPaginaCiclosArq(acao) {
-        const totalPaginas = Math.ceil(getCiclosArqFiltrados().length / CICLO_POR_PAGINA) || 1;
-        if (acao === 'primeira') cicloArqPaginaAtual = 1;
-        else if (acao === 'anterior' && cicloArqPaginaAtual > 1) cicloArqPaginaAtual--;
-        else if (acao === 'proxima' && cicloArqPaginaAtual < totalPaginas) cicloArqPaginaAtual++;
-        else if (acao === 'ultima') cicloArqPaginaAtual = totalPaginas;
-        renderizarPaginacaoCiclosArq();
+        paginadorCiclos.resetar();
     }
 
     function filtrarCiclosArq() {
         cicloArqBusca = document.getElementById('busca-ciclos-arq').value.toLowerCase().trim();
-        cicloArqPaginaAtual = 1;
-        renderizarPaginacaoCiclosArq();
+        paginadorCiclosArq.resetar();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        if (document.querySelector('.processo-row')) renderizarPaginacao();
-        if (document.querySelector('.usuario-row')) renderizarPaginacaoUsuarios();
-        if (document.querySelector('.ciclo-row')) renderizarPaginacaoCiclos();
-        if (document.querySelector('.ciclo-arq-row')) renderizarPaginacaoCiclosArq();
+        if (document.querySelector('.processo-row')) paginadorProcessos.renderizar();
+        if (document.querySelector('.usuario-row')) paginadorUsuarios.renderizar();
+        if (document.querySelector('.ciclo-row')) paginadorCiclos.renderizar();
+        if (document.querySelector('.ciclo-arq-row')) paginadorCiclosArq.renderizar();
     });
 
     function toggleArquivados() {

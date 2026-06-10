@@ -6,13 +6,18 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import Http404
-from django.db.models import Q
+from django.db.models import Count, Q
 
 from usuarios.models import Usuario
 
 from ciclos.models import CicloSimulacao, StatusCiclo
 from processos.models import ProcessoJudicial
-from ciclos.permissions import pode_criar_ciclo, pode_editar_ciclo
+from ciclos.permissions import (
+    pode_criar_ciclo,
+    pode_editar_ciclo,
+    pode_ver_todos_ciclos,
+    pode_ver_ciclos_arquivados,
+)
 from .forms_admin_usuarios import AtualizarUsuarioForm
 from .permissions import tipos_que_pode_atribuir, pode_gerenciar_usuarios
 
@@ -83,7 +88,7 @@ def usuario_atualizar(request):
 
 @login_required
 def painel_administrativo(request):
-    if request.user.tipo_perfil_global not in (Usuario.TipoPerfilGlobal.ADMIN, Usuario.TipoPerfilGlobal.COORDENADOR, Usuario.TipoPerfilGlobal.PROFESSOR):
+    if not pode_gerenciar_usuarios(request.user):
         raise Http404()
 
     context = {
@@ -105,24 +110,26 @@ def painel_administrativo(request):
     if pode_criar_ciclo(request.user):
         context["status_ciclo_opcoes"] = StatusCiclo.objects.all()
 
-        tp = request.user.tipo_perfil_global
-        if tp in (Usuario.TipoPerfilGlobal.ADMIN, Usuario.TipoPerfilGlobal.COORDENADOR):
+        if pode_ver_todos_ciclos(request.user):
             context["ciclos"] = (
                 CicloSimulacao.objects
                 .select_related("status")
-                .prefetch_related("grupos")
-                .order_by("-data_criacao")
+                .annotate(num_grupos=Count("grupos"))
                 .filter(status__nome_status__in=["em andamento", "finalizado"])
+                .order_by("-data_criacao")
             )
-        elif tp == Usuario.TipoPerfilGlobal.PROFESSOR:
-            # so mostra os ciclos dos grupos que o professor é responsável
+        else:
             context["ciclos"] = (
                 CicloSimulacao.objects
                 .select_related("status")
-                .prefetch_related("grupos")
+                .annotate(num_grupos=Count("grupos"))
+                .filter(
+                    Q(coordenador=request.user) | Q(participantes=request.user),
+                    status__nome_status__in=["em andamento", "finalizado"],
+                )
                 .order_by("-data_criacao")
-                .filter(Q(coordenador=request.user) | Q(participantes=request.user), status__nome_status__in=["em andamento", "finalizado"])
-            ). distinct()
+                .distinct()
+            )
 
     if "ciclos" in context:
         context["ciclos_editaveis"] = frozenset(
@@ -131,17 +138,16 @@ def painel_administrativo(request):
             if pode_editar_ciclo(request.user, ciclo)
         )
 
-    if request.user.tipo_perfil_global in (Usuario.TipoPerfilGlobal.ADMIN, Usuario.TipoPerfilGlobal.COORDENADOR):
+    if pode_ver_ciclos_arquivados(request.user):
         context["ciclos_arquivados"] = (
             CicloSimulacao.objects
             .select_related("status", "coordenador")
-            .prefetch_related("grupos")
+            .annotate(num_grupos=Count("grupos"))
             .filter(status__nome_status="arquivado")
             .order_by("-data_criacao")
         )
 
-    tp = request.user.tipo_perfil_global
-    if tp in (Usuario.TipoPerfilGlobal.ADMIN, Usuario.TipoPerfilGlobal.COORDENADOR):
+    if pode_ver_todos_ciclos(request.user):
         ciclos_ativos_professor = list(
             CicloSimulacao.objects
             .filter(status__nome_status="em andamento")
