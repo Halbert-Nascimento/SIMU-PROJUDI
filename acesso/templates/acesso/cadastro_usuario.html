@@ -21,7 +21,7 @@
                     <i class="fa-solid fa-id-card mr-2 text-sm"></i> DADOS BÁSICOS DE ACESSO
                 </div>
                 <div class="p-5 text-[13px] leading-relaxed text-gray-800">
-                    <form method="post" class="space-y-3">
+                    <form method="post" novalidate class="space-y-3">
                         {% csrf_token %}
 
                         {% for field in form %}
@@ -127,6 +127,65 @@
         </aside>
     </div>
 </main>
+
+<script>
+(function () {
+    const EMAIL_REGEX = /^(?![0-9]+@)(?!.*\.\.)[a-z0-9][a-z0-9._\-]*(?<![._\-])@[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?)*\.[a-z]{2,}$/;
+    const NAME_REGEX  = /^[^\W\d_]+(?:[ '\-][^\W\d_]+)*$/u;
+
+    function showError(input, msg) {
+        removeError(input);
+        const p = document.createElement('p');
+        p.className = 'mt-1 text-xs text-[#b54a65] js-field-error';
+        p.textContent = msg;
+        input.closest('div').appendChild(p);
+    }
+
+    function removeError(input) {
+        const el = input.closest('div').querySelector('.js-field-error');
+        if (el) el.remove();
+    }
+
+    function validateEmail() {
+        const input = document.getElementById('id_email');
+        if (!input) return true;
+        const valid = EMAIL_REGEX.test(input.value.toLowerCase());
+        if (!valid) showError(input, 'E-mail inválido. Por favor, insira um endereço de e-mail válido.');
+        else removeError(input);
+        return valid;
+    }
+
+    function validateName() {
+        const input = document.getElementById('id_first_name');
+        if (!input) return true;
+        const valid = NAME_REGEX.test(input.value.trim());
+        if (!valid) showError(input, 'Nome inválido. Use apenas letras, espaços e hífens.');
+        else removeError(input);
+        return valid;
+    }
+
+    function attachValidation(id, validateFn) {
+        const input = document.getElementById(id);
+        if (!input) return;
+        input.addEventListener('blur', validateFn);
+        input.addEventListener('input', function () {
+            if (input.closest('div').querySelector('.js-field-error')) validateFn();
+        });
+    }
+
+    attachValidation('id_email',      validateEmail);
+    attachValidation('id_first_name', validateName);
+
+    const form = document.querySelector('form[novalidate]');
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            const emailOk = validateEmail();
+            const nameOk  = validateName();
+            if (!emailOk || !nameOk) e.preventDefault();
+        });
+    }
+})();
+</script>
 
 <script>
 (function(){

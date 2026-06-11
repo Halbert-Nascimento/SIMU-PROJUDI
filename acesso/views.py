@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth import login
 from django.contrib.auth import logout as auth_logout
 from django.shortcuts import redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from usuarios.forms import CadastroPublicoForm
@@ -26,7 +27,13 @@ def login_view(request):
         )
 
     if request.method == "POST" and form.is_valid():
-        login(request, form.get_user())
+        user = form.get_user()
+        penultimo_login = user.last_login
+        login(request, user)
+        if penultimo_login:
+            request.session['penultimo_login'] = penultimo_login.isoformat()
+        else:
+            request.session.pop('penultimo_login', None)
         logger.info("Login realizado com sucesso para usuario=%s", request.user.pk)
 
         # todo: redirecionar para pagina de acordo com perfil
@@ -53,6 +60,8 @@ def login_view(request):
 @require_POST
 def logout_view(request):
     auth_logout(request)
+    if request.POST.get('exp'):
+        return redirect(reverse('acesso:login') + '?exp=1')
     messages.success(request, "Você saiu com sucesso.")
     return redirect("acesso:login")
 

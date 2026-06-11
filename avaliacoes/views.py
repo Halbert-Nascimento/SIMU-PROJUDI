@@ -5,6 +5,9 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Avg, Count, Max
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+
+from base.breadcrumbs import home_breadcrumb
 
 from ciclos.models import GrupoTrabalho
 from processos.models import MovimentacaoProcessual
@@ -129,6 +132,11 @@ def avaliar_movimentacao(request, movimentacao_id):
             "feedback_origem": feedback_origem,
             "historico": historico,
             "media_notas": media_notas,
+            "breadcrumbs": [
+                home_breadcrumb(request.user),
+                {"label": f"Processo {processo.numero}", "url": reverse("processos:visualizar_processo", args=[processo.numero])},
+                {"label": "Avaliar Movimentação", "url": None},
+            ],
         },
     )
 
@@ -203,5 +211,9 @@ def minhas_notas(request):
             "media_geral": stats["media"],
             "melhor_nota": stats["melhor"],
             "ultima_avaliacao": ultima_avaliacao,
+            "breadcrumbs": [
+                home_breadcrumb(request.user),
+                {"label": "Minhas Notas", "url": None},
+            ],
         },
     )

@@ -109,18 +109,7 @@
 
 <main class="max-w-container mx-auto px-6 py-5">
 
-    <!-- Breadcrumbs -->
-    <nav class="text-[11px] text-texto-secundario mb-3 flex items-center gap-1" aria-label="Navegação">
-        <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-azul-primario">Área do Servidor</a>
-        <i class="fa-solid fa-chevron-right text-[9px]"></i>
-        {% if processo %}
-        <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="hover:underline text-azul-primario">
-            Processo {{ processo.numero }}
-        </a>
-        <i class="fa-solid fa-chevron-right text-[9px]"></i>
-        {% endif %}
-        <span class="text-texto-principal font-medium">Movimentar</span>
-    </nav>
+    {% include 'base/components/_breadcrumbs.html' %}
 
     <h2 class="text-azul-primario font-bold text-[20px] mb-4">&raquo; Movimentar Processo</h2>
 
