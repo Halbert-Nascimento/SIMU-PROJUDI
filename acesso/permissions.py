@@ -45,25 +45,3 @@ def tipos_que_pode_atribuir(ator: Usuario) -> set[str]:
         }
     
     return set()
-
-def pode_editar_ciclo(ator: Usuario, ciclo) -> bool:
-    """
-        Quem pode editar um ciclo.
-        - Admin pode editar qualquer ciclo.
-        - Coordenador pode editar qualquer ciclo.
-        - Professor pode editar os ciclos que é responsável.
-    """
-
-    if not ator.is_authenticated:
-        return False
-    
-    if ator.tipo_perfil_global == Usuario.TipoPerfilGlobal.ADMIN:
-        return True
-    
-    if ator.tipo_perfil_global == Usuario.TipoPerfilGlobal.COORDENADOR:
-        return True
-    
-    if ator.tipo_perfil_global == Usuario.TipoPerfilGlobal.PROFESSOR:
-        return ciclo.coordenador == ator.pk
-    
-    return False

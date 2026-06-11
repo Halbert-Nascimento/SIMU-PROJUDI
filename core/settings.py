@@ -66,6 +66,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'acesso.middleware.SessionActivityMiddleware',
+    'ciclos.middleware.CicloAtivoMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -80,6 +82,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'ciclos.context_processors.ciclo_ativo',
+                'base.context_processors.session_timeout',
             ],
         },
     },
@@ -126,6 +130,15 @@ LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
 # SESSION_COOKIE_HTTPONLY = True  # bloqueia acesso via document.cookie (XSS)
 # CSRF_COOKIE_SECURE = True       # csrftoken só via HTTPS
 
+# Configurações de sessão
+# Tempo de inatividade em segundos antes de expirar (lido do .env, padrão 900 s = 15 min)
+SESSION_COOKIE_AGE = env.int("SESSION_TIMEOUT_SECONDS", default=900)
+# Sessão expira ao fechar o navegador (segurança: sem sessões persistentes no browser)
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+# True  → toda requisição renova o timer (timeout conta a partir da ÚLTIMA atividade)
+# False → timer fixo desde o login (expira mesmo com o usuário ativo — não recomendado aqui)
+SESSION_SAVE_EVERY_REQUEST = True
+
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
@@ -153,8 +166,7 @@ MEDIA_URL = '/media/'
 PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')
 PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_authenticated'
 PRIVATE_STORAGE_SERVER = env('PRIVATE_STORAGE_SERVER', default='django')   # dev; em produção substituir por 'nginx' com X-Accel-Redirect
-PRIVATE_STORAGE_INTERNAL_URL = '/arquivos_privados/'
-
+# PRIVATE_STORAGE_INTERNAL_URL = '/arquivos_privados/' # necessário para nginx, mas não para django; ajustar conforme o servidor de arquivos privados
 
 # ─── Upload de Arquivos ───────────────────────────────────────────────────────
 UPLOAD_CONFIG = {

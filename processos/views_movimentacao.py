@@ -6,6 +6,9 @@ from django.core.exceptions import PermissionDenied
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
+
+from base.breadcrumbs import home_breadcrumb
 
 from .models import (
     DocumentoAnexado,
@@ -119,6 +122,11 @@ def movimentar_processo(request, numero):
         raise PermissionDenied
 
     ctx = _contexto_base(processo)
+    ctx["breadcrumbs"] = [
+        home_breadcrumb(request.user),
+        {"label": f"Processo {processo.numero}", "url": reverse("processos:visualizar_processo", args=[processo.numero])},
+        {"label": "Movimentar", "url": None},
+    ]
 
     if request.method == "POST":
         mov, erros = _salvar_movimentacao(request, processo, mov_origem=None)
@@ -168,6 +176,11 @@ def editar_movimentacao(request, numero, mov_id):
         "movimentacao_origem_id": mov_original.pk,
         "edicao_tipo_id":         mov_original.tipo_movimento_id,
         "edicao_descricao":       mov_original.descricao_evento,
+        "breadcrumbs": [
+            home_breadcrumb(request.user),
+            {"label": f"Processo {processo.numero}", "url": reverse("processos:visualizar_processo", args=[processo.numero])},
+            {"label": "Editar Movimentação", "url": None},
+        ],
     })
 
     if request.method == "POST":

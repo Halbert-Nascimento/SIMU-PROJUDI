@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
    
     <title>{% block title %}Simulador-Projudi{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon_io/favicon.ico' %}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'favicon_io/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
 
     <!-- Tailwind CSS para estilização idêntica -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -15,9 +19,11 @@
     <script src="{% static 'js/tailwind.config.global.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
 
-    {% block extra_head %}{% endblock %}
+    {% block extra_head %}{% endblock %}            
+    
 </head>
-<body class="text-tjgo-text-main font-sans text-sm antialiased flex flex-col min-h-screen">
+<body class="text-tjgo-text-main font-sans text-sm antialiased flex flex-col min-h-screen"
+      {% if user.is_authenticated %}data-session-timeout="{{ session_timeout_seconds }}"{% endif %}>
 
     <!-- Header / Barra Superior -->
     <header class="bg-tjgo-navy text-white h-[45px] sticky top-0 z-50">
@@ -28,8 +34,59 @@
             </div>
             <div class="flex items-center text-gray-200">
                 {% block header_saudacao %}
-                    
+                    {% if user.is_authenticated %}
+                        <span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
+                            <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> {{ user.tipo_perfil_global }} - {{ user.first_name }}
+                        </span>
+                    {% endif %}
                 {% endblock %}
+
+                {% if user.is_authenticated and ciclos_disponiveis %}
+                    {% if ciclos_disponiveis|length == 1 %}
+                        <span class="text-xs border-r border-gray-500 pr-4 pl-4 flex items-center gap-1 text-gray-300" title="Ciclo ativo">
+                            <i class="fa-solid fa-rotate text-gray-400"></i>
+                            {{ ciclo_ativo.nome_edicao }}
+                        </span>
+                    {% else %}
+                        <div class="relative border-r border-gray-500 pr-4 pl-4" id="ciclo-switcher">
+                            <button type="button"
+                                onclick="document.getElementById('ciclo-menu').classList.toggle('hidden')"
+                                class="text-xs flex items-center gap-1 text-gray-300 hover:text-white transition-colors"
+                                title="Trocar ciclo ativo">
+                                <i class="fa-solid fa-rotate text-gray-400"></i>
+                                {% if ciclo_ativo %}{{ ciclo_ativo.nome_edicao }}{% else %}Selecionar ciclo{% endif %}
+                                <i class="fa-solid fa-chevron-down text-[10px] ml-1"></i>
+                            </button>
+                            <div id="ciclo-menu"
+                                class="hidden absolute top-full right-0 mt-1 bg-white text-tjgo-text-main rounded shadow-lg min-w-[220px] z-50 py-1">
+                                {% for c in ciclos_disponiveis %}
+                                    <form method="post" action="{% url 'ciclos:ativar_ciclo' c.pk %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="next" value="{{ request.path }}">
+                                        <button type="submit"
+                                            class="w-full text-left px-4 py-2 text-xs hover:bg-gray-100 flex items-center gap-2 {% if ciclo_ativo.pk == c.pk %}font-bold text-tjgo-blue{% endif %}">
+                                            {% if ciclo_ativo.pk == c.pk %}
+                                                <i class="fa-solid fa-circle-dot text-tjgo-blue text-[10px]"></i>
+                                            {% else %}
+                                                <i class="fa-regular fa-circle text-gray-400 text-[10px]"></i>
+                                            {% endif %}
+                                            {{ c.nome_edicao }}
+                                        </button>
+                                    </form>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <script>
+                            document.addEventListener('click', function(e) {
+                                var sw = document.getElementById('ciclo-switcher');
+                                var menu = document.getElementById('ciclo-menu');
+                                if (sw && menu && !sw.contains(e.target)) {
+                                    menu.classList.add('hidden');
+                                }
+                            });
+                        </script>
+                    {% endif %}
+                {% endif %}
                 {% block header_acoes %}
                 <div class="flex items-center gap-1 border-r border-gray-500 pr-4">
                     <i class="fa-solid fa-circle-half-stroke top-bar-icon" title="Alto Contraste"></i>
@@ -63,6 +120,159 @@
     {% endblock %}
     </div>
     
+    <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('input[type="password"]').forEach(function (input) {
+            var parent = input.parentElement;
+            if (window.getComputedStyle(parent).position === 'static') {
+                parent.style.position = 'relative';
+            }
+            input.style.paddingRight = '2rem';
+
+            var btn = document.createElement('button');
+            btn.type = 'button';
+            btn.tabIndex = -1;
+            btn.setAttribute('aria-label', 'Mostrar/ocultar senha');
+            btn.style.cssText = 'position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:0;line-height:1;';
+
+            var icon = document.createElement('i');
+            icon.className = 'fa-solid fa-eye';
+            icon.style.cssText = 'font-size:0.875rem;color:#9ca3af;transition:color 0.15s;';
+            btn.appendChild(icon);
+
+            btn.addEventListener('mouseenter', function () { icon.style.color = '#1a5b9e'; });
+            btn.addEventListener('mouseleave', function () { icon.style.color = input.type === 'text' ? '#1a5b9e' : '#9ca3af'; });
+            btn.addEventListener('click', function () {
+                var showing = input.type === 'text';
+                input.type = showing ? 'password' : 'text';
+                icon.className = showing ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
+                icon.style.color = showing ? '#9ca3af' : '#1a5b9e';
+            });
+
+            parent.appendChild(btn);
+        });
+    });
+    </script>
+
+    {% if user.is_authenticated %}
+    <!-- Modal de sessão -->
+    <div id="session-modal" class="hidden fixed inset-0 z-[9999] bg-black/50">
+        <div class="flex items-center justify-center h-full w-full">
+        <div class="bg-white rounded shadow-xl w-full max-w-sm mx-4 overflow-hidden">
+            <div id="session-modal-header" class="bg-tjgo-navy text-white px-5 py-3 flex items-center gap-2 text-sm font-bold uppercase">
+                <i id="session-modal-icon" class="fa-solid fa-clock"></i>
+                <span id="session-modal-title">Sessão prestes a expirar</span>
+            </div>
+            <div class="px-5 py-4 text-sm text-gray-700 space-y-3">
+                <p id="session-modal-body">Sua sessão expirará em <strong id="session-countdown" class="text-tjgo-blue"></strong>. Deseja continuar?</p>
+                <div id="session-modal-actions" class="flex gap-2 pt-1">
+                    <button id="session-btn-continue"
+                        onclick="sessionTimer.extend()"
+                        class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                        Continuar sessão
+                    </button>
+                    <button onclick="sessionTimer.logout()"
+                        class="bg-tjgo-gray-card hover:bg-gray-300 text-tjgo-navy font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                        Sair agora
+                    </button>
+                </div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+    const sessionTimer = (function () {
+        const TIMEOUT   = parseInt(document.body.dataset.sessionTimeout || '900', 10);
+        const WARN_SECS = Math.min(120, Math.floor(TIMEOUT * 0.2)); // aviso nos últimos 20% ou 2 min
+
+        let remaining   = TIMEOUT;
+        let ticker      = null;
+        let warnShown   = false;  // impede showWarning() de re-renderizar a cada tick
+        let expireHandle = null;  // referência ao setTimeout de auto-logout
+
+        const modal     = document.getElementById('session-modal');
+        const title     = document.getElementById('session-modal-title');
+        const icon      = document.getElementById('session-modal-icon');
+        const body      = document.getElementById('session-modal-body');
+        const countdown = document.getElementById('session-countdown');
+        const actions   = document.getElementById('session-modal-actions');
+
+        function fmt(s) {
+            const m = Math.floor(s / 60);
+            const ss = String(s % 60).padStart(2, '0');
+            return m > 0 ? `${m}m ${ss}s` : `${ss}s`;
+        }
+
+        function showWarning() {
+            if (warnShown) return;  // já renderizado — só atualiza o contador
+            warnShown = true;
+            icon.className    = 'fa-solid fa-triangle-exclamation text-yellow-400';
+            title.textContent = 'Sessão prestes a expirar';
+            body.innerHTML    = `Sua sessão expirará em <strong id="session-countdown" class="text-tjgo-blue">${fmt(remaining)}</strong>. Deseja continuar?`;
+            actions.innerHTML = `
+                <button onclick="sessionTimer.extend()"
+                    class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                    Continuar sessão
+                </button>
+                <button onclick="sessionTimer.logout()"
+                    class="bg-tjgo-gray-card hover:bg-gray-300 text-tjgo-navy font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                    Sair agora
+                </button>`;
+            modal.classList.remove('hidden');
+        }
+
+        function showExpired() {
+            clearInterval(ticker);
+            if (expireHandle) { clearTimeout(expireHandle); expireHandle = null; }
+            icon.className    = 'fa-solid fa-circle-xmark text-red-400';
+            title.textContent = 'Sessão expirada';
+            body.innerHTML    = 'Sua sessão foi encerrada por inatividade. Faça login novamente para continuar.';
+            actions.innerHTML = `
+                <button onclick="sessionTimer.expire()"
+                    class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                    Fazer login
+                </button>`;
+            modal.classList.remove('hidden');
+            expireHandle = setTimeout(() => sessionTimer.expire(), 3000);
+        }
+
+        function tick() {
+            remaining -= 1;
+            const cd    = document.getElementById('session-countdown');
+            const debug = document.getElementById('session-debug-timer');
+            if (cd)    cd.textContent    = fmt(remaining);
+            if (debug) debug.textContent = fmt(remaining);
+
+            if (remaining <= 0)          { showExpired(); return; }
+            if (remaining <= WARN_SECS)  { showWarning(); }
+        }
+
+        // inicializa o display imediatamente (antes do primeiro tick de 1 s)
+        const debugEl = document.getElementById('session-debug-timer');
+        if (debugEl) debugEl.textContent = fmt(remaining);
+
+        ticker = setInterval(tick, 1000);
+
+        return {
+            extend: function () { window.location.reload(); },
+            logout: function () { document.getElementById('logout-form').requestSubmit(); },
+            expire: function () {
+                if (expireHandle) { clearTimeout(expireHandle); expireHandle = null; }
+                const form = document.getElementById('logout-form');
+                if (form.querySelector('[name="exp"]')) return; // já submetido
+                const input = document.createElement('input');
+                input.type  = 'hidden';
+                input.name  = 'exp';
+                input.value = '1';
+                form.appendChild(input);
+                form.requestSubmit();
+            },
+        };
+    })();
+    </script>
+    {% endif %}
+
     <!-- Rodapé -->
     <footer class="footer">
         <div class="footer-content">

@@ -1,10 +1,11 @@
 {% extends 'base/base.html' %}
 {% load static %}
 
-{% block title %}V0.2.0 - Painel de Gestão - Projudi{% endblock %}
+{% block title %}Painel de Gestão - Projudi{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/painel.css' %}">
+<script src="{% static 'js/paginador.js' %}"></script>
 {% endblock %}
 
 {% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
@@ -88,7 +89,16 @@
                     </div>
                     <div class="p-5 text-[13px] leading-relaxed text-gray-800 overflow-x-auto">
                         {% if ciclos %}
-                        <table class="w-full text-left border-collapse">
+                        <!-- Busca de ciclos -->
+                        <div class="mb-4 flex items-center gap-2">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                <input id="busca-ciclos" type="text" placeholder="Pesquisar ciclo por nome..."
+                                    oninput="filtrarCiclos()"
+                                    class="w-full border border-gray-300 pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                            </div>
+                        </div>
+                        <table class="w-full text-left border-collapse" id="tabela-ciclos">
                             <thead>
                                 <tr class="text-[11px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
                                     <th class="py-2 pr-3 pl-2">Edição / Semestre</th>
@@ -99,7 +109,8 @@
                             </thead>
                             <tbody>
                                 {% for ciclo in ciclos %}
-                                <tr class="border-b border-gray-100 text-sm hover:bg-blue-50/30 transition-colors">
+                                <tr class="ciclo-row border-b border-gray-100 text-sm hover:bg-blue-50/30 transition-colors"
+                                    data-nome="{{ ciclo.nome_edicao|lower }}">
                                     <td class="py-3 pr-3 pl-2">
                                         <span class="font-bold
                                             {% if ciclo.status.nome_status == 'em andamento' %}text-tjgo-blue
@@ -128,7 +139,7 @@
                                         </span>
                                         {% endif %}
                                     </td>
-                                    <td class="py-3 pr-3 font-semibold text-gray-700">{{ ciclo.grupos.count }} Grupo{{ ciclo.grupos.count|pluralize }}</td>
+                                    <td class="py-3 pr-3 font-semibold text-gray-700">{{ ciclo.num_grupos }} Grupo{{ ciclo.num_grupos|pluralize }}</td>
                                     <td class="py-3 pr-3 align-middle">
                                         <div class="flex justify-end items-center gap-3">
                                             <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
@@ -152,8 +163,105 @@
                                 {% endfor %}
                             </tbody>
                         </table>
+                        <p id="ciclos-vazio-busca" class="text-sm text-gray-400 italic text-center py-6 hidden">Nenhum ciclo encontrado para esta pesquisa.</p>
+                        <div id="paginacao-ciclos" class="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between hidden">
+                            <span id="paginacao-ciclos-info" class="text-[11px] text-gray-400"></span>
+                            <div class="flex items-center gap-1">
+                                <button onclick="mudarPaginaCiclos('primeira')" id="btn-ciclo-primeira" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                    <i class="fa-solid fa-angles-left"></i>
+                                </button>
+                                <button onclick="mudarPaginaCiclos('anterior')" id="btn-ciclo-anterior" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                    <i class="fa-solid fa-angle-left"></i>
+                                </button>
+                                <span id="paginacao-ciclos-paginas" class="flex items-center gap-1"></span>
+                                <button onclick="mudarPaginaCiclos('proxima')" id="btn-ciclo-proxima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                    <i class="fa-solid fa-angle-right"></i>
+                                </button>
+                                <button onclick="mudarPaginaCiclos('ultima')" id="btn-ciclo-ultima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                    <i class="fa-solid fa-angles-right"></i>
+                                </button>
+                            </div>
+                        </div>
                         {% else %}
                         <p class="text-sm text-gray-400 italic text-center py-6">Nenhum ciclo de simulação cadastrado.</p>
+                        {% endif %}
+
+                        {% if ciclos_arquivados %}
+                        <!-- Separador + Toggle Arquivados -->
+                        <div class="mt-4 border-t border-gray-200 pt-3">
+                            <button type="button" onclick="toggleArquivados()" id="btn-toggle-arquivados"
+                                class="flex items-center gap-2 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue transition-colors uppercase">
+                                <i id="icon-arquivados" class="fa-solid fa-chevron-right text-[9px] transition-transform duration-200"></i>
+                                <i class="fa-solid fa-box-archive text-xs"></i>
+                                Ciclos Arquivados
+                                <span class="bg-gray-200 text-gray-600 text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-1">{{ ciclos_arquivados|length }}</span>
+                            </button>
+                            <div id="secao-arquivados" class="hidden mt-3">
+                                <!-- Busca de ciclos arquivados -->
+                                <div class="mb-3 flex items-center gap-2">
+                                    <div class="relative flex-1">
+                                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                                        <input id="busca-ciclos-arq" type="text" placeholder="Pesquisar ciclo arquivado por nome..."
+                                            oninput="filtrarCiclosArq()"
+                                            class="w-full border border-gray-300 pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                                    </div>
+                                </div>
+                                <table class="w-full text-left border-collapse" id="tabela-ciclos-arq">
+                                    <thead>
+                                        <tr class="text-[11px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
+                                            <th class="py-2 pr-3 pl-2">Edição / Semestre</th>
+                                            <th class="py-2 pr-3">Status</th>
+                                            <th class="py-2 pr-3">Grupos</th>
+                                            <th class="py-2 pr-3 text-right">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ciclo in ciclos_arquivados %}
+                                        <tr class="ciclo-arq-row border-b border-gray-100 text-sm hover:bg-gray-50 transition-colors opacity-75"
+                                            data-nome="{{ ciclo.nome_edicao|lower }}">
+                                            <td class="py-3 pr-3 pl-2">
+                                                <span class="font-bold text-gray-400">{{ ciclo.nome_edicao }}</span>
+                                                <span class="block text-[10px] text-gray-400 mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %} - Responsável: {{ ciclo.coordenador.first_name|capfirst }}</span>
+                                            </td>
+                                            <td class="py-3 pr-3">
+                                                <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 border border-gray-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>{{ ciclo.status }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3 pr-3 font-semibold text-gray-500">{{ ciclo.num_grupos }} Grupo{{ ciclo.num_grupos|pluralize }}</td>
+                                            <td class="py-3 pr-3 align-middle">
+                                                <div class="flex justify-end items-center gap-3">
+                                                    <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
+                                                       class="text-gray-500 text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
+                                                        <i class="fa-solid fa-eye"></i> Visualizar
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                <p id="ciclos-arq-vazio-busca" class="text-sm text-gray-400 italic text-center py-6 hidden">Nenhum ciclo arquivado encontrado para esta pesquisa.</p>
+                                <div id="paginacao-ciclos-arq" class="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between hidden">
+                                    <span id="paginacao-ciclos-arq-info" class="text-[11px] text-gray-400"></span>
+                                    <div class="flex items-center gap-1">
+                                        <button onclick="mudarPaginaCiclosArq('primeira')" id="btn-ciclo-arq-primeira" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                            <i class="fa-solid fa-angles-left"></i>
+                                        </button>
+                                        <button onclick="mudarPaginaCiclosArq('anterior')" id="btn-ciclo-arq-anterior" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                            <i class="fa-solid fa-angle-left"></i>
+                                        </button>
+                                        <span id="paginacao-ciclos-arq-paginas" class="flex items-center gap-1"></span>
+                                        <button onclick="mudarPaginaCiclosArq('proxima')" id="btn-ciclo-arq-proxima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                            <i class="fa-solid fa-angle-right"></i>
+                                        </button>
+                                        <button onclick="mudarPaginaCiclosArq('ultima')" id="btn-ciclo-arq-ultima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                                            <i class="fa-solid fa-angles-right"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {% endif %}
                     </div>
                 </div>
@@ -167,10 +275,10 @@
                         {% if ciclos_ativos_professor|length > 1 %}
                         <select id="filtro-ciclo-processos" onchange="filtrarProcessosPorCiclo(this.value)"
                             class="bg-[#1e5894] text-white text-[11px] font-bold border border-white/30 rounded-sm px-2 py-1 focus:outline-none cursor-pointer">
-                            <option value="todos">Todos os ciclos</option>
                             {% for c in ciclos_ativos_professor %}
-                            <option value="{{ c.pk }}">{{ c.nome_edicao }}</option>
+                            <option value="{{ c.pk }}" {% if forloop.first %}selected{% endif %}>{{ c.nome_edicao }}</option>
                             {% endfor %}
+                            <option value="todos">Todos os ciclos</option>
                         </select>
                         {% elif ciclos_ativos_professor|length == 1 %}
                         <span class="text-[10px] font-normal opacity-80">{{ ciclos_ativos_professor.0.nome_edicao }}</span>
@@ -344,6 +452,7 @@
 
             <!-- Aba: Pendentes -->
             <div id="tab-pendentes" class="p-5">
+                {% if usuarios_pendentes_count %}
                 <table class="w-full text-left border-collapse">
                     <thead>
                         <tr class="text-[10px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
@@ -370,16 +479,30 @@
                                 </button>
                             </td>
                         </tr>
-                        {% endif %}{% empty %}
-                        <tr><td colspan="4" class="py-8 text-center text-sm text-gray-400 italic">Nenhum cadastro pendente de aprovação.</td></tr>
-                        {% endfor %}
+                        {% endif %}{% endfor %}
                     </tbody>
                 </table>
+                {% else %}
+                <div class="py-10 text-center">
+                    <i class="fa-solid fa-circle-check text-green-400 text-3xl mb-3"></i>
+                    <p class="text-sm text-gray-500 font-medium">Nenhum cadastro pendente de aprovação.</p>
+                    <p class="text-[11px] text-gray-400 mt-1">Todos os usuários já foram analisados.</p>
+                </div>
+                {% endif %}
             </div>
 
             <!-- Aba: Todos -->
             <div id="tab-todos" class="p-5 hidden">
-                <table class="w-full text-left border-collapse">
+                <!-- Busca -->
+                <div class="mb-4 flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+                        <input id="busca-usuarios" type="text" placeholder="Pesquisar por nome ou email..."
+                            oninput="filtrarUsuarios()"
+                            class="w-full border border-gray-300 pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                    </div>
+                </div>
+                <table class="w-full text-left border-collapse" id="tabela-todos-usuarios">
                     <thead>
                         <tr class="text-[10px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
                             <th class="py-2 pr-3 pl-2">Usuário</th>
@@ -391,7 +514,9 @@
                     </thead>
                     <tbody>
                         {% for u in usuarios %}
-                        <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors">
+                        <tr class="usuario-row border-b border-gray-100 hover:bg-blue-50/30 transition-colors"
+                            data-nome="{{ u.username|lower }} {{ u.get_full_name|lower }}"
+                            data-email="{{ u.email|lower }}">
                             <td class="py-2.5 pr-3 pl-2">
                                 <span class="font-bold text-tjgo-navy text-xs block">{{ u.username }}</span>
                                 <span class="text-[10px] text-gray-500">{{ u.get_full_name }}</span>
@@ -418,6 +543,25 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <p id="usuarios-vazio-busca" class="text-sm text-gray-400 italic text-center py-6 hidden">Nenhum usuário encontrado para esta pesquisa.</p>
+                <div id="paginacao-usuarios" class="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between hidden">
+                    <span id="paginacao-usuarios-info" class="text-[11px] text-gray-400"></span>
+                    <div class="flex items-center gap-1">
+                        <button onclick="mudarPaginaUsuarios('primeira')" id="btn-usr-primeira" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Primeira página">
+                            <i class="fa-solid fa-angles-left"></i>
+                        </button>
+                        <button onclick="mudarPaginaUsuarios('anterior')" id="btn-usr-anterior" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Anterior">
+                            <i class="fa-solid fa-angle-left"></i>
+                        </button>
+                        <span id="paginacao-usuarios-paginas" class="flex items-center gap-1"></span>
+                        <button onclick="mudarPaginaUsuarios('proxima')" id="btn-usr-proxima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Próxima">
+                            <i class="fa-solid fa-angle-right"></i>
+                        </button>
+                        <button onclick="mudarPaginaUsuarios('ultima')" id="btn-usr-ultima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Última página">
+                            <i class="fa-solid fa-angles-right"></i>
+                        </button>
+                    </div>
+                </div>
             </div>
 
         </div>
@@ -549,86 +693,114 @@
 {% endif %}
 
 <script>
-    const POR_PAGINA = 4;
-    let paginaAtual = 1;
     let cicloFiltrado = 'todos';
+    let usrBusca = '';
+    let cicloBusca = '';
+    let cicloArqBusca = '';
 
-    function getRowsFiltradas() {
-        const todas = Array.from(document.querySelectorAll('.processo-row'));
-        if (cicloFiltrado === 'todos') return todas;
-        return todas.filter(r => r.dataset.cicloId === cicloFiltrado);
-    }
+    (function() {
+        const sel = document.getElementById('filtro-ciclo-processos');
+        if (sel) cicloFiltrado = sel.value;
+    })();
 
-    function renderizarPaginacao() {
-        const rows = getRowsFiltradas();
-        const total = rows.length;
-        const totalPaginas = Math.ceil(total / POR_PAGINA) || 1;
-        const tabela = document.getElementById('tabela-processos-ciclo');
-        const msgVazio = document.getElementById('processos-vazio-filtro');
-        const paginacao = document.getElementById('paginacao-processos');
+    const paginadorProcessos = criarPaginador({
+        rowSelector: '.processo-row',
+        porPagina: 4,
+        tabelaId: 'tabela-processos-ciclo',
+        msgVazioId: 'processos-vazio-filtro',
+        paginacaoId: 'paginacao-processos',
+        infoId: 'paginacao-info',
+        paginasContainerId: 'paginacao-paginas',
+        btnPrimeiraId: 'btn-primeira',
+        btnAnteriorId: 'btn-anterior',
+        btnProximaId: 'btn-proxima',
+        btnUltimaId: 'btn-ultima',
+        filtrarRows: (todas) => cicloFiltrado === 'todos' ? todas : todas.filter(r => r.dataset.cicloId === cicloFiltrado),
+    });
 
-        if (total === 0) {
-            document.querySelectorAll('.processo-row').forEach(r => r.style.display = 'none');
-            if (tabela) tabela.classList.add('hidden');
-            if (msgVazio) msgVazio.classList.remove('hidden');
-            if (paginacao) paginacao.classList.add('hidden');
-            return;
-        }
+    const paginadorUsuarios = criarPaginador({
+        rowSelector: '.usuario-row',
+        porPagina: 10,
+        tabelaId: 'tabela-todos-usuarios',
+        msgVazioId: 'usuarios-vazio-busca',
+        paginacaoId: 'paginacao-usuarios',
+        infoId: 'paginacao-usuarios-info',
+        paginasContainerId: 'paginacao-usuarios-paginas',
+        btnPrimeiraId: 'btn-usr-primeira',
+        btnAnteriorId: 'btn-usr-anterior',
+        btnProximaId: 'btn-usr-proxima',
+        btnUltimaId: 'btn-usr-ultima',
+        filtrarRows: (todas) => !usrBusca ? todas : todas.filter(r => r.dataset.nome.includes(usrBusca) || r.dataset.email.includes(usrBusca)),
+    });
 
-        if (paginaAtual > totalPaginas) paginaAtual = totalPaginas;
+    const paginadorCiclos = criarPaginador({
+        rowSelector: '.ciclo-row',
+        porPagina: 5,
+        tabelaId: 'tabela-ciclos',
+        msgVazioId: 'ciclos-vazio-busca',
+        paginacaoId: 'paginacao-ciclos',
+        infoId: 'paginacao-ciclos-info',
+        paginasContainerId: 'paginacao-ciclos-paginas',
+        btnPrimeiraId: 'btn-ciclo-primeira',
+        btnAnteriorId: 'btn-ciclo-anterior',
+        btnProximaId: 'btn-ciclo-proxima',
+        btnUltimaId: 'btn-ciclo-ultima',
+        filtrarRows: (todas) => !cicloBusca ? todas : todas.filter(r => r.dataset.nome.includes(cicloBusca)),
+    });
 
-        if (tabela) tabela.classList.remove('hidden');
-        if (msgVazio) msgVazio.classList.add('hidden');
+    const paginadorCiclosArq = criarPaginador({
+        rowSelector: '.ciclo-arq-row',
+        porPagina: 5,
+        tabelaId: 'tabela-ciclos-arq',
+        msgVazioId: 'ciclos-arq-vazio-busca',
+        paginacaoId: 'paginacao-ciclos-arq',
+        infoId: 'paginacao-ciclos-arq-info',
+        paginasContainerId: 'paginacao-ciclos-arq-paginas',
+        btnPrimeiraId: 'btn-ciclo-arq-primeira',
+        btnAnteriorId: 'btn-ciclo-arq-anterior',
+        btnProximaId: 'btn-ciclo-arq-proxima',
+        btnUltimaId: 'btn-ciclo-arq-ultima',
+        filtrarRows: (todas) => !cicloArqBusca ? todas : todas.filter(r => r.dataset.nome.includes(cicloArqBusca)),
+    });
 
-        const inicio = (paginaAtual - 1) * POR_PAGINA;
-        const fim = inicio + POR_PAGINA;
-
-        document.querySelectorAll('.processo-row').forEach(r => r.style.display = 'none');
-        rows.forEach((r, i) => { r.style.display = (i >= inicio && i < fim) ? '' : 'none'; });
-
-        if (paginacao) {
-            paginacao.classList.toggle('hidden', totalPaginas <= 1);
-
-            document.getElementById('paginacao-info').textContent =
-                'Exibindo ' + (inicio + 1) + '–' + Math.min(fim, total) + ' de ' + total;
-
-            document.getElementById('btn-primeira').disabled = paginaAtual === 1;
-            document.getElementById('btn-anterior').disabled = paginaAtual === 1;
-            document.getElementById('btn-proxima').disabled = paginaAtual === totalPaginas;
-            document.getElementById('btn-ultima').disabled = paginaAtual === totalPaginas;
-
-            const container = document.getElementById('paginacao-paginas');
-            container.innerHTML = '';
-            for (let p = 1; p <= totalPaginas; p++) {
-                const btn = document.createElement('button');
-                btn.textContent = p;
-                btn.className = p === paginaAtual
-                    ? 'w-7 h-7 text-[11px] font-bold rounded bg-tjgo-blue text-white'
-                    : 'w-7 h-7 text-[11px] font-bold rounded text-gray-500 hover:bg-gray-100 hover:text-tjgo-blue transition-colors';
-                btn.onclick = () => { paginaAtual = p; renderizarPaginacao(); };
-                container.appendChild(btn);
-            }
-        }
-    }
-
-    function mudarPagina(acao) {
-        const totalPaginas = Math.ceil(getRowsFiltradas().length / POR_PAGINA) || 1;
-        if (acao === 'primeira') paginaAtual = 1;
-        else if (acao === 'anterior' && paginaAtual > 1) paginaAtual--;
-        else if (acao === 'proxima' && paginaAtual < totalPaginas) paginaAtual++;
-        else if (acao === 'ultima') paginaAtual = totalPaginas;
-        renderizarPaginacao();
-    }
+    function mudarPagina(acao) { paginadorProcessos.mudarPagina(acao); }
+    function mudarPaginaUsuarios(acao) { paginadorUsuarios.mudarPagina(acao); }
+    function mudarPaginaCiclos(acao) { paginadorCiclos.mudarPagina(acao); }
+    function mudarPaginaCiclosArq(acao) { paginadorCiclosArq.mudarPagina(acao); }
 
     function filtrarProcessosPorCiclo(cicloId) {
         cicloFiltrado = cicloId;
-        paginaAtual = 1;
-        renderizarPaginacao();
+        paginadorProcessos.resetar();
+    }
+
+    function filtrarUsuarios() {
+        usrBusca = document.getElementById('busca-usuarios').value.toLowerCase().trim();
+        paginadorUsuarios.resetar();
+    }
+
+    function filtrarCiclos() {
+        cicloBusca = document.getElementById('busca-ciclos').value.toLowerCase().trim();
+        paginadorCiclos.resetar();
+    }
+
+    function filtrarCiclosArq() {
+        cicloArqBusca = document.getElementById('busca-ciclos-arq').value.toLowerCase().trim();
+        paginadorCiclosArq.resetar();
     }
 
     document.addEventListener('DOMContentLoaded', () => {
-        if (document.querySelector('.processo-row')) renderizarPaginacao();
+        if (document.querySelector('.processo-row')) paginadorProcessos.renderizar();
+        if (document.querySelector('.usuario-row')) paginadorUsuarios.renderizar();
+        if (document.querySelector('.ciclo-row')) paginadorCiclos.renderizar();
+        if (document.querySelector('.ciclo-arq-row')) paginadorCiclosArq.renderizar();
     });
+
+    function toggleArquivados() {
+        const secao = document.getElementById('secao-arquivados');
+        const icon = document.getElementById('icon-arquivados');
+        secao.classList.toggle('hidden');
+        icon.style.transform = secao.classList.contains('hidden') ? '' : 'rotate(90deg)';
+    }
 
     function openModal(modalId) {
         const modal = document.getElementById(modalId);
