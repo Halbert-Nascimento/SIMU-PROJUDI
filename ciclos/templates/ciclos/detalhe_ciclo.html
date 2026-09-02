@@ -1,4 +1,6 @@
-{% extends 'base/base.html' %}
+{% extends 'base/layouts/layout_admin.html' %}
+{% load ui %}
+{% load ciclos_ui %}
 {% load static %}
 
 {% block title %}Detalhes — {{ ciclo.nome_edicao }} - Projudi{% endblock %}
@@ -9,15 +11,6 @@
 
 {% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
 
-{% block header_saudacao %}
-<a href="#" class="relative mr-6 text-gray-200 hover:text-white transition-colors" title="Notificações do Sistema">
-    <i class="fa-solid fa-bell text-lg"></i>
-    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full border border-tjgo-navy flex items-center justify-center leading-none">3</span>
-</a>
-<span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
-    <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> Olá, {{ user.tipo_perfil_global }} - {{ user.first_name }}
-</span>
-{% endblock %}
 
 {% block content %}
 <main class="main-container px-10 py-8 mt-10">
@@ -39,20 +32,14 @@
                 {{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}
                 {% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %}
                 &nbsp;·&nbsp;
-                <span class="inline-flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full
-                        {% if ciclo.status.nome_status == 'em andamento' %}bg-green-500
-                        {% elif ciclo.status.nome_status == 'finalizado' %}bg-[#1a5b9e]
-                        {% else %}bg-gray-400{% endif %} inline-block"></span>
-                    {{ ciclo.status.nome_status|capfirst }}
-                </span>
+                {% ponto_status_ciclo ciclo.status %}
                 &nbsp;·&nbsp; Responsável: <strong>{{ ciclo.coordenador.get_full_name|default:ciclo.coordenador.username }}</strong>
             </p>
         </div>
         <div class="flex gap-2 mt-6 shrink-0">
             {% if pode_editar %}
             <a href="{% url 'ciclos:editar_ciclo' ciclo.pk %}"
-                class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-2 px-4 text-xs rounded shadow-sm transition-colors uppercase flex items-center gap-2">
+                class="{% classe_botao 'primario' %} py-2 px-4 text-xs uppercase flex items-center gap-2">
                 <i class="fa-solid fa-pen"></i> Editar Ciclo
             </a>
             {% endif %}
@@ -92,11 +79,7 @@
     </div>
 
     <!-- Tabela de Grupos -->
-    <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
-        <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
-            <i class="fa-solid fa-layer-group mr-2 text-sm"></i> Grupos de Trabalho ({{ grupos|length }})
-        </div>
-        <div class="p-5">
+    {% card titulo="Grupos de Trabalho ({{ grupos|length }})" icone="fa-layer-group" classe_corpo="p-5" %}
             {% if grupos %}
             <table class="w-full text-left border-collapse">
                 <thead>
@@ -143,10 +126,9 @@
                 </tbody>
             </table>
             {% else %}
-            <p class="text-sm text-gray-400 italic text-center py-8">Nenhum grupo criado neste ciclo.</p>
+            {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum grupo criado neste ciclo." padding="py-8" only %}
             {% endif %}
-        </div>
-    </div>
+        {% endcard %}
 
 </main>
 {% endblock %}

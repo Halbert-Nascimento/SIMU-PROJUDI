@@ -10,6 +10,8 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from base.breadcrumbs import home_breadcrumb
+from base.decorators import exige_permissao
+from base.mensagens import propagar_erros_form
 
 from usuarios.models import Usuario
 
@@ -20,10 +22,8 @@ from .permissions import pode_criar_ciclo, pode_editar_ciclo, pode_gerenciar_gru
 
 
 @login_required
+@exige_permissao(pode_criar_ciclo)
 def criar_ciclo(request):
-    if not pode_criar_ciclo(request.user):
-        raise Http404()
-
     if request.method != "POST":
         raise Http404()
 
@@ -41,9 +41,7 @@ def criar_ciclo(request):
         ciclo.save()
         messages.success(request, f'Ciclo "{ciclo.nome_edicao}" criado com sucesso.')
     else:
-        for erros in form.errors.values():
-            for erro in erros:
-                messages.error(request, erro, extra_tags="ciclo")
+        propagar_erros_form(request, form, extra_tags="ciclo")
 
     return redirect("acesso:painel_administrativo")
 
@@ -68,9 +66,7 @@ def editar_ciclo(request, ciclo_id):
             messages.success(request, f'Ciclo "{ciclo_salvo.nome_edicao}" atualizado com sucesso.')
             return redirect("acesso:painel_administrativo")
         else:
-            for erros in form.errors.values():
-                for erro in erros:
-                    messages.error(request, erro)
+            propagar_erros_form(request, form)
     else:
         form = CicloSimulacaoForm(instance=ciclo, ator=request.user)
 
@@ -87,6 +83,7 @@ def editar_ciclo(request, ciclo_id):
 
 
 @login_required
+@exige_permissao(pode_criar_ciclo)
 def detalhe_ciclo(request, ciclo_id):
     ciclo = get_object_or_404(
         CicloSimulacao.objects
@@ -94,9 +91,6 @@ def detalhe_ciclo(request, ciclo_id):
         .prefetch_related("grupos__cargo_simulacao", "grupos__membros"),
         pk=ciclo_id,
     )
-
-    if not pode_criar_ciclo(request.user):
-        raise Http404()
 
     tp = request.user.tipo_perfil_global
     if tp == Usuario.TipoPerfilGlobal.PROFESSOR:
@@ -201,9 +195,7 @@ def gerenciar_grupos(request, ciclo_id):
             return redirect("ciclos:gerenciar_grupos", ciclo_id=ciclo.pk)
         else:
             reabrir_modal = True
-            for erros in form.errors.values():
-                for erro in erros:
-                    messages.error(request, erro, extra_tags="grupo")
+            propagar_erros_form(request, form, extra_tags="grupo")
 
     return render(request, "ciclos/gerenciar_grupos.html", {
         "ciclo": ciclo,

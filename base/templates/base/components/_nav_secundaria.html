@@ -1,0 +1,34 @@
+{% comment %}
+Renderizado pela tag {% templatetag openblock %} nav_secundaria {% templatetag closeblock %} — ver base/templatetags/ui.py.
+Os itens variam por perfil; antes isso era um {% templatetag openblock %} if {% templatetag closeblock %} copiado em cada template.
+{% endcomment %}
+<nav class="bg-fundo-caixa border-b border-borda sticky top-[45px] z-40">
+    <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
+        <div class="flex items-center gap-5">
+            {% if e_aluno %}
+            <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-texto-principal font-medium">Página Inicial</a>
+            <div class="relative group">
+                <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
+                <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
+                    <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
+                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
+                </div>
+            </div>
+            <a href="#" class="hover:underline text-texto-principal font-medium">Audiências</a>
+            <a href="{% url 'avaliacoes:minhas_notas' %}" class="hover:underline text-texto-principal font-medium">Minhas Notas</a>
+            {% else %}
+            <a href="{% url 'acesso:painel_administrativo' %}" class="hover:underline text-texto-principal font-medium">Página Inicial</a>
+            {% endif %}
+
+            {% if voltar_url %}
+            <a href="{{ voltar_url }}" class="hover:underline text-azul-primario font-medium">{{ voltar_label|default:"Voltar" }}</a>
+            {% endif %}
+        </div>
+        {% if e_aluno %}
+        <div class="flex items-center gap-1 text-texto-secundario">
+            <i class="fas fa-times text-[11px]"></i>
+            <span>29:53</span>
+        </div>
+        {% endif %}
+    </div>
+</nav>

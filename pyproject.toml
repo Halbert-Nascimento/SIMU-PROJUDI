@@ -33,6 +33,7 @@ build-backend = "hatchling.build"
 packages = [
     "acesso",
     "agendamentos",
+    "avaliacoes",
     "base",
     "ciclos",
     "core",

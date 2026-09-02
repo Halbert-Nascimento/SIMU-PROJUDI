@@ -8,6 +8,9 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.http import Http404
 from django.db.models import Count, Q
 
+from base.decorators import exige_permissao
+from base.mensagens import propagar_erros_form
+
 from usuarios.models import Usuario
 
 from ciclos.models import CicloSimulacao, StatusCiclo
@@ -24,13 +27,8 @@ from .permissions import tipos_que_pode_atribuir, pode_gerenciar_usuarios
 
 
 @login_required
+@exige_permissao(pode_gerenciar_usuarios, tipos_que_pode_atribuir)
 def usuario_lista(request):
-    if not pode_gerenciar_usuarios(request.user):
-        raise Http404()
-
-    if not tipos_que_pode_atribuir(request.user):
-        raise Http404()
-
     usuarios = Usuario.objects.order_by("is_active", "tipo_perfil_global", "username")
     tipos_permitidos = tipos_que_pode_atribuir(request.user)
     tipos_opcoes = [
@@ -50,14 +48,9 @@ def usuario_lista(request):
 
 
 @login_required
+@exige_permissao(pode_gerenciar_usuarios, tipos_que_pode_atribuir)
 def usuario_atualizar(request):
     if request.method != "POST":
-        raise Http404()
-
-    if not pode_gerenciar_usuarios(request.user):
-        raise Http404()
-
-    if not tipos_que_pode_atribuir(request.user):
         raise Http404()
 
     user_id = request.POST.get("user_id")
@@ -76,9 +69,7 @@ def usuario_atualizar(request):
         form.aplicar()
         messages.success(request, "Usuario atualizado com sucesso.", extra_tags="usuario")
     else:
-        for erros in form.errors.values():
-            for erro in erros:
-                messages.error(request, erro, extra_tags="usuario")
+        propagar_erros_form(request, form, extra_tags="usuario")
 
     next_url = request.POST.get("next", "")
     if next_url:
@@ -87,10 +78,8 @@ def usuario_atualizar(request):
 
 
 @login_required
+@exige_permissao(pode_gerenciar_usuarios)
 def painel_administrativo(request):
-    if not pode_gerenciar_usuarios(request.user):
-        raise Http404()
-
     context = {
         "ano_atual": datetime.date.today().year,
     }

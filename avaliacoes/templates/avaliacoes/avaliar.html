@@ -1,18 +1,13 @@
 {% extends 'base/base.html' %}
 {% load static %}
+{% load ui %}
 
 {% block title %}Avaliação — {{ processo.numero }} — Simulador Projudi{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
 <style>
-    .avatar {
-        width: 42px; height: 42px; border-radius: 50%;
-        background: #1a5b9e; color: #fff;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: bold; font-size: 14px; flex-shrink: 0;
-    }
-    .avatar.grupo { background: #7b3ba0; border-radius: 6px; }
+
     .file-row {
         display: flex; align-items: center; gap: 10px;
         padding: 6px 0; border-bottom: 1px solid #eee;
@@ -54,72 +49,18 @@
         cursor: pointer; text-transform: uppercase;
     }
     .btn-green:hover { background: linear-gradient(to bottom, #34a040, #257328); }
-    .pill {
-        display: inline-block; padding: 1px 7px;
-        font-size: 10px; font-weight: bold;
-        border-radius: 10px; text-transform: uppercase;
-    }
-    .pill.warn { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
-    .tbl-hist { width: 100%; border-collapse: collapse; font-size: 11px; }
-    .tbl-hist thead th {
-        background: #dcdcdc; text-align: left; font-weight: bold; color: #333;
-        padding: 5px 8px; border: 1px solid #c0c0c0;
-    }
-    .tbl-hist tbody td {
-        padding: 5px 8px; border: 1px solid #d8d8d8;
-        background: #fff; vertical-align: top; line-height: 1.45;
-    }
-    .tbl-hist tbody tr:nth-child(even) td { background: #f3f3f3; }
-    .tbl-hist tbody tr:hover td { background: #fffbe5; }
-    .modal-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,.45);
-        display: none; align-items: center; justify-content: center; z-index: 100;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-        background: #fff; width: 540px; max-width: 92vw;
-        border-radius: 4px; overflow: hidden;
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
-    }
-    .toast {
-        position: fixed; bottom: 24px; right: 24px;
-        background: #2e7d32; color: #fff; padding: 12px 18px;
-        border-radius: 3px; font-size: 13px; font-weight: bold;
-        box-shadow: 0 6px 16px rgba(0,0,0,.2);
-        display: flex; align-items: center; gap: 8px;
-        transform: translateY(20px); opacity: 0; pointer-events: none;
-        transition: all .25s ease; z-index: 200;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
 </style>
 {% endblock %}
 
 {% block content %}
-<nav class="bg-[#eef1f5] border-b border-[#cdd4dc] sticky top-[45px] z-40">
-    <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
-        <div class="flex items-center gap-5">
-            <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-[#333] font-medium">Página Inicial</a>
-            <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="hover:underline text-[#333] font-medium">Voltar ao Processo</a>
-        </div>
-    </div>
-</nav>
+{% url 'processos:visualizar_processo' processo.numero as url_processo %}
+{% nav_secundaria voltar_url=url_processo voltar_label="Voltar ao Processo" %}
 
 <main class="max-w-[1200px] mx-auto px-6 py-5 bg-white min-h-screen" style="box-shadow: 0 0 10px rgba(0,0,0,0.05);">
 
     {% include 'base/components/_breadcrumbs.html' %}
 
-    {% if messages %}
-    <div class="mb-4">
-        {% for message in messages %}
-        <div class="px-4 py-2 mb-1 text-[12px] font-bold rounded-sm
-            {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200
-            {% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200
-            {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    {% include 'base/components/_mensagens.html' %}
 
     <!-- Breadcrumb -->
     <div class="text-[11px] text-gray-600 mb-2">
@@ -381,16 +322,7 @@
 </main>
 
 <!-- Modal de Confirmação -->
-<div class="modal-overlay" id="confirmModal">
-    <div class="modal">
-        <div class="bg-[#153a61] text-white p-3 flex items-center justify-between">
-            <div class="text-[12px] font-bold uppercase flex items-center gap-2">
-                <i class="fa-solid fa-clipboard-check"></i> Confirmar Avaliação
-            </div>
-            <button type="button" onclick="closeConfirm()" class="text-white hover:text-gray-300">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
+{% modal id="confirmModal" titulo="Confirmar Avaliação" icone="fa-clipboard-check" tamanho="sm" fechar_onclick="closeConfirm()" %}
         <div class="p-5 text-[12px]">
             <p class="mb-3">Você está prestes a concluir a avaliação da movimentação
                 <strong>{{ movimentacao.tipo_movimento.nome_movimentacao }}</strong>
@@ -417,14 +349,10 @@
                 <i class="fa-solid fa-check mr-1"></i> Confirmar e Enviar
             </button>
         </div>
-    </div>
-</div>
+    {% endmodal %}
 
 <!-- Toast -->
-<div class="toast" id="toast">
-    <i class="fa-solid fa-circle-check"></i>
-    <span id="toastMsg"></span>
-</div>
+{% include 'base/components/_toast.html' %}
 
 <script>
 function openConfirm() {
@@ -452,14 +380,6 @@ function confirmEval() {
     input.value = 'concluir';
     form.appendChild(input);
     form.submit();
-}
-
-function showToast(msg, err) {
-    var t = document.getElementById('toast');
-    document.getElementById('toastMsg').textContent = msg;
-    t.style.background = err ? '#c0392b' : '#2e7d32';
-    t.classList.add('show');
-    setTimeout(function() { t.classList.remove('show'); }, 2400);
 }
 </script>
 {% endblock %}

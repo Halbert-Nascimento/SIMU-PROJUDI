@@ -17,6 +17,8 @@ from django.urls import reverse
 from base.breadcrumbs import home_breadcrumb
 from django.views.decorators.http import require_POST
 
+from base.mensagens import propagar_erros_form
+
 from ciclos.models import CicloSimulacao, GrupoTrabalho
 
 from usuarios.models import Usuario
@@ -171,9 +173,7 @@ def cadastrar_processo(request):
             )
             return redirect("processos:cadastrar_processo")
         else:
-            for erros in form.errors.values():
-                for erro in erros:
-                    messages.error(request, erro, extra_tags="processo")
+            propagar_erros_form(request, form, extra_tags="processo")
 
             # Restaura os polos no contexto para re-renderização com os dados preservados
             if polo_ativo_ids:

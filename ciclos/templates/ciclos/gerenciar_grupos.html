@@ -1,4 +1,6 @@
-{% extends 'base/base.html' %}
+{% extends 'base/layouts/layout_admin.html' %}
+{% load ui %}
+{% load ciclos_ui %}
 {% load static %}
 
 {% block title %}Gerenciar Grupos — {{ ciclo.nome_edicao }} - Projudi{% endblock %}
@@ -9,15 +11,6 @@
 
 {% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
 
-{% block header_saudacao %}
-<a href="#" class="relative mr-6 text-gray-200 hover:text-white transition-colors" title="Notificações do Sistema">
-    <i class="fa-solid fa-bell text-lg"></i>
-    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full border border-tjgo-navy flex items-center justify-center leading-none">3</span>
-</a>
-<span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
-    <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> Olá, {{ user.tipo_perfil_global }} - {{ user.first_name }}
-</span>
-{% endblock %}
 
 {% block content %}
 <main class="main-container px-10 py-8 mt-10 flex flex-col">
@@ -39,13 +32,7 @@
                 {{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}
                 {% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %}
                 &nbsp;·&nbsp;
-                <span class="inline-flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full
-                        {% if ciclo.status.nome_status == 'em andamento' %}bg-green-500
-                        {% elif ciclo.status.nome_status == 'finalizado' %}bg-[#1a5b9e]
-                        {% else %}bg-gray-400{% endif %} inline-block"></span>
-                    {{ ciclo.status.nome_status|capfirst }}
-                </span>
+                {% ponto_status_ciclo ciclo.status %}
             </p>
         </div>
         <span class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded border border-blue-100 shadow-sm flex items-center gap-2 mt-6">
@@ -55,19 +42,7 @@
     </div>
 
     <!-- Mensagens de feedback (servidor) -->
-    {% if messages %}
-    <div class="mb-4 space-y-2 shrink-0">
-        {% for message in messages %}
-        <div class="p-2.5 text-xs border rounded flex items-center gap-2
-            {% if 'success' in message.tags %} bg-green-50 border-green-200 text-green-800
-            {% elif 'error' in message.tags %} bg-red-50 border-red-200 text-red-800
-            {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
-            <i class="fa-solid {% if 'success' in message.tags %}fa-circle-check{% elif 'error' in message.tags %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
+    {% include 'base/components/_mensagens.html' %}
 
     <!-- Grid Principal -->
     <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[30%_68%] gap-[2%]">
@@ -211,7 +186,7 @@
                         placeholder="Ex: Escritório Polo Ativo 01"
                         maxlength="150"
                         required
-                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                        class="{% classe_campo %}">
                 </div>
                 <div>
                     <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Papel na Simulação *</label>
@@ -219,7 +194,7 @@
                         name="cargo_simulacao"
                         id="modal-grupo-cargo"
                         required
-                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                        class="{% classe_campo %}">
                         <option value="">Selecione o papel...</option>
                         {% for cargo in cargos %}
                         <option value="{{ cargo.pk }}">{{ cargo.nome }}</option>
@@ -233,7 +208,7 @@
                     Cancelar
                 </button>
                 <button type="submit"
-                    class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-6 text-xs rounded-sm shadow-sm transition-colors uppercase flex items-center gap-2">
+                    class="{% classe_botao 'primario' %} py-1.5 px-6 text-xs uppercase flex items-center gap-2">
                     <i class="fa-solid fa-floppy-disk"></i> Salvar
                 </button>
             </div>

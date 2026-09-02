@@ -1,4 +1,6 @@
 {% extends 'base/base.html' %}
+{% load ui %}
+{% load processos_ui %}
 {% load static %}
 
 {% block title %}Processo Judicial - Área do Servidor{% endblock %}
@@ -6,54 +8,6 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <style>
-    .section-title {
-        color: #1a5b9e;
-        font-size: 13px;
-        font-weight: bold;
-        text-transform: uppercase;
-        padding: 6px 0 6px 8px;
-        border-left: 4px solid #1a5b9e;
-        background: #f4f4f4;
-        margin-bottom: 0;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .tbl-projudi {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-    }
-    .tbl-projudi thead th {
-        background: #e0e0e0;
-        text-align: left;
-        font-weight: bold;
-        color: #333;
-        padding: 6px 10px;
-        border: 1px solid #c8c8c8;
-        font-size: 12px;
-    }
-    .tbl-projudi tbody td {
-        padding: 6px 10px;
-        border: 1px solid #d8d8d8;
-        background: #fff;
-        vertical-align: middle;
-    }
-    .tbl-projudi tbody tr:nth-child(even) td { background: #ececec; }
-    .tbl-projudi tbody tr:hover td { background: #fffbe5; }
-    .tbl-projudi a { color: #1a5b9e; font-weight: bold; }
-    .tbl-projudi a:hover { text-decoration: underline; }
-    .pill {
-        display: inline-block;
-        padding: 1px 7px;
-        font-size: 10px;
-        font-weight: bold;
-        border-radius: 10px;
-        text-transform: uppercase;
-    }
-    .pill.ok { background: #dff5e1; color: #2e7d32; border: 1px solid #bee0c2; }
-    .pill.gray { background: #eee; color: #555; border: 1px solid #ccc; }
-    .pill.warn { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
 
     .filtros {
         background: #f4f4f4;
@@ -107,21 +61,7 @@
         border-radius: 2px;
         cursor: pointer;
     }
-    .btn-sec:hover { background: #eee; }
-
-    /* Modal */
-    .modal-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,.45);
-        display: none; align-items: center; justify-content: center; z-index: 100;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-        background: #fff; width: 580px; max-width: 92vw;
-        border-radius: 4px; overflow: hidden;
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
-        transform: scale(.96); transition: transform .15s ease;
-    }
-    .modal-overlay.open .modal { transform: scale(1); }
+    .btn-sec:hover { background: #eee; }/* Modal */
 
     .grp-card {
         border: 1px solid #d1d1d1; border-radius: 3px; padding: 10px;
@@ -137,19 +77,8 @@
         font-weight: bold; font-size: 13px; flex-shrink: 0;
     }
     .grp-card .check { color: #ccc; font-size: 18px; }
-    .grp-card.selected .check { color: #1a5b9e; }
+    .grp-card.selected .check { color: #1a5b9e; }/* Toast */
 
-    /* Toast */
-    .toast {
-        position: fixed; bottom: 24px; right: 24px;
-        background: #2e7d32; color: #fff; padding: 12px 18px;
-        border-radius: 3px; font-size: 13px; font-weight: bold;
-        box-shadow: 0 6px 16px rgba(0,0,0,.2);
-        display: flex; align-items: center; gap: 8px;
-        transform: translateY(20px); opacity: 0; pointer-events: none;
-        transition: all .25s ease; z-index: 200;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
 </style>
 {% endblock %}
 
@@ -275,13 +204,7 @@
                     <td class="text-[11px]">{{ processo.partes_resumo }}</td>
                     <td class="text-[11px]">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
                     <td>
-                        {% if processo.status_atual.nome_status == "Arquivado" %}
-                            <span class="pill gray">{{ processo.status_atual.nome_status }}</span>
-                        {% elif processo.status_atual.nome_status == "Suspenso" %}
-                            <span class="pill warn">{{ processo.status_atual.nome_status }}</span>
-                        {% else %}
-                            <span class="pill ok">{{ processo.status_atual.nome_status }}</span>
-                        {% endif %}
+                        {% pill_status_processo processo.status_atual %}
                     </td>
                     {% if is_serventia %}
                     <td class="text-center">
@@ -362,16 +285,7 @@
 
 {% if is_serventia %}
 <!-- Modal: Atribuir Grupo -->
-<div class="modal-overlay" id="grpModal">
-    <div class="modal">
-        <div class="bg-[#153a61] text-white p-3 flex items-center justify-between">
-            <div class="text-[12px] font-bold uppercase flex items-center gap-2">
-                <i class="fa-solid fa-users-gear"></i> Atribuir Grupo ao Processo
-            </div>
-            <button type="button" id="modalClose" class="text-white hover:text-gray-300">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
+{% modal id="grpModal" titulo="Atribuir Grupo ao Processo" icone="fa-users-gear" fechar_id="modalClose" %}
 
         <div class="p-5">
             <div class="mb-3 text-[12px]">
@@ -410,14 +324,10 @@
                 <i class="fa-solid fa-check mr-1"></i> Confirmar Atribuição
             </button>
         </div>
-    </div>
-</div>
+    {% endmodal %}
 
 <!-- Toast -->
-<div class="toast" id="toast">
-    <i class="fa-solid fa-circle-check"></i>
-    <span id="toastMsg"></span>
-</div>
+{% include 'base/components/_toast.html' %}
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
@@ -558,13 +468,6 @@ document.addEventListener("DOMContentLoaded", function () {
     });
 
     // --- Toast ---
-    function showToast(msg, err) {
-        const t = document.getElementById("toast");
-        document.getElementById("toastMsg").textContent = msg;
-        t.style.background = err ? "#c0392b" : "#2e7d32";
-        t.classList.add("show");
-        setTimeout(() => t.classList.remove("show"), 2800);
-    }
 });
 </script>
 {% endif %}
