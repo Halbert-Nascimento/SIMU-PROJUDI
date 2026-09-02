@@ -1,0 +1,16 @@
+{% comment %}Renderizado pela tag {% templatetag openblock %} modal {% templatetag closeblock %} — ver base/templatetags/ui.py{% endcomment %}
+<div class="modal-overlay" id="{{ id }}">
+    <div class="modal{% if tamanho %} modal--{{ tamanho }}{% endif %}">
+        <div class="bg-tjgo-navy text-white p-3 flex items-center justify-between">
+            <div class="text-[12px] font-bold uppercase flex items-center gap-2">
+                <i class="fa-solid {{ icone }}"></i> {{ titulo }}
+            </div>
+            {% if fechar_onclick or fechar_id %}
+            <button type="button" {% if fechar_onclick %}onclick="{{ fechar_onclick }}"{% endif %}{% if fechar_id %}id="{{ fechar_id }}"{% endif %} class="text-white hover:text-gray-300">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            {% endif %}
+        </div>
+        {{ corpo }}
+    </div>
+</div>

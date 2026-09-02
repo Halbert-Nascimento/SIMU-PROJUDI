@@ -1,4 +1,5 @@
 {% extends 'base/base.html' %}
+{% load ui %}
 
 {% block title %}Cadastro de Usuario{% endblock %}
 
@@ -44,10 +45,10 @@
                         {% endfor %}
 
                         <div class="flex justify-start gap-2 pt-2">
-                            <button type="submit" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">
+                            <button type="submit" class="{% classe_botao 'primario' %} py-1 px-4 text-sm">
                                 Criar usuário
                             </button>
-                            <a href="{% url 'base:home' %}" class="bg-tjgo-gray-card hover:bg-gray-300 text-tjgo-navy font-bold py-1 px-4 text-sm rounded shadow-sm transition">
+                            <a href="{% url 'base:home' %}" class="{% classe_botao 'secundario' %} py-1 px-4 text-sm">
                                 Cancelar
                             </a>
                         </div>
@@ -59,11 +60,7 @@
         <aside class="space-y-4">
 
             <!-- COMO FUNCIONA -->
-            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
-                <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
-                    <i class="fa-solid fa-circle-info mr-2 text-sm"></i> COMO FUNCIONA
-                </div>
-                <div class="p-4 space-y-3 text-xs text-gray-600">
+            {% card titulo="COMO FUNCIONA" icone="fa-circle-info" classe_corpo="p-4 space-y-3 text-xs text-gray-600" %}
                     <div class="flex items-start gap-2">
                         <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-navy text-white text-[10px] font-bold mt-0.5">1</span>
                         <span><strong class="text-tjgo-text-main">Dados de Acesso</strong> — Preencha seu cadastro com os dados de login e senha.</span>
@@ -76,15 +73,10 @@
                         <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-gray-card text-gray-500 text-[10px] font-bold mt-0.5">3</span>
                         <span><strong class="text-tjgo-text-main">Acesso Liberado</strong> — Com o acesso ativado, você já pode entrar no sistema.</span>
                     </div>
-                </div>
-            </div>
+                {% endcard %}
 
             <!-- REQUISITOS DE SENHA -->
-            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
-                <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
-                    <i class="fa-solid fa-shield-halved mr-2 text-sm"></i> REQUISITOS DE SENHA
-                </div>
-                <div class="p-4">
+            {% card titulo="REQUISITOS DE SENHA" icone="fa-shield-halved" classe_corpo="p-4" %}
                     <ul class="space-y-1.5 text-xs">
                         <li id="req_len" class="flex items-center gap-2 text-gray-400">
                             <i class="fa-solid fa-circle text-[8px]"></i> Mínimo de 8 caracteres
@@ -108,21 +100,15 @@
                             <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser similar às suas informações pessoais
                         </li>
                     </ul>
-                </div>
-            </div>
+                {% endcard %}
 
             <!-- SUPORTE -->
-            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
-                <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
-                    <i class="fa-solid fa-headset mr-2 text-sm"></i> SUPORTE
-                </div>
-                <div class="p-4 text-xs text-gray-600 space-y-2">
+            {% card titulo="SUPORTE" icone="fa-headset" classe_corpo="p-4 text-xs text-gray-600 space-y-2" %}
                     <p>Dúvidas sobre o cadastro? Entre em contato com a coordenação do simulador.</p>
                     <a href="mailto:simulador@tjgo.jus.br" class="text-tjgo-blue font-bold hover:underline flex items-center gap-1">
                         <i class="fa-solid fa-envelope text-[11px]"></i> simulador@tjgo.jus.br
                     </a>
-                </div>
-            </div>
+                {% endcard %}
 
         </aside>
     </div>

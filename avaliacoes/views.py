@@ -7,6 +7,8 @@ from django.db.models import Avg, Count, Max
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
+from base.mensagens import propagar_erros_form
+
 from base.breadcrumbs import home_breadcrumb
 
 from ciclos.models import GrupoTrabalho
@@ -70,9 +72,7 @@ def avaliar_movimentacao(request, movimentacao_id):
                 messages.success(request, "Avaliação concluída com sucesso.")
             return redirect("processos:visualizar_processo", numero=processo.numero)
         else:
-            for erros in form.errors.values():
-                for erro in erros:
-                    messages.error(request, erro)
+            propagar_erros_form(request, form)
     else:
         form = FeedbackForm(
             instance=feedback_existente,

@@ -1,4 +1,5 @@
 {% extends 'base/base.html' %}
+{% load ui %}
 
 {% block title %} Processo Judicial {% endblock %}
 
@@ -6,19 +7,7 @@
     <!-- Container Principal -->
     <main class="main-container px-10 py-8">
 
-        {% if messages %}
-        <div class="mb-4 space-y-2">
-            {% for message in messages %}
-            <div class="p-2.5 text-xs border rounded flex items-center gap-2
-                {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
-                {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
-                {% else %} bg-blue-50 border-blue-200 text-blue-800 {% endif %}">
-                <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+        {% include 'base/components/_mensagens.html' %}
         
         <div class="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-x-[5%]">
             
@@ -280,8 +269,8 @@
 
                             <!-- Botões de Ação -->
                             <div class="flex justify-center gap-2 mb-4">
-                                <button type="submit" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">Entrar</button>
-                                <button id="btn-limpar-login" type="button" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">Limpar</button>
+                                <button type="submit" class="{% classe_botao 'primario' %} py-1 px-4 text-sm">Entrar</button>
+                                <button id="btn-limpar-login" type="button" class="{% classe_botao 'primario' %} py-1 px-4 text-sm">Limpar</button>
                             </div>
                             
                             <div class="text-center mb-8">

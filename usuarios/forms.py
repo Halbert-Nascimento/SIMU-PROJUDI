@@ -3,6 +3,8 @@ import re
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 
+from base.ui import CLASSE_CAMPO
+
 from .models import Usuario
 
 _NAME_REGEX = re.compile(
@@ -35,7 +37,7 @@ class CadastroPublicoForm(UserCreationForm):
         for field in self.fields.values():
             field.widget.attrs.update(
                 {
-                    "class": "w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue",
+                    "class": CLASSE_CAMPO,
                     "placeholder": field.label,
                 }
             )

@@ -1,0 +1,28 @@
+{% comment %}
+Controles de paginação operados por criarPaginador() — ver static/js/paginador.js.
+Os ids continuam explícitos porque o JS os referencia por nome.
+
+    {% include 'base/components/_paginacao.html' with container_id="paginacao-processos" info_id="paginacao-info" paginas_id="paginacao-paginas" btn_prefixo="btn" handler="mudarPagina" only %}
+{% endcomment %}
+<div id="{{ container_id }}" class="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between hidden">
+    <span id="{{ info_id }}" class="text-[11px] text-gray-400"></span>
+    <div class="flex items-center gap-1">
+        <button onclick="{{ handler }}('primeira')" id="{{ btn_prefixo }}-primeira" title="Primeira página"
+            class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-angles-left"></i>
+        </button>
+        <button onclick="{{ handler }}('anterior')" id="{{ btn_prefixo }}-anterior" title="Anterior"
+            class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-angle-left"></i>
+        </button>
+        <span id="{{ paginas_id }}" class="flex items-center gap-1"></span>
+        <button onclick="{{ handler }}('proxima')" id="{{ btn_prefixo }}-proxima" title="Próxima"
+            class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-angle-right"></i>
+        </button>
+        <button onclick="{{ handler }}('ultima')" id="{{ btn_prefixo }}-ultima" title="Última página"
+            class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-angles-right"></i>
+        </button>
+    </div>
+</div>

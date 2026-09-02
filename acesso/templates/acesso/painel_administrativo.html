@@ -1,4 +1,7 @@
-{% extends 'base/base.html' %}
+{% extends 'base/layouts/layout_admin.html' %}
+{% load ui %}
+{% load processos_ui %}
+{% load ciclos_ui %}
 {% load static %}
 
 {% block title %}Painel de Gestão - Projudi{% endblock %}
@@ -10,16 +13,6 @@
 
 {% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
 
-{% block header_saudacao %}
-<a href="#" class="relative mr-6 text-gray-200 hover:text-white transition-colors" title="Notificações do Sistema">
-    <i class="fa-solid fa-bell text-lg"></i>
-    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full border border-tjgo-navy flex items-center justify-center leading-none">3</span>
-</a>
-    <span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
-        <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> Olá, {{ user.tipo_perfil_global }} - {{ user.first_name }} 
-    </span>
-    
-{% endblock %}
 
 
 
@@ -35,19 +28,7 @@
         </div>
 
         <!-- Mensagens de feedback -->
-        {% if messages %}
-        <div class="mb-4 space-y-2">
-            {% for message in messages %}
-            <div class="p-2.5 text-xs border rounded flex items-center gap-2
-                {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
-                {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
-                {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
-                <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'error' %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+        {% include 'base/components/_mensagens.html' %}
 
         <!-- BANNER DE ALERTA (Aprovações Pendentes) -->
         {% if usuarios_pendentes_count %}
@@ -121,23 +102,7 @@
                                         <span class="block text-[10px] text-gray-400 mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %} - Responsável: {{ ciclo.coordenador.first_name | capfirst }} </span>
                                     </td>
                                     <td class="py-3 pr-3">
-                                        {% if ciclo.status.nome_status == 'em andamento' %}
-                                        <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 border border-green-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>{{ ciclo.status }}
-                                        </span>
-                                        {% elif ciclo.status.nome_status == 'finalizado' %}
-                                        <span class="inline-flex items-center gap-1 bg-blue-50 text-[#1a5b9e] border border-blue-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-[#1a5b9e] inline-block"></span>{{ ciclo.status }}
-                                        </span>
-                                        {% elif ciclo.status.nome_status == 'arquivado' %}
-                                        <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 border border-gray-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>{{ ciclo.status }}
-                                        </span>
-                                        {% else %}
-                                        <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 border border-gray-200 text-[10px] font-bold px-2.5 py-1 rounded uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>{{ ciclo.status }}
-                                        </span>
-                                        {% endif %}
+                                        {% badge_status_ciclo ciclo.status %}
                                     </td>
                                     <td class="py-3 pr-3 font-semibold text-gray-700">{{ ciclo.num_grupos }} Grupo{{ ciclo.num_grupos|pluralize }}</td>
                                     <td class="py-3 pr-3 align-middle">
@@ -163,27 +128,11 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                        <p id="ciclos-vazio-busca" class="text-sm text-gray-400 italic text-center py-6 hidden">Nenhum ciclo encontrado para esta pesquisa.</p>
-                        <div id="paginacao-ciclos" class="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between hidden">
-                            <span id="paginacao-ciclos-info" class="text-[11px] text-gray-400"></span>
-                            <div class="flex items-center gap-1">
-                                <button onclick="mudarPaginaCiclos('primeira')" id="btn-ciclo-primeira" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                                    <i class="fa-solid fa-angles-left"></i>
-                                </button>
-                                <button onclick="mudarPaginaCiclos('anterior')" id="btn-ciclo-anterior" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                                    <i class="fa-solid fa-angle-left"></i>
-                                </button>
-                                <span id="paginacao-ciclos-paginas" class="flex items-center gap-1"></span>
-                                <button onclick="mudarPaginaCiclos('proxima')" id="btn-ciclo-proxima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                                    <i class="fa-solid fa-angle-right"></i>
-                                </button>
-                                <button onclick="mudarPaginaCiclos('ultima')" id="btn-ciclo-ultima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                                    <i class="fa-solid fa-angles-right"></i>
-                                </button>
-                            </div>
+                        {% include 'base/components/_estado_vazio.html' with id="ciclos-vazio-busca" mensagem="Nenhum ciclo encontrado para esta pesquisa." oculto=True only %}
+                        {% include 'base/components/_paginacao.html' with container_id="paginacao-ciclos" info_id="paginacao-ciclos-info" paginas_id="paginacao-ciclos-paginas" btn_prefixo="btn-ciclo" handler="mudarPaginaCiclos" only %}
                         </div>
                         {% else %}
-                        <p class="text-sm text-gray-400 italic text-center py-6">Nenhum ciclo de simulação cadastrado.</p>
+                        {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum ciclo de simulação cadastrado." only %}
                         {% endif %}
 
                         {% if ciclos_arquivados %}
@@ -241,24 +190,8 @@
                                         {% endfor %}
                                     </tbody>
                                 </table>
-                                <p id="ciclos-arq-vazio-busca" class="text-sm text-gray-400 italic text-center py-6 hidden">Nenhum ciclo arquivado encontrado para esta pesquisa.</p>
-                                <div id="paginacao-ciclos-arq" class="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between hidden">
-                                    <span id="paginacao-ciclos-arq-info" class="text-[11px] text-gray-400"></span>
-                                    <div class="flex items-center gap-1">
-                                        <button onclick="mudarPaginaCiclosArq('primeira')" id="btn-ciclo-arq-primeira" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                                            <i class="fa-solid fa-angles-left"></i>
-                                        </button>
-                                        <button onclick="mudarPaginaCiclosArq('anterior')" id="btn-ciclo-arq-anterior" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                                            <i class="fa-solid fa-angle-left"></i>
-                                        </button>
-                                        <span id="paginacao-ciclos-arq-paginas" class="flex items-center gap-1"></span>
-                                        <button onclick="mudarPaginaCiclosArq('proxima')" id="btn-ciclo-arq-proxima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                                            <i class="fa-solid fa-angle-right"></i>
-                                        </button>
-                                        <button onclick="mudarPaginaCiclosArq('ultima')" id="btn-ciclo-arq-ultima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                                            <i class="fa-solid fa-angles-right"></i>
-                                        </button>
-                                    </div>
+                                {% include 'base/components/_estado_vazio.html' with id="ciclos-arq-vazio-busca" mensagem="Nenhum ciclo arquivado encontrado para esta pesquisa." oculto=True only %}
+                                {% include 'base/components/_paginacao.html' with container_id="paginacao-ciclos-arq" info_id="paginacao-ciclos-arq-info" paginas_id="paginacao-ciclos-arq-paginas" btn_prefixo="btn-ciclo-arq" handler="mudarPaginaCiclosArq" only %}
                                 </div>
                             </div>
                         </div>
@@ -310,27 +243,11 @@
                                     </td>
                                     <td class="py-3 pr-2 text-xs text-gray-600">{{ processo.classe }}</td>
                                     <td class="py-3 pr-2">
-                                        {% if processo.status_atual.nome_status == "Em andamento" %}
-                                        <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 border border-green-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>{{ processo.status_atual }}
-                                        </span>
-                                        {% elif processo.status_atual.nome_status == "Suspenso" %}
-                                        <span class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-700 border border-yellow-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-yellow-500 inline-block"></span>{{ processo.status_atual }}
-                                        </span>
-                                        {% elif processo.status_atual.nome_status == "Arquivado" %}
-                                        <span class="inline-flex items-center gap-1 bg-gray-100 text-gray-500 border border-gray-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400 inline-block"></span>{{ processo.status_atual }}
-                                        </span>
-                                        {% else %}
-                                        <span class="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block"></span>{{ processo.status_atual }}
-                                        </span>
-                                        {% endif %}
+                                        {% badge_status_processo processo.status_atual %}
                                     </td>
                                     <td class="py-3 pr-2 text-right">
                                         <a href="{% url 'processos:visualizar_processo' processo.numero %}"
-                                           class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-3 text-[11px] rounded shadow-sm transition-colors uppercase inline-flex items-center gap-1 whitespace-nowrap">
+                                           class="{% classe_botao 'primario' %} py-1.5 px-3 text-[11px] uppercase inline-flex items-center gap-1 whitespace-nowrap">
                                             <i class="fa-solid fa-eye text-[10px]"></i> Ver Autos
                                         </a>
                                     </td>
@@ -338,27 +255,11 @@
                                 {% endfor %}
                             </tbody>
                         </table>
-                        <div id="paginacao-processos" class="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between hidden">
-                            <span id="paginacao-info" class="text-[11px] text-gray-400"></span>
-                            <div class="flex items-center gap-1">
-                                <button onclick="mudarPagina('primeira')" id="btn-primeira" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Primeira página">
-                                    <i class="fa-solid fa-angles-left"></i>
-                                </button>
-                                <button onclick="mudarPagina('anterior')" id="btn-anterior" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Anterior">
-                                    <i class="fa-solid fa-angle-left"></i>
-                                </button>
-                                <span id="paginacao-paginas" class="flex items-center gap-1"></span>
-                                <button onclick="mudarPagina('proxima')" id="btn-proxima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Próxima">
-                                    <i class="fa-solid fa-angle-right"></i>
-                                </button>
-                                <button onclick="mudarPagina('ultima')" id="btn-ultima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Última página">
-                                    <i class="fa-solid fa-angles-right"></i>
-                                </button>
-                            </div>
+                        {% include 'base/components/_paginacao.html' with container_id="paginacao-processos" info_id="paginacao-info" paginas_id="paginacao-paginas" btn_prefixo="btn" handler="mudarPagina" only %}
                         </div>
-                        <p id="processos-vazio-filtro" class="text-sm text-gray-400 italic text-center py-6 hidden">Nenhum processo encontrado neste ciclo.</p>
+                        {% include 'base/components/_estado_vazio.html' with id="processos-vazio-filtro" mensagem="Nenhum processo encontrado neste ciclo." oculto=True only %}
                         {% else %}
-                        <p class="text-sm text-gray-400 italic text-center py-6">Nenhum processo encontrado nos ciclos ativos.</p>
+                        {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum processo encontrado nos ciclos ativos." only %}
                         {% endif %}
                     </div>
                 </div>
@@ -366,11 +267,7 @@
 
             <!-- COLUNA DIREITA (Resumo e Ações Rápidas) -->
             <aside>
-                <div class="border border-tjgo-gray-border bg-white shadow-sm mb-6 rounded-sm overflow-hidden">
-                    <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
-                        <i class="fa-solid fa-chart-pie mr-2 text-sm"></i> Resumo do Semestre (Atual)
-                    </div>
-                    <div class="p-4 bg-gray-50/50">
+                {% card titulo="Resumo do Semestre (Atual)" icone="fa-chart-pie" classe="mb-6" classe_corpo="p-4 bg-gray-50/50" %}
                         <div class="grid grid-cols-2 gap-3">
                             <div class="bg-white border border-gray-200 p-3 rounded text-center shadow-sm flex flex-col justify-center items-center">
                                 <span class="block text-3xl font-bold text-tjgo-blue mb-1">45</span>
@@ -390,8 +287,7 @@
                                 <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Alunos<br>Vinculados</span>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    {% endcard %}
 
                 <div>
                     <h3 class="text-tjgo-blue text-lg font-bold mb-3 flex items-center gap-2 border-b border-gray-200 pb-2">
@@ -543,24 +439,8 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                <p id="usuarios-vazio-busca" class="text-sm text-gray-400 italic text-center py-6 hidden">Nenhum usuário encontrado para esta pesquisa.</p>
-                <div id="paginacao-usuarios" class="mt-4 border-t border-gray-100 pt-3 flex items-center justify-between hidden">
-                    <span id="paginacao-usuarios-info" class="text-[11px] text-gray-400"></span>
-                    <div class="flex items-center gap-1">
-                        <button onclick="mudarPaginaUsuarios('primeira')" id="btn-usr-primeira" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Primeira página">
-                            <i class="fa-solid fa-angles-left"></i>
-                        </button>
-                        <button onclick="mudarPaginaUsuarios('anterior')" id="btn-usr-anterior" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Anterior">
-                            <i class="fa-solid fa-angle-left"></i>
-                        </button>
-                        <span id="paginacao-usuarios-paginas" class="flex items-center gap-1"></span>
-                        <button onclick="mudarPaginaUsuarios('proxima')" id="btn-usr-proxima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Próxima">
-                            <i class="fa-solid fa-angle-right"></i>
-                        </button>
-                        <button onclick="mudarPaginaUsuarios('ultima')" id="btn-usr-ultima" class="px-2 py-1 text-[11px] font-bold text-gray-500 hover:text-tjgo-blue hover:bg-gray-100 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed" title="Última página">
-                            <i class="fa-solid fa-angles-right"></i>
-                        </button>
-                    </div>
+                {% include 'base/components/_estado_vazio.html' with id="usuarios-vazio-busca" mensagem="Nenhum usuário encontrado para esta pesquisa." oculto=True only %}
+                {% include 'base/components/_paginacao.html' with container_id="paginacao-usuarios" info_id="paginacao-usuarios-info" paginas_id="paginacao-usuarios-paginas" btn_prefixo="btn-usr" handler="mudarPaginaUsuarios" only %}
                 </div>
             </div>
 
@@ -588,7 +468,7 @@
                 <div>
                     <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Tipo de Perfil</label>
                     <select id="edicao-tipo" name="tipo_perfil_global"
-                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                        class="{% classe_campo %}">
                         {% for value, label in tipos_opcoes %}
                         <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
@@ -601,7 +481,7 @@
                 </div>
                 <div class="flex gap-2 pt-1">
                     <button type="submit"
-                        class="flex-1 bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-2 text-xs rounded shadow-sm transition uppercase">
+                        class="flex-1 {% classe_botao 'primario' %} py-2 text-xs uppercase">
                         <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar
                     </button>
                     <button type="button" onclick="fecharEdicao()"
@@ -639,7 +519,7 @@
                         placeholder="Ex: Simulação NPJ - Turma A"
                         maxlength="150"
                         required
-                        class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                        class="{% classe_campo %}">
                 </div>
 
                 <!-- Semestre e Ano -->
@@ -649,7 +529,7 @@
                         <select
                             name="semestre"
                             required
-                            class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                            class="{% classe_campo %}">
                             <option value="">Selecione...</option>
                             <option value="1">1º Semestre</option>
                             <option value="2">2º Semestre</option>
@@ -664,7 +544,7 @@
                             min="2000"
                             max="{{ ano_atual|add:5 }}"
                             required
-                            class="w-full border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                            class="{% classe_campo %}">
                     </div>
                 </div>
 
@@ -683,7 +563,7 @@
                     Cancelar
                 </button>
                 <button type="submit"
-                    class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1.5 px-6 text-xs rounded shadow-sm transition-colors uppercase flex items-center gap-2">
+                    class="{% classe_botao 'primario' %} py-1.5 px-6 text-xs uppercase flex items-center gap-2">
                     <i class="fa-solid fa-floppy-disk"></i> Salvar Ciclo
                 </button>
             </div>

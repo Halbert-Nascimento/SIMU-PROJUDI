@@ -1,0 +1,7 @@
+{% comment %}Renderizado pela tag {% templatetag openblock %} campo {% templatetag closeblock %} — ver base/templatetags/ui.py{% endcomment %}
+<div>
+    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">{{ label }}</label>
+    {{ controle }}
+    {% if ajuda %}<p class="text-gray-400 text-[10px] mt-1">{{ ajuda }}</p>{% endif %}
+    {% if erros %}<p class="text-red-600 text-[10px] mt-1">{{ erros.0 }}</p>{% endif %}
+</div>

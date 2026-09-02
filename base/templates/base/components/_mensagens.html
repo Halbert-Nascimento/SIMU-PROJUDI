@@ -1,0 +1,25 @@
+{% comment %}
+Mensagens do django.contrib.messages no estilo padrão do sistema.
+
+    {% include 'base/components/_mensagens.html' %}
+    {% include 'base/components/_mensagens.html' with tag="movimentacao" %}
+
+Com `tag`, só as mensagens que carregam aquele extra_tag são exibidas —
+usado nas telas que reservam uma área própria para um tipo de aviso.
+{% endcomment %}
+{% load ui %}
+{% if messages %}
+<div class="mb-4 space-y-2">
+    {% for message in messages %}
+    {% if not tag or tag in message.tags|default:"" %}
+    <div class="p-2.5 text-xs border rounded flex items-center gap-2
+        {% if 'success' in message.tags %} bg-green-50 border-green-200 text-green-800
+        {% elif 'error' in message.tags %} bg-red-50 border-red-200 text-red-800
+        {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
+        <i class="fa-solid {% icone_mensagem message.tags %}"></i>
+        {{ message }}
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+{% endif %}

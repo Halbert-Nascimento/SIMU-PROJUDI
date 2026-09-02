@@ -83,19 +83,7 @@
 
         <h2 class="text-azul-primario font-bold text-[20px] mb-6">&raquo; Cadastro de Processo Comum</h2>
 
-        {% if messages %}
-        <div class="mb-4 space-y-2">
-            {% for message in messages %}
-            <div class="p-2.5 text-xs border rounded flex items-center gap-2
-                {% if 'success' in message.tags %} bg-green-50 border-green-200 text-green-800
-                {% elif 'error' in message.tags %} bg-red-50 border-red-200 text-red-800
-                {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
-                <i class="fa-solid {% if 'success' in message.tags %}fa-circle-check{% elif 'error' in message.tags %}fa-circle-xmark{% else %}fa-circle-info{% endif %}"></i>
-                {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
+        {% include 'base/components/_mensagens.html' %}
 
         <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-6 text-[12px] text-blue-800 flex items-center gap-2">
             <i class="fa-solid fa-circle-info"></i>

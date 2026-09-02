@@ -1,4 +1,5 @@
 {% load static %}
+{% load ui %}
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -18,6 +19,8 @@
 
     <script src="{% static 'js/tailwind.config.global.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'css/componentes.css' %}">
+    <script src="{% static 'js/toast.js' %}"></script>
 
     {% block extra_head %}{% endblock %}            
     
@@ -168,11 +171,11 @@
                 <div id="session-modal-actions" class="flex gap-2 pt-1">
                     <button id="session-btn-continue"
                         onclick="sessionTimer.extend()"
-                        class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                        class="{% classe_botao 'primario' %} py-1 px-4 text-xs">
                         Continuar sessão
                     </button>
                     <button onclick="sessionTimer.logout()"
-                        class="bg-tjgo-gray-card hover:bg-gray-300 text-tjgo-navy font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                        class="{% classe_botao 'secundario' %} py-1 px-4 text-xs">
                         Sair agora
                     </button>
                 </div>
@@ -212,11 +215,11 @@
             body.innerHTML    = `Sua sessão expirará em <strong id="session-countdown" class="text-tjgo-blue">${fmt(remaining)}</strong>. Deseja continuar?`;
             actions.innerHTML = `
                 <button onclick="sessionTimer.extend()"
-                    class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                    class="{% classe_botao 'primario' %} py-1 px-4 text-xs">
                     Continuar sessão
                 </button>
                 <button onclick="sessionTimer.logout()"
-                    class="bg-tjgo-gray-card hover:bg-gray-300 text-tjgo-navy font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                    class="{% classe_botao 'secundario' %} py-1 px-4 text-xs">
                     Sair agora
                 </button>`;
             modal.classList.remove('hidden');
@@ -230,7 +233,7 @@
             body.innerHTML    = 'Sua sessão foi encerrada por inatividade. Faça login novamente para continuar.';
             actions.innerHTML = `
                 <button onclick="sessionTimer.expire()"
-                    class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-xs rounded shadow-sm transition">
+                    class="{% classe_botao 'primario' %} py-1 px-4 text-xs">
                     Fazer login
                 </button>`;
             modal.classList.remove('hidden');

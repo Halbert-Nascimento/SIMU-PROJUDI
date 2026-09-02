@@ -41,22 +41,6 @@
     .dropzone:hover, .dropzone.over { border-color: #1a5b9e; background: #eef5fc; }
     .dropzone .ico { font-size: 38px; color: #1a5b9e; margin-bottom: 8px; }
 
-    .tbl-files { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 8px; }
-    .tbl-files thead th {
-        background: #e0e0e0; text-align: left; font-weight: bold; color: #333;
-        padding: 6px 10px; border: 1px solid #c8c8c8;
-    }
-    .tbl-files tbody td {
-        padding: 6px 10px; border: 1px solid #d8d8d8; background: #fff;
-        vertical-align: middle;
-    }
-    .tbl-files tbody tr:nth-child(even) td { background: #ececec; }
-    .tbl-files tbody tr:hover td { background: #fffbe5; }
-    .tbl-files .empty td {
-        text-align: center; color: #999; font-style: italic;
-        padding: 18px; background: #fafafa !important;
-    }
-
     .action-icons { display: flex; gap: 8px; margin-bottom: 4px; padding: 4px 2px; }
     .action-icons button {
         background: transparent; border: 0; cursor: pointer;
@@ -64,17 +48,6 @@
     }
     .action-icons button:hover { color: #226bb8; }
     .action-icons button.danger { color: #c0392b; }
-
-    .toast {
-        position: fixed; bottom: 24px; right: 24px;
-        background: #2e7d32; color: #fff; padding: 12px 18px;
-        border-radius: 3px; font-size: 13px; font-weight: bold;
-        box-shadow: 0 6px 16px rgba(0,0,0,.2); display: flex;
-        align-items: center; gap: 8px;
-        transform: translateY(20px); opacity: 0; pointer-events: none;
-        transition: all .25s ease; z-index: 200;
-    }
-    .toast.show { transform: translateY(0); opacity: 1; }
 
     /* Página do documento dentro do TinyMCE */
     .tox-tinymce { border-radius: 0 0 3px 3px !important; }
@@ -113,15 +86,7 @@
 
     <h2 class="text-azul-primario font-bold text-[20px] mb-4">&raquo; Movimentar Processo</h2>
 
-    {% if messages %}
-    <div class="mb-3">
-        {% for msg in messages %}{% if 'movimentacao' in msg.tags %}
-        <div class="bg-red-50 border border-red-300 text-red-700 px-4 py-2 rounded text-[12px] mb-1 flex items-center gap-2">
-            <i class="fa-solid fa-circle-xmark"></i> {{ msg }}
-        </div>
-        {% endif %}{% endfor %}
-    </div>
-    {% endif %}
+    {% include 'base/components/_mensagens.html' with tag="movimentacao" %}
 
     <form id="formMovimentar" method="post" enctype="multipart/form-data">
     {% csrf_token %}
@@ -387,10 +352,7 @@
 </main>
 
 <!-- Toast -->
-<div class="toast" id="toast">
-    <i class="fa-solid fa-circle-check"></i>
-    <span id="toastMsg">Salvo com sucesso</span>
-</div>
+{% include 'base/components/_toast.html' %}
 
 <script>
 // ── Combobox: Tipo Movimentação ───────────────────────
@@ -894,13 +856,6 @@ document.addEventListener('DOMContentLoaded', function () {
 {% endif %}
 
 // ── Toast ─────────────────────────────────────────────
-function showToast(msg, err) {
-    const t = document.getElementById('toast');
-    document.getElementById('toastMsg').textContent = msg;
-    t.style.background = err ? '#c0392b' : '#2e7d32';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2600);
-}
 </script>
 
 {% endblock %}

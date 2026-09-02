@@ -1,0 +1,146 @@
+/* ============================================================================
+   Componentes de UI compartilhados — carregado uma única vez em base/base.html.
+   Regra: só entra aqui a classe usada por mais de um template.
+   Estilo exclusivo de uma tela continua no <style> daquele template.
+   ========================================================================== */
+
+/* ── Títulos de seção ──────────────────────────────────────────────────────
+   Antes duplicados entre processos_compartilhado.css e o <style> de
+   pagina_aluno.html (que usava 13px/4px). Unificado na versão de 12px. */
+.section-title {
+    color: #1a5b9e; font-size: 12px; font-weight: bold;
+    text-transform: uppercase; padding: 4px 0 4px 8px;
+    border-left: 3px solid #1a5b9e; background: #f4f4f4;
+    margin: 10px 0 0 0;
+    display: flex; align-items: center; gap: 6px;
+}
+.section-title.green { color: #1f6020; border-left-color: #1f6020; }
+
+.autos-title {
+    color: #1a5b9e; font-size: 11px; font-weight: bold;
+    text-transform: uppercase; padding: 2px 0 2px 4px;
+    display: flex; align-items: center; gap: 4px;
+}
+.autos-title.green { color: #1f6020; }
+
+/* ── Pill / etiqueta de situação ───────────────────────────────────────────
+   Padding unificado em 2px 8px (antes 1px 7px em duas telas).
+   Os nomes .aval/.pend são mantidos como sinônimos de .ok/.warn para não
+   exigir alteração do HTML das telas que já os usam. */
+.pill {
+    display: inline-block; padding: 2px 8px;
+    font-size: 10px; font-weight: bold;
+    border-radius: 10px; text-transform: uppercase;
+}
+.pill.ok,
+.pill.aval  { background: #dff5e1; color: #2e7d32; border: 1px solid #bee0c2; }
+.pill.warn,
+.pill.pend  { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
+.pill.gray  { background: #eee;    color: #555;    border: 1px solid #ccc; }
+
+/* ── Modal ────────────────────────────────────────────────────────────────
+   Overlay idêntico nas três telas que o usavam. A largura varia por tela e
+   virou modificador; a animação de entrada, antes só em pagina_aluno.html,
+   agora vale para todos. */
+.modal-overlay {
+    position: fixed; inset: 0; background: rgba(0, 0, 0, .45);
+    display: none; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-overlay.open { display: flex; }
+
+.modal {
+    background: #fff; width: 580px; max-width: 92vw;
+    border-radius: 4px; overflow: hidden;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    transform: scale(.96); transition: transform .15s ease;
+}
+.modal-overlay.open .modal { transform: scale(1); }
+
+.modal--sm { width: 540px; }
+.modal--lg {
+    width: 720px; max-height: 88vh;
+    display: flex; flex-direction: column;
+}
+.modal-body { overflow: auto; }
+
+@media (prefers-reduced-motion: reduce) {
+    .modal { transition: none; }
+}
+
+/* ── Tabelas no padrão Projudi ─────────────────────────────────────────────
+   Cinco nomes (.tbl-projudi, .tbl-files, .tbl-hist, .tbl, .tbl-mov) para a mesma
+   tabela. A moldura é comum; densidade e corpo de texto seguem por variante,
+   preservando exatamente o que cada tela já exibia. */
+.tbl-projudi, .tbl-files, .tbl-hist, .tbl, .tbl-mov {
+    width: 100%; border-collapse: collapse;
+}
+.tbl-projudi thead th, .tbl-files thead th,
+.tbl-hist thead th, .tbl thead th, .tbl-mov thead th {
+    text-align: left; font-weight: bold; color: #333;
+}
+.tbl-projudi tbody td, .tbl-files tbody td,
+.tbl-hist tbody td, .tbl tbody td, .tbl-mov tbody td {
+    border: 1px solid #d8d8d8; background: #fff;
+}
+.tbl-projudi tbody tr:hover td, .tbl-files tbody tr:hover td,
+.tbl-hist tbody tr:hover td, .tbl tbody tr:hover td,
+.tbl-mov tbody tr:hover td { background: #fffbe5; }
+
+/* Densidade 12px — listagens de processos e de arquivos */
+.tbl-projudi, .tbl-files { font-size: 12px; }
+.tbl-projudi thead th, .tbl-files thead th {
+    background: #e0e0e0; padding: 6px 10px; border: 1px solid #c8c8c8;
+    font-size: 12px;
+}
+.tbl-projudi tbody td, .tbl-files tbody td { padding: 6px 10px; vertical-align: middle; }
+.tbl-projudi tbody tr:nth-child(even) td,
+.tbl-files tbody tr:nth-child(even) td { background: #ececec; }
+.tbl-projudi a { color: #1a5b9e; font-weight: bold; }
+.tbl-projudi a:hover { text-decoration: underline; }
+.tbl-files .empty td {
+    text-align: center; color: #999; font-style: italic;
+    padding: 18px; background: #fafafa !important;
+}
+
+/* Densidade 11px — históricos e notas */
+.tbl-hist, .tbl, .tbl-mov { font-size: 11px; }
+.tbl-hist thead th, .tbl thead th, .tbl-mov thead th {
+    background: #dcdcdc; border: 1px solid #c0c0c0;
+}
+.tbl-hist thead th, .tbl-mov thead th { padding: 5px 8px; }
+.tbl thead th { padding: 6px 8px; }
+.tbl-hist tbody td, .tbl-mov tbody td { padding: 5px 8px; vertical-align: top; line-height: 1.45; }
+.tbl tbody td { padding: 6px 8px; vertical-align: middle; }
+.tbl-hist tbody tr:nth-child(even) td,
+.tbl tbody tr:nth-child(even) td,
+.tbl-mov tbody tr:nth-child(even) td { background: #f3f3f3; }
+.tbl tbody tr:hover td { cursor: pointer; }
+
+/* ── Avatar de pessoa / grupo ─────────────────────────────────────────────── */
+.avatar {
+    width: 42px; height: 42px; border-radius: 50%;
+    background: #1a5b9e; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 14px; flex-shrink: 0;
+}
+.avatar.md { width: 46px; height: 46px; font-size: 16px; }
+.avatar.lg { width: 60px; height: 60px; font-size: 20px; }
+.avatar.grupo { background: #7b3ba0; border-radius: 6px; }
+.avatar.prof  { background: #7b3ba0; }
+
+/* ── Toast ────────────────────────────────────────────────────────────────
+   Era redefinido, byte a byte, em quatro templates. */
+.toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: #2e7d32; color: #fff; padding: 12px 18px;
+    border-radius: 3px; font-size: 13px; font-weight: bold;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, .2);
+    display: flex; align-items: center; gap: 8px;
+    transform: translateY(20px); opacity: 0; pointer-events: none;
+    transition: all .25s ease; z-index: 200;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+    .toast { transition: opacity .25s ease; transform: none; }
+}

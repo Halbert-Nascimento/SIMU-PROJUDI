@@ -1,4 +1,5 @@
 {% extends 'base/base.html' %}
+{% load ui %}
 
 {% block title %}Gestão de Usuários{% endblock %}
 
@@ -12,18 +13,7 @@
                 <i class="fa-solid fa-users-gear"></i> Gestão de Usuários
             </h2>
 
-            {% if messages %}
-                <div class="mb-4 space-y-2">
-                    {% for message in messages %}
-                        <div class="p-2 text-sm border
-                            {% if message.tags == 'success' %} bg-green-50 border-green-200 text-green-800
-                            {% elif message.tags == 'error' %} bg-red-50 border-red-200 text-red-800
-                            {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
+            {% include 'base/components/_mensagens.html' %}
 
             <div class="border border-gray-200 bg-white">
                 <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
@@ -110,7 +100,7 @@
                     <select
                         id="modal-tipo"
                         name="tipo_perfil_global"
-                        class="w-full border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue">
+                        class="{% classe_campo %}">
                         {% for value, label in tipos_opcoes %}
                             <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
@@ -123,10 +113,10 @@
                 </div>
 
                 <div class="flex justify-start gap-2 pt-2">
-                    <button type="submit" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">
+                    <button type="submit" class="{% classe_botao 'primario' %} py-1 px-4 text-sm">
                         Salvar
                     </button>
-                    <button type="button" id="modal-close-bottom" class="bg-tjgo-gray-card hover:bg-gray-300 text-tjgo-navy font-bold py-1 px-4 text-sm rounded shadow-sm transition">
+                    <button type="button" id="modal-close-bottom" class="{% classe_botao 'secundario' %} py-1 px-4 text-sm">
                         Cancelar
                     </button>
                 </div>
