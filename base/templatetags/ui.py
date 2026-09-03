@@ -86,7 +86,7 @@ def modal(content, id, titulo, icone="fa-circle-info", tamanho="", fechar_onclic
 
 
 @register.simple_block_tag
-def campo(content, label, erros=None, ajuda=""):
+def campo(content, label, erros=None, ajuda="", para=""):
     """
     Rótulo + controle + erro de validação. O controle é escrito no ponto de
     uso, então selects com opções montadas à mão continuam funcionando:
@@ -94,10 +94,14 @@ def campo(content, label, erros=None, ajuda=""):
         {% campo label="Ano *" erros=form.ano.errors %}
             <input type="number" name="ano" class="{% classe_campo %}">
         {% endcampo %}
+
+    `para` amarra o <label> ao controle — passe field.id_for_label quando o
+    campo vier de um form do Django. Todos os erros da lista são exibidos.
     """
     return mark_safe(render_to_string(
         "base/components/_campo.html",
-        {"label": label, "erros": erros, "ajuda": ajuda, "controle": content},
+        {"label": label, "erros": erros, "ajuda": ajuda,
+         "para": para, "controle": content},
     ))
 
 

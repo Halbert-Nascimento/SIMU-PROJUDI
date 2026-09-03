@@ -40,15 +40,17 @@
         padding: 8px 10px; font-size: 12px; resize: vertical;
         line-height: 1.5; font-family: inherit;
     }
-    .obs:focus { border-color: #1f4f9c; outline: none; box-shadow: 0 0 0 2px rgba(26,91,158,.1); }
+    .obs:focus { border-color: #1f4f9c; outline: none; }
+    /* Ação primária da tela — botão primário do guia (seção 04). */
     .btn-green {
-        background: linear-gradient(to bottom, #2e7d32, #2e7d32);
-        color: #fff; padding: 6px 16px;
-        font-size: 11px; font-weight: bold;
-        border: 1px solid #2e7d32; border-radius: 2px;
-        cursor: pointer; text-transform: uppercase;
+        background: #0a083d; color: #fff;
+        border: 1px solid #0a083d; border-radius: 0;
+        padding: 8px 18px;
+        font-size: 10.5px; font-weight: 700;
+        letter-spacing: .1em; text-transform: uppercase;
+        cursor: pointer; transition: background-color .15s ease, border-color .15s ease;
     }
-    .btn-green:hover { background: linear-gradient(to bottom, #2e7d32, #2e7d32); }
+    .btn-green:hover { background: #1f4f9c; border-color: #1f4f9c; }
 </style>
 {% endblock %}
 

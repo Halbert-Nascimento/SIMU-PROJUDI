@@ -1,8 +1,12 @@
 {% comment %}Renderizado pela tag {% templatetag openblock %} campo {% templatetag closeblock %} — ver base/templatetags/ui.py.
-Guia seção 05: rótulo acima, caixa alta 10px/600/.1em, gap 5px.{% endcomment %}
+Guia seção 05: rótulo acima, caixa alta 10px/600/.1em, gap 5px.
+
+`para` recebe o id do controle para amarrar o <label> (field.id_for_label).
+`ajuda` sai como HTML porque o help_text do Django já vem marcado — é texto
+escrito no forms.py, não entrada de usuário.{% endcomment %}
 <div class="flex flex-col gap-[5px]">
-    <label class="text-micro font-semibold uppercase text-rotulo">{{ label }}</label>
+    <label class="text-micro font-semibold uppercase text-rotulo"{% if para %} for="{{ para }}"{% endif %}>{{ label }}</label>
     {{ controle }}
-    {% if ajuda %}<span class="text-meta text-rotulo">{{ ajuda }}</span>{% endif %}
-    {% if erros %}<span class="text-meta text-validacao font-semibold">{{ erros.0 }}</span>{% endif %}
+    {% if ajuda %}<span class="text-meta text-rotulo">{{ ajuda|safe }}</span>{% endif %}
+    {% for erro in erros %}<span class="text-meta text-validacao font-semibold">{{ erro }}</span>{% endfor %}
 </div>
