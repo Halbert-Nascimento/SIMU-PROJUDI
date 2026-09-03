@@ -30,7 +30,7 @@ def classe_botao(variante: str = "primario") -> str:
 # ---------------------------------------------------------------------------
 
 @register.simple_block_tag
-def card(content, titulo, icone="fa-folder-open", classe="", classe_corpo="", contador=""):
+def card(content, titulo, icone="fa-folder-open", classe="", classe_corpo="", contador=None):
     """
     Painel padrão: moldura, cabeçalho navy com ícone e corpo livre.
 
@@ -99,8 +99,10 @@ def nav_secundaria(context, voltar_url="", voltar_label=""):
     Barra de navegação abaixo do cabeçalho. Os itens dependem do perfil, que
     antes era decidido por {% if %} copiado em cada template.
     """
-    request = context.get("request")
-    user = getattr(request, "user", None)
+    # mesmo usuário que base.html enxerga: o do context processor de auth
+    user = context.get("user")
+    if user is None:
+        user = getattr(context.get("request"), "user", None)
     e_aluno = bool(
         user
         and user.is_authenticated
