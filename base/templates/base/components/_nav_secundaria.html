@@ -9,7 +9,7 @@ de base/base.html — não é um valor fixo.
 <nav class="bg-white border-b border-contorno sticky top-[60px] z-navegacao">
     <div class="w-full max-w-conteudo mx-auto px-7 flex items-center justify-between gap-6">
         <div class="flex items-stretch gap-0.5">
-            <a href="{% url 'processos:pagina_aluno' %}"
+            <a href="{{ home_url }}"
                class="px-3.5 py-[13px] -mb-px text-apoio uppercase tracking-[.06em] border-b-2 transition-colors
                       {% if ativo == 'inicio' %}font-bold text-navy border-acao{% else %}font-semibold text-rotulo border-transparent hover:text-navy hover:bg-tabela-topo{% endif %}">
                 Página Inicial

@@ -4,6 +4,7 @@ from django import template
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
+from base.navegacao import home_do_usuario
 from base.ui import CLASSE_CAMPO, CLASSE_CAMPO_MONO, CLASSES_BOTAO, PADDING_BOTAO
 from usuarios.models import Usuario
 
@@ -125,10 +126,14 @@ def nav_secundaria(context, ativo="", voltar_url="", voltar_label=""):
         and user.is_authenticated
         and user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO
     )
+    # "Página Inicial" leva cada perfil à sua tela de entrada: quem administra
+    # cai no painel, e não na área do servidor.
+    _, home_url = home_do_usuario(user)
     return {
         "e_aluno": e_aluno,
         "user": user,
         "ativo": ativo,
+        "home_url": home_url,
         "voltar_url": voltar_url,
         "voltar_label": voltar_label,
     }
