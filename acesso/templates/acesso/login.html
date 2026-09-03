@@ -5,98 +5,100 @@
 
 {% block content %}
     <!-- Container Principal -->
-    <main class="main-container px-10 py-8">
+    <main class="max-w-conteudo mx-auto px-7 py-5">
 
         {% include 'base/components/_mensagens.html' %}
-        
-        <div class="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-x-[5%]">
-            
+
+        <!-- Guia seção 08: colunas em frações, nunca percentuais mistos. -->
+        <div class="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-[14px] items-start">
+
             <!-- COLUNA ESQUERDA -->
             <div>
                 <!-- Seção: Acesso Rápido -->
-                <section class="mb-10">
-                    <h2 class="text-tjgo-blue text-xl font-bold mb-4 flex items-center gap-2">
+                <section class="mb-[18px]">
+                    <h2 class="section-title">
                         <i class="fa-solid fa-hand-pointer"></i> Acesso Rápido
                     </h2>
-                    
-                    <div class="grid grid-cols-4 gap-4">
+
+                    <!-- Guia seção 01: hierarquia por borda de 1px, não por sombra. -->
+                    <div class="grid grid-cols-4 gap-[14px] mt-[14px]">
                         <!-- Card 1 -->
-                        <div class="bg-tjgo-gray-card hover:bg-neutro-bd transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <i class="fa-solid fa-table-cells-large text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-xs font-bold leading-tight text-texto">Tabelas<br>Processuais<br>Unificadas</span>
+                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
+                            <i class="fa-solid fa-table-cells-large text-2xl text-navy mb-2"></i>
+                            <span class="text-apoio font-semibold leading-tight text-texto">Tabelas<br>Processuais<br>Unificadas</span>
                         </div>
                         <!-- Card 2 -->
-                        <a href="{% url 'acesso:cadastro' %}" class="bg-tjgo-gray-card hover:bg-neutro-bd transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm border border-transparent hover:border-campo-borda">
-                            <i class="fa-solid fa-pen-to-square text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-xs font-bold leading-tight text-texto">Cadastro</span>
+                        <a href="{% url 'acesso:cadastro' %}" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
+                            <i class="fa-solid fa-pen-to-square text-2xl text-navy mb-2"></i>
+                            <span class="text-apoio font-semibold leading-tight text-texto">Cadastro</span>
                         </a>
                         <!-- Card 3 -->
-                        <div class="bg-tjgo-gray-card hover:bg-neutro-bd transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <i class="fa-solid fa-chart-pie text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-xs font-bold leading-tight text-texto">SIGESCON<br><span class="font-normal text-[10px]">Sistema Gestão e<br>Controle</span></span>
+                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
+                            <i class="fa-solid fa-chart-pie text-2xl text-navy mb-2"></i>
+                            <span class="text-apoio font-semibold leading-tight text-texto">SIGESCON<br><span class="font-normal text-meta text-rotulo">Sistema Gestão e<br>Controle</span></span>
                         </div>
                         <!-- Card 4 -->
-                        <div class="bg-tjgo-gray-card hover:bg-neutro-bd transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <i class="fa-solid fa-chart-column text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-xs font-bold leading-tight text-texto">Gestão à Vista</span>
+                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
+                            <i class="fa-solid fa-chart-column text-2xl text-navy mb-2"></i>
+                            <span class="text-apoio font-semibold leading-tight text-texto">Gestão à Vista</span>
                         </div>
                         <!-- Card 5 -->
-                        <div class="bg-tjgo-gray-card hover:bg-neutro-bd transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <i class="fa-solid fa-comments text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-xs font-bold leading-tight text-texto">Simples e Fácil<br><span class="font-normal text-[10px]">Programa de<br>linguagem simples<br>do TJGO</span></span>
+                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
+                            <i class="fa-solid fa-comments text-2xl text-navy mb-2"></i>
+                            <span class="text-apoio font-semibold leading-tight text-texto">Simples e Fácil<br><span class="font-normal text-meta text-rotulo">Programa de<br>linguagem simples<br>do TJGO</span></span>
                         </div>
                         <!-- Card 6 -->
-                        <div class="bg-tjgo-gray-card hover:bg-neutro-bd transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <i class="fa-solid fa-microchip text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-xs font-bold leading-tight text-texto">AGAIA</span>
+                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
+                            <i class="fa-solid fa-microchip text-2xl text-navy mb-2"></i>
+                            <span class="text-apoio font-semibold leading-tight text-texto">AGAIA</span>
                         </div>
                         <!-- Card 7 -->
-                        <div class="bg-tjgo-gray-card hover:bg-neutro-bd transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <i class="fa-solid fa-head-side-virus text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-xs font-bold leading-tight text-texto">Berna IA</span>
+                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
+                            <i class="fa-solid fa-head-side-virus text-2xl text-navy mb-2"></i>
+                            <span class="text-apoio font-semibold leading-tight text-texto">Berna IA</span>
                         </div>
                         <!-- Card 8 -->
-                        <div class="bg-tjgo-gray-card hover:bg-neutro-bd transition cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px] shadow-sm">
-                            <i class="fa-solid fa-sitemap text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-xs font-bold leading-tight text-texto">SET<br><span class="font-normal text-[10px]">Sistema de<br>Estatística e<br>Transparência</span></span>
+                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
+                            <i class="fa-solid fa-sitemap text-2xl text-navy mb-2"></i>
+                            <span class="text-apoio font-semibold leading-tight text-texto">SET<br><span class="font-normal text-meta text-rotulo">Sistema de<br>Estatística e<br>Transparência</span></span>
                         </div>
                     </div>
                 </section>
 
                 <!-- Seção: Informações Importantes -->
                 <section>
-                    <h2 class="text-tjgo-blue text-xl font-bold mb-4 flex items-center gap-2">
+                    <h2 class="section-title">
                         <i class="fa-regular fa-newspaper"></i> Informações Importantes
                     </h2>
-                    
-                    <div id="accordion-container" class="border border-contorno">
+
+                    <div id="accordion-container" class="border-x border-b border-contorno bg-white">
                         <!-- Item 0 -->
                         <div class="accordion-item">
-                            <div class="accordion-header bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center cursor-pointer">
-                                <i class="fa-solid fa-caret-down mr-2 text-sm accordion-icon"></i>
+                            <div class="accordion-header accordion-item-aberto">
+                                <i class="fa-solid fa-caret-down accordion-icon"></i>
                                 Esqueceu a sua senha?
                             </div>
-                            <div class="accordion-content p-5 bg-white text-[13px] leading-relaxed text-texto">
-                                <p class="text-rotulo mb-4">31/05/2026</p>
-                                <p class="mb-4 text-justify">
+                            <div class="accordion-content px-4 py-[14px] bg-white text-corpo text-texto">
+                                <p class="text-rotulo mb-[14px]">31/05/2026</p>
+                                <p class="mb-[14px] text-justify">
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                                 </p>
-                                <p class="mb-4 text-justify">
+                                <p class="mb-[14px] text-justify">
                                     Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
                                 </p>
                             </div>
                         </div>
                         <div class="accordion-item">
-                            <div class="accordion-header bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center cursor-pointer">
-                                <i class="fa-solid fa-caret-down mr-2 text-sm accordion-icon"></i>
+                            <div class="accordion-header accordion-item-closed">
+                                <i class="fa-solid fa-caret-right accordion-icon"></i>
                                 APRIMORAMENTO DE ACESSO INTERNO PELO AMBIENTE CORPORATIVO
                             </div>
-                            <div class="accordion-content p-5 bg-white text-[13px] leading-relaxed text-texto">
-                                <p class="text-rotulo mb-4">01/03/2026</p>
-                                <p class="mb-4 text-justify">
+                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
+                                <p class="text-rotulo mb-[14px]">01/03/2026</p>
+                                <p class="mb-[14px] text-justify">
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
                                 </p>
-                                <p class="mb-4 text-justify">
+                                <p class="mb-[14px] text-justify">
                                     Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
                                 </p>
                             </div>
@@ -105,12 +107,12 @@
                         <!-- Item 2 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
+                                <i class="fa-solid fa-caret-right accordion-icon"></i>
                                 VÍDEO TUTORIAL - ACESSO CORPORATIVO PROJUDI
                             </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-texto">
-                                <p class="text-rotulo mb-4">28/02/2026</p>
-                                <p class="mb-4 text-justify">
+                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
+                                <p class="text-rotulo mb-[14px]">28/02/2026</p>
+                                <p class="mb-[14px] text-justify">
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
                                 </p>
                             </div>
@@ -119,12 +121,12 @@
                         <!-- Item 3 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
+                                <i class="fa-solid fa-caret-right accordion-icon"></i>
                                 USUÁRIO DE ACESSO
                             </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-texto">
-                                <p class="text-rotulo mb-4">25/02/2026</p>
-                                <p class="mb-4 text-justify">
+                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
+                                <p class="text-rotulo mb-[14px]">25/02/2026</p>
+                                <p class="mb-[14px] text-justify">
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
                                 </p>
                             </div>
@@ -133,47 +135,40 @@
                         <!-- Item 4 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
+                                <i class="fa-solid fa-caret-right accordion-icon"></i>
                                 ATIVO PROVISORIAMENTE - DESABILITAÇÃO
                             </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-texto">
-                                <p class="text-rotulo mb-4">20/02/2026</p>
-                                <p class="mb-4 text-justify">
+                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
+                                <p class="text-rotulo mb-[14px]">20/02/2026</p>
+                                <p class="mb-[14px] text-justify">
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum.
                                 </p>
                             </div>
                         </div>
 
-                    
-
-                      
-
                         <!-- Item 7 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
+                                <i class="fa-solid fa-caret-right accordion-icon"></i>
                                 ERRO AO TENTAR REALIZAR LOGIN
                             </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-texto">
-                                <p class="text-rotulo mb-4">05/02/2026</p>
-                                <p class="mb-4 text-justify">
+                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
+                                <p class="text-rotulo mb-[14px]">05/02/2026</p>
+                                <p class="mb-[14px] text-justify">
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.
                                 </p>
                             </div>
                         </div>
 
-
-
-
                         <!-- Item 10 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
+                                <i class="fa-solid fa-caret-right accordion-icon"></i>
                                 LIMITE DO TAMANHO DE ARQUIVOS 7MB
                             </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-texto">
-                                <p class="text-rotulo mb-4">25/01/2026</p>
-                                <p class="mb-4 text-justify">
+                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
+                                <p class="text-rotulo mb-[14px]">25/01/2026</p>
+                                <p class="mb-[14px] text-justify">
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
                                 </p>
                             </div>
@@ -182,41 +177,35 @@
                         {% comment %} <!-- Item 11 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
+                                <i class="fa-solid fa-caret-right accordion-icon"></i>
                                 NOVO ASSINADOR MULTI-ARQUIVO
                             </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-texto">
-                                <p class="text-rotulo mb-4">20/01/2026</p>
-                                <p class="mb-4 text-justify">
+                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
+                                <p class="text-rotulo mb-[14px]">20/01/2026</p>
+                                <p class="mb-[14px] text-justify">
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum id ligula porta felis euismod semper.
                                 </p>
                             </div>
                         </div> {% endcomment %}
 
-
-
                         <!-- Item 13 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right mr-2 text-sm accordion-icon"></i>
+                                <i class="fa-solid fa-caret-right accordion-icon"></i>
                                 SUPORTE AO ADVOGADO
                             </div>
-                            <div class="accordion-content hidden p-5 bg-white text-[13px] leading-relaxed text-texto">
-                                <p class="text-rotulo mb-4">10/01/2026</p>
-                                <p class="mb-4 text-justify">
+                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
+                                <p class="text-rotulo mb-[14px]">10/01/2026</p>
+                                <p class="mb-[14px] text-justify">
                                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur blandit tempus porttitor.
                                 </p>
                             </div>
                         </div>
 
-
-
-
-
                     </div>
-                    
+
                     <div class="text-right mt-2">
-                        <a href="#" class="text-tjgo-blue text-xs font-bold hover:underline">+ informações importantes</a>
+                        <a href="#" class="text-acao text-apoio font-semibold hover:underline">+ informações importantes</a>
                     </div>
                 </section>
             </div>
@@ -224,98 +213,100 @@
             <!-- COLUNA DIREITA -->
             <div>
                 <!-- Seção: Simulador Projudi -->
-                <section class="mb-10"><br><br>
-                    <div class="bg-tjgo-gray-card p-6 flex flex-col items-center justify-center cursor-default">
+                <section class="mb-[18px]">
+                    <div class="bg-white border border-contorno p-[18px] flex flex-col items-center justify-center cursor-default">
                         <div class="icon-sessao-virtual mb-3">
                             <i class="fa-solid fa-users text-4xl"></i>
                         </div>
-                        <span class="text-tjgo-blue font-bold text-sm">Simulador Projudi</span>
+                        <span class="text-acao font-bold text-corpo">Simulador Projudi</span>
                     </div>
                 </section>
 
                 <!-- Seção: Acesso Processo Judicial (Login) -->
                 <section>
-                    <h2 class="text-tjgo-blue text-xl font-bold mb-6 flex items-center gap-2">
+                    <h2 class="section-title">
                         <i class="fa-solid fa-arrow-right-to-bracket"></i> Acesso Processo Judicial
                     </h2>
-                    
-                    <div class="flex flex-col items-center">
+
+                    <div class="border-x border-b border-contorno bg-white px-4 py-[18px] flex flex-col items-center">
                         <form id="login-form" class="w-full max-w-[280px]" method="post" action="{% url 'acesso:login' %}">
                             {% csrf_token %}
                             <!-- Campo Usuário -->
                             <div class="relative mb-3">
                                 <i class="fa-solid fa-user input-group-icon"></i>
-                                <input 
-                                type="text" 
-                                name="username" 
+                                <input
+                                type="text"
+                                name="username"
                                 value="{{ form.username.value|default_if_none:'' }}"
-                                placeholder="Usuário" 
-                                class="w-full border border-campo-borda pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue">
-                            </div>
-                            
-                            <!-- Campo Senha -->
-                            <div class="relative mb-4 flex items-center">
-                                <div class="relative w-full">
-                                    <i class="fa-solid fa-lock input-group-icon"></i>                                    
-                                    <input 
-                                    type="password" 
-                                    name="password" 
-                                    value="{{ form.password.value|default_if_none:'' }}"
-                                    placeholder="Senha" 
-                                    class="w-full border border-campo-borda pl-8 pr-3 py-1.5 text-sm focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue">
-                                </div>
-                                {% comment %} <i class="fa-solid fa-keyboard text-tjgo-blue ml-2 cursor-pointer text-lg" title="Teclado Virtual"></i> {% endcomment %}
+                                placeholder="Usuário"
+                                class="{% classe_campo %} pl-8">
                             </div>
 
-                            <!-- Botões de Ação -->
-                            <div class="flex justify-center gap-2 mb-4">
-                                <button type="submit" class="{% classe_botao 'primario' %} py-1 px-4 text-sm">Entrar</button>
-                                <button id="btn-limpar-login" type="button" class="{% classe_botao 'primario' %} py-1 px-4 text-sm">Limpar</button>
+                            <!-- Campo Senha -->
+                            <div class="relative mb-[14px] flex items-center">
+                                <div class="relative w-full">
+                                    <i class="fa-solid fa-lock input-group-icon"></i>
+                                    <input
+                                    type="password"
+                                    name="password"
+                                    value="{{ form.password.value|default_if_none:'' }}"
+                                    placeholder="Senha"
+                                    class="{% classe_campo %} pl-8">
+                                </div>
+                                {% comment %} <i class="fa-solid fa-keyboard text-acao ml-2 cursor-pointer" title="Teclado Virtual"></i> {% endcomment %}
                             </div>
-                            
-                            <div class="text-center mb-8">
-                                <a href="#" class="text-tjgo-blue text-xs hover:underline">Esqueceu a sua senha?</a>
+
+                            <!-- Botões de Ação — guia seção 04: um só primário por bloco,
+                                 e "limpar" é ação de apoio. -->
+                            <div class="flex justify-center gap-2 mb-[14px]">
+                                <button type="submit" class="{% classe_botao 'primario' padding=True %}">Entrar</button>
+                                <button id="btn-limpar-login" type="button" class="{% classe_botao 'secundario' padding=True %}">Limpar</button>
+                            </div>
+
+                            <div class="text-center mb-[28px]">
+                                <a href="#" class="text-acao text-apoio hover:underline">Esqueceu a sua senha?</a>
                             </div>
                             <div id="login-errors-wrapper">
                                 {% if request.GET.exp %}
-                                    <div class="bg-atencao-bg border border-atencao-bd text-atencao-txt text-xs p-2 rounded mb-3 flex items-center gap-2">
+                                    <div class="bg-atencao-bg border border-atencao-bd text-atencao-txt text-dado px-[15px] py-[11px] mb-3 flex items-center gap-2.5">
                                         <i class="fa-solid fa-clock-rotate-left"></i>
                                         Sua sessão expirou por inatividade. Faça login novamente.
                                     </div>
                                 {% endif %}
                                 {% if form.non_field_errors %}
-                                    <div id="login-errors" class="bg-erro-bg text-erro-txt p-2 rounded mb-3">
+                                    <div id="login-errors" class="bg-erro-bg border border-erro-bd text-erro-txt text-dado px-[15px] py-[11px] mb-3">
                                         {{ form.non_field_errors }}
                                     </div>
                                 {% endif %}
                             </div>
 
-                            <!-- Outras formas de acesso -->
+                            <!-- Outras formas de acesso. São opções reais do Projudi que o
+                                 simulador não implementa: recebem a variante desabilitada do
+                                 guia, em vez de disputarem atenção com o botão Entrar. -->
                             <div class="w-full">
-                                <p class="text-xs font-bold text-texto-neutro mb-3">Você também pode:</p>
-                                
-                                <div class="space-y-3">
-                                    <button type="button" class="simulacao-opcao w-full bg-[#0a083d] hover:bg-[#0a083d] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
+                                <p class="text-micro font-semibold uppercase text-rotulo mb-3">Você também pode:</p>
+
+                                <div class="flex flex-col gap-3">
+                                    <button type="button" class="simulacao-opcao w-full {% classe_botao 'desabilitado' padding=True %}">
                                         Acesso Corporativo
                                     </button>
-                                    
-                                    <button type="button" class="simulacao-opcao w-full bg-[#0a083d] hover:bg-[#0a083d] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
+
+                                    <button type="button" class="simulacao-opcao w-full {% classe_botao 'desabilitado' padding=True %}">
                                         Acessar com PDPJ
                                     </button>
-                                    
+
                                     <div class="flex items-center gap-1">
-                                        <button type="button" class="simulacao-opcao w-full bg-[#0a083d] hover:bg-[#0a083d] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
+                                        <button type="button" class="simulacao-opcao w-full {% classe_botao 'desabilitado' padding=True %}">
                                             Acessar com Certificado Digital
-                                            {% comment %} <i class="fa-solid fa-circle-question text-t jgo-blue cursor-pointer text-sm"></i> {% endcomment %}
                                         </button>
                                     </div>
-                                    
-                                    <button type="button" class="simulacao-opcao w-full bg-[#0a083d] hover:bg-[#0a083d] text-white font-bold py-2 px-4 text-sm rounded shadow-sm transition">
+
+                                    <button type="button" class="simulacao-opcao w-full {% classe_botao 'desabilitado' padding=True %}">
                                         Cadastro com Certificado Digital
                                     </button>
                                 </div>
 
-                                <p id="aviso-simulacao-opcao" class="mt-2 hidden rounded border border-atencao-bd bg-atencao-bg px-2 py-1 text-[11px] text-atencao-txt opacity-0 translate-y-1 transition-all duration-300">
+                                <p id="aviso-simulacao-opcao" class="mt-2 hidden border border-atencao-bd bg-atencao-bg px-2 py-1 text-apoio text-atencao-txt opacity-0 translate-y-1 transition-all duration-300">
                                     Opcao desativada para simulacao. Use apenas o login do sistema.
                                 </p>
                             </div>
@@ -324,8 +315,7 @@
                 </section>
             </div>
         </div>
-        
-        
+
     </main>
 
     <!-- Script para Accordion -->
@@ -338,34 +328,36 @@
             const botoesSimulacao = document.querySelectorAll('.simulacao-opcao');
             const avisoSimulacao = document.getElementById('aviso-simulacao-opcao');
             let avisoTimeoutId;
-            
+
             accordionItems.forEach(item => {
                 const header = item.querySelector('.accordion-header');
                 const content = item.querySelector('.accordion-content');
                 const icon = header.querySelector('.accordion-icon');
-                
+
                 header.addEventListener('click', function() {
                     // Verificar se este item já está aberto
                     const isOpen = !content.classList.contains('hidden');
-                    
+
                     // Fechar todos os itens
                     accordionItems.forEach(otherItem => {
                         const otherContent = otherItem.querySelector('.accordion-content');
                         const otherHeader = otherItem.querySelector('.accordion-header');
                         const otherIcon = otherHeader.querySelector('.accordion-icon');
-                        
+
                         otherContent.classList.add('hidden');
-                        otherHeader.classList.remove('bg-tjgo-navy', 'text-white');
+                        // aberto e fechado são duas classes de base.css com a mesma
+                        // geometria: trocar uma pela outra só troca a cor
+                        otherHeader.classList.remove('accordion-item-aberto');
                         otherHeader.classList.add('accordion-item-closed');
                         otherIcon.classList.remove('fa-caret-down');
                         otherIcon.classList.add('fa-caret-right');
                     });
-                    
+
                     // Se não estava aberto, abrir este item
                     if (!isOpen) {
                         content.classList.remove('hidden');
                         header.classList.remove('accordion-item-closed');
-                        header.classList.add('bg-tjgo-navy', 'text-white');
+                        header.classList.add('accordion-item-aberto');
                         icon.classList.remove('fa-caret-right');
                         icon.classList.add('fa-caret-down');
                     }
