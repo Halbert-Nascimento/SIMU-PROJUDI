@@ -1,21 +1,21 @@
 {% comment %}
-Mensagens do django.contrib.messages no estilo padrão do sistema.
+Mensagens do django.contrib.messages nos trios de estado do guia (seção 02).
 
     {% include 'base/components/_mensagens.html' %}
     {% include 'base/components/_mensagens.html' with tag="movimentacao" %}
 
-Com `tag`, só as mensagens que carregam aquele extra_tag são exibidas —
-usado nas telas que reservam uma área própria para um tipo de aviso.
+Com `tag`, só as mensagens que carregam aquele extra_tag são exibidas.
 {% endcomment %}
 {% load ui %}
 {% if messages %}
-<div class="mb-4 space-y-2">
+<div class="mb-4 flex flex-col gap-2">
     {% for message in messages %}
     {% if not tag or tag in message.tags|default:"" %}
-    <div class="p-2.5 text-xs border rounded flex items-center gap-2
-        {% if 'success' in message.tags %} bg-green-50 border-green-200 text-green-800
-        {% elif 'error' in message.tags %} bg-red-50 border-red-200 text-red-800
-        {% else %} bg-gray-50 border-gray-200 text-gray-800 {% endif %}">
+    <div class="px-[15px] py-[11px] border text-dado flex items-center gap-2.5
+        {% if 'success' in message.tags %} bg-ok-bg border-ok-bd text-ok-txt
+        {% elif 'error' in message.tags %} bg-erro-bg border-erro-bd text-erro-txt
+        {% elif 'warning' in message.tags %} bg-atencao-bg border-atencao-bd text-atencao-txt
+        {% else %} bg-neutro-bg border-neutro-bd text-neutro-txt {% endif %}">
         <i class="fa-solid {% icone_mensagem message.tags %}"></i>
         {{ message }}
     </div>

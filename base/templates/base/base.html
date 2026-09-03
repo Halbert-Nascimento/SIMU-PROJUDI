@@ -12,9 +12,12 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
 
-    <!-- Tailwind CSS para estilização idêntica -->
+    <!-- Tipografia do guia: Barlow (interface) + IBM Plex Mono (dado codificado) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome para os ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="{% static 'js/tailwind.config.global.js' %}"></script>
@@ -25,53 +28,60 @@
     {% block extra_head %}{% endblock %}            
     
 </head>
-<body class="text-tjgo-text-main font-sans text-sm antialiased flex flex-col min-h-screen"
+<body class="bg-pagina text-texto font-sans text-corpo antialiased flex flex-col min-h-screen"
       {% if user.is_authenticated %}data-session-timeout="{{ session_timeout_seconds }}"{% endif %}>
 
-    <!-- Header / Barra Superior -->
-    <header class="bg-tjgo-navy text-white h-[45px] sticky top-0 z-50">
-        <div class="w-full max-w-[1200px] h-full mx-auto px-6 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <i class="fa-solid fa-scale-balanced text-xl"></i>
-                <span class="font-bold text-lg tracking-wide">{% block header_titulo %}Processo Judicial{% endblock %}</span>
-            </div>
-            <div class="flex items-center text-gray-200">
+    <!-- Cabeçalho — guia seção 08: 60px, fio de assinatura de 3px, z 40.
+         O guia especifica 56px com logo de 42px; subimos 4px porque a barra
+         também carrega o seletor de ciclo, os ícones e o logout. -->
+    <header class="bg-navy text-white h-[60px] border-b-[3px] border-marca sticky top-0 z-cabecalho">
+        <div class="w-full max-w-conteudo h-full mx-auto px-7 flex items-center justify-between gap-6">
+
+            <a href="{% url 'base:home' %}" class="flex items-center gap-3 shrink-0">
+                <img src="{% static 'img/logo-iesgo-branco.png' %}" alt="Grupo IESGO"
+                     class="h-10 w-auto" width="124" height="40">
+                <span class="text-meta font-semibold uppercase tracking-[.16em] text-navy-40 whitespace-nowrap">
+                    {% block header_titulo %}Simu Projudi{% endblock %}
+                </span>
+            </a>
+
+            <div class="flex items-center text-navy-40">
                 {% block header_saudacao %}
                     {% if user.is_authenticated %}
-                        <span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
-                            <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> {{ user.tipo_perfil_global }} - {{ user.first_name }}
+                        <span class="text-apoio font-semibold border-r border-white/20 pr-4 flex items-center gap-2 whitespace-nowrap">
+                            <i class="fa-solid fa-circle-user text-base"></i> {{ user.tipo_perfil_global }} - {{ user.first_name }}
                         </span>
                     {% endif %}
                 {% endblock %}
 
                 {% if user.is_authenticated and ciclos_disponiveis %}
                     {% if ciclos_disponiveis|length == 1 %}
-                        <span class="text-xs border-r border-gray-500 pr-4 pl-4 flex items-center gap-1 text-gray-300" title="Ciclo ativo">
-                            <i class="fa-solid fa-rotate text-gray-400"></i>
+                        <span class="text-apoio border-r border-white/20 pr-4 pl-4 flex items-center gap-1.5 whitespace-nowrap" title="Ciclo ativo">
+                            <i class="fa-solid fa-rotate"></i>
                             {{ ciclo_ativo.nome_edicao }}
                         </span>
                     {% else %}
-                        <div class="relative border-r border-gray-500 pr-4 pl-4" id="ciclo-switcher">
+                        <div class="relative border-r border-white/20 pr-4 pl-4" id="ciclo-switcher">
                             <button type="button"
                                 onclick="document.getElementById('ciclo-menu').classList.toggle('hidden')"
-                                class="text-xs flex items-center gap-1 text-gray-300 hover:text-white transition-colors"
+                                class="text-apoio flex items-center gap-1.5 hover:text-white transition-colors whitespace-nowrap"
                                 title="Trocar ciclo ativo">
-                                <i class="fa-solid fa-rotate text-gray-400"></i>
+                                <i class="fa-solid fa-rotate"></i>
                                 {% if ciclo_ativo %}{{ ciclo_ativo.nome_edicao }}{% else %}Selecionar ciclo{% endif %}
-                                <i class="fa-solid fa-chevron-down text-[10px] ml-1"></i>
+                                <i class="fa-solid fa-chevron-down text-[9px] ml-0.5"></i>
                             </button>
                             <div id="ciclo-menu"
-                                class="hidden absolute top-full right-0 mt-1 bg-white text-tjgo-text-main rounded shadow-lg min-w-[220px] z-50 py-1">
+                                class="hidden absolute top-full right-0 mt-2 bg-white text-texto border border-contorno min-w-[220px] z-cabecalho py-1">
                                 {% for c in ciclos_disponiveis %}
                                     <form method="post" action="{% url 'ciclos:ativar_ciclo' c.pk %}">
                                         {% csrf_token %}
                                         <input type="hidden" name="next" value="{{ request.path }}">
                                         <button type="submit"
-                                            class="w-full text-left px-4 py-2 text-xs hover:bg-gray-100 flex items-center gap-2 {% if ciclo_ativo.pk == c.pk %}font-bold text-tjgo-blue{% endif %}">
+                                            class="w-full text-left px-4 py-2 text-apoio hover:bg-linha-hover flex items-center gap-2 {% if ciclo_ativo.pk == c.pk %}font-bold text-acao{% endif %}">
                                             {% if ciclo_ativo.pk == c.pk %}
-                                                <i class="fa-solid fa-circle-dot text-tjgo-blue text-[10px]"></i>
+                                                <i class="fa-solid fa-circle-dot text-acao text-[10px]"></i>
                                             {% else %}
-                                                <i class="fa-regular fa-circle text-gray-400 text-[10px]"></i>
+                                                <i class="fa-regular fa-circle text-rotulo text-[10px]"></i>
                                             {% endif %}
                                             {{ c.nome_edicao }}
                                         </button>
@@ -91,26 +101,24 @@
                     {% endif %}
                 {% endif %}
                 {% block header_acoes %}
-                <div class="flex items-center gap-1 border-r border-gray-500 pr-4">
+                <div class="flex items-center gap-1 border-r border-white/20 pr-4">
                     <i class="fa-solid fa-circle-half-stroke top-bar-icon" title="Alto Contraste"></i>
-                    <span class="font-bold ml-2 text-sm cursor-pointer">A+</span>
-                    <span class="font-bold ml-1 text-sm cursor-pointer">A-</span>
+                    <span class="font-bold ml-2 text-apoio cursor-pointer" title="Aumentar fonte">A+</span>
+                    <span class="font-bold ml-1 text-apoio cursor-pointer" title="Diminuir fonte">A-</span>
                 </div>
-                <i class="fa-solid fa-magnifying-glass top-bar-icon"></i>
-                <i class="fa-solid fa-file-lines top-bar-icon"></i>
-                <i class="fa-solid fa-dollar-sign top-bar-icon"></i>
-                <i class="fa-solid fa-list-check top-bar-icon"></i>
-                <i class="fa-solid fa-circle-question top-bar-icon"></i>
-                <i class="fa-solid fa-download top-bar-icon"></i>
+                <i class="fa-solid fa-magnifying-glass top-bar-icon" title="Pesquisar"></i>
+                <i class="fa-solid fa-file-lines top-bar-icon" title="Documentos"></i>
+                <i class="fa-solid fa-dollar-sign top-bar-icon" title="Custas"></i>
+                <i class="fa-solid fa-list-check top-bar-icon" title="Pendências"></i>
+                <i class="fa-solid fa-circle-question top-bar-icon" title="Ajuda"></i>
+                <i class="fa-solid fa-download top-bar-icon" title="Exportar"></i>
                 {% if user.is_authenticated %}
-                    
-                    <form id="logout-form" method="post" action="{% url 'acesso:logout' %}">
+                    <form id="logout-form" method="post" action="{% url 'acesso:logout' %}" class="ml-3">
                         {% csrf_token %}
-                        <button type="submit" class="text-xs font-bold hover:text-white transition-colors flex items-center gap-1">
-                            <i class="fa-solid fa-right-from-bracket top-bar-icon"></i> sair
+                        <button type="submit" class="{% classe_botao 'sobre-navy' padding=True %} flex items-center gap-1.5">
+                            <i class="fa-solid fa-right-from-bracket"></i> Sair
                         </button>
                     </form>
-                    
                 {% endif %}
                 {% endblock %}
             </div>
@@ -140,16 +148,16 @@
 
             var icon = document.createElement('i');
             icon.className = 'fa-solid fa-eye';
-            icon.style.cssText = 'font-size:0.875rem;color:#9ca3af;transition:color 0.15s;';
+            icon.style.cssText = 'font-size:0.875rem;color:#6b7280;transition:color 0.15s;';
             btn.appendChild(icon);
 
-            btn.addEventListener('mouseenter', function () { icon.style.color = '#1a5b9e'; });
-            btn.addEventListener('mouseleave', function () { icon.style.color = input.type === 'text' ? '#1a5b9e' : '#9ca3af'; });
+            btn.addEventListener('mouseenter', function () { icon.style.color = '#1f4f9c'; });
+            btn.addEventListener('mouseleave', function () { icon.style.color = input.type === 'text' ? '#1f4f9c' : '#6b7280'; });
             btn.addEventListener('click', function () {
                 var showing = input.type === 'text';
                 input.type = showing ? 'password' : 'text';
                 icon.className = showing ? 'fa-solid fa-eye' : 'fa-solid fa-eye-slash';
-                icon.style.color = showing ? '#9ca3af' : '#1a5b9e';
+                icon.style.color = showing ? '#6b7280' : '#1f4f9c';
             });
 
             parent.appendChild(btn);
@@ -159,15 +167,15 @@
 
     {% if user.is_authenticated %}
     <!-- Modal de sessão -->
-    <div id="session-modal" class="hidden fixed inset-0 z-[9999] bg-black/50">
+    <div id="session-modal" class="hidden fixed inset-0 z-modal" style="background: rgba(10,8,61,.55);">
         <div class="flex items-center justify-center h-full w-full">
-        <div class="bg-white rounded shadow-xl w-full max-w-sm mx-4 overflow-hidden">
-            <div id="session-modal-header" class="bg-tjgo-navy text-white px-5 py-3 flex items-center gap-2 text-sm font-bold uppercase">
+        <div class="bg-white border border-contorno shadow-modal w-full max-w-[420px] mx-4 overflow-hidden">
+            <div id="session-modal-header" class="bg-navy text-white px-5 py-3.5 flex items-center gap-2 text-apoio font-bold uppercase tracking-[.12em]">
                 <i id="session-modal-icon" class="fa-solid fa-clock"></i>
                 <span id="session-modal-title">Sessão prestes a expirar</span>
             </div>
-            <div class="px-5 py-4 text-sm text-gray-700 space-y-3">
-                <p id="session-modal-body">Sua sessão expirará em <strong id="session-countdown" class="text-tjgo-blue"></strong>. Deseja continuar?</p>
+            <div class="px-5 py-4 text-dado text-texto-neutro space-y-3">
+                <p id="session-modal-body">Sua sessão expirará em <strong id="session-countdown" class="text-acao font-mono"></strong>. Deseja continuar?</p>
                 <div id="session-modal-actions" class="flex gap-2 pt-1">
                     <button id="session-btn-continue"
                         onclick="sessionTimer.extend()"
@@ -210,9 +218,9 @@
         function showWarning() {
             if (warnShown) return;  // já renderizado — só atualiza o contador
             warnShown = true;
-            icon.className    = 'fa-solid fa-triangle-exclamation text-yellow-400';
+            icon.className    = 'fa-solid fa-triangle-exclamation text-atencao-bd';
             title.textContent = 'Sessão prestes a expirar';
-            body.innerHTML    = `Sua sessão expirará em <strong id="session-countdown" class="text-tjgo-blue">${fmt(remaining)}</strong>. Deseja continuar?`;
+            body.innerHTML    = `Sua sessão expirará em <strong id="session-countdown" class="text-acao font-mono">${fmt(remaining)}</strong>. Deseja continuar?`;
             actions.innerHTML = `
                 <button onclick="sessionTimer.extend()"
                     class="{% classe_botao 'primario' %} py-1 px-4 text-xs">
@@ -228,7 +236,7 @@
         function showExpired() {
             clearInterval(ticker);
             if (expireHandle) { clearTimeout(expireHandle); expireHandle = null; }
-            icon.className    = 'fa-solid fa-circle-xmark text-red-400';
+            icon.className    = 'fa-solid fa-circle-xmark text-erro-bd';
             title.textContent = 'Sessão expirada';
             body.innerHTML    = 'Sua sessão foi encerrada por inatividade. Faça login novamente para continuar.';
             actions.innerHTML = `
@@ -279,12 +287,13 @@
     <!-- Rodapé -->
     <footer class="footer">
         <div class="footer-content">
-            <div>
-                <i class="fa-solid fa-graduation-cap mr-1"></i>
-                <strong>Simulador Universitário Projudi</strong> | Faculdade IESGO
+            <div class="flex items-center gap-3">
+                <img src="{% static 'img/logo-iesgo-branco.png' %}" alt="Grupo IESGO"
+                     class="h-7 w-auto" width="87" height="28">
+                <span>Simulador Universitário Projudi · Faculdade IESGO</span>
             </div>
             <div>
-                <span class="footer-badge">Em Desenvolvimento</span>
+                <span class="footer-badge">Em desenvolvimento</span>
             </div>
         </div>
     </footer>

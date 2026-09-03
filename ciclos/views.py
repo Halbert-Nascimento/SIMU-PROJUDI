@@ -316,10 +316,12 @@ def selecionar_ciclo(request):
 def ativar_ciclo(request, ciclo_id):
     """Salva o ciclo escolhido na sessão após validar que o usuário tem acesso."""
     ciclo = get_object_or_404(
+        # distinct(): o OR sobre a M2M participantes duplica a linha quando o
+        # usuário é coordenador e participante do mesmo ciclo.
         CicloSimulacao.objects.filter(
             Q(coordenador=request.user) | Q(participantes=request.user),
             status__nome_status__iexact="em andamento",
-        ),
+        ).distinct(),
         pk=ciclo_id,
     )
     request.session[CICLO_SESSION_KEY] = ciclo.pk

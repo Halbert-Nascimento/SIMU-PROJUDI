@@ -158,6 +158,13 @@ STATIC_URL = '/static/'
 STATICFILES_DIRS = (os.path.join(BASE_DIR, 'templates/static'),)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    # Carimba ?v=<mtime> nas URLs de {% static %}: sem isso o navegador
+    # continua servindo o CSS/JS antigo que tem em cache.
+    "staticfiles": {"BACKEND": "base.storage.StaticFilesVersionados"},
+}
+
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_URL = '/media/'
 

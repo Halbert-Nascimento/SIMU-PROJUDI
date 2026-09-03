@@ -8,106 +8,87 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <style>
-
+    /* Filtros em linha — guia seção 05: gap 12px, alinhamento flex-end,
+       botões empurrados por margin-left auto. */
     .filtros {
-        background: #f4f4f4;
-        border: 1px solid #d1d1d1;
-        padding: 10px 12px;
+        background: #fbfbfc;
+        border: 1px solid #e2e5ea;
+        padding: 14px 16px;
         display: flex;
-        gap: 10px;
+        gap: 12px;
         align-items: flex-end;
         flex-wrap: wrap;
     }
     .filtros label {
-        font-size: 11px;
-        font-weight: bold;
-        color: #444;
         display: block;
-        margin-bottom: 3px;
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: .1em;
         text-transform: uppercase;
+        color: #6b7280;
+        margin-bottom: 5px;
     }
     .filtros input, .filtros select {
-        border: 1px solid #b8b8b8;
-        padding: 4px 6px;
+        border: 1px solid #d3d7de;
+        border-radius: 2px;
+        padding: 8px 9px;
         font-size: 12px;
         background: #fff;
-        border-radius: 2px;
+        color: #23262e;
     }
     .filtros input:focus, .filtros select:focus {
         outline: none;
-        border-color: #1a5b9e;
-        box-shadow: 0 0 0 1px #1a5b9e;
+        border-color: #1f4f9c;
     }
-    .btn-proj {
-        background: #1e5894;
-        color: #fff;
-        padding: 5px 14px;
-        font-size: 11px;
-        font-weight: bold;
-        text-transform: uppercase;
-        border: 1px solid #154170;
-        border-radius: 2px;
-        cursor: pointer;
-    }
-    .btn-proj:hover { background: #226bb8; }
-    .btn-sec {
-        background: #fff;
-        color: #333;
-        border: 1px solid #b8b8b8;
-        padding: 5px 14px;
-        font-size: 11px;
-        font-weight: bold;
-        text-transform: uppercase;
-        border-radius: 2px;
-        cursor: pointer;
-    }
-    .btn-sec:hover { background: #eee; }/* Modal */
+    .filtros .acoes { margin-left: auto; display: flex; gap: 8px; }
 
+    /* Cartão de grupo dentro do modal de atribuição */
     .grp-card {
-        border: 1px solid #d1d1d1; border-radius: 3px; padding: 10px;
-        display: flex; align-items: center; gap: 10px; cursor: pointer;
-        background: #fff; transition: all .12s;
+        border: 1px solid #e2e5ea;
+        padding: 11px 12px;
+        display: flex; align-items: center; gap: 11px;
+        cursor: pointer; background: #fff;
+        transition: background-color .12s ease, border-color .12s ease;
     }
-    .grp-card:hover { background: #f4f9ff; border-color: #1a5b9e; }
-    .grp-card.selected { background: #e9f1fa; border-color: #1a5b9e; box-shadow: inset 0 0 0 1px #1a5b9e; }
+    .grp-card:hover { background: #f7faff; border-color: #1f4f9c; }
+    .grp-card.selected { background: #f7faff; border-color: #1f4f9c; box-shadow: inset 0 0 0 1px #1f4f9c; }
     .grp-avatar {
-        width: 36px; height: 36px; border-radius: 50%;
-        background: #1a5b9e; color: #fff;
+        width: 34px; height: 34px; border-radius: 50%;
+        background: #1f4f9c; color: #fff;
         display: flex; align-items: center; justify-content: center;
-        font-weight: bold; font-size: 13px; flex-shrink: 0;
+        font-weight: 600; font-size: 12px; flex-shrink: 0;
     }
-    .grp-card .check { color: #ccc; font-size: 18px; }
-    .grp-card.selected .check { color: #1a5b9e; }/* Toast */
-
+    .grp-card .check { color: #d3d7de; font-size: 16px; }
+    .grp-card.selected .check { color: #1f4f9c; }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Navigation Bar -->
-{% nav_secundaria %}
+{% nav_secundaria ativo='inicio' %}
 
 <!-- Main Content -->
-<main class="max-w-container mx-auto px-6 py-5">
+<main class="max-w-conteudo mx-auto px-6 py-5">
 
     <!-- Cabecalho -->
-    <div class="mb-4 pb-3 border-b border-gray-200 flex items-end gap-4">
+    <div class="mb-5 pb-4 border-b border-contorno flex items-end gap-4">
         <div class="flex-1">
-            <h1 class="text-[#1a5b9e] text-2xl font-bold flex items-center gap-2">
+            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
                 {% if is_serventia %}
                 <i class="fa-solid fa-user-tie"></i> Área do Serventuário
                 {% else %}
                 <i class="fa-solid fa-user"></i> Área do Servidor
                 {% endif %}
             </h1>
-            <p class="text-[12px] text-gray-700 mt-1">
+            <p class="text-corpo text-texto-neutro mt-1.5">
                 {{ saudacao }}, <strong>{% if usuario.get_full_name %}{{ usuario.get_full_name|upper }}{% else %}{{ usuario.username|upper }}{% endif %}</strong> | Seja bem vindo ao <strong>Processo Judicial</strong>
             </p>
             {% if serventia %}
-            <p class="text-[12px] text-gray-700">{{ serventia }}{% if cargo %} — {{ cargo }}{% endif %}</p>
+            <p class="text-corpo text-texto-neutro">{{ serventia }}{% if cargo %} — {{ cargo }}{% endif %}</p>
             {% endif %}
-            <p class="text-[12px] text-gray-700">E-mail: <span class="text-[#1a5b9e]">{{ usuario.email }}</span></p>
+            <p class="text-corpo text-texto-neutro">E-mail: <span class="text-acao">{{ usuario.email }}</span></p>
         </div>
-        <div class="text-[11px] text-gray-500 text-right">
+        <div class="text-apoio text-rotulo text-right">
             {% if penultimo_login %}
             <div>Último acesso: <strong>{{ penultimo_login|date:"d/m/Y" }} às {{ penultimo_login|date:"H:i" }}</strong></div>
             {% endif %}
@@ -122,7 +103,7 @@
     <form method="GET" action="{% url 'processos:pagina_aluno' %}" class="filtros mb-5">
         <div>
             <label>Nº do Processo</label>
-            <input type="text" name="numero" value="{{ filtro_numero }}" placeholder="0000000-00.0000.0.00.0000" style="width:220px;">
+            <input type="text" name="numero" value="{{ filtro_numero }}" placeholder="0000000-00.0000.0.00.0000" class="font-mono" style="width:230px;">
         </div>
         <div>
             <label>Classe</label>
@@ -142,23 +123,23 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="flex gap-2">
-            <button type="submit" class="btn-proj"><i class="fa-solid fa-magnifying-glass mr-1"></i> Pesquisar</button>
-            <a href="{% url 'processos:pagina_aluno' %}" class="btn-sec">Limpar</a>
+        <div class="acoes">
+            <button type="submit" class="{% classe_botao 'primario' padding=True %}"><i class="fa-solid fa-magnifying-glass mr-1.5"></i> Pesquisar</button>
+            <a href="{% url 'processos:pagina_aluno' %}" class="{% classe_botao 'secundario' padding=True %} inline-flex items-center">Limpar</a>
         </div>
     </form>
 
     <!-- Tabela de processos -->
-    <div class="flex items-center justify-between mb-2">
-        <h2 class="section-title flex-1" style="margin:0;">
+    <h2 class="section-title justify-between">
+        <span class="flex items-center gap-2">
             <i class="fa-solid fa-list"></i> {% if is_serventia %}PROCESSOS DA VARA{% else %}PROCESSOS VINCULADOS{% endif %}
-        </h2>
+        </span>
         {% if page_obj %}
-        <div class="text-[11px] text-gray-600 ml-2">
-            Exibindo <strong>{{ page_obj|length }}</strong> de <strong>{{ total_processos }}</strong> processo{{ total_processos|pluralize:"s" }}
-        </div>
+        <span class="text-apoio text-rotulo font-normal normal-case tracking-normal">
+            Exibindo <strong class="font-semibold text-texto">{{ page_obj|length }}</strong> de <strong class="font-semibold text-texto">{{ total_processos }}</strong> processo{{ total_processos|pluralize:"s" }}
+        </span>
         {% endif %}
-    </div>
+    </h2>
 
     <div class="overflow-x-auto">
         <table class="tbl-projudi">
@@ -176,15 +157,15 @@
                 {% for processo in page_obj %}
                 <tr data-id="{{ processo.id }}">
                     {% if is_serventia %}<td><input type="checkbox" class="rowChk" value="{{ processo.id }}"></td>{% endif %}
-                    <td class="font-mono text-[11px]"><a href="{% url 'processos:visualizar_processo' processo.numero %}">{{ processo.numero }}</a></td>
-                    <td class="text-[11px]">{{ processo.partes_resumo }}</td>
-                    <td class="text-[11px]">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
+                    <td class="font-mono text-dado"><a href="{% url 'processos:visualizar_processo' processo.numero %}">{{ processo.numero }}</a></td>
+                    <td class="text-dado">{{ processo.partes_resumo }}</td>
+                    <td class="text-apoio text-rotulo">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
                     <td>
                         {% pill_status_processo processo.status_atual %}
                     </td>
                     {% if is_serventia %}
                     <td class="text-center">
-                        <button type="button" class="text-[#1a5b9e] hover:text-[#226bb8] btn-atribuir-row" data-id="{{ processo.id }}" data-num="{{ processo.numero }}" data-classe="{{ processo.classe.nome }}" title="Atribuir grupo">
+                        <button type="button" class="text-acao hover:text-navy btn-atribuir-row" data-id="{{ processo.id }}" data-num="{{ processo.numero }}" data-classe="{{ processo.classe.nome }}" title="Atribuir grupo">
                             <i class="fa-solid fa-users-gear"></i>
                         </button>
                     </td>
@@ -192,7 +173,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="{% if is_serventia %}6{% else %}4{% endif %}" class="text-center italic py-4" style="color: #666;">
+                    <td colspan="{% if is_serventia %}6{% else %}4{% endif %}" class="text-center italic py-6 text-rotulo">
                         Nenhum processo vinculado ao seu usuário.
                     </td>
                 </tr>
@@ -203,31 +184,31 @@
 
     <!-- Ações em lote (serventia) -->
     {% if is_serventia and page_obj %}
-    <div class="flex items-center justify-between mt-4 text-[12px]">
+    <div class="flex items-center justify-between mt-4 text-corpo">
         <div class="flex items-center gap-2">
-            <button type="button" class="btn-sec" id="bulkAssign">
+            <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="bulkAssign">
                 <i class="fa-solid fa-users-gear mr-1"></i> Atribuir grupo aos selecionados
             </button>
-            <span id="selCount" class="text-gray-500">0 selecionados</span>
+            <span id="selCount" class="text-rotulo">0 selecionados</span>
         </div>
 
         <!-- Paginação -->
         {% if page_obj.paginator.num_pages > 1 %}
         <div class="flex items-center gap-1">
             {% if page_obj.has_previous %}
-            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-left"></i></a>
-            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-left"></i></a>
+            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-left"></i></a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-left"></i></a>
             {% endif %}
             {% for num in page_obj.paginator.page_range %}
                 {% if num == page_obj.number %}
-                <span class="px-3 py-1 bg-[#1a5b9e] text-white font-bold text-[11px]">{{ num }}</span>
+                <span class="px-3 py-1.5 bg-navy text-white border border-navy font-bold text-meta">{{ num }}</span>
                 {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-3 text-[11px]">{{ num }}</a>
+                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-3 py-1.5 inline-flex items-center">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-right"></i></a>
-            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-right"></i></a>
+            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-right"></i></a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-right"></i></a>
             {% endif %}
         </div>
         {% endif %}
@@ -235,22 +216,22 @@
     {% else %}
     <!-- Paginação (sem serventia) -->
     {% if page_obj.paginator.num_pages > 1 %}
-    <div class="flex items-center justify-end mt-4 text-[12px]">
+    <div class="flex items-center justify-end mt-4 text-corpo">
         <div class="flex items-center gap-1">
             {% if page_obj.has_previous %}
-            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-left"></i></a>
-            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-left"></i></a>
+            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-left"></i></a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-left"></i></a>
             {% endif %}
             {% for num in page_obj.paginator.page_range %}
                 {% if num == page_obj.number %}
-                <span class="px-3 py-1 bg-[#1a5b9e] text-white font-bold text-[11px]">{{ num }}</span>
+                <span class="px-3 py-1.5 bg-navy text-white border border-navy font-bold text-meta">{{ num }}</span>
                 {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-3 text-[11px]">{{ num }}</a>
+                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-3 py-1.5 inline-flex items-center">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-right"></i></a>
-            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-right"></i></a>
+            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-right"></i></a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-right"></i></a>
             {% endif %}
         </div>
     </div>
@@ -264,40 +245,40 @@
 {% modal id="grpModal" titulo="Atribuir Grupo ao Processo" icone="fa-users-gear" fechar_id="modalClose" %}
 
         <div class="p-5">
-            <div class="mb-3 text-[12px]">
-                <div class="text-gray-500 uppercase text-[10px] font-bold">Processo</div>
-                <div id="modalProcNum" class="font-bold text-[#1a5b9e]">—</div>
-                <div id="modalProcClass" class="text-gray-600">—</div>
+            <div class="mb-4 text-corpo">
+                <div class="text-rotulo uppercase text-micro font-semibold">Processo</div>
+                <div id="modalProcNum" class="font-mono font-medium text-acao text-dado mt-1">—</div>
+                <div id="modalProcClass" class="text-apoio text-rotulo">—</div>
             </div>
 
-            <div class="text-[11px] font-bold uppercase text-gray-600 mb-2">Selecione os grupos responsáveis</div>
+            <div class="text-micro font-semibold uppercase text-rotulo mb-2.5">Selecione os grupos responsáveis</div>
 
             <div class="space-y-2 max-h-[280px] overflow-y-auto pr-1" id="grpList">
                 {% for g in grupos_ciclo %}
                 <div class="grp-card" data-grupo-id="{{ g.id }}">
                     <div class="grp-avatar">{{ g.nome|truncatechars:1 }}</div>
                     <div class="flex-1">
-                        <div class="text-[13px] font-bold text-gray-800">{{ g.nome }}</div>
-                        <div class="text-[11px] text-gray-500">{{ g.cargo_simulacao.nome }}</div>
+                        <div class="text-dado font-semibold text-texto">{{ g.nome }}</div>
+                        <div class="text-meta text-rotulo">{{ g.cargo_simulacao.nome }}</div>
                     </div>
                     <i class="fa-solid fa-circle check"></i>
                 </div>
                 {% endfor %}
                 <div class="grp-card" data-grupo-id="">
-                    <div class="grp-avatar" style="background:#aaa;"><i class="fa-solid fa-ban"></i></div>
+                    <div class="grp-avatar" style="background:#6b7280;"><i class="fa-solid fa-ban"></i></div>
                     <div class="flex-1">
-                        <div class="text-[13px] font-bold text-gray-800">Remover atribuição</div>
-                        <div class="text-[11px] text-gray-500">Processo ficará sem grupo definido</div>
+                        <div class="text-dado font-semibold text-texto">Remover atribuição</div>
+                        <div class="text-meta text-rotulo">Processo ficará sem grupo definido</div>
                     </div>
                     <i class="fa-solid fa-circle check"></i>
                 </div>
             </div>
         </div>
 
-        <div class="bg-gray-50 px-5 py-3 flex justify-end gap-2 border-t border-gray-200">
-            <button type="button" class="btn-sec" id="modalCancel">Cancelar</button>
-            <button type="button" class="btn-proj" id="modalConfirm">
-                <i class="fa-solid fa-check mr-1"></i> Confirmar Atribuição
+        <div class="modal-acoes">
+            <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="modalCancel">Cancelar</button>
+            <button type="button" class="{% classe_botao 'primario' padding=True %}" id="modalConfirm">
+                <i class="fa-solid fa-check mr-1.5"></i> Confirmar Atribuição
             </button>
         </div>
     {% endmodal %}

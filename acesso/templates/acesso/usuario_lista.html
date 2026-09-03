@@ -15,15 +15,15 @@
 
             {% include 'base/components/_mensagens.html' %}
 
-            <div class="border border-gray-200 bg-white">
+            <div class="border border-contorno bg-white">
                 <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
                     <i class="fa-solid fa-list mr-2 text-sm"></i> USUÁRIOS CADASTRADOS
                 </div>
 
-                <div class="p-5 text-[13px] leading-relaxed text-gray-800 overflow-x-auto">
+                <div class="p-5 text-[13px] leading-relaxed text-texto overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="text-xs uppercase text-gray-600 border-b">
+                            <tr class="text-xs uppercase text-texto-neutro border-b">
                                 <th class="py-2 pr-3">Usuário</th>
                                 <th class="py-2 pr-3">Email</th>
                                 <th class="py-2 pr-3">Tipo</th>
@@ -39,9 +39,9 @@
                                     <td class="py-2 pr-3">{{ u.tipo_perfil_global }}</td>
                                     <td class="py-2 pr-3">
                                         {% if u.is_active %}
-                                            <span class="text-green-700 font-bold">Ativo</span>
+                                            <span class="text-ok-txt font-bold">Ativo</span>
                                         {% else %}
-                                            <span class="text-red-700 font-bold">Inativo</span>
+                                            <span class="text-erro-txt font-bold">Inativo</span>
                                         {% endif %}
                                     </td>
                                     <td class="py-2 pr-3">
@@ -60,13 +60,13 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td class="py-4 text-sm text-gray-500" colspan="5">Nenhum usuário encontrado.</td>
+                                    <td class="py-4 text-sm text-rotulo" colspan="5">Nenhum usuário encontrado.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
 
-                    <p class="text-xs text-gray-500 mt-3">
+                    <p class="text-xs text-rotulo mt-3">
                         Usuários pendentes ficam <strong>Inativos</strong> até aprovação.
                     </p>
                 </div>
@@ -76,7 +76,7 @@
 </main>
 
 <div id="modal-overlay" class="fixed inset-0 z-[60] hidden bg-black/40 p-4">
-    <div class="mx-auto mt-10 w-full max-w-lg border border-gray-200 bg-white shadow-card">
+    <div class="mx-auto mt-10 w-full max-w-lg border border-contorno bg-white shadow-modal">
         <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center justify-between">
             <div class="flex items-center">
                 <i class="fa-solid fa-user-check mr-2 text-sm"></i>
@@ -85,8 +85,8 @@
             <button id="modal-close-top" type="button" class="text-white text-xs font-bold hover:underline">fechar</button>
         </div>
 
-        <div class="p-5 text-[13px] leading-relaxed text-gray-800">
-            <p class="text-gray-600 mb-3">
+        <div class="p-5 text-[13px] leading-relaxed text-texto">
+            <p class="text-texto-neutro mb-3">
                 <strong>Usuario:</strong> <span id="modal-username">-</span><br>
                 <strong>Email:</strong> <span id="modal-email">-</span>
             </p>
@@ -108,7 +108,7 @@
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input id="modal-is-active" name="is_active" type="checkbox" value="on" class="h-4 w-4 border-gray-300 text-tjgo-blue focus:ring-tjgo-blue">
+                    <input id="modal-is-active" name="is_active" type="checkbox" value="on" class="h-4 w-4 border-campo-borda text-tjgo-blue focus:ring-tjgo-blue">
                     <label for="modal-is-active" class="text-xs font-bold text-tjgo-text-main uppercase">Ativo</label>
                 </div>
 

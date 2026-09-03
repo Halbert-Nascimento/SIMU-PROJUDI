@@ -1,10 +1,12 @@
-/* Animações de modal — exclusivo do painel administrativo */
-.modal-overlay {
-    transition: opacity 0.2s ease-in-out;
-}
-.modal-content {
-    transition: transform 0.2s ease-in-out;
-    transform: scale(0.95);
-}
+/* Animação dos modais do painel administrativo e da gestão de grupos.
+   Estes usam .modal-overlay como backdrop interno e alternam .modal-active —
+   contrato diferente do componente {% modal %}, que usa .modal-fundo/.open. */
+
+.modal-overlay { transition: opacity .16s ease-in-out; }
+.modal-content { transition: transform .16s ease-in-out; transform: translateY(-6px); }
 .modal-active .modal-overlay { opacity: 1; pointer-events: auto; }
-.modal-active .modal-content { transform: scale(1); }
+.modal-active .modal-content { transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+    .modal-overlay, .modal-content { transition: none; }
+}

@@ -8,20 +8,20 @@
 {% block content %}
 <main class="main-container px-10 py-8">
 
-    <div class="mb-6 border-b border-gray-100 pb-4">
+    <div class="mb-6 border-b border-divisor pb-4">
         <h2 class="text-tjgo-blue text-xl font-bold flex items-center gap-2">
             <i class="fa-solid fa-user-plus"></i> Cadastro de Usuário
         </h2>
-        <p class="text-gray-500 text-sm mt-1">Preencha os dados abaixo para criar sua conta no Simulador Projudi.</p>
+        <p class="text-rotulo text-sm mt-1">Preencha os dados abaixo para criar sua conta no Simulador Projudi.</p>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-x-[5%]">
         <section>
-            <div class="border border-gray-200 bg-white">
+            <div class="border border-contorno bg-white">
                 <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
                     <i class="fa-solid fa-id-card mr-2 text-sm"></i> DADOS BÁSICOS DE ACESSO
                 </div>
-                <div class="p-5 text-[13px] leading-relaxed text-gray-800">
+                <div class="p-5 text-[13px] leading-relaxed text-texto">
                     <form method="post" novalidate class="space-y-3">
                         {% csrf_token %}
 
@@ -35,13 +35,13 @@
                                     <p class="mt-1 text-xs text-tjgo-text-light">{{ field.help_text|safe }}</p>
                                 {% endif %}
                                 {% for error in field.errors %}
-                                    <p class="mt-1 text-xs text-[#b54a65]">{{ error }}</p>
+                                    <p class="mt-1 text-xs text-[#b33a3a]">{{ error }}</p>
                                 {% endfor %}
                             </div>
                         {% endfor %}
 
                         {% for error in form.non_field_errors %}
-                            <p class="text-xs text-[#b54a65]">{{ error }}</p>
+                            <p class="text-xs text-[#b33a3a]">{{ error }}</p>
                         {% endfor %}
 
                         <div class="flex justify-start gap-2 pt-2">
@@ -60,17 +60,17 @@
         <aside class="space-y-4">
 
             <!-- COMO FUNCIONA -->
-            {% card titulo="COMO FUNCIONA" icone="fa-circle-info" classe_corpo="p-4 space-y-3 text-xs text-gray-600" %}
+            {% card titulo="COMO FUNCIONA" icone="fa-circle-info" classe_corpo="p-4 space-y-3 text-xs text-texto-neutro" %}
                     <div class="flex items-start gap-2">
                         <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-navy text-white text-[10px] font-bold mt-0.5">1</span>
                         <span><strong class="text-tjgo-text-main">Dados de Acesso</strong> — Preencha seu cadastro com os dados de login e senha.</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-gray-card text-gray-500 text-[10px] font-bold mt-0.5">2</span>
+                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-gray-card text-rotulo text-[10px] font-bold mt-0.5">2</span>
                         <span><strong class="text-tjgo-text-main">Ativação</strong> — Um administrador, coordenador ou professor irá ativar o cadastro, liberando seu acesso.</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-gray-card text-gray-500 text-[10px] font-bold mt-0.5">3</span>
+                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-gray-card text-rotulo text-[10px] font-bold mt-0.5">3</span>
                         <span><strong class="text-tjgo-text-main">Acesso Liberado</strong> — Com o acesso ativado, você já pode entrar no sistema.</span>
                     </div>
                 {% endcard %}
@@ -78,32 +78,32 @@
             <!-- REQUISITOS DE SENHA -->
             {% card titulo="REQUISITOS DE SENHA" icone="fa-shield-halved" classe_corpo="p-4" %}
                     <ul class="space-y-1.5 text-xs">
-                        <li id="req_len" class="flex items-center gap-2 text-gray-400">
+                        <li id="req_len" class="flex items-center gap-2 text-rotulo">
                             <i class="fa-solid fa-circle text-[8px]"></i> Mínimo de 8 caracteres
                         </li>
-                        {% comment %} <li id="req_upper" class="flex items-center gap-2 text-gray-400">
+                        {% comment %} <li id="req_upper" class="flex items-center gap-2 text-rotulo">
                             <i class="fa-solid fa-circle text-[8px]"></i> Ao menos uma letra maiúscula
                         </li> {% endcomment %}
-                        {% comment %} <li id="req_num" class="flex items-center gap-2 text-gray-400">
+                        {% comment %} <li id="req_num" class="flex items-center gap-2 text-rotulo">
                             <i class="fa-solid fa-circle text-[8px]"></i> Ao menos um número
                         </li> {% endcomment %}
-                        {% comment %} <li id="req_special" class="flex items-center gap-2 text-gray-400">
+                        {% comment %} <li id="req_special" class="flex items-center gap-2 text-rotulo">
                             <i class="fa-solid fa-circle text-[8px]"></i> Ao menos um caractere especial
                         </li> {% endcomment %}
-                        <li class="flex items-center gap-2 text-gray-400   ">
+                        <li class="flex items-center gap-2 text-rotulo   ">
                             <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser inteiramente numérica
                         </li>
-                        <li class="flex items-center gap-2 text-gray-400">
+                        <li class="flex items-center gap-2 text-rotulo">
                             <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser uma senha comumente utilizada
                         </li>
-                        <li class="flex items-center gap-2 text-gray-400">
+                        <li class="flex items-center gap-2 text-rotulo">
                             <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser similar às suas informações pessoais
                         </li>
                     </ul>
                 {% endcard %}
 
             <!-- SUPORTE -->
-            {% card titulo="SUPORTE" icone="fa-headset" classe_corpo="p-4 text-xs text-gray-600 space-y-2" %}
+            {% card titulo="SUPORTE" icone="fa-headset" classe_corpo="p-4 text-xs text-texto-neutro space-y-2" %}
                     <p>Dúvidas sobre o cadastro? Entre em contato com a coordenação do simulador.</p>
                     <a href="mailto:simulador@tjgo.jus.br" class="text-tjgo-blue font-bold hover:underline flex items-center gap-1">
                         <i class="fa-solid fa-envelope text-[11px]"></i> simulador@tjgo.jus.br
@@ -122,7 +122,7 @@
     function showError(input, msg) {
         removeError(input);
         const p = document.createElement('p');
-        p.className = 'mt-1 text-xs text-[#b54a65] js-field-error';
+        p.className = 'mt-1 text-xs text-[#b33a3a] js-field-error';
         p.textContent = msg;
         input.closest('div').appendChild(p);
     }
@@ -181,8 +181,8 @@
     function setReq(id, ok){
         const el = document.getElementById(id);
         if(!el) return;
-        el.classList.toggle('text-green-600', ok);
-        el.classList.toggle('text-gray-400', !ok);
+        el.classList.toggle('text-ok-txt', ok);
+        el.classList.toggle('text-rotulo', !ok);
         el.querySelector('i').className = 'fa-solid text-[8px] ' + (ok ? 'fa-circle-check' : 'fa-circle');
     }
 

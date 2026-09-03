@@ -3,7 +3,7 @@
 {% block title %}Selecionar Ciclo — Simulador Projudi{% endblock %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-45px)] bg-gray-50 flex items-center justify-center px-4 py-12">
+<div class="min-h-[calc(100vh-45px)] bg-card-topo flex items-center justify-center px-4 py-12">
     <div class="w-full max-w-lg">
 
         <div class="text-center mb-8">
@@ -11,7 +11,7 @@
                 <i class="fa-solid fa-rotate text-tjgo-blue text-2xl"></i>
             </div>
             <h1 class="text-xl font-bold text-tjgo-text-main">Selecione o Ciclo</h1>
-            <p class="text-sm text-gray-500 mt-1">
+            <p class="text-sm text-rotulo mt-1">
                 Você está vinculado a mais de um ciclo em andamento.<br>
                 Escolha em qual deseja atuar agora.
             </p>
@@ -25,17 +25,17 @@
                     <input type="hidden" name="next" value="{{ next }}">
                 {% endif %}
                 <button type="submit"
-                    class="w-full text-left bg-white border border-gray-200 rounded-lg px-5 py-4 hover:border-tjgo-blue hover:shadow-md transition-all group flex items-center justify-between">
+                    class="w-full text-left bg-white border border-contorno rounded-lg px-5 py-4 hover:border-tjgo-blue hover:shadow-md transition-all group flex items-center justify-between">
                     <div>
                         <p class="font-semibold text-tjgo-text-main group-hover:text-tjgo-blue transition-colors">
                             {{ ciclo.nome_edicao }}
                         </p>
-                        <p class="text-xs text-gray-400 mt-0.5">
+                        <p class="text-xs text-rotulo mt-0.5">
                             {{ ciclo.semestre }}º semestre / {{ ciclo.ano }}
                             {% if ciclo.periodo %} &middot; Período {{ ciclo.periodo }}{% endif %}
                         </p>
                     </div>
-                    <i class="fa-solid fa-arrow-right text-gray-300 group-hover:text-tjgo-blue transition-colors"></i>
+                    <i class="fa-solid fa-arrow-right text-rotulo group-hover:text-tjgo-blue transition-colors"></i>
                 </button>
             </form>
             {% endfor %}

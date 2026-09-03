@@ -6,13 +6,13 @@ notificações e da saudação. Era o mesmo bloco copiado em quatro templates.
 {% endcomment %}
 
 {% block header_saudacao %}
-<a href="#" class="relative mr-6 text-gray-200 hover:text-white transition-colors" title="Notificações do Sistema">
-    <i class="fa-solid fa-bell text-lg"></i>
-    <span class="absolute -top-1.5 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 rounded-full border border-tjgo-navy flex items-center justify-center leading-none">3</span>
+<a href="#" class="relative mr-6 text-navy-40 hover:text-white transition-colors" title="Notificações do Sistema">
+    <i class="fa-solid fa-bell text-base"></i>
+    <span class="absolute -top-1.5 -right-2 bg-marca text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">3</span>
 </a>
 {% if user.is_authenticated %}
-<span class="text-xs font-bold border-r border-gray-500 pr-4 flex items-center gap-2">
-    <i class="fa-solid fa-circle-user text-lg text-gray-300"></i> Olá, {{ user.tipo_perfil_global }} - {{ user.first_name }}
+<span class="text-apoio font-semibold border-r border-white/20 pr-4 flex items-center gap-2 whitespace-nowrap">
+    <i class="fa-solid fa-circle-user text-base"></i> Olá, {{ user.tipo_perfil_global }} - {{ user.first_name }}
 </span>
 {% endif %}
 {% endblock %}

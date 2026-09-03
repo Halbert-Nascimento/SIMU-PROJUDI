@@ -1,146 +1,187 @@
 /* ============================================================================
    Componentes de UI compartilhados — carregado uma única vez em base/base.html.
-   Regra: só entra aqui a classe usada por mais de um template.
-   Estilo exclusivo de uma tela continua no <style> daquele template.
+   Valores do Guia de Design (IESGO, versão 1.0).
+
+   Regra: só entra aqui a classe usada por mais de um template. Estilo exclusivo
+   de uma tela continua no <style> daquela tela.
+
+   Os nomes de classe são os mesmos de antes — o HTML não precisa mudar para
+   receber a pele nova.
    ========================================================================== */
 
-/* ── Títulos de seção ──────────────────────────────────────────────────────
-   Antes duplicados entre processos_compartilhado.css e o <style> de
-   pagina_aluno.html (que usava 13px/4px). Unificado na versão de 12px. */
+/* ── Títulos de seção ───────────────────────────────────────────────────────
+   Guia seção 03: título de card é 11px / 700 / .12em / caixa alta em navy. */
 .section-title {
-    color: #1a5b9e; font-size: 12px; font-weight: bold;
-    text-transform: uppercase; padding: 4px 0 4px 8px;
-    border-left: 3px solid #1a5b9e; background: #f4f4f4;
-    margin: 10px 0 0 0;
-    display: flex; align-items: center; gap: 6px;
+    color: #0a083d; font-size: 11px; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+    padding: 9px 16px; background: #fbfbfc;
+    border: 1px solid #e2e5ea;
+    margin: 14px 0 0 0;
+    display: flex; align-items: center; gap: 8px;
 }
-.section-title.green { color: #1f6020; border-left-color: #1f6020; }
+.section-title.green { color: #2e7d32; }
 
 .autos-title {
-    color: #1a5b9e; font-size: 11px; font-weight: bold;
-    text-transform: uppercase; padding: 2px 0 2px 4px;
-    display: flex; align-items: center; gap: 4px;
+    color: #0a083d; font-size: 11px; font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase;
+    padding: 2px 0; margin: 0;
+    display: flex; align-items: center; gap: 7px;
 }
-.autos-title.green { color: #1f6020; }
+.autos-title.green { color: #2e7d32; }
 
-/* ── Pill / etiqueta de situação ───────────────────────────────────────────
-   Padding unificado em 2px 8px (antes 1px 7px em duas telas).
-   Os nomes .aval/.pend são mantidos como sinônimos de .ok/.warn para não
-   exigir alteração do HTML das telas que já os usam. */
+/* ── Etiqueta de situação ───────────────────────────────────────────────────
+   Guia seção 02: deixa de ser pílula. Raio 0, trio fundo/texto/borda.
+   .aval e .pend seguem como sinônimos de .ok e .warn. */
 .pill {
-    display: inline-block; padding: 2px 8px;
-    font-size: 10px; font-weight: bold;
-    border-radius: 10px; text-transform: uppercase;
+    display: inline-flex; align-items: center;
+    padding: 3px 9px; border: 1px solid;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: .07em; text-transform: uppercase;
+    white-space: nowrap; border-radius: 0;
 }
 .pill.ok,
-.pill.aval  { background: #dff5e1; color: #2e7d32; border: 1px solid #bee0c2; }
+.pill.aval  { background: #eaf4ec; color: #2e7d32; border-color: #bee0c2; }
 .pill.warn,
-.pill.pend  { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
-.pill.gray  { background: #eee;    color: #555;    border: 1px solid #ccc; }
+.pill.pend  { background: #fff5e4; color: #a96400; border-color: #f1d59c; }
+.pill.erro  { background: #fdeeee; color: #b33a3a; border-color: #f3cfcf; }
+.pill.gray  { background: #f1f2f4; color: #5b6270; border-color: #d8dbe1; }
 
-/* ── Modal ────────────────────────────────────────────────────────────────
-   Overlay idêntico nas três telas que o usavam. A largura varia por tela e
-   virou modificador; a animação de entrada, antes só em pagina_aluno.html,
-   agora vale para todos. */
-.modal-overlay {
-    position: fixed; inset: 0; background: rgba(0, 0, 0, .45);
-    display: none; align-items: center; justify-content: center; z-index: 100;
+/* ── Modal ──────────────────────────────────────────────────────────────────
+   Guia seção 07: 560px, sem raio, overlay navy 55%, entrada de 160ms.
+   O nome é .modal-fundo, e não .modal-overlay, porque painel_administrativo e
+   gerenciar_grupos já usam .modal-overlay para o backdrop interno dos modais
+   deles — nomes iguais para coisas diferentes se anulavam na cascata. */
+.modal-fundo {
+    position: fixed; inset: 0; background: rgba(10, 8, 61, .55);
+    display: none; align-items: center; justify-content: center; z-index: 60;
 }
-.modal-overlay.open { display: flex; }
+.modal-fundo.open { display: flex; }
 
 .modal {
-    background: #fff; width: 580px; max-width: 92vw;
-    border-radius: 4px; overflow: hidden;
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-    transform: scale(.96); transition: transform .15s ease;
+    background: #fff; width: 560px; max-width: 92vw;
+    border: 1px solid #e2e5ea; border-radius: 0;
+    box-shadow: 0 24px 60px -12px rgba(10, 8, 61, .45);
+    opacity: 0; transform: translateY(-6px);
+    transition: opacity .16s ease, transform .16s ease;
 }
-.modal-overlay.open .modal { transform: scale(1); }
+.modal-fundo.open .modal { opacity: 1; transform: translateY(0); }
 
-.modal--sm { width: 540px; }
-.modal--lg {
-    width: 720px; max-height: 88vh;
-    display: flex; flex-direction: column;
-}
+.modal--sm { width: 480px; }
+.modal--lg { width: 720px; max-height: 88vh; display: flex; flex-direction: column; }
 .modal-body { overflow: auto; }
+
+/* Rodapé de ações do modal — #fbfbfc com borda superior, botões à direita. */
+.modal-acoes {
+    padding: 13px 20px; border-top: 1px solid #e2e5ea; background: #fbfbfc;
+    display: flex; justify-content: flex-end; gap: 8px;
+}
 
 @media (prefers-reduced-motion: reduce) {
     .modal { transition: none; }
 }
 
-/* ── Tabelas no padrão Projudi ─────────────────────────────────────────────
-   Cinco nomes (.tbl-projudi, .tbl-files, .tbl-hist, .tbl, .tbl-mov) para a mesma
-   tabela. A moldura é comum; densidade e corpo de texto seguem por variante,
-   preservando exatamente o que cada tela já exibia. */
+/* ── Tabelas ────────────────────────────────────────────────────────────────
+   Guia seção 06: cabeçalho #f7f8fa em 10px/700/.1em/caixa alta, linha com
+   padding 11px 16px, divisor #eef0f3, hover #f7faff. Sem zebrado — a
+   separação vem do divisor, não de faixa alternada. */
 .tbl-projudi, .tbl-files, .tbl-hist, .tbl, .tbl-mov {
     width: 100%; border-collapse: collapse;
+    border: 1px solid #e2e5ea; background: #fff;
 }
 .tbl-projudi thead th, .tbl-files thead th,
 .tbl-hist thead th, .tbl thead th, .tbl-mov thead th {
-    text-align: left; font-weight: bold; color: #333;
+    background: #f7f8fa; text-align: left;
+    font-size: 10px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase; color: #6b7280;
+    padding: 9px 16px; border: 0; border-bottom: 1px solid #e2e5ea;
+    white-space: nowrap;
 }
 .tbl-projudi tbody td, .tbl-files tbody td,
 .tbl-hist tbody td, .tbl tbody td, .tbl-mov tbody td {
-    border: 1px solid #d8d8d8; background: #fff;
+    background: #fff; border: 0; border-bottom: 1px solid #eef0f3;
+    color: #23262e;
 }
+.tbl-projudi tbody tr:last-child td, .tbl-files tbody tr:last-child td,
+.tbl-hist tbody tr:last-child td, .tbl tbody tr:last-child td,
+.tbl-mov tbody tr:last-child td { border-bottom: 0; }
+
 .tbl-projudi tbody tr:hover td, .tbl-files tbody tr:hover td,
 .tbl-hist tbody tr:hover td, .tbl tbody tr:hover td,
-.tbl-mov tbody tr:hover td { background: #fffbe5; }
+.tbl-mov tbody tr:hover td { background: #f7faff; }
 
-/* Densidade 12px — listagens de processos e de arquivos */
-.tbl-projudi, .tbl-files { font-size: 12px; }
-.tbl-projudi thead th, .tbl-files thead th {
-    background: #e0e0e0; padding: 6px 10px; border: 1px solid #c8c8c8;
-    font-size: 12px;
-}
-.tbl-projudi tbody td, .tbl-files tbody td { padding: 6px 10px; vertical-align: middle; }
-.tbl-projudi tbody tr:nth-child(even) td,
-.tbl-files tbody tr:nth-child(even) td { background: #ececec; }
-.tbl-projudi a { color: #1a5b9e; font-weight: bold; }
-.tbl-projudi a:hover { text-decoration: underline; }
+/* Densidade padrão — listagens de processo e de arquivo */
+.tbl-projudi, .tbl-files { font-size: 11.5px; }
+.tbl-projudi tbody td, .tbl-files tbody td { padding: 11px 16px; vertical-align: middle; }
+.tbl-projudi a, .tbl-mov a { color: #1f4f9c; font-weight: 500; }
+.tbl-projudi a:hover, .tbl-mov a:hover { color: #0a083d; text-decoration: underline; }
 .tbl-files .empty td {
-    text-align: center; color: #999; font-style: italic;
-    padding: 18px; background: #fafafa !important;
+    text-align: center; color: #6b7280; font-style: italic;
+    padding: 22px; background: #fbfbfc;
 }
 
-/* Densidade 11px — históricos e notas */
+/* Densidade compacta — histórico, notas e movimentações */
 .tbl-hist, .tbl, .tbl-mov { font-size: 11px; }
-.tbl-hist thead th, .tbl thead th, .tbl-mov thead th {
-    background: #dcdcdc; border: 1px solid #c0c0c0;
-}
-.tbl-hist thead th, .tbl-mov thead th { padding: 5px 8px; }
-.tbl thead th { padding: 6px 8px; }
-.tbl-hist tbody td, .tbl-mov tbody td { padding: 5px 8px; vertical-align: top; line-height: 1.45; }
-.tbl tbody td { padding: 6px 8px; vertical-align: middle; }
-.tbl-hist tbody tr:nth-child(even) td,
-.tbl tbody tr:nth-child(even) td,
-.tbl-mov tbody tr:nth-child(even) td { background: #f3f3f3; }
+.tbl-hist tbody td, .tbl-mov tbody td { padding: 9px 16px; vertical-align: top; line-height: 1.55; }
+.tbl tbody td { padding: 10px 16px; vertical-align: middle; }
 .tbl tbody tr:hover td { cursor: pointer; }
 
-/* ── Avatar de pessoa / grupo ─────────────────────────────────────────────── */
-.avatar {
-    width: 42px; height: 42px; border-radius: 50%;
-    background: #1a5b9e; color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-weight: bold; font-size: 14px; flex-shrink: 0;
-}
-.avatar.md { width: 46px; height: 46px; font-size: 16px; }
-.avatar.lg { width: 60px; height: 60px; font-size: 20px; }
-.avatar.grupo { background: #7b3ba0; border-radius: 6px; }
-.avatar.prof  { background: #7b3ba0; }
+/* Coluna de ação tem largura fixa — o guia proíbe `auto` aqui. */
+.tbl-projudi .col-acoes, .tbl .col-acoes,
+.tbl-hist .col-acoes, .tbl-mov .col-acoes { width: 118px; text-align: right; }
 
-/* ── Toast ────────────────────────────────────────────────────────────────
-   Era redefinido, byte a byte, em quatro templates. */
+/* Célula dupla: 11.5px/600 em cima, 10.5px/#6b7280 embaixo. */
+.celula-dupla { display: flex; flex-direction: column; gap: 2px; padding-right: 14px; }
+.celula-dupla .principal { font-size: 11.5px; font-weight: 600; color: #23262e; }
+.celula-dupla .secundario { font-size: 10.5px; color: #6b7280; }
+
+/* ── Avatar ────────────────────────────────────────────────────────────────
+   Guia seção 07: iniciais em 2 letras. Sobre navy #1f4f9c, sobre claro #eef1f6. */
+.avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: #1f4f9c; color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 11px; flex-shrink: 0;
+}
+.avatar.md { width: 34px; height: 34px; font-size: 12px; }
+.avatar.lg { width: 44px; height: 44px; font-size: 15px; }
+.avatar.claro { background: #eef1f6; color: #0a083d; font-weight: 700; }
+.avatar.grupo, .avatar.prof { background: #0a083d; }
+
+/* Ponto de status — 6px, ao lado de um rótulo. */
+.ponto-status { width: 6px; height: 6px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.ponto-status.ok    { background: #2e7d32; }
+.ponto-status.warn  { background: #a96400; }
+.ponto-status.erro  { background: #b33a3a; }
+.ponto-status.gray  { background: #5b6270; }
+
+/* ── Toast ─────────────────────────────────────────────────────────────────
+   Guia seção 07: navy com fio de assinatura à esquerda, canto inferior
+   direito a 26px, entrada de 180ms. */
 .toast {
-    position: fixed; bottom: 24px; right: 24px;
-    background: #2e7d32; color: #fff; padding: 12px 18px;
-    border-radius: 3px; font-size: 13px; font-weight: bold;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, .2);
-    display: flex; align-items: center; gap: 8px;
-    transform: translateY(20px); opacity: 0; pointer-events: none;
-    transition: all .25s ease; z-index: 200;
+    position: fixed; bottom: 26px; right: 26px;
+    background: #0a083d; color: #fff;
+    border-left: 3px solid #d30000; border-radius: 0;
+    padding: 13px 20px; font-size: 12px; font-weight: 500;
+    display: flex; align-items: center; gap: 9px;
+    transform: translateY(12px); opacity: 0; pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease; z-index: 70;
 }
 .toast.show { transform: translateY(0); opacity: 1; }
+.toast.toast--erro { border-left-color: #b33a3a; }
 
 @media (prefers-reduced-motion: reduce) {
-    .toast { transition: opacity .25s ease; transform: none; }
+    .toast { transition: opacity .18s ease; transform: none; }
 }
+
+/* ── Card de KPI ───────────────────────────────────────────────────────────
+   Guia seção 07: faixa superior de 3px em navy, número em 28px/700. */
+.card-kpi {
+    background: #fff; border: 1px solid #e2e5ea; border-top: 3px solid #0a083d;
+    padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;
+}
+.card-kpi .rotulo {
+    font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+    color: #6b7280; font-weight: 600;
+}
+.card-kpi .numero { font-size: 28px; font-weight: 700; line-height: 1; color: #0a083d; }
+.card-kpi .apoio { font-size: 11px; color: #6b7280; }

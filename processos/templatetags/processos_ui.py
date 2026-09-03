@@ -11,22 +11,22 @@ register = template.Library()
 # nome do status vindo do banco.
 CORES_STATUS = {
     "em andamento": {
-        "fundo": "bg-green-100", "texto": "text-green-700",
-        "borda": "border-green-200", "ponto": "bg-green-500", "pill": "ok",
+        "fundo": "bg-ok-bg", "texto": "text-ok-txt",
+        "borda": "border-ok-bd", "ponto": "bg-ok-txt", "pill": "ok",
     },
     "suspenso": {
-        "fundo": "bg-yellow-100", "texto": "text-yellow-700",
-        "borda": "border-yellow-200", "ponto": "bg-yellow-500", "pill": "warn",
+        "fundo": "bg-atencao-bg", "texto": "text-atencao-txt",
+        "borda": "border-atencao-bd", "ponto": "bg-atencao-txt", "pill": "warn",
     },
     "arquivado": {
-        "fundo": "bg-gray-100", "texto": "text-gray-500",
-        "borda": "border-gray-200", "ponto": "bg-gray-400", "pill": "gray",
+        "fundo": "bg-neutro-bg", "texto": "text-neutro-txt",
+        "borda": "border-neutro-bd", "ponto": "bg-neutro-txt", "pill": "gray",
     },
 }
 
 CORES_PADRAO = {
-    "fundo": "bg-blue-50", "texto": "text-blue-700",
-    "borda": "border-blue-200", "ponto": "bg-blue-500", "pill": "ok",
+    "fundo": "bg-neutro-bg", "texto": "text-navy",
+    "borda": "border-neutro-bd", "ponto": "bg-navy", "pill": "ok",
 }
 
 

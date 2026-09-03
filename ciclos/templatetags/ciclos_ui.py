@@ -11,16 +11,16 @@ register = template.Library()
 # template, em quatro arquivos. A decisão passa a acontecer num lugar só.
 CORES_STATUS = {
     "em andamento": {
-        "fundo": "bg-green-100", "texto": "text-green-700",
-        "borda": "border-green-200", "ponto": "bg-green-500",
+        "fundo": "bg-ok-bg", "texto": "text-ok-txt",
+        "borda": "border-ok-bd", "ponto": "bg-ok-txt",
     },
     "finalizado": {
-        "fundo": "bg-blue-50", "texto": "text-[#1a5b9e]",
-        "borda": "border-blue-200", "ponto": "bg-[#1a5b9e]",
+        "fundo": "bg-neutro-bg", "texto": "text-navy",
+        "borda": "border-neutro-bd", "ponto": "bg-navy",
     },
     "arquivado": {
-        "fundo": "bg-gray-100", "texto": "text-gray-500",
-        "borda": "border-gray-200", "ponto": "bg-gray-400",
+        "fundo": "bg-neutro-bg", "texto": "text-neutro-txt",
+        "borda": "border-neutro-bd", "ponto": "bg-neutro-txt",
     },
 }
 

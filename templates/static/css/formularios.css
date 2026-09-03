@@ -1,15 +1,34 @@
+/* Formulários processuais — Guia de Design, seção 05. */
+
 fieldset {
-    border: 1px solid #d1d1d1;
-    border-radius: 4px;
-    background-color: #ffffff;
+    border: 1px solid #e2e5ea;
+    border-radius: 0;
+    background: #fff;
 }
 fieldset legend {
-    font-weight: bold;
-    font-size: 13px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: #0a083d;
     padding: 0 8px;
-    color: #333333;
 }
+
+/* Foco: sem outline do navegador, borda no azul de ação. */
 input[type="text"]:focus,
-select:focus {
-    border-color: #1a5b9e !important;
+input[type="number"]:focus,
+input[type="date"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: #1f4f9c;
+}
+
+/* Erro de validação: borda + halo de 2px, conforme o guia. */
+.campo-erro,
+input.campo-erro:focus {
+    border-color: #c0392b;
+    box-shadow: 0 0 0 2px rgba(192, 57, 43, .12);
 }
