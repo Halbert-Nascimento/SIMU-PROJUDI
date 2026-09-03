@@ -3,127 +3,111 @@
 
 {% block title %}Gestão de Usuários{% endblock %}
 
-
-
 {% block content %}
-<main class="main-container px-10 py-8">
-    <div class="grid grid-cols-1 gap-6">
-        <section>
-            <h2 class="text-tjgo-blue text-xl font-bold mb-4 flex items-center gap-2">
-                <i class="fa-solid fa-users-gear"></i> Gestão de Usuários
-            </h2>
+<main class="max-w-conteudo mx-auto px-7 py-5">
 
-            {% include 'base/components/_mensagens.html' %}
-
-            <div class="border border-contorno bg-white">
-                <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
-                    <i class="fa-solid fa-list mr-2 text-sm"></i> USUÁRIOS CADASTRADOS
-                </div>
-
-                <div class="p-5 text-[13px] leading-relaxed text-texto overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="text-xs uppercase text-texto-neutro border-b">
-                                <th class="py-2 pr-3">Usuário</th>
-                                <th class="py-2 pr-3">Email</th>
-                                <th class="py-2 pr-3">Tipo</th>
-                                <th class="py-2 pr-3">Status</th>
-                                <th class="py-2 pr-3">Ação</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for u in usuarios %}
-                                <tr class="border-b text-sm">
-                                    <td class="py-2 pr-3 font-bold">{{ u.username }}</td>
-                                    <td class="py-2 pr-3">{{ u.email }}</td>
-                                    <td class="py-2 pr-3">{{ u.tipo_perfil_global }}</td>
-                                    <td class="py-2 pr-3">
-                                        {% if u.is_active %}
-                                            <span class="text-ok-txt font-bold">Ativo</span>
-                                        {% else %}
-                                            <span class="text-erro-txt font-bold">Inativo</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="py-2 pr-3">
-                                        <button
-                                           type="button"
-                                           class="text-tjgo-blue text-xs font-bold hover:underline"
-                                           data-modal-open
-                                           data-user-id="{{ u.id }}"
-                                           data-username="{{ u.username }}"
-                                           data-email="{{ u.email }}"
-                                           data-tipo="{{ u.tipo_perfil_global }}"
-                                           data-active="{% if u.is_active %}true{% else %}false{% endif %}">
-                                            editar/aprovar
-                                        </button>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td class="py-4 text-sm text-rotulo" colspan="5">Nenhum usuário encontrado.</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-
-                    <p class="text-xs text-rotulo mt-3">
-                        Usuários pendentes ficam <strong>Inativos</strong> até aprovação.
-                    </p>
-                </div>
-            </div>
-        </section>
+    <div class="mb-[14px] pb-[14px] border-b border-contorno">
+        <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+            <i class="fa-solid fa-users-gear"></i> Gestão de Usuários
+        </h1>
     </div>
+
+    {% include 'base/components/_mensagens.html' %}
+
+    <h2 class="section-title">
+        <i class="fa-solid fa-list"></i> USUÁRIOS CADASTRADOS
+    </h2>
+
+    <div class="overflow-x-auto">
+        <table class="tbl-projudi">
+            <thead>
+                <tr>
+                    <th>Usuário</th>
+                    <th>Email</th>
+                    <th>Tipo</th>
+                    <th>Status</th>
+                    <th class="col-acoes">Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for u in usuarios %}
+                    <tr>
+                        <td class="font-semibold">{{ u.username }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.tipo_perfil_global }}</td>
+                        <td>
+                            {% if u.is_active %}
+                                <span class="pill ok">Ativo</span>
+                            {% else %}
+                                <span class="pill gray">Inativo</span>
+                            {% endif %}
+                        </td>
+                        <td class="col-acoes">
+                            <button
+                               type="button"
+                               class="{% classe_botao 'linha' padding=True %} whitespace-nowrap"
+                               data-modal-open
+                               data-user-id="{{ u.id }}"
+                               data-username="{{ u.username }}"
+                               data-email="{{ u.email }}"
+                               data-tipo="{{ u.tipo_perfil_global }}"
+                               data-active="{% if u.is_active %}true{% else %}false{% endif %}">
+                                editar/aprovar
+                            </button>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center italic text-rotulo py-[22px]">Nenhum usuário encontrado.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <p class="mt-[14px] text-apoio text-rotulo">
+        Usuários pendentes ficam <strong class="font-semibold text-texto">Inativos</strong> até aprovação.
+    </p>
 </main>
 
-<div id="modal-overlay" class="fixed inset-0 z-[60] hidden bg-black/40 p-4">
-    <div class="mx-auto mt-10 w-full max-w-lg border border-contorno bg-white shadow-modal">
-        <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center justify-between">
-            <div class="flex items-center">
-                <i class="fa-solid fa-user-check mr-2 text-sm"></i>
-                Aprovar / Editar Usuario
-            </div>
-            <button id="modal-close-top" type="button" class="text-white text-xs font-bold hover:underline">fechar</button>
-        </div>
+{% modal id="modal-overlay" titulo="Aprovar / Editar Usuario" icone="fa-user-check" fechar_id="modal-close-top" %}
+    <form method="post" action="{% url 'acesso:usuario_atualizar' %}">
+        {% csrf_token %}
+        <input type="hidden" name="user_id" id="modal-user-id">
 
-        <div class="p-5 text-[13px] leading-relaxed text-texto">
-            <p class="text-texto-neutro mb-3">
-                <strong>Usuario:</strong> <span id="modal-username">-</span><br>
-                <strong>Email:</strong> <span id="modal-email">-</span>
+        <div class="px-4 py-[14px] flex flex-col gap-3">
+            <p class="text-corpo text-texto-neutro">
+                <strong class="font-semibold text-texto">Usuario:</strong> <span id="modal-username">-</span><br>
+                <strong class="font-semibold text-texto">Email:</strong> <span id="modal-email">-</span>
             </p>
 
-            <form method="post" action="{% url 'acesso:usuario_atualizar' %}" class="space-y-3">
-                {% csrf_token %}
-                <input type="hidden" name="user_id" id="modal-user-id">
+            {% campo label="Tipo de Perfil" para="modal-tipo" %}
+                <select id="modal-tipo" name="tipo_perfil_global" class="{% classe_campo %}">
+                    {% for value, label in tipos_opcoes %}
+                        <option value="{{ value }}">{{ label }}</option>
+                    {% endfor %}
+                </select>
+            {% endcampo %}
 
-                <div>
-                    <label for="modal-tipo" class="mb-1 block text-xs font-bold text-tjgo-text-main uppercase">Tipo de Perfil</label>
-                    <select
-                        id="modal-tipo"
-                        name="tipo_perfil_global"
-                        class="{% classe_campo %}">
-                        {% for value, label in tipos_opcoes %}
-                            <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="flex items-center gap-2">
-                    <input id="modal-is-active" name="is_active" type="checkbox" value="on" class="h-4 w-4 border-campo-borda text-tjgo-blue focus:ring-tjgo-blue">
-                    <label for="modal-is-active" class="text-xs font-bold text-tjgo-text-main uppercase">Ativo</label>
-                </div>
-
-                <div class="flex justify-start gap-2 pt-2">
-                    <button type="submit" class="{% classe_botao 'primario' %} py-1 px-4 text-sm">
-                        Salvar
-                    </button>
-                    <button type="button" id="modal-close-bottom" class="{% classe_botao 'secundario' %} py-1 px-4 text-sm">
-                        Cancelar
-                    </button>
-                </div>
-            </form>
+            <label for="modal-is-active" class="flex items-center gap-2 text-micro font-semibold uppercase text-rotulo cursor-pointer">
+                <input id="modal-is-active" name="is_active" type="checkbox" value="on"
+                       class="w-3.5 h-3.5 accent-acao">
+                Ativo
+            </label>
         </div>
-    </div>
-</div>
+
+        <!-- Rodapé de ações do guia (seção 07): #fbfbfc com borda superior.
+             Primário à esquerda do secundário, gap 8px. -->
+        <div class="modal-acoes">
+            <button type="submit" class="{% classe_botao 'primario' padding=True %}">
+                Salvar
+            </button>
+            <button type="button" id="modal-close-bottom" class="{% classe_botao 'secundario' padding=True %}">
+                Cancelar
+            </button>
+        </div>
+    </form>
+{% endmodal %}
 
 <script>
     (function () {
@@ -143,11 +127,12 @@
             emailSpan.textContent = button.dataset.email;
             tipoSelect.value = button.dataset.tipo;
             activeInput.checked = button.dataset.active === 'true';
-            overlay.classList.remove('hidden');
+            // .modal-fundo alterna por `open`, não por `hidden` — ver componentes.css
+            overlay.classList.add('open');
         }
 
         function closeModal() {
-            overlay.classList.add('hidden');
+            overlay.classList.remove('open');
         }
 
         openButtons.forEach((button) => {

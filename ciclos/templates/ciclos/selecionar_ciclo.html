@@ -3,44 +3,51 @@
 {% block title %}Selecionar Ciclo — Simulador Projudi{% endblock %}
 
 {% block content %}
-<div class="min-h-[calc(100vh-45px)] bg-card-topo flex items-center justify-center px-4 py-12">
-    <div class="w-full max-w-lg">
+<main class="max-w-conteudo mx-auto px-7 py-5">
+    <div class="w-full max-w-[560px] mx-auto">
 
-        <div class="text-center mb-8">
-            <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-tjgo-blue/10 mb-4">
-                <i class="fa-solid fa-rotate text-tjgo-blue text-2xl"></i>
-            </div>
-            <h1 class="text-xl font-bold text-tjgo-text-main">Selecione o Ciclo</h1>
-            <p class="text-sm text-rotulo mt-1">
+        <!-- Cabeçalho da tela — guia seção 03: H1 em 26px/700, ícone no título.
+             Não há centralização vertical: a densidade do guia dispensa herói. -->
+        <div class="mb-[14px] pb-[14px] border-b border-contorno">
+            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+                <i class="fa-solid fa-rotate"></i> Selecione o Ciclo
+            </h1>
+            <p class="text-corpo text-texto-neutro mt-1.5">
                 Você está vinculado a mais de um ciclo em andamento.<br>
                 Escolha em qual deseja atuar agora.
             </p>
         </div>
 
-        <div class="flex flex-col gap-3">
+        <!-- Lista de ciclos — hierarquia por faixa de topo de 3px, não por
+             sombra (guia seção 01). Cada linha tem a densidade de tabela:
+             padding 11px 16px, divisor #eef0f3, hover #f7faff. -->
+        <div class="bg-white border-x border-b border-contorno border-t-[3px] border-t-navy">
             {% for ciclo in ciclos %}
-            <form method="post" action="{% url 'ciclos:ativar_ciclo' ciclo.pk %}">
+            <form method="post" action="{% url 'ciclos:ativar_ciclo' ciclo.pk %}"
+                  class="border-b border-divisor last:border-b-0">
                 {% csrf_token %}
                 {% if next %}
                     <input type="hidden" name="next" value="{{ next }}">
                 {% endif %}
                 <button type="submit"
-                    class="w-full text-left bg-white border border-contorno rounded-lg px-5 py-4 hover:border-tjgo-blue hover:shadow-md transition-all group flex items-center justify-between">
-                    <div>
-                        <p class="font-semibold text-tjgo-text-main group-hover:text-tjgo-blue transition-colors">
+                    class="w-full text-left px-4 py-[11px] hover:bg-linha-hover transition-colors group flex items-center justify-between gap-4">
+                    <!-- Célula dupla do guia (seção 06): 11.5px/600 em cima,
+                         10.5px/#6b7280 embaixo, gap 2px. -->
+                    <span class="flex flex-col gap-0.5 pr-[14px]">
+                        <span class="text-dado font-semibold text-texto group-hover:text-acao transition-colors">
                             {{ ciclo.nome_edicao }}
-                        </p>
-                        <p class="text-xs text-rotulo mt-0.5">
+                        </span>
+                        <span class="text-meta text-rotulo">
                             {{ ciclo.semestre }}º semestre / {{ ciclo.ano }}
                             {% if ciclo.periodo %} &middot; Período {{ ciclo.periodo }}{% endif %}
-                        </p>
-                    </div>
-                    <i class="fa-solid fa-arrow-right text-rotulo group-hover:text-tjgo-blue transition-colors"></i>
+                        </span>
+                    </span>
+                    <i class="fa-solid fa-arrow-right text-rotulo group-hover:text-acao transition-colors"></i>
                 </button>
             </form>
             {% endfor %}
         </div>
 
     </div>
-</div>
+</main>
 {% endblock %}
