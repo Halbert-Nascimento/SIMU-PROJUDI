@@ -4,8 +4,9 @@ Projeto acadêmico de simulação do sistema Projudi desenvolvido por alunos da 
 
 ## 👥 Autores
 
-- 
-- 
+- [Cauê Gomes Machado](https://github.com/CaueMachado07)
+- [Eduardo Netto Freyer](https://github.com/EduardoFreyer)
+- [Halbert Nascimento](https://github.com/Halbert-Nascimento)
 
 ## 📋 Pré-requisitos
 
@@ -15,11 +16,13 @@ Projeto acadêmico de simulação do sistema Projudi desenvolvido por alunos da 
 ### Instalando o uv
 
 **Windows (PowerShell):**
+
 ```powershell
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
 **Linux/macOS:**
+
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
 ```
@@ -31,7 +34,6 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 1. **Windows**: Adicione manualmente ao PATH do sistema:
    - Caminho padrão: `%USERPROFILE%\.cargo\bin`
    - Ou: `C:\Users\SeuUsuario\.cargo\bin`
-   
 2. **Reinicie o terminal/PowerShell** após adicionar ao PATH
 
 3. Verifique se funcionou:
@@ -57,16 +59,19 @@ uv venv
 ### 3. Ative o ambiente virtual
 
 **Windows (PowerShell):**
+
 ```powershell
 .venv\Scripts\Activate.ps1
 ```
 
 **Windows (CMD):**
+
 ```cmd
 .venv\Scripts\activate.bat
 ```
 
 **Linux/macOS:**
+
 ```bash
 source .venv/bin/activate
 ```
@@ -96,6 +101,7 @@ python manage.py runserver
 ### 7. Acesse o sistema
 
 Abra seu navegador e acesse:
+
 ```
 http://127.0.0.1:8000/
 ```
@@ -127,31 +133,37 @@ simu-projudi/
 ## 📝 Comandos Úteis
 
 ### Criar um novo app Django
+
 ```bash
 python manage.py startapp nome_do_app
 ```
 
 ### Criar migrações
+
 ```bash
 python manage.py makemigrations
 ```
 
 ### Aplicar migrações
+
 ```bash
 python manage.py migrate
 ```
 
 ### Criar superusuário
+
 ```bash
 python manage.py createsuperuser
 ```
 
 ### Listar pacotes instalados
+
 ```bash
 uv pip list
 ```
 
 ### Instalar novo pacote
+
 ```bash
 uv pip install nome-do-pacote
 ```
@@ -159,6 +171,7 @@ uv pip install nome-do-pacote
 ## 🎨 Identidade Visual
 
 O projeto segue a identidade visual do sistema Projudi do TJGO, utilizando:
+
 - Azul marinho (#153a61) - Header e elementos principais
 - Azul (#1a5b9e) - Botões e links
 - Cinza claro (#e9e9e9) - Cards e backgrounds
