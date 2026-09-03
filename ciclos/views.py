@@ -153,7 +153,7 @@ def gerenciar_grupos(request, ciclo_id):
             {
                 "id": m.pk,
                 "nome": m.get_full_name().strip() or m.username,
-                "matricula": m.username,
+                "email": m.email,
             }
             for m in grupo.membros.all()  # usa cache do prefetch_related
         ]
@@ -164,7 +164,7 @@ def gerenciar_grupos(request, ciclo_id):
         {
             "id": a.pk,
             "nome": a.get_full_name().strip() or a.username,
-            "matricula": a.username,
+            "email": a.email,
         }
         for a in alunos_disponiveis
     ]
@@ -250,7 +250,7 @@ def adicionar_membro(request, ciclo_id, grupo_id):
         "membro": {
             "id": usuario.pk,
             "nome": usuario.get_full_name().strip() or usuario.username,
-            "matricula": usuario.username,
+            "email": usuario.email,
         },
     })
 
