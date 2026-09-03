@@ -41,6 +41,11 @@ CLASSES_BOTAO = {
         "bg-white hover:bg-erro-bg text-erro-txt border border-erro-bd hover:border-erro-txt "
         "text-meta font-bold uppercase tracking-[.1em] transition-colors"
     ),
+    # Guia seção 04: sem opacidade global — fundo, texto e cursor próprios.
+    "desabilitado": (
+        "bg-neutro-bg text-desabilitado border border-neutro-bd cursor-not-allowed "
+        "text-meta font-bold uppercase tracking-[.1em]"
+    ),
     # Sobre o navy do cabeçalho.
     "sobre-navy": (
         "bg-transparent border border-white/25 hover:border-marca "
@@ -55,5 +60,6 @@ PADDING_BOTAO = {
     "secundario": "px-4 py-2",
     "linha":      "px-2.5 py-[5px]",
     "destrutivo": "px-4 py-2",
+    "desabilitado": "px-4 py-2",
     "sobre-navy": "px-2.5 py-[5px]",
 }

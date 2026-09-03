@@ -35,6 +35,7 @@ tailwind.config = {
                 'erro-bg':    '#fdeeee', 'erro-txt':    '#b33a3a', 'erro-bd':    '#f3cfcf',
                 'neutro-bg':  '#f1f2f4', 'neutro-txt':  '#5b6270', 'neutro-bd':  '#d8dbe1',
                 'validacao':  '#c0392b',  // erro de validação de campo
+                'desabilitado': '#9ca3af',  // texto de botão desabilitado (guia seção 04)
 
                 /* ── Compatibilidade temporária ────────────────────────────
                    Os nomes antigos apontam para a paleta nova, para que as
