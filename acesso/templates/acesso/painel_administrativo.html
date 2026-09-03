@@ -130,7 +130,6 @@
                         </table>
                         {% include 'base/components/_estado_vazio.html' with id="ciclos-vazio-busca" mensagem="Nenhum ciclo encontrado para esta pesquisa." oculto=True only %}
                         {% include 'base/components/_paginacao.html' with container_id="paginacao-ciclos" info_id="paginacao-ciclos-info" paginas_id="paginacao-ciclos-paginas" btn_prefixo="btn-ciclo" handler="mudarPaginaCiclos" only %}
-                        </div>
                         {% else %}
                         {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum ciclo de simulação cadastrado." only %}
                         {% endif %}
@@ -192,7 +191,6 @@
                                 </table>
                                 {% include 'base/components/_estado_vazio.html' with id="ciclos-arq-vazio-busca" mensagem="Nenhum ciclo arquivado encontrado para esta pesquisa." oculto=True only %}
                                 {% include 'base/components/_paginacao.html' with container_id="paginacao-ciclos-arq" info_id="paginacao-ciclos-arq-info" paginas_id="paginacao-ciclos-arq-paginas" btn_prefixo="btn-ciclo-arq" handler="mudarPaginaCiclosArq" only %}
-                                </div>
                             </div>
                         </div>
                         {% endif %}
@@ -256,7 +254,6 @@
                             </tbody>
                         </table>
                         {% include 'base/components/_paginacao.html' with container_id="paginacao-processos" info_id="paginacao-info" paginas_id="paginacao-paginas" btn_prefixo="btn" handler="mudarPagina" only %}
-                        </div>
                         {% include 'base/components/_estado_vazio.html' with id="processos-vazio-filtro" mensagem="Nenhum processo encontrado neste ciclo." oculto=True only %}
                         {% else %}
                         {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum processo encontrado nos ciclos ativos." only %}
@@ -441,7 +438,6 @@
                 </table>
                 {% include 'base/components/_estado_vazio.html' with id="usuarios-vazio-busca" mensagem="Nenhum usuário encontrado para esta pesquisa." oculto=True only %}
                 {% include 'base/components/_paginacao.html' with container_id="paginacao-usuarios" info_id="paginacao-usuarios-info" paginas_id="paginacao-usuarios-paginas" btn_prefixo="btn-usr" handler="mudarPaginaUsuarios" only %}
-                </div>
             </div>
 
         </div>

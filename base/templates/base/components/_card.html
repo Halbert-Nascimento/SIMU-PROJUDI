@@ -1,10 +1,7 @@
 {% comment %}Renderizado pela tag {% templatetag openblock %} card {% templatetag closeblock %} — ver base/templatetags/ui.py{% endcomment %}
 <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden {{ classe }}">
-    <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center {% if contador %}justify-between{% endif %}">
-        <span class="flex items-center">
-            <i class="fa-solid {{ icone }} mr-2 text-sm"></i> {{ titulo }}
-        </span>
-        {% if contador %}<span class="font-normal">{{ contador }}</span>{% endif %}
+    <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
+        <i class="fa-solid {{ icone }} mr-2 text-sm"></i> {{ titulo }}{% if contador is not None %} ({{ contador }}){% endif %}
     </div>
     {% if classe_corpo %}<div class="{{ classe_corpo }}">{{ corpo }}</div>{% else %}{{ corpo }}{% endif %}
 </div>
