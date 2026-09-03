@@ -11,7 +11,8 @@ function showToast(msg, err, duracaoMs) {
     if (!t || !alvo) return;
 
     alvo.textContent = msg;
-    t.style.background = err ? "#c0392b" : "#2e7d32";
+    // o fio de assinatura muda de cor no erro; o fundo continua navy
+    t.classList.toggle("toast--erro", Boolean(err));
     t.classList.add("show");
 
     // cada chamada reinicia a contagem — toasts em sequência não se cortam

@@ -10,8 +10,8 @@
     .step-bar { display:flex; align-items:center; gap:0; margin-bottom:24px; }
     .step-item {
         display:flex; align-items:center; gap:8px; padding:8px 18px;
-        font-size:12px; font-weight:bold; color:#999; cursor:default;
-        border:1px solid #d1d1d1; background:#f4f4f4; position:relative;
+        font-size:12px; font-weight:bold; color:#6b7280; cursor:default;
+        border:1px solid #e2e5ea; background:#f4f5f7; position:relative;
     }
     .step-item:first-child { border-radius:4px 0 0 4px; }
     .step-item:last-child { border-radius:0 4px 4px 0; }
@@ -19,41 +19,41 @@
     .step-item .step-num {
         width:22px; height:22px; border-radius:50%;
         display:flex; align-items:center; justify-content:center;
-        font-size:11px; font-weight:bold; color:#fff; background:#bbb;
+        font-size:11px; font-weight:bold; color:#fff; background:#d3d7de;
     }
-    .step-item.active { background:#fff; color:#1a5b9e; border-color:#1a5b9e; }
-    .step-item.active .step-num { background:#1a5b9e; }
-    .step-item.done { background:#e8f5e9; color:#2e7d32; border-color:#a5d6a7; }
+    .step-item.active { background:#fff; color:#1f4f9c; border-color:#1f4f9c; }
+    .step-item.active .step-num { background:#1f4f9c; }
+    .step-item.done { background:#eaf4ec; color:#2e7d32; border-color:#bee0c2; }
     .step-item.done .step-num { background:#2e7d32; }
 
     .doc-card {
         display:flex; align-items:center; gap:12px;
-        background:#f9f9f9; border:1px solid #d1d1d1; border-radius:4px;
+        background:#fbfbfc; border:1px solid #e2e5ea; border-radius:4px;
         padding:10px 14px; margin-bottom:8px;
     }
     .doc-card .doc-icon {
-        width:36px; height:36px; border-radius:4px; background:#1a5b9e;
+        width:36px; height:36px; border-radius:4px; background:#1f4f9c;
         display:flex; align-items:center; justify-content:center;
         color:#fff; font-size:16px; flex-shrink:0;
     }
-    .doc-card .doc-size { font-size:10px; color:#888; }
+    .doc-card .doc-size { font-size:10px; color:#6b7280; }
 
     .resumo-section {
-        background:#f9f9f9; border:1px solid #d1d1d1;
+        background:#fbfbfc; border:1px solid #e2e5ea;
         border-radius:4px; padding:14px 18px; margin-bottom:12px;
     }
     .resumo-section h4 {
-        font-size:12px; font-weight:bold; color:#1a5b9e;
+        font-size:12px; font-weight:bold; color:#1f4f9c;
         text-transform:uppercase; margin-bottom:8px;
-        border-bottom:1px solid #e0e0e0; padding-bottom:4px;
+        border-bottom:1px solid #f7f8fa; padding-bottom:4px;
     }
     .resumo-row {
         display:flex; font-size:12px; padding:3px 0;
     }
     .resumo-row .resumo-label {
-        font-weight:bold; color:#555; width:180px; flex-shrink:0;
+        font-weight:bold; color:#4b5563; width:180px; flex-shrink:0;
     }
-    .resumo-row .resumo-value { color:#333; }
+    .resumo-row .resumo-value { color:#23262e; }
 </style>
 {% endblock %}
 
@@ -62,13 +62,13 @@
     {% nav_secundaria %}
 
     <!-- Main Content -->
-    <main class="max-w-container mx-auto px-10 py-8">
+    <main class="max-w-conteudo mx-auto px-10 py-8">
 
         <h2 class="text-azul-primario font-bold text-[20px] mb-6">&raquo; Cadastro de Processo Comum</h2>
 
         {% include 'base/components/_mensagens.html' %}
 
-        <div class="bg-blue-50 border border-blue-200 rounded p-3 mb-6 text-[12px] text-blue-800 flex items-center gap-2">
+        <div class="bg-linha-hover border border-[#c9d5ea] rounded p-3 mb-6 text-[12px] text-acao flex items-center gap-2">
             <i class="fa-solid fa-circle-info"></i>
             <span>Ciclo ativo: <strong>{{ ciclo }}</strong></span>
         </div>
@@ -110,9 +110,9 @@
                             </div>
                         </div>
                         {% if form.tipo_processo.errors %}
-                        <p class="text-red-600 text-[11px] mt-1 ml-[172px]">{{ form.tipo_processo.errors.0 }}</p>
+                        <p class="text-validacao text-[11px] mt-1 ml-[172px]">{{ form.tipo_processo.errors.0 }}</p>
                         {% endif %}
-                        <p id="erroTipo" class="campo-erro-inline text-red-600 text-[11px] mt-1 ml-[172px] hidden"></p>
+                        <p id="erroTipo" class="campo-erro-inline text-validacao text-[11px] mt-1 ml-[172px] hidden"></p>
                     </fieldset>
 
                     <!-- CARACTERISTICAS -->
@@ -127,7 +127,7 @@
                                     <option value="{{ comarca.id }}" {% if form.comarca.value|stringformat:"s" == comarca.id|stringformat:"s" %}selected{% endif %}>{{ comarca.nome }}</option>
                                     {% endfor %}
                                 </select>
-                                <p id="erroComarca" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                                <p id="erroComarca" class="campo-erro-inline text-validacao text-[11px] mt-1 hidden"></p>
                             </div>
                             <div>
                                 <label for="id_vara" class="font-bold text-azul-primario text-[12px]">*Vara / Serventia</label>
@@ -137,7 +137,7 @@
                                     <option value="{{ vara.id }}" {% if form.vara.value|stringformat:"s" == vara.id|stringformat:"s" %}selected{% endif %}>{{ vara.nome }}</option>
                                     {% endfor %}
                                 </select>
-                                <p id="erroVara" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                                <p id="erroVara" class="campo-erro-inline text-validacao text-[11px] mt-1 hidden"></p>
                             </div>
                         </div>
                         <div class="mb-2">
@@ -148,7 +148,7 @@
                                 <option value="{{ classe.id }}" {% if form.classe.value|stringformat:"s" == classe.id|stringformat:"s" %}selected{% endif %}>{{ classe.nome }}</option>
                                 {% endfor %}
                             </select>
-                            <p id="erroClasse" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                            <p id="erroClasse" class="campo-erro-inline text-validacao text-[11px] mt-1 hidden"></p>
                         </div>
                     </fieldset>
 
@@ -190,7 +190,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
+                        <div class="polo-form-nova hidden bg-card-topo border border-borda rounded p-4 mb-3">
                             <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
                             <div class="grid grid-cols-3 gap-3 mb-3">
                                 <div><label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label><input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
@@ -198,10 +198,10 @@
                                 <div><label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label><select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"><option value="">Selecione...</option><option value="Física">Física</option><option value="Jurídica">Jurídica</option></select></div>
                             </div>
                             <div class="flex gap-2">
-                                <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
-                                <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">Cancelar</button>
+                                <button type="button" class="btn-salvar-parte bg-ok-txt text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-ok-txt transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
+                                <button type="button" class="btn-cancelar-parte bg-neutro-txt text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-neutro-txt transition-colors">Cancelar</button>
                             </div>
-                            <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
+                            <p class="polo-form-erro text-validacao text-[11px] mt-2 hidden"></p>
                         </div>
                         <div class="polo-lista">
                             {% for parte in polo_ativo_partes %}
@@ -213,12 +213,12 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <input type="hidden" name="polo_ativo" value="{{ parte.id }}">
-                                    <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
+                                    <button type="button" class="btn-remover text-erro-txt hover:text-erro-txt text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
-                        <p id="erroPoloAtivo" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                        <p id="erroPoloAtivo" class="campo-erro-inline text-validacao text-[11px] mt-1 hidden"></p>
                     </fieldset>
 
                     <!-- POLO PASSIVO -->
@@ -236,7 +236,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
+                        <div class="polo-form-nova hidden bg-card-topo border border-borda rounded p-4 mb-3">
                             <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
                             <div class="grid grid-cols-3 gap-3 mb-3">
                                 <div><label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label><input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
@@ -244,10 +244,10 @@
                                 <div><label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label><select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"><option value="">Selecione...</option><option value="Física">Física</option><option value="Jurídica">Jurídica</option></select></div>
                             </div>
                             <div class="flex gap-2">
-                                <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
-                                <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">Cancelar</button>
+                                <button type="button" class="btn-salvar-parte bg-ok-txt text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-ok-txt transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
+                                <button type="button" class="btn-cancelar-parte bg-neutro-txt text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-neutro-txt transition-colors">Cancelar</button>
                             </div>
-                            <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
+                            <p class="polo-form-erro text-validacao text-[11px] mt-2 hidden"></p>
                         </div>
                         <div class="polo-lista">
                             {% for parte in polo_passivo_partes %}
@@ -259,12 +259,12 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <input type="hidden" name="polo_passivo" value="{{ parte.id }}">
-                                    <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
+                                    <button type="button" class="btn-remover text-erro-txt hover:text-erro-txt text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
                                 </div>
                             </div>
                             {% endfor %}
                         </div>
-                        <p id="erroPoloPassivo" class="campo-erro-inline text-red-600 text-[11px] mt-1 hidden"></p>
+                        <p id="erroPoloPassivo" class="campo-erro-inline text-validacao text-[11px] mt-1 hidden"></p>
                     </fieldset>
 
                     <!-- SUBSTITUTO PROCESSUAL -->
@@ -282,7 +282,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="polo-form-nova hidden bg-gray-50 border border-borda rounded p-4 mb-3">
+                        <div class="polo-form-nova hidden bg-card-topo border border-borda rounded p-4 mb-3">
                             <p class="font-bold text-texto-principal text-[12px] mb-3">Nova Parte</p>
                             <div class="grid grid-cols-3 gap-3 mb-3">
                                 <div><label class="text-[11px] font-bold text-texto-principal">*Nome / Razão Social</label><input type="text" class="nova-nome w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"></div>
@@ -290,10 +290,10 @@
                                 <div><label class="text-[11px] font-bold text-texto-principal">*Tipo Pessoa</label><select class="nova-tipo w-full bg-fundo-container border border-borda rounded py-1.5 px-2 text-[12px] outline-none mt-0.5"><option value="">Selecione...</option><option value="Física">Física</option><option value="Jurídica">Jurídica</option></select></div>
                             </div>
                             <div class="flex gap-2">
-                                <button type="button" class="btn-salvar-parte bg-green-600 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-green-700 transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
-                                <button type="button" class="btn-cancelar-parte bg-gray-400 text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-gray-500 transition-colors">Cancelar</button>
+                                <button type="button" class="btn-salvar-parte bg-ok-txt text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-ok-txt transition-colors"><i class="fas fa-check mr-1"></i>Salvar</button>
+                                <button type="button" class="btn-cancelar-parte bg-neutro-txt text-white font-bold px-4 py-1.5 text-[11px] rounded hover:bg-neutro-txt transition-colors">Cancelar</button>
                             </div>
-                            <p class="polo-form-erro text-red-600 text-[11px] mt-2 hidden"></p>
+                            <p class="polo-form-erro text-validacao text-[11px] mt-2 hidden"></p>
                         </div>
                         <div class="polo-lista">
                             {% for parte in polo_terceiro_partes %}
@@ -305,7 +305,7 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <input type="hidden" name="polo_terceiro" value="{{ parte.id }}">
-                                    <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
+                                    <button type="button" class="btn-remover text-erro-txt hover:text-erro-txt text-[11px] font-bold"><i class="fas fa-times"></i> Remover</button>
                                 </div>
                             </div>
                             {% endfor %}
@@ -317,7 +317,7 @@
                     <button type="button" id="btnStep1Next" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
                         Próximo <i class="fas fa-arrow-right ml-1"></i>
                     </button>
-                    <button type="reset" class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm">
+                    <button type="reset" class="bg-neutro-txt text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-neutro-txt transition-colors shadow-sm">
                         Limpar
                     </button>
                 </div>
@@ -333,7 +333,7 @@
                     </p>
 
                     {% if step_inicial == 2 %}
-                    <div class="bg-yellow-50 border border-yellow-300 rounded p-3 mb-4 text-[12px] text-yellow-800 flex items-start gap-2">
+                    <div class="bg-atencao-bg border border-atencao-bd rounded p-3 mb-4 text-[12px] text-atencao-txt flex items-start gap-2">
                         <i class="fa-solid fa-triangle-exclamation mt-0.5"></i>
                         <span>Os dados do processo e as partes foram preservados. Por segurança do navegador, os arquivos precisam ser selecionados novamente.</span>
                     </div>
@@ -345,11 +345,11 @@
                         <i class="fas fa-plus mr-1"></i> Adicionar Documento
                     </button>
 
-                    <p id="docErro" class="text-red-600 text-[11px] mt-2 hidden"></p>
+                    <p id="docErro" class="text-validacao text-[11px] mt-2 hidden"></p>
                 </fieldset>
 
                 <div class="flex items-center justify-center gap-3 mt-10 mb-10">
-                    <button type="button" id="btnStep2Prev" class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm">
+                    <button type="button" id="btnStep2Prev" class="bg-neutro-txt text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-neutro-txt transition-colors shadow-sm">
                         <i class="fas fa-arrow-left mr-1"></i> Anterior
                     </button>
                     <button type="button" id="btnStep2Next" class="bg-azul-primario text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm">
@@ -369,10 +369,10 @@
                 </fieldset>
 
                 <div class="flex items-center justify-center gap-3 mt-10 mb-10">
-                    <button type="button" id="btnStep3Prev" class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm">
+                    <button type="button" id="btnStep3Prev" class="bg-neutro-txt text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-neutro-txt transition-colors shadow-sm">
                         <i class="fas fa-arrow-left mr-1"></i> Anterior
                     </button>
-                    <button type="submit" class="bg-green-600 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-green-700 transition-colors shadow-sm">
+                    <button type="submit" class="bg-ok-txt text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-ok-txt transition-colors shadow-sm">
                         <i class="fas fa-check mr-1"></i> Cadastrar Processo
                     </button>
                 </div>
@@ -445,7 +445,7 @@
             });
             ["id_comarca", "id_vara", "id_classe"].forEach(id => {
                 const el = document.getElementById(id);
-                if (el) el.classList.remove("border-red-500");
+                if (el) el.classList.remove("border-validacao");
             });
         }
 
@@ -466,7 +466,7 @@
         function mostrarErroInline(elementoId, mensagem, inputEl) {
             const el = document.getElementById(elementoId);
             if (el) { el.textContent = mensagem; el.classList.remove("hidden"); }
-            if (inputEl) inputEl.classList.add("border-red-500");
+            if (inputEl) inputEl.classList.add("border-validacao");
         }
 
         function validateStep1() {
@@ -523,16 +523,16 @@
                     <div class="mb-1">
                         <input type="file" name="documentos" class="doc-file-input text-[12px]" accept="${acceptAttr}">
                     </div>
-                    <p class="doc-card-erro text-red-600 text-[11px] mt-1 hidden"></p>
+                    <p class="doc-card-erro text-validacao text-[11px] mt-1 hidden"></p>
                     <div class="doc-info hidden">
                         <div class="flex items-center gap-3 mb-1">
-                            <span class="doc-filename text-[12px] font-bold text-gray-700"></span>
-                            <span class="doc-size text-gray-500 text-[11px]"></span>
+                            <span class="doc-filename text-[12px] font-bold text-texto-neutro"></span>
+                            <span class="doc-size text-rotulo text-[11px]"></span>
                         </div>
-                        <input type="text" name="documento_nomes" placeholder="Nome do documento..." class="doc-nome-input w-full bg-white border border-gray-300 rounded py-1.5 px-2 text-[12px] outline-none focus:border-[#1a5b9e]">
+                        <input type="text" name="documento_nomes" placeholder="Nome do documento..." class="doc-nome-input w-full bg-white border border-campo-borda rounded py-1.5 px-2 text-[12px] outline-none focus:border-[#1f4f9c]">
                     </div>
                 </div>
-                <button type="button" class="doc-remover text-red-500 hover:text-red-700 text-[13px] font-bold px-2" title="Remover">
+                <button type="button" class="doc-remover text-erro-txt hover:text-erro-txt text-[13px] font-bold px-2" title="Remover">
                     <i class="fas fa-times"></i>
                 </button>
             `;
@@ -615,7 +615,7 @@
                 return [...items].map(el => {
                     const nome = el.querySelector("strong").textContent;
                     const extra = el.querySelector(".text-texto-secundario").textContent;
-                    return `${nome} <span style="color:#888">${extra}</span>`;
+                    return `${nome} <span style="color:#6b7280">${extra}</span>`;
                 }).join("<br>");
             }
 
@@ -628,16 +628,16 @@
 
             const docs = document.querySelectorAll("#docLista .doc-card");
             let docsHtml = docs.length === 0
-                ? '<p class="text-[12px] text-gray-500 italic">Nenhum documento anexado.</p>'
+                ? '<p class="text-[12px] text-rotulo italic">Nenhum documento anexado.</p>'
                 : "";
             docs.forEach(c => {
                 const nomeDoc  = c.querySelector(".doc-nome-input").value || "Sem nome";
                 const filename = c.querySelector(".doc-filename").textContent || "—";
                 const size     = c.querySelector(".doc-size").textContent || "";
                 docsHtml += `<div class="flex items-center gap-3 py-1 text-[12px]">
-                    <i class="fas fa-file-alt text-[#1a5b9e]"></i>
+                    <i class="fas fa-file-alt text-[#1f4f9c]"></i>
                     <strong>${nomeDoc}</strong>
-                    <span class="text-gray-500">(${filename} — ${size})</span>
+                    <span class="text-rotulo">(${filename} — ${size})</span>
                 </div>`;
             });
             html += `<div class="resumo-section">
@@ -702,7 +702,7 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <input type="hidden" name="${inputName}" value="${parte.id}">
-                        <button type="button" class="btn-remover text-red-500 hover:text-red-700 text-[11px] font-bold">
+                        <button type="button" class="btn-remover text-erro-txt hover:text-erro-txt text-[11px] font-bold">
                             <i class="fas fa-times"></i> Remover
                         </button>
                     </div>`;

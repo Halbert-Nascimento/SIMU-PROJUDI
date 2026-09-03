@@ -9,16 +9,16 @@
 
 {% block content %}
 <main class="main-container px-10 py-8">
-    <div class="mx-auto w-full max-w-2xl border border-gray-200 bg-white">
-        <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
+    <div class="mx-auto w-full max-w-2xl border border-contorno bg-white">
+        <div class="bg-card-topo text-navy border-b border-contorno p-2.5 text-apoio font-bold uppercase tracking-[.12em] flex items-center">
             <i class="fa-solid fa-check mr-2 text-sm"></i> Resultado da acao
         </div>
 
-        <div class="p-6 text-[13px] leading-relaxed text-gray-800">
-            <h2 class="text-tjgo-blue text-xl font-bold mb-3 flex items-center gap-2">
+        <div class="p-6 text-[13px] leading-relaxed text-texto">
+            <h2 class="text-navy text-h1 font-bold mb-3 flex items-center gap-2">
                 <i class="fa-solid fa-circle-check"></i> Acao realizada com sucesso
             </h2>
-            <p class="text-gray-600 mb-4">
+            <p class="text-texto-neutro mb-4">
                 Esta tela foi criada para uso de redirecionamento de teste.
             </p>
 
@@ -26,14 +26,14 @@
                 Ir para a pagina inicial
             </a>
 
-            <div class="mt-6 border border-gray-200">
-                <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
+            <div class="mt-6 border border-contorno">
+                <div class="bg-card-topo text-navy border-b border-contorno p-2.5 text-apoio font-bold uppercase tracking-[.12em] flex items-center">
                     <i class="fa-solid fa-route mr-2 text-sm"></i> Lista de URLs do Sistema (Teste)
                 </div>
 
                 <div class="max-h-[420px] overflow-auto bg-white">
                     <table class="w-full text-left border-collapse text-xs">
-                        <thead class="bg-gray-50 text-gray-600 uppercase">
+                        <thead class="bg-card-topo text-texto-neutro uppercase">
                             <tr>
                                 <th class="py-2 px-3 border-b">Rota</th>
                                 <th class="py-2 px-3 border-b">Nome</th>
@@ -42,20 +42,20 @@
                         </thead>
                         <tbody>
                             {% for item in all_routes %}
-                                <tr class="border-b border-gray-100">
+                                <tr class="border-b border-divisor">
                                     <td class="py-2 px-3 font-mono text-[11px]">/{{ item.route }}</td>
                                     <td class="py-2 px-3">{{ item.name }}</td>
                                     <td class="py-2 px-3">
                                         {% if item.clickable %}
-                                            <a href="/{{ item.route }}" class="text-tjgo-blue font-bold hover:underline">abrir</a>
+                                            <a href="/{{ item.route }}" class="text-acao font-bold hover:underline">abrir</a>
                                         {% else %}
-                                            <span class="text-gray-400">requer parametro</span>
+                                            <span class="text-rotulo">requer parametro</span>
                                         {% endif %}
                                     </td>
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td class="py-3 px-3 text-gray-500" colspan="3">Nenhuma URL encontrada.</td>
+                                    <td class="py-3 px-3 text-rotulo" colspan="3">Nenhuma URL encontrada.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

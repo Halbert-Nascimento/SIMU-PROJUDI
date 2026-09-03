@@ -1,7 +1,11 @@
-{% comment %}Renderizado pela tag {% templatetag openblock %} card {% templatetag closeblock %} — ver base/templatetags/ui.py{% endcomment %}
-<div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden {{ classe }}">
-    <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
-        <i class="fa-solid {{ icone }} mr-2 text-sm"></i> {{ titulo }}{% if contador is not None %} ({{ contador }}){% endif %}
+{% comment %}Renderizado pela tag {% templatetag openblock %} card {% templatetag closeblock %} — ver base/templatetags/ui.py.
+Guia seção 07: cabeçalho #fbfbfc com borda inferior e título navy — não mais navy sólido.{% endcomment %}
+<div class="bg-white border border-contorno {{ classe }}">
+    <div class="px-4 py-[11px] border-b border-contorno bg-card-topo flex items-center justify-between gap-4">
+        <h3 class="m-0 text-apoio font-bold uppercase tracking-[.12em] text-navy flex items-center gap-2">
+            {% if icone %}<i class="fa-solid {{ icone }} text-rotulo"></i>{% endif %}{{ titulo }}{% if contador is not None %} ({{ contador }}){% endif %}
+        </h3>
+        {% if meta %}<span class="text-apoio text-rotulo">{{ meta }}</span>{% endif %}
     </div>
     {% if classe_corpo %}<div class="{{ classe_corpo }}">{{ corpo }}</div>{% else %}{{ corpo }}{% endif %}
 </div>

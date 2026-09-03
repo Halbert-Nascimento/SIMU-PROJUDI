@@ -9,7 +9,7 @@
 <style>
 
     .stat-card {
-        background: #fff; border: 1px solid #cdd9e6;
+        background: #fff; border: 1px solid #c9d5ea;
         padding: 12px 14px; display: flex; align-items: center; gap: 12px;
     }
     .stat-card .ico {
@@ -17,44 +17,44 @@
         display: flex; align-items: center; justify-content: center;
         color: #fff; font-size: 18px; flex-shrink: 0;
     }
-    .stat-card .lbl { color: #666; font-size: 10px; text-transform: uppercase; font-weight: bold; }
-    .stat-card .num { font-size: 22px; font-weight: bold; color: #1a5b9e; line-height: 1; }
-    .stat-card .sub { font-size: 10px; color: #888; }
+    .stat-card .lbl { color: #6b7280; font-size: 10px; text-transform: uppercase; font-weight: bold; }
+    .stat-card .num { font-size: 22px; font-weight: bold; color: #1f4f9c; line-height: 1; }
+    .stat-card .sub { font-size: 10px; color: #6b7280; }
     .progress-bg {
-        width: 100%; height: 8px; background: #e0e0e0; border-radius: 4px; overflow: hidden;
+        width: 100%; height: 8px; background: #f7f8fa; border-radius: 4px; overflow: hidden;
     }
     .progress-fill {
-        height: 100%; background: linear-gradient(to right, #1a5b9e, #226bb8);
+        height: 100%; background: linear-gradient(to right, #1f4f9c, #1f4f9c);
         border-radius: 4px; transition: width .4s ease;
     }
     .nota-badge {
         display: inline-block; padding: 2px 8px; font-size: 12px;
         font-weight: bold; border-radius: 3px; min-width: 40px; text-align: center;
     }
-    .nota-A { background: #dff5e1; color: #1f6020; border: 1px solid #bee0c2; }
-    .nota-B { background: #e9f3ff; color: #1a5b9e; border: 1px solid #bcd5ee; }
-    .nota-C { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
-    .nota-D { background: #fde8e8; color: #a52a2a; border: 1px solid #f3c2c2; }
-    .nota-pend { background: #f0f0f0; color: #666; border: 1px solid #ccc; font-style: italic; }
+    .nota-A { background: #eaf4ec; color: #2e7d32; border: 1px solid #bee0c2; }
+    .nota-B { background: #f7faff; color: #1f4f9c; border: 1px solid #c9d5ea; }
+    .nota-C { background: #fff5e4; color: #a96400; border: 1px solid #f1d59c; }
+    .nota-D { background: #fdeeee; color: #b33a3a; border: 1px solid #f3cfcf; }
+    .nota-pend { background: #f1f2f4; color: #6b7280; border: 1px solid #d3d7de; font-style: italic; }
     .chip-filter {
         padding: 4px 12px; font-size: 11px;
-        border: 1px solid #b8b8b8; background: #fff;
+        border: 1px solid #d3d7de; background: #fff;
         border-radius: 14px; cursor: pointer;
-        color: #444; font-weight: bold;
+        color: #4b5563; font-weight: bold;
     }
-    .chip-filter:hover { background: #eef4fb; border-color: #1a5b9e; color: #1a5b9e; }
-    .chip-filter.active { background: #1a5b9e; color: #fff; border-color: #1a5b9e; }
+    .chip-filter:hover { background: #f7faff; border-color: #1f4f9c; color: #1f4f9c; }
+    .chip-filter.active { background: #1f4f9c; color: #fff; border-color: #1f4f9c; }
     .banner-ult {
-        background: linear-gradient(to right, #eef4fb, #f8fbff);
-        border: 1px solid #bcd5ee; border-left: 4px solid #1a5b9e;
+        background: linear-gradient(to right, #f7faff, #f7faff);
+        border: 1px solid #c9d5ea; border-left: 4px solid #1f4f9c;
         padding: 10px 14px; display: flex; align-items: center; gap: 10px;
         margin-bottom: 12px; font-size: 12px;
     }
-    .banner-ult i { color: #1a5b9e; font-size: 18px; }
+    .banner-ult i { color: #1f4f9c; font-size: 18px; }
     .prof-comment {
-        background: #f1faee; border-left: 3px solid #1f6020;
+        background: #eaf4ec; border-left: 3px solid #2e7d32;
         padding: 10px 12px; font-size: 12px; line-height: 1.55;
-        color: #333; font-style: italic;
+        color: #23262e; font-style: italic;
     }
 </style>
 {% endblock %}
@@ -82,7 +82,7 @@
         <!-- Cards de resumo -->
         <div class="grid grid-cols-3 gap-3 mt-3">
             <div class="stat-card">
-                <div class="ico" style="background:#1a5b9e;"><i class="fa-solid fa-chart-line"></i></div>
+                <div class="ico" style="background:#1f4f9c;"><i class="fa-solid fa-chart-line"></i></div>
                 <div>
                     <div class="lbl">Média Geral</div>
                     <div class="num">{% if media_geral is not None %}{{ media_geral|floatformat:2 }}{% else %}—{% endif %}</div>
@@ -90,7 +90,7 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="ico" style="background:#1f6020;"><i class="fa-solid fa-clipboard-check"></i></div>
+                <div class="ico" style="background:#2e7d32;"><i class="fa-solid fa-clipboard-check"></i></div>
                 <div>
                     <div class="lbl">Avaliadas</div>
                     <div class="num">{{ total_avaliadas }}</div>
@@ -98,7 +98,7 @@
                 </div>
             </div>
             <div class="stat-card">
-                <div class="ico" style="background:#7b3ba0;"><i class="fa-solid fa-trophy"></i></div>
+                <div class="ico" style="background:#0a083d;"><i class="fa-solid fa-trophy"></i></div>
                 <div>
                     <div class="lbl">Melhor Nota</div>
                     <div class="num">{% if melhor_nota is not None %}{{ melhor_nota|floatformat:1 }}{% else %}—{% endif %}</div>
@@ -147,8 +147,8 @@
                 <button class="chip-filter" data-filter="sem_nota">Sem nota</button>
             </div>
             <div class="flex items-center gap-2">
-                <label class="text-[11px] text-gray-600">Ordenar:</label>
-                <select id="filterSort" class="border border-gray-300 px-2 py-1 text-[11px]">
+                <label class="text-[11px] text-texto-neutro">Ordenar:</label>
+                <select id="filterSort" class="border border-campo-borda px-2 py-1 text-[11px]">
                     <option value="data-desc">Mais recente</option>
                     <option value="data-asc">Mais antiga</option>
                     <option value="nota-desc">Maior nota</option>
@@ -172,13 +172,13 @@
             </tbody>
         </table>
 
-        <div class="flex items-center justify-between mt-3 text-[11px] text-gray-600">
+        <div class="flex items-center justify-between mt-3 text-[11px] text-texto-neutro">
             <div>Exibindo <strong id="showCount">0</strong> de <strong>{{ feedbacks|length }}</strong> avaliações</div>
             <div class="flex items-center gap-1" id="paginacao"></div>
         </div>
         {% else %}
-        <div class="text-center py-8 text-gray-500 italic text-[12px]">
-            <i class="fa-solid fa-inbox text-3xl text-gray-300 mb-2"></i>
+        <div class="text-center py-8 text-rotulo italic text-[12px]">
+            <i class="fa-solid fa-inbox text-3xl text-rotulo mb-2"></i>
             <div>Nenhuma avaliação recebida ainda.</div>
         </div>
         {% endif %}
@@ -189,7 +189,7 @@
 <!-- Modal Detalhe -->
 {% modal id="avalModal" titulo="Detalhe da Avaliação" icone="fa-clipboard-check" tamanho="lg" fechar_onclick="closeModal()" %}
         <div class="modal-body p-5 text-[12px]" id="modalContent"></div>
-        <div class="bg-gray-50 px-5 py-3 flex justify-end gap-2 border-t border-gray-200">
+        <div class="bg-card-topo px-5 py-3 flex justify-end gap-2 border-t border-contorno">
             <button type="button" class="btn-secondary" onclick="closeModal()">Fechar</button>
         </div>
     {% endmodal %}
@@ -255,11 +255,11 @@ function renderAval() {
         var realIdx = avaliacoes.indexOf(a);
         return '<tr onclick="openAval(' + realIdx + ')">' +
             '<td class="font-mono text-[11px]">' + escapeHtml(a.data) + '</td>' +
-            '<td><span class="font-bold text-[#1a5b9e]">' + escapeHtml(a.mov) + '</span>' +
-            '<div class="text-[10px] text-gray-500 font-mono">' + escapeHtml(a.proc) + '</div></td>' +
+            '<td><span class="font-bold text-[#1f4f9c]">' + escapeHtml(a.mov) + '</span>' +
+            '<div class="text-[10px] text-rotulo font-mono">' + escapeHtml(a.proc) + '</div></td>' +
             '<td class="text-[11px]">' + escapeHtml(a.prof) + '</td>' +
             '<td class="text-center"><span class="nota-badge ' + getNotaClass(a.nota) + '">' + notaTxt + '</span></td>' +
-            '<td class="text-center"><i class="fa-solid fa-eye text-[#1a5b9e] cursor-pointer" data-tip="Ver detalhes" onclick="event.stopPropagation(); openAval(' + realIdx + ')"></i></td>' +
+            '<td class="text-center"><i class="fa-solid fa-eye text-[#1f4f9c] cursor-pointer" data-tip="Ver detalhes" onclick="event.stopPropagation(); openAval(' + realIdx + ')"></i></td>' +
             '</tr>';
     }).join('');
 
@@ -269,15 +269,15 @@ function renderAval() {
         return;
     }
     var html = '';
-    html += '<button class="px-2 py-0.5 border border-gray-300 bg-white hover:bg-gray-100' + (currentPage === 1 ? ' opacity-50' : '') + '" onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '><i class="fa-solid fa-angle-left"></i></button>';
+    html += '<button class="px-2 py-0.5 border border-campo-borda bg-white hover:bg-tabela-topo' + (currentPage === 1 ? ' opacity-50' : '') + '" onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '><i class="fa-solid fa-angle-left"></i></button>';
     for (var i = 1; i <= totalPages; i++) {
         if (i === currentPage) {
-            html += '<span class="px-2 py-0.5 bg-[#1a5b9e] text-white font-bold rounded-sm">' + i + '</span>';
+            html += '<span class="px-2 py-0.5 bg-[#1f4f9c] text-white font-bold rounded-sm">' + i + '</span>';
         } else {
-            html += '<button class="px-2 py-0.5 border border-gray-300 bg-white hover:bg-gray-100" onclick="goPage(' + i + ')">' + i + '</button>';
+            html += '<button class="px-2 py-0.5 border border-campo-borda bg-white hover:bg-tabela-topo" onclick="goPage(' + i + ')">' + i + '</button>';
         }
     }
-    html += '<button class="px-2 py-0.5 border border-gray-300 bg-white hover:bg-gray-100' + (currentPage === totalPages ? ' opacity-50' : '') + '" onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '><i class="fa-solid fa-angle-right"></i></button>';
+    html += '<button class="px-2 py-0.5 border border-campo-borda bg-white hover:bg-tabela-topo' + (currentPage === totalPages ? ' opacity-50' : '') + '" onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '><i class="fa-solid fa-angle-right"></i></button>';
     pagDiv.innerHTML = html;
 }
 
@@ -309,24 +309,24 @@ document.getElementById('filterSort').addEventListener('change', function(e) {
 function openAval(idx) {
     var a = avaliacoes[idx];
     var notaTxt = a.nota === null ? 'Sem nota' : a.nota.toFixed(2).replace('.', ',') + ' / 10,00';
-    var notaColor = a.nota === null ? '#888' :
-        a.nota >= 9 ? '#1f6020' :
-        a.nota >= 7.5 ? '#1a5b9e' :
-        a.nota >= 6 ? '#d97706' : '#c0392b';
-    var bgColor = a.nota === null ? '#f5f5f5' : '#f1faee';
-    var bdColor = a.nota === null ? '#ddd' : '#c5dec5';
+    var notaColor = a.nota === null ? '#6b7280' :
+        a.nota >= 9 ? '#2e7d32' :
+        a.nota >= 7.5 ? '#1f4f9c' :
+        a.nota >= 6 ? '#a96400' : '#c0392b';
+    var bgColor = a.nota === null ? '#f7f8fa' : '#eaf4ec';
+    var bdColor = a.nota === null ? '#e2e5ea' : '#bee0c2';
 
     var docsHtml = '';
     if (a.documentos && a.documentos.length > 0) {
         docsHtml = a.documentos.map(function(d) {
             var ext = (d.titulo || '').split('.').pop().toLowerCase();
-            var ico = ext === 'pdf' ? '<i class="fa-solid fa-file-pdf text-red-600"></i>' :
-                (ext === 'jpg' || ext === 'jpeg' || ext === 'png') ? '<i class="fa-solid fa-file-image text-purple-600"></i>' :
-                '<i class="fa-solid fa-file text-blue-600"></i>';
-            return '<div class="flex items-center gap-2 py-1 border-b border-gray-100 last:border-0">' +
+            var ico = ext === 'pdf' ? '<i class="fa-solid fa-file-pdf text-validacao"></i>' :
+                (ext === 'jpg' || ext === 'jpeg' || ext === 'png') ? '<i class="fa-solid fa-file-image text-acao"></i>' :
+                '<i class="fa-solid fa-file text-acao"></i>';
+            return '<div class="flex items-center gap-2 py-1 border-b border-divisor last:border-0">' +
                 ico + ' <span class="flex-1 text-[11px]">' + escapeHtml(d.titulo) + '</span>' +
-                (d.url ? '<a href="' + escapeHtml(d.url) + '" target="_blank" class="text-[#1a5b9e] text-[11px]"><i class="fa-solid fa-eye" data-tip="Visualizar"></i></a> ' +
-                '<a href="' + escapeHtml(d.url) + '" download class="text-[#1a5b9e] text-[11px]"><i class="fa-solid fa-download" data-tip="Baixar"></i></a>' : '') +
+                (d.url ? '<a href="' + escapeHtml(d.url) + '" target="_blank" class="text-[#1f4f9c] text-[11px]"><i class="fa-solid fa-eye" data-tip="Visualizar"></i></a> ' +
+                '<a href="' + escapeHtml(d.url) + '" download class="text-[#1f4f9c] text-[11px]"><i class="fa-solid fa-download" data-tip="Baixar"></i></a>' : '') +
                 '</div>';
         }).join('');
     }
@@ -334,19 +334,19 @@ function openAval(idx) {
     var html = '';
     // Cabeçalho com nota
     html += '<div class="flex items-center gap-4 p-4 mb-4" style="background:' + bgColor + '; border:1px solid ' + bdColor + ';">';
-    html += '<div class="text-center pr-4 border-r border-gray-300">';
-    html += '<div class="text-[10px] uppercase text-gray-600 font-bold">Nota</div>';
+    html += '<div class="text-center pr-4 border-r border-campo-borda">';
+    html += '<div class="text-[10px] uppercase text-texto-neutro font-bold">Nota</div>';
     html += '<div class="text-[36px] font-bold leading-none" style="color:' + notaColor + ';">' + (a.nota === null ? '—' : a.nota.toFixed(1).replace('.', ',')) + '</div>';
-    html += '<div class="text-[10px] text-gray-500 mt-1">/ 10,00</div>';
+    html += '<div class="text-[10px] text-rotulo mt-1">/ 10,00</div>';
     html += '</div>';
     html += '<div class="flex-1">';
-    html += '<div class="font-bold text-[#1a5b9e] text-[13px]">' + escapeHtml(a.mov) + '</div>';
-    html += '<div class="text-[11px] text-gray-600 mt-1">Processo: <span class="font-mono">' + escapeHtml(a.proc) + '</span></div>';
-    html += '<div class="text-[11px] text-gray-600">Data: <strong>' + escapeHtml(a.data) + '</strong></div>';
+    html += '<div class="font-bold text-[#1f4f9c] text-[13px]">' + escapeHtml(a.mov) + '</div>';
+    html += '<div class="text-[11px] text-texto-neutro mt-1">Processo: <span class="font-mono">' + escapeHtml(a.proc) + '</span></div>';
+    html += '<div class="text-[11px] text-texto-neutro">Data: <strong>' + escapeHtml(a.data) + '</strong></div>';
     html += '</div></div>';
 
     // Avaliador
-    html += '<div class="flex items-center gap-3 mb-4 p-3 bg-gray-50 border border-gray-200">';
+    html += '<div class="flex items-center gap-3 mb-4 p-3 bg-card-topo border border-contorno">';
     html += '<div class="avatar md prof">' + escapeHtml(a.prof_iniciais) + '</div>';
     html += '<div class="flex-1"><div class="field-label">Avaliado por</div>';
     html += '<div class="font-bold">Prof. ' + escapeHtml(a.prof) + '</div></div></div>';
@@ -354,7 +354,7 @@ function openAval(idx) {
     // Comentário
     html += '<div class="autos-title green">COMENTÁRIO DO PROFESSOR</div>';
     html += '<div class="prof-comment mt-2">';
-    html += a.comentario ? '"' + escapeHtml(a.comentario) + '"' : '<span class="text-gray-500 not-italic">Nenhum comentário registrado.</span>';
+    html += a.comentario ? '"' + escapeHtml(a.comentario) + '"' : '<span class="text-rotulo not-italic">Nenhum comentário registrado.</span>';
     html += '</div>';
 
     // Movimentação
@@ -363,8 +363,8 @@ function openAval(idx) {
 
     // Arquivos
     if (a.documentos && a.documentos.length > 0) {
-        html += '<div class="autos-title mt-4">ARQUIVOS ANEXADOS <span class="text-gray-500 normal-case font-normal">(' + a.documentos.length + ')</span></div>';
-        html += '<div class="border border-gray-200 p-2 mt-2 bg-white">' + docsHtml + '</div>';
+        html += '<div class="autos-title mt-4">ARQUIVOS ANEXADOS <span class="text-rotulo normal-case font-normal">(' + a.documentos.length + ')</span></div>';
+        html += '<div class="border border-contorno p-2 mt-2 bg-white">' + docsHtml + '</div>';
     }
 
     document.getElementById('modalContent').innerHTML = html;

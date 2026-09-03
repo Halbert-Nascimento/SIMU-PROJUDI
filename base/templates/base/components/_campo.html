@@ -1,7 +1,8 @@
-{% comment %}Renderizado pela tag {% templatetag openblock %} campo {% templatetag closeblock %} — ver base/templatetags/ui.py{% endcomment %}
-<div>
-    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">{{ label }}</label>
+{% comment %}Renderizado pela tag {% templatetag openblock %} campo {% templatetag closeblock %} — ver base/templatetags/ui.py.
+Guia seção 05: rótulo acima, caixa alta 10px/600/.1em, gap 5px.{% endcomment %}
+<div class="flex flex-col gap-[5px]">
+    <label class="text-micro font-semibold uppercase text-rotulo">{{ label }}</label>
     {{ controle }}
-    {% if ajuda %}<p class="text-gray-400 text-[10px] mt-1">{{ ajuda }}</p>{% endif %}
-    {% if erros %}<p class="text-red-600 text-[10px] mt-1">{{ erros.0 }}</p>{% endif %}
+    {% if ajuda %}<span class="text-meta text-rotulo">{{ ajuda }}</span>{% endif %}
+    {% if erros %}<span class="text-meta text-validacao font-semibold">{{ erros.0 }}</span>{% endif %}
 </div>

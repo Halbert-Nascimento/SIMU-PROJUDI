@@ -48,8 +48,8 @@ function criarPaginador(config) {
                 const btn = document.createElement('button');
                 btn.textContent = p;
                 btn.className = p === paginaAtual
-                    ? 'w-7 h-7 text-[11px] font-bold rounded bg-tjgo-blue text-white'
-                    : 'w-7 h-7 text-[11px] font-bold rounded text-gray-500 hover:bg-gray-100 hover:text-tjgo-blue transition-colors';
+                    ? 'w-7 h-7 text-meta font-bold bg-navy text-white border border-navy'
+                    : 'w-7 h-7 text-meta font-bold text-rotulo border border-transparent hover:border-contorno hover:text-acao transition-colors';
                 btn.onclick = () => { paginaAtual = p; renderizar(); };
                 container.appendChild(btn);
             }

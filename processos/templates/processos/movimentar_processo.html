@@ -8,46 +8,46 @@
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <style>
     .step-badge {
-        background: #1e5894; color: #fff; padding: 5px 16px;
+        background: #0a083d; color: #fff; padding: 5px 16px;
         font-size: 12px; font-weight: bold; display: inline-block;
         border-radius: 2px;
     }
-    .lbl { display: block; font-size: 12px; font-weight: bold; color: #333; margin-bottom: 3px; }
+    .lbl { display: block; font-size: 12px; font-weight: bold; color: #23262e; margin-bottom: 3px; }
     .lbl .req { color: #c0392b; margin-right: 2px; }
-    .lbl-icon { color: #1a5b9e; font-size: 11px; margin-left: 2px; cursor: pointer; }
-    .lbl-x { color: #888; font-size: 11px; margin-left: 2px; cursor: pointer; }
+    .lbl-icon { color: #1f4f9c; font-size: 11px; margin-left: 2px; cursor: pointer; }
+    .lbl-x { color: #6b7280; font-size: 11px; margin-left: 2px; cursor: pointer; }
     .hint-error { color: #c0392b; font-weight: bold; font-size: 12px; }
 
     .tab-bar {
-        display: flex; background: #9a9a9a; padding: 0;
+        display: flex; background: #d3d7de; padding: 0;
         border-radius: 2px 2px 0 0; overflow: hidden;
     }
     .tab-item {
         padding: 8px 18px; font-size: 12px; font-weight: bold;
-        color: #444; cursor: pointer; background: #bcbcbc;
-        border-right: 1px solid #9a9a9a; transition: all .12s;
+        color: #4b5563; cursor: pointer; background: #f1f2f4;
+        border-right: 1px solid #d3d7de; transition: all .12s;
     }
-    .tab-item:hover { background: #aaa; color: #222; }
-    .tab-item.active { background: #1a5b9e; color: #fff; }
-    .tab-empty { flex: 1; background: #9a9a9a; }
-    .tab-content { background: #fff; border: 1px solid #9a9a9a; border-top: 0; padding: 14px; }
+    .tab-item:hover { background: #6b7280; color: #23262e; }
+    .tab-item.active { background: #1f4f9c; color: #fff; }
+    .tab-empty { flex: 1; background: #d3d7de; }
+    .tab-content { background: #fff; border: 1px solid #d3d7de; border-top: 0; padding: 14px; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
     .dropzone {
-        border: 2px dashed #b8b8b8; border-radius: 4px;
-        padding: 24px; text-align: center; background: #fafafa;
+        border: 2px dashed #d3d7de; border-radius: 4px;
+        padding: 24px; text-align: center; background: #fbfbfc;
         transition: all .15s; cursor: pointer;
     }
-    .dropzone:hover, .dropzone.over { border-color: #1a5b9e; background: #eef5fc; }
-    .dropzone .ico { font-size: 38px; color: #1a5b9e; margin-bottom: 8px; }
+    .dropzone:hover, .dropzone.over { border-color: #1f4f9c; background: #f7faff; }
+    .dropzone .ico { font-size: 38px; color: #1f4f9c; margin-bottom: 8px; }
 
     .action-icons { display: flex; gap: 8px; margin-bottom: 4px; padding: 4px 2px; }
     .action-icons button {
         background: transparent; border: 0; cursor: pointer;
-        color: #1a5b9e; font-size: 14px; padding: 4px;
+        color: #1f4f9c; font-size: 14px; padding: 4px;
     }
-    .action-icons button:hover { color: #226bb8; }
+    .action-icons button:hover { color: #1f4f9c; }
     .action-icons button.danger { color: #c0392b; }
 
     /* Página do documento dentro do TinyMCE */
@@ -63,7 +63,7 @@
 <!-- Navigation Bar -->
 {% nav_secundaria %}
 
-<main class="max-w-container mx-auto px-6 py-5">
+<main class="max-w-conteudo mx-auto px-6 py-5">
 
     {% include 'base/components/_breadcrumbs.html' %}
 
@@ -187,18 +187,18 @@
                                 <i class="fa-solid fa-file-import"></i> Carregar
                             </button>
                             <button type="button" onclick="limparEditor()" title="Limpar editor"
-                                    class="bg-gray-400 text-white font-bold px-3 py-1.5 text-[12px] rounded hover:bg-gray-500 transition-colors">
+                                    class="bg-neutro-txt text-white font-bold px-3 py-1.5 text-[12px] rounded hover:bg-neutro-txt transition-colors">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
                         <p class="text-texto-secundario text-[11px] mt-1.5">
-                            <i class="fa-solid fa-triangle-exclamation text-yellow-600 mr-1"></i>
+                            <i class="fa-solid fa-triangle-exclamation text-atencao-txt mr-1"></i>
                             Ao carregar um modelo ou rascunho, o conteúdo atual do editor será substituído.
                         </p>
                         <div class="flex items-center gap-2 mt-2 pt-2 border-t border-borda">
                             <span class="text-texto-secundario text-[11px]">Continuar edição de rascunho salvo:</span>
                             <button type="button" onclick="document.getElementById('rascunhoInput').click()"
-                                    class="bg-gray-600 text-white font-bold px-3 py-1 text-[11px] rounded hover:bg-gray-700 transition-colors flex items-center gap-1.5">
+                                    class="bg-neutro-txt text-white font-bold px-3 py-1 text-[11px] rounded hover:bg-navy transition-colors flex items-center gap-1.5">
                                 <i class="fa-solid fa-folder-open"></i> Abrir Rascunho (.html)
                             </button>
                             <input type="file" id="rascunhoInput" accept=".html" class="hidden">
@@ -224,12 +224,12 @@
                             <i class="fa-solid fa-signature"></i> Assinar
                         </button>
                         <button type="button"
-                                class="bg-gray-600 text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-gray-700 transition-colors shadow-sm flex items-center gap-1.5"
+                                class="bg-neutro-txt text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-navy transition-colors shadow-sm flex items-center gap-1.5"
                                 onclick="salvarRascunho()" title="Salva localmente como .html para continuar depois">
                             <i class="fa-solid fa-clock-rotate-left"></i> Salvar Rascunho
                         </button>
                         <button type="button"
-                                class="bg-green-700 text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-green-800 transition-colors shadow-sm flex items-center gap-1.5"
+                                class="bg-ok-txt text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-ok-txt transition-colors shadow-sm flex items-center gap-1.5"
                                 onclick="incluirNaMovimentacao()" title="Adiciona este documento à lista de anexos da movimentação">
                             <i class="fa-solid fa-paperclip"></i> Incluir na Movimentação
                         </button>
@@ -269,7 +269,7 @@
     <!-- Botões Passo 1 -->
     <div id="btnsPasso1" class="flex justify-center gap-3 my-6">
         <a href="{% url 'processos:visualizar_processo' processo.numero %}"
-           class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm flex items-center gap-1.5">
+           class="bg-neutro-txt text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-neutro-txt transition-colors shadow-sm flex items-center gap-1.5">
             <i class="fa-solid fa-arrow-left"></i> Cancelar
         </a>
         <button type="button"
@@ -302,7 +302,7 @@
                 {% if movimentacao_origem_id %}
                 <div class="col-span-2 flex gap-2">
                     <span class="text-texto-secundario w-36 shrink-0">Modo:</span>
-                    <span class="font-bold text-yellow-700">
+                    <span class="font-bold text-atencao-txt">
                         <i class="fa-solid fa-pen mr-1"></i>Edição — nova versão da movimentação #{{ movimentacao_origem_id }}
                     </span>
                 </div>
@@ -318,12 +318,12 @@
         <!-- Botões Passo 2 -->
         <div class="flex justify-center gap-3 my-6">
             <button type="button"
-                    class="bg-gray-400 text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-gray-500 transition-colors shadow-sm flex items-center gap-1.5"
+                    class="bg-neutro-txt text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-neutro-txt transition-colors shadow-sm flex items-center gap-1.5"
                     onclick="voltarPasso1()">
                 <i class="fa-solid fa-arrow-left"></i> Voltar
             </button>
             <button type="button"
-                    class="bg-green-700 text-white font-bold px-8 py-2 text-[13px] rounded hover:bg-green-800 transition-colors shadow-sm flex items-center gap-1.5"
+                    class="bg-ok-txt text-white font-bold px-8 py-2 text-[13px] rounded hover:bg-ok-txt transition-colors shadow-sm flex items-center gap-1.5"
                     onclick="confirmarMovimentacao()">
                 <i class="fa-solid fa-circle-check"></i> Confirmar Movimentação
             </button>
@@ -477,9 +477,9 @@ function formatSize(b) {
 function iconFor(name) {
     const ext = name.split('.').pop().toLowerCase();
     if (['pdf'].includes(ext))                    return ['fa-file-pdf', '#c0392b'];
-    if (['doc','docx','odt'].includes(ext))       return ['fa-file-word', '#2c5b9e'];
-    if (['jpg','jpeg','png','gif'].includes(ext)) return ['fa-file-image', '#7b3ba0'];
-    return ['fa-file', '#666'];
+    if (['doc','docx','odt'].includes(ext))       return ['fa-file-word', '#1f4f9c'];
+    if (['jpg','jpeg','png','gif'].includes(ext)) return ['fa-file-image', '#0a083d'];
+    return ['fa-file', '#6b7280'];
 }
 
 function renderPending() {
@@ -513,7 +513,7 @@ function renderPending() {
                             onclick="confirmFile(${f.id})" title="Adicionar à lista">
                         <i class="fa-solid fa-check"></i>
                     </button>
-                    <button type="button" class="bg-fundo-container text-red-600 border border-borda font-bold px-3 py-1.5 text-[12px] rounded hover:bg-fundo-caixa transition-colors flex items-center gap-1"
+                    <button type="button" class="bg-fundo-container text-validacao border border-borda font-bold px-3 py-1.5 text-[12px] rounded hover:bg-fundo-caixa transition-colors flex items-center gap-1"
                             onclick="removePending(${f.id})" title="Remover">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
@@ -559,8 +559,8 @@ function renderFiles() {
                 <td>${f.desc}</td>
                 <td><i class="fa-solid ${ico} mr-1.5" style="color:${col}"></i>${f.name}</td>
                 <td>
-                    <button type="button" class="text-azul-primario hover:text-[#226bb8] mr-2" title="Editar título" onclick="editTitle(${f.id})"><i class="fa-solid fa-pen"></i></button>
-                    <button type="button" class="text-red-600 hover:text-red-700" title="Remover" onclick="removeFile(${f.id})"><i class="fa-solid fa-trash"></i></button>
+                    <button type="button" class="text-azul-primario hover:text-[#1f4f9c] mr-2" title="Editar título" onclick="editTitle(${f.id})"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="text-validacao hover:text-erro-txt" title="Remover" onclick="removeFile(${f.id})"><i class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>
         `;

@@ -1,11 +1,11 @@
 {% if breadcrumbs %}
-<nav class="text-[11px] text-texto-secundario mb-3 flex items-center gap-1" aria-label="Navegação">
+<nav class="text-meta text-rotulo mb-3 flex items-center gap-1.5" aria-label="Navegação">
     {% for item in breadcrumbs %}
         {% if not forloop.last %}
-            <a href="{{ item.url }}" class="hover:underline text-azul-primario">{{ item.label }}</a>
-            <i class="fa-solid fa-chevron-right text-[9px]"></i>
+            <a href="{{ item.url }}" class="text-acao hover:text-navy hover:underline">{{ item.label }}</a>
+            <i class="fa-solid fa-chevron-right text-[8px] text-rotulo"></i>
         {% else %}
-            <span class="text-texto-principal font-medium">{{ item.label }}</span>
+            <span class="text-texto font-semibold">{{ item.label }}</span>
         {% endif %}
     {% endfor %}
 </nav>

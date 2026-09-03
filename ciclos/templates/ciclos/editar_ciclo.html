@@ -18,15 +18,15 @@
     {% include 'base/components/_breadcrumbs.html' %}
 
     <!-- Cabeçalho da Página -->
-    <div class="mb-6 border-b border-gray-100 pb-4">
+    <div class="mb-6 border-b border-divisor pb-4">
         <a href="{% url 'acesso:painel_administrativo' %}"
-            class="text-gray-500 hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors w-fit">
+            class="text-rotulo hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors w-fit">
             <i class="fa-solid fa-arrow-left"></i> Voltar para o Painel
         </a>
         <h2 class="text-tjgo-blue text-2xl font-bold flex items-center gap-2 mt-1">
             <i class="fa-solid fa-pen-to-square"></i> Editar Ciclo
         </h2>
-        <p class="text-gray-500 text-sm mt-1">Atualize as informações do ciclo de simulação.</p>
+        <p class="text-rotulo text-sm mt-1">Atualize as informações do ciclo de simulação.</p>
     </div>
 
     <!-- Mensagens de feedback -->
@@ -85,16 +85,16 @@
                     </select>
                 {% endcampo %}
                 {% else %}
-                <div class="bg-blue-50 border border-blue-100 rounded px-3 py-2 text-xs text-blue-700 flex items-center gap-2">
+                <div class="bg-linha-hover border border-[#c9d5ea] rounded px-3 py-2 text-xs text-acao flex items-center gap-2">
                     <i class="fa-solid fa-circle-info"></i>
                     Coordenador atual: <strong class="ml-1">{{ ciclo.coordenador.get_full_name|default:ciclo.coordenador.username }}</strong>
                 </div>
                 {% endif %}
 
                 <!-- Ações -->
-                <div class="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                <div class="flex justify-end gap-2 pt-2 border-t border-divisor">
                     <a href="{% url 'acesso:painel_administrativo' %}"
-                        class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-4 text-xs rounded shadow-sm transition-colors uppercase">
+                        class="bg-white border border-campo-borda hover:bg-tabela-topo text-texto-neutro font-bold py-1.5 px-4 text-xs rounded shadow-sm transition-colors uppercase">
                         Cancelar
                     </a>
                     <button type="submit"
@@ -111,32 +111,32 @@
             <!-- Card: Status Atual -->
             {% card titulo="Situação Atual" icone="fa-circle-info" classe_corpo="p-4 space-y-3 text-sm" %}
                     <div class="flex justify-between items-center">
-                        <span class="text-[11px] text-gray-500 uppercase font-bold">Status</span>
+                        <span class="text-[11px] text-rotulo uppercase font-bold">Status</span>
                         {% badge_status_ciclo ciclo.status %}
                     </div>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-3">
-                        <span class="text-[11px] text-gray-500 uppercase font-bold">Semestre / Ano</span>
+                    <div class="flex justify-between items-center border-t border-divisor pt-3">
+                        <span class="text-[11px] text-rotulo uppercase font-bold">Semestre / Ano</span>
                         <span class="text-xs font-bold text-tjgo-navy">{{ ciclo.semestre }}º / {{ ciclo.ano }}</span>
                     </div>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-3">
-                        <span class="text-[11px] text-gray-500 uppercase font-bold">Grupos</span>
+                    <div class="flex justify-between items-center border-t border-divisor pt-3">
+                        <span class="text-[11px] text-rotulo uppercase font-bold">Grupos</span>
                         <span class="text-xs font-bold text-tjgo-navy">{{ ciclo.grupos.count }} grupo{{ ciclo.grupos.count|pluralize }}</span>
                     </div>
-                    <div class="flex justify-between items-center border-t border-gray-100 pt-3">
-                        <span class="text-[11px] text-gray-500 uppercase font-bold">Criado em</span>
-                        <span class="text-xs text-gray-500">{{ ciclo.data_criacao|date:"d/m/Y" }}</span>
+                    <div class="flex justify-between items-center border-t border-divisor pt-3">
+                        <span class="text-[11px] text-rotulo uppercase font-bold">Criado em</span>
+                        <span class="text-xs text-rotulo">{{ ciclo.data_criacao|date:"d/m/Y" }}</span>
                     </div>
             {% endcard %}
 
             <!-- Ação: Ver Detalhes -->
             <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
-                class="flex items-center justify-center gap-2 border border-tjgo-gray-border bg-white hover:bg-gray-50 shadow-sm rounded-sm p-3 text-xs font-bold text-tjgo-blue transition-colors">
+                class="flex items-center justify-center gap-2 border border-tjgo-gray-border bg-white hover:bg-card-topo shadow-sm rounded-sm p-3 text-xs font-bold text-tjgo-blue transition-colors">
                 <i class="fa-solid fa-eye"></i> Visualizar Detalhes do Ciclo
             </a>
 
             <!-- Ação: Gerenciar Grupos -->
             <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
-                class="flex items-center justify-center gap-2 border border-tjgo-gray-border bg-white hover:bg-gray-50 shadow-sm rounded-sm p-3 text-xs font-bold text-tjgo-blue transition-colors">
+                class="flex items-center justify-center gap-2 border border-tjgo-gray-border bg-white hover:bg-card-topo shadow-sm rounded-sm p-3 text-xs font-bold text-tjgo-blue transition-colors">
                 <i class="fa-solid fa-users-gear"></i> Gerenciar Grupos
             </a>
 

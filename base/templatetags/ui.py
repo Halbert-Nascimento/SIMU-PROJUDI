@@ -4,25 +4,37 @@ from django import template
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
-from base.ui import CLASSE_CAMPO, CLASSES_BOTAO
+from base.ui import CLASSE_CAMPO, CLASSE_CAMPO_MONO, CLASSES_BOTAO, PADDING_BOTAO
 from usuarios.models import Usuario
 
 register = template.Library()
 
 
 @register.simple_tag
-def classe_campo() -> str:
-    """Classes do input/select padrão do sistema."""
-    return CLASSE_CAMPO
+def classe_campo(mono: bool = False) -> str:
+    """
+    Classes do input/select padrão. Use mono=True em número CNJ, CPF/CNPJ,
+    valor da causa e demais dados codificados, como o guia exige.
+    """
+    return CLASSE_CAMPO_MONO if mono else CLASSE_CAMPO
 
 
 @register.simple_tag
-def classe_botao(variante: str = "primario") -> str:
+def classe_botao(variante: str = "primario", padding: bool = False) -> str:
     """
-    Classes de cor e estado do botão. O padding fica no ponto de uso:
-        class="{% classe_botao 'primario' %} py-1.5 px-6"
+    Cor e estado do botão. Com padding=True sai também o espaçamento do guia:
+        class="{% classe_botao 'primario' padding=True %}"
     """
-    return CLASSES_BOTAO.get(variante, CLASSES_BOTAO["primario"])
+    classes = CLASSES_BOTAO.get(variante, CLASSES_BOTAO["primario"])
+    if padding:
+        classes += " " + PADDING_BOTAO.get(variante, PADDING_BOTAO["primario"])
+    return classes
+
+
+@register.simple_tag
+def padding_botao(variante: str = "primario") -> str:
+    """Só o espaçamento da variante — para quem já tem a cadeia de cor."""
+    return PADDING_BOTAO.get(variante, PADDING_BOTAO["primario"])
 
 
 # ---------------------------------------------------------------------------
@@ -94,10 +106,11 @@ def campo(content, label, erros=None, ajuda=""):
 # ---------------------------------------------------------------------------
 
 @register.inclusion_tag("base/components/_nav_secundaria.html", takes_context=True)
-def nav_secundaria(context, voltar_url="", voltar_label=""):
+def nav_secundaria(context, ativo="", voltar_url="", voltar_label=""):
     """
-    Barra de navegação abaixo do cabeçalho. Os itens dependem do perfil, que
-    antes era decidido por {% if %} copiado em cada template.
+    Barra de navegação abaixo do cabeçalho. Os itens dependem do perfil, e
+    `ativo` marca a aba corrente com o sublinhado do guia — aceita
+    "inicio", "processos", "audiencias" ou "notas".
     """
     # mesmo usuário que base.html enxerga: o do context processor de auth
     user = context.get("user")
@@ -111,6 +124,7 @@ def nav_secundaria(context, voltar_url="", voltar_label=""):
     return {
         "e_aluno": e_aluno,
         "user": user,
+        "ativo": ativo,
         "voltar_url": voltar_url,
         "voltar_label": voltar_label,
     }

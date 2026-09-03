@@ -18,24 +18,24 @@
     {% include 'base/components/_breadcrumbs.html' %}
 
     <!-- Cabeçalho da Página -->
-    <div class="mb-6 border-b border-gray-100 pb-4 flex items-start justify-between shrink-0">
+    <div class="mb-6 border-b border-divisor pb-4 flex items-start justify-between shrink-0">
         <div>
             <a href="{% url 'acesso:painel_administrativo' %}"
-                class="text-gray-500 hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors">
+                class="text-rotulo hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors">
                 <i class="fa-solid fa-arrow-left"></i> Voltar para Ciclos
             </a>
             <h2 class="text-tjgo-blue text-2xl font-bold flex items-center gap-2 mt-1">
                 <i class="fa-solid fa-users-gear"></i> Grupos:
                 <span class="text-tjgo-navy">{{ ciclo.nome_edicao }}</span>
             </h2>
-            <p class="text-gray-500 text-sm mt-1">
+            <p class="text-rotulo text-sm mt-1">
                 {{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}
                 {% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %}
                 &nbsp;·&nbsp;
                 {% ponto_status_ciclo ciclo.status %}
             </p>
         </div>
-        <span class="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded border border-blue-100 shadow-sm flex items-center gap-2 mt-6">
+        <span class="bg-linha-hover text-acao text-xs font-bold px-3 py-1.5 rounded border border-[#c9d5ea] shadow-sm flex items-center gap-2 mt-6">
             <i class="fa-solid fa-graduation-cap"></i>
             {{ total_alunos_ativos }} Aluno{{ total_alunos_ativos|pluralize }} Ativo{{ total_alunos_ativos|pluralize }}
         </span>
@@ -55,7 +55,7 @@
                     Equipes Criadas ({{ grupos|length }})
                 </div>
                 <button type="button" onclick="abrirModalGrupo()"
-                    class="bg-[#1e5894] hover:bg-[#1a4b7f] text-white px-3 py-1 rounded-sm transition-colors text-xs lowercase flex items-center gap-1 shadow-sm">
+                    class="bg-[#0a083d] hover:bg-[#0a083d] text-white px-3 py-1 rounded-sm transition-colors text-xs lowercase flex items-center gap-1 shadow-sm">
                     <i class="fa-solid fa-plus"></i> novo grupo
                 </button>
             </div>
@@ -64,19 +64,19 @@
                 {% for grupo in grupos %}
                 <div id="grupo-item-{{ grupo.pk }}"
                     onclick="selecionarGrupo(this, {{ grupo.pk }}, '{{ grupo.nome|escapejs }}', '{{ grupo.cargo_simulacao.nome|escapejs }}')"
-                    class="grupo-item border border-gray-200 hover:border-gray-300 hover:bg-gray-50 cursor-pointer p-3 rounded-sm transition-colors">
+                    class="grupo-item border border-contorno hover:border-campo-borda hover:bg-card-topo cursor-pointer p-3 rounded-sm transition-colors">
                     <div class="flex justify-between items-center">
                         <div class="flex-1 min-w-0 pr-2">
-                            <h3 class="text-xs font-bold text-gray-700 mb-0.5 truncate">{{ grupo.nome }}</h3>
-                            <span class="text-[10px] text-gray-500">{{ grupo.cargo_simulacao }}</span>
+                            <h3 class="text-xs font-bold text-texto-neutro mb-0.5 truncate">{{ grupo.nome }}</h3>
+                            <span class="text-[10px] text-rotulo">{{ grupo.cargo_simulacao }}</span>
                         </div>
                         <div class="flex items-center gap-2 shrink-0">
-                            <span class="membros-count-badge bg-gray-100 text-gray-600 border border-gray-200 text-[9px] font-bold px-1.5 py-0.5 rounded-full">
+                            <span class="membros-count-badge bg-tabela-topo text-texto-neutro border border-contorno text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                                 {{ grupo.membros.all|length }} Al.
                             </span>
                             <button type="button"
                                 onclick="event.stopPropagation(); abrirModalGrupo({{ grupo.pk }}, '{{ grupo.nome|escapejs }}', {{ grupo.cargo_simulacao.pk }})"
-                                class="text-gray-400 hover:text-tjgo-blue transition-colors p-0.5" title="Editar grupo">
+                                class="text-rotulo hover:text-tjgo-blue transition-colors p-0.5" title="Editar grupo">
                                 <i class="fa-solid fa-pen text-[10px]"></i>
                             </button>
                         </div>
@@ -84,9 +84,9 @@
                 </div>
                 {% empty %}
                 <div class="flex flex-col items-center justify-center h-32 text-center px-4">
-                    <i class="fa-solid fa-layer-group text-2xl text-gray-300 mb-2"></i>
-                    <p class="text-xs text-gray-400 italic">Nenhum grupo criado ainda.</p>
-                    <p class="text-[10px] text-gray-400 mt-1">Clique em "+ novo grupo" para começar.</p>
+                    <i class="fa-solid fa-layer-group text-2xl text-rotulo mb-2"></i>
+                    <p class="text-xs text-rotulo italic">Nenhum grupo criado ainda.</p>
+                    <p class="text-[10px] text-rotulo mt-1">Clique em "+ novo grupo" para começar.</p>
                 </div>
                 {% endfor %}
             </div>
@@ -98,31 +98,31 @@
             <!-- Header dinâmico -->
             <div class="bg-tjgo-navy text-white p-2.5 flex justify-between items-center shrink-0">
                 <div>
-                    <span class="text-[10px] font-bold text-gray-300 uppercase block mb-0.5">Editando Grupo:</span>
-                    <h3 id="nome-grupo-selecionado" class="text-sm font-bold text-gray-300 italic">
+                    <span class="text-[10px] font-bold text-rotulo uppercase block mb-0.5">Editando Grupo:</span>
+                    <h3 id="nome-grupo-selecionado" class="text-sm font-bold text-rotulo italic">
                         Selecione um grupo
                     </h3>
                 </div>
                 <div class="text-right">
-                    <span class="text-[10px] font-bold text-gray-300 uppercase block mb-0.5">Papel Processual:</span>
-                    <span id="papel-grupo-selecionado" class="text-xs font-bold text-gray-400 italic">—</span>
+                    <span class="text-[10px] font-bold text-rotulo uppercase block mb-0.5">Papel Processual:</span>
+                    <span id="papel-grupo-selecionado" class="text-xs font-bold text-rotulo italic">—</span>
                 </div>
             </div>
 
             <!-- Estado vazio -->
             <div id="painel-direito-vazio" class="flex-1 flex flex-col items-center justify-center text-center px-6">
-                <i class="fa-solid fa-hand-pointer text-3xl text-gray-300 mb-3"></i>
-                <p class="text-sm text-gray-400 font-bold">Nenhum grupo selecionado</p>
-                <p class="text-xs text-gray-400 mt-1">Clique em um grupo no painel esquerdo para gerenciar seus membros.</p>
+                <i class="fa-solid fa-hand-pointer text-3xl text-rotulo mb-3"></i>
+                <p class="text-sm text-rotulo font-bold">Nenhum grupo selecionado</p>
+                <p class="text-xs text-rotulo mt-1">Clique em um grupo no painel esquerdo para gerenciar seus membros.</p>
             </div>
 
             <!-- Conteúdo (grupo selecionado) -->
             <div id="painel-direito-conteudo" class="flex-1 overflow-hidden hidden">
 
                 <!-- Coluna: Membros do Grupo -->
-                <div class="w-1/2 border-r border-gray-200 flex flex-col bg-gray-50/50">
-                    <div class="p-2.5 border-b border-gray-200 shrink-0">
-                        <span class="text-[11px] font-bold uppercase text-gray-600">
+                <div class="w-1/2 border-r border-contorno flex flex-col bg-card-topo/50">
+                    <div class="p-2.5 border-b border-contorno shrink-0">
+                        <span class="text-[11px] font-bold uppercase text-texto-neutro">
                             Membros da Equipe (<span id="membros-count">0</span>)
                         </span>
                     </div>
@@ -133,22 +133,22 @@
 
                 <!-- Coluna: Adicionar Aluno -->
                 <div class="w-1/2 flex flex-col bg-white">
-                    <div class="p-2.5 border-b border-gray-200 bg-gray-50/50 shrink-0">
-                        <span class="text-[11px] font-bold uppercase text-gray-600 block mb-2">
+                    <div class="p-2.5 border-b border-contorno bg-card-topo/50 shrink-0">
+                        <span class="text-[11px] font-bold uppercase text-texto-neutro block mb-2">
                             Adicionar ao Grupo
                         </span>
                         <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-gray-400 text-xs"></i>
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-rotulo text-xs"></i>
                             <input
                                 type="text"
                                 id="pesquisa-alunos"
                                 oninput="renderizarDisponiveis()"
                                 placeholder="Buscar por nome ou matrícula..."
-                                class="w-full border border-gray-300 pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
+                                class="w-full border border-campo-borda pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
                         </div>
                     </div>
                     <div class="px-3 pt-1.5 shrink-0">
-                        <p class="text-[10px] text-gray-400 font-bold uppercase">
+                        <p class="text-[10px] text-rotulo font-bold uppercase">
                             Alunos sem grupo (<span id="alunos-sem-grupo-count">0</span>):
                         </p>
                     </div>
@@ -171,14 +171,14 @@
     <div class="relative bg-white w-full max-w-md shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
         <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center shrink-0">
             <span id="modal-grupo-titulo"><i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo</span>
-            <button onclick="fecharModalGrupo()" class="hover:text-gray-300 text-lg"><i class="fa-solid fa-xmark"></i></button>
+            <button onclick="fecharModalGrupo()" class="hover:text-rotulo text-lg"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form method="post" action="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}" class="flex flex-col overflow-hidden">
             {% csrf_token %}
             <input type="hidden" name="grupo_id" id="modal-grupo-id" value="">
             <div class="p-6 overflow-y-auto space-y-4 text-sm">
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Nome do Grupo *</label>
+                    <label class="block text-[11px] font-bold text-texto-neutro uppercase mb-1">Nome do Grupo *</label>
                     <input
                         type="text"
                         name="nome"
@@ -189,7 +189,7 @@
                         class="{% classe_campo %}">
                 </div>
                 <div>
-                    <label class="block text-[11px] font-bold text-gray-700 uppercase mb-1">Papel na Simulação *</label>
+                    <label class="block text-[11px] font-bold text-texto-neutro uppercase mb-1">Papel na Simulação *</label>
                     <select
                         name="cargo_simulacao"
                         id="modal-grupo-cargo"
@@ -202,9 +202,9 @@
                     </select>
                 </div>
             </div>
-            <div class="bg-gray-50 p-4 border-t border-gray-200 flex justify-end gap-2 shrink-0">
+            <div class="bg-card-topo p-4 border-t border-contorno flex justify-end gap-2 shrink-0">
                 <button type="button" onclick="fecharModalGrupo()"
-                    class="bg-white border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold py-1.5 px-4 text-xs rounded-sm shadow-sm transition-colors uppercase">
+                    class="bg-white border border-campo-borda hover:bg-tabela-topo text-texto-neutro font-bold py-1.5 px-4 text-xs rounded-sm shadow-sm transition-colors uppercase">
                     Cancelar
                 </button>
                 <button type="submit"
@@ -248,18 +248,18 @@
         counter.textContent = membros.length;
 
         if (membros.length === 0) {
-            container.innerHTML = '<p class="text-[10px] text-gray-400 italic text-center py-6">Nenhum membro neste grupo.</p>';
+            container.innerHTML = '<p class="text-[10px] text-rotulo italic text-center py-6">Nenhum membro neste grupo.</p>';
             return;
         }
 
         container.innerHTML = membros.map(m => `
-            <div class="bg-white border border-gray-200 p-2 text-xs flex justify-between items-center rounded-sm shadow-sm">
+            <div class="bg-white border border-contorno p-2 text-xs flex justify-between items-center rounded-sm shadow-sm">
                 <div>
                     <span class="font-bold text-tjgo-navy block">${escHtml(m.nome)}</span>
-                    <span class="text-[10px] text-gray-500">Matrícula: ${escHtml(m.matricula)}</span>
+                    <span class="text-[10px] text-rotulo">Matrícula: ${escHtml(m.matricula)}</span>
                 </div>
                 <button onclick="removerMembro(${m.id})"
-                    class="text-gray-400 hover:text-red-500 transition-colors p-1" title="Remover aluno">
+                    class="text-rotulo hover:text-erro-txt transition-colors p-1" title="Remover aluno">
                     <i class="fa-solid fa-trash-can text-sm"></i>
                 </button>
             </div>
@@ -280,20 +280,20 @@
             : alunosData;
 
         if (filtrados.length === 0) {
-            container.innerHTML = `<p class="text-[10px] text-gray-400 italic text-center py-6">${
+            container.innerHTML = `<p class="text-[10px] text-rotulo italic text-center py-6">${
                 filtro ? 'Nenhum aluno encontrado.' : 'Nenhum aluno disponível para este ciclo.'
             }</p>`;
             return;
         }
 
         container.innerHTML = filtrados.map(a => `
-            <div class="border-b border-gray-100 py-2 flex justify-between items-center hover:bg-blue-50/30 pr-1 transition-colors">
+            <div class="border-b border-divisor py-2 flex justify-between items-center hover:bg-linha-hover/30 pr-1 transition-colors">
                 <div>
                     <span class="font-bold text-tjgo-navy text-xs block">${escHtml(a.nome)}</span>
-                    <span class="text-[10px] text-gray-500">Matrícula: ${escHtml(a.matricula)}</span>
+                    <span class="text-[10px] text-rotulo">Matrícula: ${escHtml(a.matricula)}</span>
                 </div>
                 <button onclick="adicionarMembro(${a.id})"
-                    class="bg-green-50 text-green-700 border border-green-200 hover:bg-green-600 hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm shrink-0 ml-2">
+                    class="bg-ok-bg text-ok-txt border border-ok-bd hover:bg-ok-txt hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm shrink-0 ml-2">
                     + Add
                 </button>
             </div>
@@ -361,14 +361,14 @@
     // ── Seleção de grupo no painel esquerdo ───────────────────────────────────
     function selecionarGrupo(elemento, grupoId, nomeGrupo, papel) {
         document.querySelectorAll('.grupo-item').forEach(el => {
-            el.classList.remove('border-tjgo-blue', 'bg-blue-50');
-            el.classList.add('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
+            el.classList.remove('border-tjgo-blue', 'bg-linha-hover');
+            el.classList.add('border-contorno', 'hover:border-campo-borda', 'hover:bg-card-topo');
             const ind = el.querySelector('.indicador-ativo');
             if (ind) ind.remove();
         });
 
-        elemento.classList.remove('border-gray-200', 'hover:border-gray-300', 'hover:bg-gray-50');
-        elemento.classList.add('border-tjgo-blue', 'bg-blue-50', 'relative');
+        elemento.classList.remove('border-contorno', 'hover:border-campo-borda', 'hover:bg-card-topo');
+        elemento.classList.add('border-tjgo-blue', 'bg-linha-hover', 'relative');
         elemento.insertAdjacentHTML(
             'afterbegin',
             '<div class="indicador-ativo absolute left-0 top-0 bottom-0 w-1 bg-tjgo-blue rounded-l-sm"></div>'
@@ -376,13 +376,13 @@
 
         const nomeEl = document.getElementById('nome-grupo-selecionado');
         nomeEl.textContent = nomeGrupo;
-        nomeEl.classList.remove('text-gray-300', 'italic');
+        nomeEl.classList.remove('text-rotulo', 'italic');
         nomeEl.classList.add('text-white');
 
         const papelEl = document.getElementById('papel-grupo-selecionado');
         papelEl.textContent = papel;
-        papelEl.classList.remove('text-gray-400', 'italic');
-        papelEl.classList.add('text-yellow-400');
+        papelEl.classList.remove('text-rotulo', 'italic');
+        papelEl.classList.add('text-atencao-txt');
 
         grupoAtualId = grupoId;
 
@@ -416,8 +416,8 @@
         const el = document.createElement('div');
         el.className = [
             'pointer-events-auto p-3 text-xs border rounded shadow-md flex items-center gap-2 min-w-[260px] transition-opacity duration-300',
-            ok ? 'bg-green-50 border-green-200 text-green-800'
-               : 'bg-red-50 border-red-200 text-red-800',
+            ok ? 'bg-ok-bg border-ok-bd text-ok-txt'
+               : 'bg-erro-bg border-erro-bd text-erro-txt',
         ].join(' ');
         el.innerHTML = `<i class="fa-solid ${ok ? 'fa-circle-check' : 'fa-circle-xmark'}"></i><span class="flex-1">${mensagem}</span>`;
         container.appendChild(el);

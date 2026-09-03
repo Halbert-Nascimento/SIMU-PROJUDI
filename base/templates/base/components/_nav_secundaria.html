@@ -1,38 +1,57 @@
 {% comment %}
 Renderizado pela tag {% templatetag openblock %} nav_secundaria {% templatetag closeblock %} — ver base/templatetags/ui.py.
 
-Navegação das telas processuais, na versão da página /area-servidor/.
-O contador de sessão é o elemento #session-debug-timer, alimentado pelo
-sessionTimer de base/base.html — não é um valor fixo.
+Guia seção 07: barra branca com borda, aba ativa sublinhada em 2px.
+Fica logo abaixo do cabeçalho de 60px, em z 30.
+O contador de sessão é o #session-debug-timer, alimentado pelo sessionTimer
+de base/base.html — não é um valor fixo.
 {% endcomment %}
-<nav class="bg-fundo-caixa border-b border-borda sticky top-[45px] z-40">
-    <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
-        <div class="flex items-center gap-5">
-            <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-texto-principal font-medium">Página Inicial</a>
+<nav class="bg-white border-b border-contorno sticky top-[60px] z-navegacao">
+    <div class="w-full max-w-conteudo mx-auto px-7 flex items-center justify-between gap-6">
+        <div class="flex items-stretch gap-0.5">
+            <a href="{% url 'processos:pagina_aluno' %}"
+               class="px-3.5 py-[13px] -mb-px text-apoio uppercase tracking-[.06em] border-b-2 transition-colors
+                      {% if ativo == 'inicio' %}font-bold text-navy border-acao{% else %}font-semibold text-rotulo border-transparent hover:text-navy hover:bg-tabela-topo{% endif %}">
+                Página Inicial
+            </a>
 
-            <div class="relative group">
-                <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
-                <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
-                    <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
-                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
+            <div class="relative group flex items-stretch">
+                <span class="px-3.5 py-[13px] -mb-px text-apoio uppercase tracking-[.06em] border-b-2 cursor-pointer transition-colors flex items-center
+                             {% if ativo == 'processos' %}font-bold text-navy border-acao{% else %}font-semibold text-rotulo border-transparent hover:text-navy hover:bg-tabela-topo{% endif %}">
+                    Processos
+                </span>
+                <div class="hidden group-hover:block absolute left-0 top-full bg-white border border-contorno shadow-modal min-w-[230px] z-cabecalho">
+                    <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-dado text-texto-neutro hover:bg-linha-hover hover:text-navy border-b border-divisor transition-colors">Cadastrar Processos</a>
+                    <a href="#" class="block px-4 py-2.5 text-dado text-texto-neutro hover:bg-linha-hover hover:text-navy transition-colors">Consultar Todos</a>
                 </div>
             </div>
 
-            <a href="#" class="hover:underline text-texto-principal font-medium">Audiências</a>
+            <a href="#"
+               class="px-3.5 py-[13px] -mb-px text-apoio uppercase tracking-[.06em] border-b-2 transition-colors
+                      {% if ativo == 'audiencias' %}font-bold text-navy border-acao{% else %}font-semibold text-rotulo border-transparent hover:text-navy hover:bg-tabela-topo{% endif %}">
+                Audiências
+            </a>
 
             {% if e_aluno %}
-            <a href="{% url 'avaliacoes:minhas_notas' %}" class="hover:underline text-texto-principal font-medium">Minhas Notas</a>
+            <a href="{% url 'avaliacoes:minhas_notas' %}"
+               class="px-3.5 py-[13px] -mb-px text-apoio uppercase tracking-[.06em] border-b-2 transition-colors
+                      {% if ativo == 'notas' %}font-bold text-navy border-acao{% else %}font-semibold text-rotulo border-transparent hover:text-navy hover:bg-tabela-topo{% endif %}">
+                Minhas Notas
+            </a>
             {% endif %}
 
             {% if voltar_url %}
-            <a href="{{ voltar_url }}" class="hover:underline text-azul-primario font-medium">{{ voltar_label|default:"Voltar" }}</a>
+            <a href="{{ voltar_url }}"
+               class="px-3.5 py-[13px] text-apoio uppercase tracking-[.06em] font-semibold text-acao border-b-2 border-transparent hover:bg-tabela-topo transition-colors">
+                {{ voltar_label|default:"Voltar" }}
+            </a>
             {% endif %}
         </div>
 
         {% if user.is_authenticated %}
-        <div class="flex items-center gap-1 text-texto-secundario">
-            <i class="fas fa-clock text-[11px]"></i>
-            <span id="session-debug-timer" title="Tempo restante de sessão">--:--</span>
+        <div class="flex items-center gap-2 text-apoio text-rotulo shrink-0">
+            <span class="ponto-status ok"></span>
+            <span id="session-debug-timer" class="font-mono" title="Tempo restante de sessão">--:--</span>
         </div>
         {% endif %}
     </div>

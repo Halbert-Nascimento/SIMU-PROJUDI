@@ -18,17 +18,17 @@
     {% include 'base/components/_breadcrumbs.html' %}
 
     <!-- Cabeçalho da Página -->
-    <div class="mb-6 border-b border-gray-100 pb-4 flex items-start justify-between">
+    <div class="mb-6 border-b border-divisor pb-4 flex items-start justify-between">
         <div>
             <a href="{% url 'acesso:painel_administrativo' %}"
-                class="text-gray-500 hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors w-fit">
+                class="text-rotulo hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors w-fit">
                 <i class="fa-solid fa-arrow-left"></i> Voltar para o Painel
             </a>
             <h2 class="text-tjgo-blue text-2xl font-bold flex items-center gap-2 mt-1">
                 <i class="fa-solid fa-folder-open"></i>
                 <span class="text-tjgo-navy">{{ ciclo.nome_edicao }}</span>
             </h2>
-            <p class="text-gray-500 text-sm mt-1">
+            <p class="text-rotulo text-sm mt-1">
                 {{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}
                 {% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %}
                 &nbsp;·&nbsp;
@@ -44,7 +44,7 @@
             </a>
             {% endif %}
             <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
-                class="bg-white border border-tjgo-gray-border hover:bg-gray-50 text-tjgo-blue font-bold py-2 px-4 text-xs rounded shadow-sm transition-colors uppercase flex items-center gap-2">
+                class="bg-white border border-tjgo-gray-border hover:bg-card-topo text-tjgo-blue font-bold py-2 px-4 text-xs rounded shadow-sm transition-colors uppercase flex items-center gap-2">
                 <i class="fa-solid fa-users-gear"></i> Gerenciar Grupos
             </a>
         </div>
@@ -54,26 +54,26 @@
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm p-4 text-center">
             <span class="block text-3xl font-bold text-tjgo-blue mb-1">{{ grupos|length }}</span>
-            <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Grupos<br>Criados</span>
+            <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">Grupos<br>Criados</span>
         </div>
         <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm p-4 text-center">
             <span class="block text-3xl font-bold text-tjgo-navy mb-1">{{ total_membros }}</span>
-            <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Alunos<br>Vinculados</span>
+            <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">Alunos<br>Vinculados</span>
         </div>
         <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm p-4 text-center">
-            <span class="block text-3xl font-bold text-gray-700 mb-1">{{ ciclo.semestre }}º</span>
-            <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Semestre<br>{{ ciclo.ano }}</span>
+            <span class="block text-3xl font-bold text-texto-neutro mb-1">{{ ciclo.semestre }}º</span>
+            <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">Semestre<br>{{ ciclo.ano }}</span>
         </div>
         <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm p-4 text-center">
             {% if ciclo.status.nome_status == 'em andamento' %}
-            <span class="block text-2xl font-bold text-green-600 mb-1"><i class="fa-solid fa-circle-play"></i></span>
-            <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Em<br>Andamento</span>
+            <span class="block text-2xl font-bold text-ok-txt mb-1"><i class="fa-solid fa-circle-play"></i></span>
+            <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">Em<br>Andamento</span>
             {% elif ciclo.status.nome_status == 'finalizado' %}
-            <span class="block text-2xl font-bold text-[#1a5b9e] mb-1"><i class="fa-solid fa-circle-check"></i></span>
-            <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">Ciclo<br>Finalizado</span>
+            <span class="block text-2xl font-bold text-[#1f4f9c] mb-1"><i class="fa-solid fa-circle-check"></i></span>
+            <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">Ciclo<br>Finalizado</span>
             {% else %}
-            <span class="block text-2xl font-bold text-gray-400 mb-1"><i class="fa-solid fa-circle-pause"></i></span>
-            <span class="text-[10px] text-gray-500 uppercase font-bold leading-tight">{{ ciclo.status.nome_status|capfirst }}</span>
+            <span class="block text-2xl font-bold text-rotulo mb-1"><i class="fa-solid fa-circle-pause"></i></span>
+            <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">{{ ciclo.status.nome_status|capfirst }}</span>
             {% endif %}
         </div>
     </div>
@@ -83,7 +83,7 @@
             {% if grupos %}
             <table class="w-full text-left border-collapse">
                 <thead>
-                    <tr class="text-[11px] uppercase text-gray-500 border-b-2 border-gray-100 bg-gray-50/50">
+                    <tr class="text-[11px] uppercase text-rotulo border-b-2 border-divisor bg-card-topo/50">
                         <th class="py-2.5 px-4 align-middle">Grupo</th>
                         <th class="py-2.5 px-4 align-middle">Papel na Simulação</th>
                         <th class="py-2.5 px-4 text-center align-middle">Membros</th>
@@ -92,21 +92,21 @@
                 </thead>
                 <tbody>
                     {% for grupo in grupos %}
-                    <tr class="border-b border-gray-100 hover:bg-blue-50/30 transition-colors align-middle">
+                    <tr class="border-b border-divisor hover:bg-linha-hover/30 transition-colors align-middle">
                         <td class="py-3.5 px-4 align-middle">
                             <span class="font-bold text-tjgo-navy text-xs">{{ grupo.nome }}</span>
-                            <span class="block text-[10px] text-gray-400 mt-0.5">Criado em {{ grupo.data_criacao|date:"d/m/Y" }}</span>
+                            <span class="block text-[10px] text-rotulo mt-0.5">Criado em {{ grupo.data_criacao|date:"d/m/Y" }}</span>
                         </td>
                         <td class="py-3.5 px-4 align-middle">
                             <div class="flex items-center gap-2">
-                                <span class="inline-flex items-center gap-1 bg-blue-50 text-[#1a5b9e] border border-blue-100 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                                <span class="inline-flex items-center gap-1 bg-linha-hover text-[#1f4f9c] border border-[#c9d5ea] text-[10px] font-bold px-2 py-0.5 rounded uppercase">
                                     {{ grupo.cargo_simulacao.cod }}
                                 </span>
-                                <span class="text-xs text-gray-600">{{ grupo.cargo_simulacao.nome }}</span>
+                                <span class="text-xs text-texto-neutro">{{ grupo.cargo_simulacao.nome }}</span>
                             </div>
                         </td>
                         <td class="py-3.5 px-4 text-center align-middle">
-                            <span class="bg-gray-100 text-gray-700 border border-gray-200 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                            <span class="bg-tabela-topo text-texto-neutro border border-contorno text-[10px] font-bold px-2 py-0.5 rounded-full">
                                 {{ grupo.membros.count }}
                             </span>
                         </td>
@@ -114,11 +114,11 @@
                             {% if grupo.membros.all %}
                             <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
                                 {% for membro in grupo.membros.all %}
-                                <span class="text-xs text-gray-700">{{ membro.get_full_name|default:membro.username }}</span>
+                                <span class="text-xs text-texto-neutro">{{ membro.get_full_name|default:membro.username }}</span>
                                 {% endfor %}
                             </div>
                             {% else %}
-                            <span class="text-[10px] text-gray-400 italic">Sem membros</span>
+                            <span class="text-[10px] text-rotulo italic">Sem membros</span>
                             {% endif %}
                         </td>
                     </tr>
