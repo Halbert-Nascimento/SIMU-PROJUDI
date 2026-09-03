@@ -7,37 +7,42 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <style>
+    /* Marcador de passo — raio 0 e a geometria de etiqueta do guia (seção 02).
+       Tinha raio de 2px, que o guia reserva a campo de formulário. */
     .step-badge {
-        background: #0a083d; color: #fff; padding: 5px 16px;
-        font-size: 12px; font-weight: bold; display: inline-block;
-        border-radius: 2px;
+        background: #0a083d; color: #fff; padding: 3px 9px;
+        font-size: 10px; font-weight: 700; letter-spacing: .07em;
+        text-transform: uppercase; display: inline-block;
     }
-    .lbl { display: block; font-size: 12px; font-weight: bold; color: #23262e; margin-bottom: 3px; }
+
+    /* Rótulo de campo — guia seção 03: 10px / 600 / .1em / caixa alta / #6b7280.
+       Era 12px em negrito e cor de corpo, o mesmo peso do valor ao lado. */
+    .lbl {
+        display: block; font-size: 10px; font-weight: 600;
+        letter-spacing: .1em; text-transform: uppercase;
+        color: #6b7280; margin-bottom: 5px;
+    }
     .lbl .req { color: #c0392b; margin-right: 2px; }
     .lbl-icon { color: #1f4f9c; font-size: 11px; margin-left: 2px; cursor: pointer; }
     .lbl-x { color: #6b7280; font-size: 11px; margin-left: 2px; cursor: pointer; }
-    .hint-error { color: #c0392b; font-weight: bold; font-size: 12px; }
 
-    .tab-bar {
-        display: flex; background: #d3d7de; padding: 0;
-        border-radius: 2px 2px 0 0; overflow: hidden;
+    /* Instrução de preenchimento. Vinha em #c0392b, a cor que o guia reserva a
+       erro de validação — parecia falha num campo ainda vazio. */
+    .hint-campo {
+        color: #6b7280; font-weight: 400; font-size: 10.5px;
+        text-transform: none; letter-spacing: normal;
     }
-    .tab-item {
-        padding: 8px 18px; font-size: 12px; font-weight: bold;
-        color: #4b5563; cursor: pointer; background: #f1f2f4;
-        border-right: 1px solid #d3d7de; transition: all .12s;
-    }
-    .tab-item:hover { background: #6b7280; color: #23262e; }
-    .tab-item.active { background: #1f4f9c; color: #fff; }
-    .tab-empty { flex: 1; background: #d3d7de; }
-    .tab-content { background: #fff; border: 1px solid #d3d7de; border-top: 0; padding: 14px; }
+
+    /* As abas vivem em componentes.css — duas telas processuais as usam. */
+    .tab-content { background: #fff; border: 1px solid #e2e5ea; border-top: 0; padding: 14px 16px; }
     .tab-panel { display: none; }
     .tab-panel.active { display: block; }
 
+    /* Área de soltar arquivo. O tracejado é affordance e fica; o raio sai. */
     .dropzone {
-        border: 2px dashed #d3d7de; border-radius: 4px;
+        border: 2px dashed #d3d7de;
         padding: 24px; text-align: center; background: #fbfbfc;
-        transition: all .15s; cursor: pointer;
+        transition: border-color .15s ease, background-color .15s ease; cursor: pointer;
     }
     .dropzone:hover, .dropzone.over { border-color: #1f4f9c; background: #f7faff; }
     .dropzone .ico { font-size: 38px; color: #1f4f9c; margin-bottom: 8px; }
@@ -47,11 +52,12 @@
         background: transparent; border: 0; cursor: pointer;
         color: #1f4f9c; font-size: 14px; padding: 4px;
     }
-    .action-icons button:hover { color: #1f4f9c; }
+    .action-icons button:hover { color: #0a083d; }
     .action-icons button.danger { color: #c0392b; }
 
-    /* Página do documento dentro do TinyMCE */
-    .tox-tinymce { border-radius: 0 0 3px 3px !important; }
+    /* O TinyMCE tem chrome próprio (fora de escopo — ver NOVO-DESIGN.md seção 5);
+       aqui só a moldura externa se alinha ao resto. */
+    .tox-tinymce { border-radius: 0 !important; border-color: #e2e5ea !important; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
 <script>const STATIC_URL = "{% static '' %}";</script>
@@ -61,13 +67,13 @@
 {% block content %}
 
 <!-- Navigation Bar -->
-{% nav_secundaria %}
+{% nav_secundaria ativo='processos' %}
 
-<main class="max-w-conteudo mx-auto px-6 py-5">
+<main class="max-w-conteudo mx-auto px-7 py-5">
 
     {% include 'base/components/_breadcrumbs.html' %}
 
-    <h2 class="text-azul-primario font-bold text-[20px] mb-4">&raquo; Movimentar Processo</h2>
+    <h1 class="text-navy text-h1 font-bold mb-[14px]">&raquo; Movimentar Processo</h1>
 
     {% include 'base/components/_mensagens.html' with tag="movimentacao" %}
 
@@ -84,27 +90,27 @@
 
     <!-- ====== PASSO 1 - DADOS MOVIMENTAÇÃO ====== -->
     <fieldset class="p-5 mb-4 mt-3">
-        <legend class="text-texto-principal text-[13px]">PASSO 1 - DADOS MOVIMENTAÇÃO</legend>
+        <legend>PASSO 1 - DADOS MOVIMENTAÇÃO</legend>
 
         <!-- Identificação do processo -->
-        <div class="bg-fundo-caixa border border-borda p-3 mb-4 text-[12px]">
+        <div class="bg-card-topo border border-contorno p-3 mb-4 text-[12px]">
             <div class="flex items-center gap-2 mb-1">
-                <i class="fa-solid fa-folder-open text-azul-primario"></i>
-                <span class="font-bold text-azul-primario">Processo nº {{ processo.numero }}</span>
-                <span class="text-texto-secundario font-normal">— {{ processo.vara.nome }} / {{ processo.vara.comarca.nome }}</span>
+                <i class="fa-solid fa-folder-open text-acao"></i>
+                <span class="font-bold text-acao">Processo nº {{ processo.numero }}</span>
+                <span class="text-rotulo font-normal">— {{ processo.vara.nome }} / {{ processo.vara.comarca.nome }}</span>
             </div>
-            <div class="text-texto-secundario text-[11px] mt-1">
-                <span class="font-medium text-texto-principal">{{ processo.tipo_processo.nome }}</span>
+            <div class="text-rotulo text-[11px] mt-1">
+                <span class="font-medium text-texto">{{ processo.tipo_processo.nome }}</span>
                 &nbsp;•&nbsp;
                 {% for polo in polos_ativo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
                 <span class="mx-1">×</span>
                 {% for polo in polos_passivo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
             </div>
             <div class="mt-1 text-[11px]">
-                <span class="text-texto-secundario">Classe:</span>
+                <span class="text-rotulo">Classe:</span>
                 <span class="font-medium">{{ processo.classe.nome }}</span>
                 &nbsp;•&nbsp;
-                <span class="text-texto-secundario">Status:</span>
+                <span class="text-rotulo">Status:</span>
                 <span class="font-medium">{{ processo.status_atual.nome_status }}</span>
             </div>
         </div>
@@ -113,18 +119,18 @@
         <div class="mb-3">
             <label class="lbl" for="tipoMovInput">
                 <span class="req">*</span>Tipo Movimentação
-                <span class="hint-error ml-2">Preencher conforme TPU CNJ para alimentar estatística de produtividade</span>
+                <span class="hint-campo ml-2">Preencher conforme TPU CNJ para alimentar estatística de produtividade</span>
             </label>
             <div class="relative" id="tipoMovWrapper">
                 <input type="text" id="tipoMovInput" autocomplete="off"
                        placeholder="— Digite ou selecione o Tipo de Movimentação —"
-                       class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none pr-8"/>
-                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-texto-secundario text-[10px]">
+                       class="{% classe_campo %} pr-8"/>
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-rotulo text-[10px]">
                     <i class="fa-solid fa-chevron-down"></i>
                 </span>
                 <input type="hidden" id="tipoMov" name="tipo_movimento"/>
                 <div id="tipoMovDropdown"
-                     class="hidden absolute left-0 right-0 top-full mt-0.5 bg-fundo-container border border-borda rounded shadow-md z-50 max-h-56 overflow-y-auto text-[12px]">
+                     class="hidden absolute left-0 right-0 top-full mt-0.5 bg-white border border-contorno shadow-modal z-cabecalho max-h-56 overflow-y-auto text-corpo">
                 </div>
             </div>
             {# dados dos tipos para o combobox JS #}
@@ -140,19 +146,18 @@
                 <i class="fa-solid fa-circle-xmark lbl-x"></i>
             </label>
             <textarea id="descMov" name="descricao_evento" rows="3"
-                      class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none resize-none overflow-hidden"
+                      class="{% classe_campo %} resize-none overflow-hidden"
                       oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
         </div>
 
         <!-- ====== DOCUMENTOS DA MOVIMENTAÇÃO ====== -->
         <fieldset class="p-4 mt-4">
-            <legend class="text-texto-principal text-[12px]">DOCUMENTOS DA MOVIMENTAÇÃO</legend>
+            <legend>DOCUMENTOS DA MOVIMENTAÇÃO</legend>
 
             <!-- Tabs -->
-            <div class="tab-bar">
-                <div class="tab-item active" data-tab="upload">Upload de Arquivos</div>
-                <div class="tab-item" data-tab="editor">Modelos, Editor on-line</div>
-                <div class="tab-empty"></div>
+            <div class="tabs interativa">
+                <div class="tab active" data-tab="upload">Upload de Arquivos</div>
+                <div class="tab" data-tab="editor">Modelos, Editor on-line</div>
             </div>
 
             <div class="tab-content">
@@ -161,8 +166,8 @@
                 <div id="panel-upload" class="tab-panel active">
                     <div class="dropzone" id="dropZone" onclick="document.getElementById('fileInput').click()">
                         <div class="ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                        <div class="font-bold text-azul-primario text-[13px]">Arraste arquivos aqui ou clique para selecionar</div>
-                        <div class="text-[11px] text-texto-secundario mt-1">Tamanho máximo: 10MB por arquivo • PDF, DOC, DOCX, ODT, JPG, PNG</div>
+                        <div class="font-bold text-acao text-[13px]">Arraste arquivos aqui ou clique para selecionar</div>
+                        <div class="text-[11px] text-rotulo mt-1">Tamanho máximo: 10MB por arquivo • PDF, DOC, DOCX, ODT, JPG, PNG</div>
                         <input id="fileInput" name="documentos" type="file" multiple class="hidden" accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png"/>
                     </div>
                     <div id="pendingFiles" class="mt-4 space-y-2"></div>
@@ -172,33 +177,32 @@
                 <div id="panel-editor" class="tab-panel">
 
                     <!-- Seletor de modelos -->
-                    <div class="mb-4 p-3 bg-fundo-caixa border border-borda rounded">
+                    <div class="mb-4 p-3 bg-card-topo border border-contorno ">
                         <label class="lbl mb-2">
                             <i class="fa-solid fa-file-lines lbl-icon"></i>
                             Carregar Modelo de Documento
                         </label>
                         <div class="flex gap-2 items-center">
-                            <select id="modeloSelect"
-                                    class="flex-1 bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none">
+                            <select id="modeloSelect" class="{% classe_campo %} flex-1">
                                 <option value="">— Selecione um modelo —</option>
                             </select>
                             <button type="button" onclick="carregarModelo()"
-                                    class="bg-azul-primario text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-azul-botao transition-colors flex items-center gap-1.5">
+                                    class="{% classe_botao 'primario' padding=True %} flex items-center gap-1.5">
                                 <i class="fa-solid fa-file-import"></i> Carregar
                             </button>
                             <button type="button" onclick="limparEditor()" title="Limpar editor"
-                                    class="bg-neutro-txt text-white font-bold px-3 py-1.5 text-[12px] rounded hover:bg-neutro-txt transition-colors">
+                                    class="{% classe_botao 'secundario' %} px-3 py-2">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
-                        <p class="text-texto-secundario text-[11px] mt-1.5">
+                        <p class="text-rotulo text-[11px] mt-1.5">
                             <i class="fa-solid fa-triangle-exclamation text-atencao-txt mr-1"></i>
                             Ao carregar um modelo ou rascunho, o conteúdo atual do editor será substituído.
                         </p>
-                        <div class="flex items-center gap-2 mt-2 pt-2 border-t border-borda">
-                            <span class="text-texto-secundario text-[11px]">Continuar edição de rascunho salvo:</span>
+                        <div class="flex items-center gap-2 mt-2 pt-2 border-t border-contorno">
+                            <span class="text-rotulo text-[11px]">Continuar edição de rascunho salvo:</span>
                             <button type="button" onclick="document.getElementById('rascunhoInput').click()"
-                                    class="bg-neutro-txt text-white font-bold px-3 py-1 text-[11px] rounded hover:bg-navy transition-colors flex items-center gap-1.5">
+                                    class="{% classe_botao 'secundario' %} {% padding_botao 'linha' %} flex items-center gap-1.5">
                                 <i class="fa-solid fa-folder-open"></i> Abrir Rascunho (.html)
                             </button>
                             <input type="file" id="rascunhoInput" accept=".html" class="hidden">
@@ -209,7 +213,7 @@
                     <div class="mb-3">
                         <label class="lbl">Nome do arquivo para salvar</label>
                         <input id="editorFileName" type="text"
-                               class="w-full bg-fundo-container border border-borda rounded py-1.5 px-3 text-[12px] outline-none"
+                               class="{% classe_campo %}"
                                placeholder="Ex.: peticao_inicial_joao_silva"/>
                     </div>
 
@@ -219,19 +223,19 @@
                     <!-- Botões editor -->
                     <div class="flex flex-wrap justify-center gap-2 mt-3">
                         <button type="button"
-                                class="bg-azul-primario text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-azul-botao transition-colors shadow-sm flex items-center gap-1.5"
+                                class="{% classe_botao 'primario' padding=True %} flex items-center gap-1.5"
+                                onclick="incluirNaMovimentacao()" title="Adiciona este documento à lista de anexos da movimentação">
+                            <i class="fa-solid fa-paperclip"></i> Incluir na Movimentação
+                        </button>
+                        <button type="button"
+                                class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
                                 onclick="assinarTexto()">
                             <i class="fa-solid fa-signature"></i> Assinar
                         </button>
                         <button type="button"
-                                class="bg-neutro-txt text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-navy transition-colors shadow-sm flex items-center gap-1.5"
+                                class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
                                 onclick="salvarRascunho()" title="Salva localmente como .html para continuar depois">
                             <i class="fa-solid fa-clock-rotate-left"></i> Salvar Rascunho
-                        </button>
-                        <button type="button"
-                                class="bg-ok-txt text-white font-bold px-4 py-1.5 text-[12px] rounded hover:bg-ok-txt transition-colors shadow-sm flex items-center gap-1.5"
-                                onclick="incluirNaMovimentacao()" title="Adiciona este documento à lista de anexos da movimentação">
-                            <i class="fa-solid fa-paperclip"></i> Incluir na Movimentação
                         </button>
                     </div>
                 </div>
@@ -242,7 +246,7 @@
 
     <!-- ====== DOCUMENTOS A ANEXAR ====== -->
     <fieldset class="p-5 mb-4">
-        <legend class="text-texto-principal text-[13px]">DOCUMENTOS A ANEXAR</legend>
+        <legend>DOCUMENTOS A ANEXAR</legend>
 
         <div class="action-icons">
             <button title="Recarregar" onclick="renderFiles()"><i class="fa-solid fa-arrows-rotate"></i></button>
@@ -268,40 +272,40 @@
 
     <!-- Botões Passo 1 -->
     <div id="btnsPasso1" class="flex justify-center gap-3 my-6">
-        <a href="{% url 'processos:visualizar_processo' processo.numero %}"
-           class="bg-neutro-txt text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-neutro-txt transition-colors shadow-sm flex items-center gap-1.5">
-            <i class="fa-solid fa-arrow-left"></i> Cancelar
-        </a>
         <button type="button"
-                class="bg-azul-primario text-white font-bold px-8 py-2 text-[13px] rounded hover:bg-azul-botao transition-colors shadow-sm flex items-center gap-1.5"
+                class="{% classe_botao 'primario' padding=True %} flex items-center gap-1.5"
                 onclick="avancar()">
             Avançar <i class="fa-solid fa-arrow-right"></i>
         </button>
+        <a href="{% url 'processos:visualizar_processo' processo.numero %}"
+           class="{% classe_botao 'secundario' padding=True %} inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Cancelar
+        </a>
     </div>
 
     <!-- ====== PASSO 2 — REVISÃO ====== -->
     <div id="painelPasso2" class="hidden">
-        <div class="bg-fundo-container border border-borda rounded p-5 mb-4">
-            <h3 class="text-azul-primario font-bold text-[14px] mb-4 pb-2 border-b border-borda flex items-center gap-2">
+        <div class="bg-white border border-contorno px-4 py-[18px] mb-[14px]">
+            <h3 class="text-navy text-apoio font-bold uppercase tracking-[.12em] mb-[14px] pb-2 border-b border-contorno flex items-center gap-2">
                 <i class="fa-solid fa-clipboard-check"></i> Revisão da Movimentação
             </h3>
 
-            <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-[12px] mb-4">
+            <div class="grid grid-cols-2 gap-x-[28px] gap-y-2 text-corpo mb-[14px]">
                 <div class="col-span-2 flex gap-2">
-                    <span class="text-texto-secundario w-36 shrink-0">Processo:</span>
+                    <span class="text-rotulo w-36 shrink-0">Processo:</span>
                     <span class="font-bold">{{ processo.numero }}</span>
                 </div>
                 <div class="col-span-2 flex gap-2">
-                    <span class="text-texto-secundario w-36 shrink-0">Tipo de Movimentação:</span>
+                    <span class="text-rotulo w-36 shrink-0">Tipo de Movimentação:</span>
                     <span id="rev-tipo" class="font-bold"></span>
                 </div>
                 <div class="col-span-2 flex gap-2">
-                    <span class="text-texto-secundario w-36 shrink-0">Descrição:</span>
+                    <span class="text-rotulo w-36 shrink-0">Descrição:</span>
                     <span id="rev-descricao" class="whitespace-pre-wrap"></span>
                 </div>
                 {% if movimentacao_origem_id %}
                 <div class="col-span-2 flex gap-2">
-                    <span class="text-texto-secundario w-36 shrink-0">Modo:</span>
+                    <span class="text-rotulo w-36 shrink-0">Modo:</span>
                     <span class="font-bold text-atencao-txt">
                         <i class="fa-solid fa-pen mr-1"></i>Edição — nova versão da movimentação #{{ movimentacao_origem_id }}
                     </span>
@@ -309,23 +313,23 @@
                 {% endif %}
             </div>
 
-            <div class="border-t border-borda pt-3">
-                <div class="text-[12px] font-bold text-texto-secundario mb-2">Documentos a anexar:</div>
-                <ul id="rev-arquivos" class="text-[12px] space-y-1"></ul>
+            <div class="border-t border-contorno pt-3">
+                <div class="text-micro font-semibold uppercase text-rotulo mb-2">Documentos a anexar:</div>
+                <ul id="rev-arquivos" class="text-corpo space-y-1"></ul>
             </div>
         </div>
 
         <!-- Botões Passo 2 -->
         <div class="flex justify-center gap-3 my-6">
             <button type="button"
-                    class="bg-neutro-txt text-white font-bold px-6 py-2 text-[13px] rounded hover:bg-neutro-txt transition-colors shadow-sm flex items-center gap-1.5"
-                    onclick="voltarPasso1()">
-                <i class="fa-solid fa-arrow-left"></i> Voltar
-            </button>
-            <button type="button"
-                    class="bg-ok-txt text-white font-bold px-8 py-2 text-[13px] rounded hover:bg-ok-txt transition-colors shadow-sm flex items-center gap-1.5"
+                    class="{% classe_botao 'primario' padding=True %} flex items-center gap-1.5"
                     onclick="confirmarMovimentacao()">
                 <i class="fa-solid fa-circle-check"></i> Confirmar Movimentação
+            </button>
+            <button type="button"
+                    class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
+                    onclick="voltarPasso1()">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
             </button>
         </div>
     </div>
@@ -350,12 +354,12 @@
         dropdown.innerHTML = '';
         highlighted = -1;
         if (lista.length === 0) {
-            dropdown.innerHTML = '<div class="px-3 py-2 text-texto-secundario italic">Nenhum resultado encontrado</div>';
+            dropdown.innerHTML = '<div class="px-3 py-2 text-rotulo italic">Nenhum resultado encontrado</div>';
             return;
         }
         lista.forEach((t, i) => {
             const d = document.createElement('div');
-            d.className = 'px-3 py-2 cursor-pointer hover:bg-fundo-caixa';
+            d.className = 'px-3 py-2 cursor-pointer hover:bg-card-topo';
             d.dataset.id   = t.id;
             d.dataset.nome = t.nome;
             d.dataset.idx  = i;
@@ -390,9 +394,9 @@
     function highlight(dir) {
         const items = dropdown.querySelectorAll('[data-id]');
         if (!items.length) return;
-        if (highlighted >= 0) items[highlighted].classList.remove('bg-fundo-caixa');
+        if (highlighted >= 0) items[highlighted].classList.remove('bg-card-topo');
         highlighted = Math.max(0, Math.min(items.length - 1, highlighted + dir));
-        items[highlighted].classList.add('bg-fundo-caixa');
+        items[highlighted].classList.add('bg-card-topo');
         items[highlighted].scrollIntoView({ block: 'nearest' });
     }
 
@@ -437,9 +441,9 @@ let savedFiles   = [];   // { id, desc, name, file: File }
 let fid = 0;
 
 // ── Tabs ──────────────────────────────────────────────
-document.querySelectorAll('.tab-item').forEach(t => {
+document.querySelectorAll('.tab').forEach(t => {
     t.addEventListener('click', () => {
-        document.querySelectorAll('.tab-item').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
         document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
         t.classList.add('active');
         document.getElementById('panel-' + t.dataset.tab).classList.add('active');
@@ -486,34 +490,34 @@ function renderPending() {
     const c = document.getElementById('pendingFiles');
     if (pendingFiles.length === 0) { c.innerHTML = ''; return; }
     c.innerHTML = `
-        <div class="bg-fundo-caixa border border-borda p-2 text-[11px] font-bold uppercase text-texto-secundario flex items-center gap-2">
-            <i class="fa-solid fa-circle-info text-azul-primario"></i>
+        <div class="bg-card-topo border border-contorno p-2 text-[11px] font-bold uppercase text-rotulo flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-acao"></i>
             Defina o título para cada arquivo antes de incluir na lista
         </div>
     ` + pendingFiles.map(f => {
         const [ico, col] = iconFor(f.name);
         return `
-            <div class="border border-borda bg-fundo-container p-3 flex items-center gap-3">
+            <div class="border border-contorno bg-white p-3 flex items-center gap-3">
                 <i class="fa-solid ${ico} text-2xl" style="color:${col}"></i>
                 <div class="flex-1">
-                    <div class="text-[12px] font-bold text-texto-principal">${f.name}
-                        <span class="text-texto-secundario text-[10px] font-normal">(${formatSize(f.size)})</span>
+                    <div class="text-[12px] font-bold text-texto">${f.name}
+                        <span class="text-rotulo text-[10px] font-normal">(${formatSize(f.size)})</span>
                     </div>
                     <div class="mt-1.5">
                         <label class="lbl text-[11px]"><span class="req">*</span>Título do arquivo</label>
                         <input type="text"
-                               class="w-full bg-fundo-container border border-borda rounded py-1 px-2 text-[12px] outline-none"
+                               class="w-full bg-white border border-contorno py-1 px-2 text-[12px] outline-none"
                                value="${f.title}"
                                oninput="updateTitle(${f.id}, this.value)"
                                placeholder="Ex.: Petição inicial, Procuração, Documento pessoal..."/>
                     </div>
                 </div>
                 <div class="flex flex-col gap-1.5">
-                    <button type="button" class="bg-azul-primario text-white font-bold px-3 py-1.5 text-[12px] rounded hover:bg-azul-botao transition-colors flex items-center gap-1"
+                    <button type="button" class="bg-navy hover:bg-acao text-white border border-navy hover:border-acao text-meta font-bold uppercase tracking-[.1em] transition-colors px-2.5 py-[5px] flex items-center gap-1"
                             onclick="confirmFile(${f.id})" title="Adicionar à lista">
                         <i class="fa-solid fa-check"></i>
                     </button>
-                    <button type="button" class="bg-fundo-container text-validacao border border-borda font-bold px-3 py-1.5 text-[12px] rounded hover:bg-fundo-caixa transition-colors flex items-center gap-1"
+                    <button type="button" class="bg-white hover:bg-erro-bg text-erro-txt border border-erro-bd hover:border-erro-txt text-meta font-bold uppercase tracking-[.1em] transition-colors px-2.5 py-[5px] flex items-center gap-1"
                             onclick="removePending(${f.id})" title="Remover">
                         <i class="fa-solid fa-xmark"></i>
                     </button>
@@ -559,7 +563,7 @@ function renderFiles() {
                 <td>${f.desc}</td>
                 <td><i class="fa-solid ${ico} mr-1.5" style="color:${col}"></i>${f.name}</td>
                 <td>
-                    <button type="button" class="text-azul-primario hover:text-[#1f4f9c] mr-2" title="Editar título" onclick="editTitle(${f.id})"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="text-acao hover:text-navy mr-2" title="Editar título" onclick="editTitle(${f.id})"><i class="fa-solid fa-pen"></i></button>
                     <button type="button" class="text-validacao hover:text-erro-txt" title="Remover" onclick="removeFile(${f.id})"><i class="fa-solid fa-trash"></i></button>
                 </td>
             </tr>
@@ -780,14 +784,14 @@ function avancar() {
 
     const ul = document.getElementById('rev-arquivos');
     if (savedFiles.length === 0) {
-        ul.innerHTML = '<li class="text-texto-secundario italic">Nenhum documento</li>';
+        ul.innerHTML = '<li class="text-rotulo italic">Nenhum documento</li>';
     } else {
         ul.innerHTML = savedFiles.map(f => {
             const [ico, col] = iconFor(f.name);
             return `<li class="flex items-center gap-2">
                 <i class="fa-solid ${ico}" style="color:${col}"></i>
                 <span>${f.desc}</span>
-                <span class="text-texto-secundario text-[10px]">(${f.name})</span>
+                <span class="text-rotulo text-[10px]">(${f.name})</span>
             </li>`;
         }).join('');
     }

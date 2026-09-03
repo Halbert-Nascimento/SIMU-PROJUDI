@@ -1,10 +1,7 @@
-from django.urls import reverse
-
-from usuarios.models import Usuario
+from base.navegacao import home_do_usuario
 
 
 def home_breadcrumb(user):
     """Retorna o item inicial do breadcrumb de acordo com o perfil do usuário."""
-    if user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO:
-        return {"label": "Área do Servidor", "url": reverse("processos:pagina_aluno")}
-    return {"label": "Painel Administrativo", "url": reverse("acesso:painel_administrativo")}
+    label, url = home_do_usuario(user)
+    return {"label": label, "url": url}
