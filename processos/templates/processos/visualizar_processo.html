@@ -9,23 +9,22 @@
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
 <style>
+    /* Colunas de largura fixa da tabela de movimentação */
     .tbl-mov .num-col { width: 32px; color: #6b7280; text-align: right; padding-right: 6px; }
     .tbl-mov .data-col { width: 140px; white-space: nowrap; }
     .tbl-mov .user-col { width: 180px; }
     .tbl-mov .arq-col { width: 70px; text-align: center; }
-    .tbl-mov .sub { color: #1f4f9c; font-weight: bold; }
-    .tbl-mov .sub-evt { color: #4b5563; font-style: italic; }
+    .tbl-mov .opc-col { width: 70px; text-align: center; position: relative; }
+
+    /* Célula dupla do guia (seção 06): 11.5px/600 em cima, 10.5px/#6b7280 embaixo.
+       O nome da movimentação era azul de ação, que o guia reserva a link. */
+    .tbl-mov .sub { font-size: 11.5px; font-weight: 600; color: #23262e; }
+    .tbl-mov .sub-evt { font-size: 10.5px; color: #6b7280; }
     .tbl-mov a { color: #1f4f9c; }
     .tbl-mov a:hover { text-decoration: underline; }
-    .grupo-badge {
-        display: inline-flex; align-items: center; gap: 4px;
-        background: #f7faff; border: 1px solid #c9d5ea;
-        padding: 2px 8px; border-radius: 3px;
-        font-size: 11px; font-weight: bold; color: #1f4f9c;
-    }
-    .autos-actions {
-        display: flex; align-items: center; gap: 6px;
-    }
+
+    /* Ícones informativos dos autos */
+    .autos-actions { display: flex; align-items: center; gap: 6px; }
     .autos-actions .ai {
         width: 26px; height: 26px; display: inline-flex;
         align-items: center; justify-content: center;
@@ -35,37 +34,37 @@
     .info-actions i { font-size: 16px; color: #1f4f9c; cursor: default; }
     .info-actions .red { color: #c0392b; }
     .polo-actions { display: flex; align-items: center; gap: 10px; }
-    .polo-actions .pa { color: #1f4f9c; font-size: 14px; cursor: default; font-weight: bold; }
-    .icon-action {
-        color: #1f4f9c; cursor: default; font-size: 14px; margin: 0 2px;
-    }
+    .polo-actions .pa { color: #1f4f9c; font-size: 14px; cursor: default; font-weight: 600; }
+    .icon-action { color: #1f4f9c; cursor: default; font-size: 14px; margin: 0 2px; }
+
+    /* Abas — guia seção 07: sublinhado de 2px na ativa. Eram abas em forma de
+       pasta, com raio de 3px em cima e fundo cinza, desenho que o guia não usa. */
     .tabs {
-        display: flex; gap: 0; background: #eef0f3;
-        border: 1px solid #d3d7de; border-bottom: 0;
-        padding: 4px 4px 0 4px;
+        display: flex; gap: 2px;
+        background: #fff; border-bottom: 1px solid #e2e5ea;
     }
     .tabs .tab {
-        padding: 6px 14px; font-size: 11px; font-weight: bold;
-        color: #1f4f9c; cursor: default;
-        border: 1px solid transparent;
-        border-radius: 3px 3px 0 0;
-        background: transparent;
+        padding: 9px 14px; font-size: 11px; font-weight: 600;
+        letter-spacing: .06em; text-transform: uppercase;
+        color: #6b7280; cursor: default; background: transparent;
+        border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
     }
-    .tabs .tab.active {
-        background: #fff; color: #23262e;
-        border-color: #d3d7de;
-        border-bottom: 1px solid #fff;
-        margin-bottom: -1px;
-    }
-    .filters {
-        background: #eef0f3; border: 1px solid #d3d7de;
-        padding: 8px 10px;
-        display: flex; flex-wrap: wrap; gap: 6px 18px;
+    .tabs .tab.active { color: #0a083d; font-weight: 700; border-bottom-color: #1f4f9c; }
+
+    /* Filtros de evento — moldura da seção 05 do guia (#fbfbfc, borda #e2e5ea,
+       padding 14px 16px). Ficam em linha porque são rádios, não campos rotulados. */
+    .filtros-evento {
+        background: #fbfbfc; border: 1px solid #e2e5ea; border-top: 0; border-bottom: 0;
+        padding: 14px 16px;
+        display: flex; flex-wrap: wrap; gap: 8px 18px;
         align-items: center; font-size: 11px;
     }
-    .filters label { display: flex; align-items: center; gap: 5px; color: #23262e; }
-    .filters input[type="radio"] { accent-color: #1f4f9c; }
-    .tbl-mov .opc-col { width: 70px; text-align: center; position: relative; }
+    .filtros-evento label { display: flex; align-items: center; gap: 5px; color: #23262e; }
+    .filtros-evento input[type="radio"], .lock-area input { accent-color: #1f4f9c; }
+    .lock-area { display: flex; align-items: center; gap: 5px; }
+
+    /* Menus suspensos — raio 0 e a mesma sombra que a navegação secundária usa,
+       para o sistema ter um único desenho de menu flutuante. */
     .dropdown-opcoes { position: relative; display: inline-block; }
     .dropdown-opcoes .dropdown-btn {
         color: #1f4f9c; cursor: pointer; font-size: 14px;
@@ -74,19 +73,18 @@
     .dropdown-opcoes .dropdown-btn:hover { color: #0a083d; }
     .dropdown-opcoes .dropdown-menu {
         display: none; position: absolute; right: 0; top: 100%;
-        background: #fff; border: 1px solid #c9d5ea;
-        box-shadow: 0 4px 12px rgba(0,0,0,.12);
-        border-radius: 3px; z-index: 30; min-width: 150px;
+        background: #fff; border: 1px solid #e2e5ea;
+        box-shadow: 0 24px 60px -12px rgba(10,8,61,.45);
+        z-index: 40; min-width: 150px;
     }
     .dropdown-opcoes .dropdown-menu.open { display: block; }
     .dropdown-opcoes .dropdown-menu a {
-        display: block; padding: 6px 12px; font-size: 11px;
-        color: #23262e; text-decoration: none; white-space: nowrap;
+        display: block; padding: 8px 12px; font-size: 11.5px;
+        color: #4b5563; text-decoration: none; white-space: nowrap;
     }
-    .dropdown-opcoes .dropdown-menu a:hover { background: #f7faff; color: #1f4f9c; }
+    .dropdown-opcoes .dropdown-menu a:hover { background: #f7faff; color: #0a083d; }
     .dropdown-opcoes .dropdown-menu a i { margin-right: 6px; color: #1f4f9c; width: 14px; text-align: center; }
-    .lock-area { display: flex; align-items: center; gap: 5px; }
-    .lock-area input { accent-color: #1f4f9c; }
+
     .opcoes-wrapper { position: relative; display: inline-block; }
     .opcoes-menu {
         display: none;
@@ -94,11 +92,10 @@
         top: calc(100% + 2px);
         left: 0;
         min-width: 248px;
-        background: #ffffff;
+        background: #fff;
         border: 1px solid #e2e5ea;
-        border-radius: 4px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,.10), 0 2px 4px -2px rgba(0,0,0,.10);
-        z-index: 300;
+        box-shadow: 0 24px 60px -12px rgba(10,8,61,.45);
+        z-index: 40;
     }
     .opcoes-menu.open { display: block; }
     .opcoes-item {
@@ -109,7 +106,7 @@
         font-size: 12px;
         color: #23262e;
         cursor: pointer;
-        border-bottom: 1px solid rgba(209,209,209,.50);
+        border-bottom: 1px solid #eef0f3;
         position: relative;
         text-decoration: none;
         background: transparent;
@@ -117,10 +114,10 @@
         box-sizing: border-box;
         text-align: left;
         border-left: 0; border-right: 0; border-top: 0;
-        transition: background .12s;
+        transition: background-color .12s ease;
     }
     .opcoes-item:last-child { border-bottom: 0; }
-    .opcoes-item:hover { background: #f1f2f4; color: #23262e; }
+    .opcoes-item:hover { background: #f7faff; color: #0a083d; }
     .opcoes-item .sub-arrow { font-size: 9px; color: #6b7280; flex-shrink: 0; }
     .opcoes-sub-wrap { position: relative; }
     .opcoes-submenu {
@@ -129,26 +126,27 @@
         left: 100%;
         top: -1px;
         min-width: 180px;
-        background: #ffffff;
+        background: #fff;
         border: 1px solid #e2e5ea;
-        border-radius: 4px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,.10), 0 2px 4px -2px rgba(0,0,0,.10);
-        z-index: 301;
+        box-shadow: 0 24px 60px -12px rgba(10,8,61,.45);
+        z-index: 41;
     }
     .opcoes-sub-wrap:hover > .opcoes-submenu { display: block; }
     .opcoes-item.movimentar-item {
-        border-bottom: 1px solid rgba(209,209,209,.50);
+        border-bottom: 1px solid #eef0f3;
         color: #1f4f9c;
-        font-weight: bold;
+        font-weight: 700;
     }
-    .opcoes-item.movimentar-item:hover { background: #f1f2f4; color: #1f4f9c; }
+    .opcoes-item.movimentar-item:hover { background: #f7faff; color: #0a083d; }
+
+    /* Arquivos anexados à movimentação */
     .arq-toggle {
         background: none; border: none; cursor: pointer;
         color: #1f4f9c; padding: 2px 6px;
         display: inline-flex; align-items: center; gap: 3px;
-        font-size: 11px; font-weight: bold;
+        font-size: 11px; font-weight: 700;
     }
-    .arq-toggle:hover { color: #1f4f9c; }
+    .arq-toggle:hover { color: #0a083d; }
     .arq-toggle i { transition: transform .25s ease; display: inline-block; }
     .arq-toggle.open i { transform: rotate(180deg); }
     .arquivos-row td {
@@ -163,38 +161,43 @@
     .arquivo-list {
         padding: 10px 14px; display: flex;
         flex-direction: column; gap: 6px;
-        border-top: 2px solid #c9d5ea;
+        border-top: 1px solid #e2e5ea;
     }
     .arquivo-item {
         display: flex; align-items: center; gap: 10px;
         padding: 7px 10px; background: #fff;
-        border: 1px solid #e2e5ea; border-radius: 3px;
+        border: 1px solid #e2e5ea;
         font-size: 11px;
     }
     .arquivo-item .arq-nome {
-        flex: 1; color: #23262e; font-weight: bold;
+        flex: 1; color: #23262e; font-weight: 600;
         display: flex; align-items: center; gap: 7px;
         min-width: 0; word-break: break-all;
     }
     .arquivo-item .arq-acoes { display: flex; gap: 6px; flex-shrink: 0; }
+
+    /* Ação de linha do guia (seção 04): 5px 10px / 10px, para não engordar a
+       linha. Antes eram um botão azul preenchido e um cinza, ambos com raio. */
     .arq-btn {
-        padding: 3px 10px; font-size: 10px; font-weight: bold;
-        border-radius: 2px; text-decoration: none;
+        padding: 5px 10px; font-size: 10px; font-weight: 700;
+        letter-spacing: .07em; text-transform: uppercase;
+        text-decoration: none;
         display: inline-flex; align-items: center; gap: 4px;
-        border: 1px solid transparent; white-space: nowrap;
+        border: 1px solid; white-space: nowrap;
+        transition: background-color .15s ease, border-color .15s ease;
     }
-    .arq-btn.visualizar { background: #1f4f9c; color: #fff; border-color: #0a083d; }
-    .arq-btn.visualizar:hover { background: #1f4f9c; color: #fff; }
-    .arq-btn.baixar { background: #f1f2f4; color: #23262e; border-color: #e2e5ea; }
-    .arq-btn.baixar:hover { background: #e2e5ea; }
+    .arq-btn.visualizar { background: #fff; color: #1f4f9c; border-color: #c9d5ea; }
+    .arq-btn.visualizar:hover { background: #f2f6fd; border-color: #1f4f9c; }
+    .arq-btn.baixar { background: #fff; color: #4b5563; border-color: #d3d7de; }
+    .arq-btn.baixar:hover { color: #0a083d; border-color: #0a083d; }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Navigation Bar -->
-{% nav_secundaria %}
+{% nav_secundaria ativo='processos' %}
 
-<main class="max-w-conteudo mx-auto px-6 py-5">
+<main class="max-w-conteudo mx-auto px-7 py-5">
 
     {% include 'base/components/_breadcrumbs.html' %}
 
@@ -204,20 +207,20 @@
     <div class="flex items-start justify-between">
         <div class="flex-1">
             <div class="autos-title"><i class="fa-solid fa-folder-open"></i> AUTOS</div>
-            <div class="ml-4 mt-1 text-[12px] leading-tight">
+            <div class="ml-4 mt-1 text-corpo leading-tight">
                 <div>
                     <span class="text-texto-neutro">Número</span>
-                    <span class="font-bold ml-1 font-mono">{{ processo.numero }}</span>
-                    <i class="fa-regular fa-clipboard text-[#1f4f9c] ml-2 cursor-pointer" data-tip="Copiar"></i>
-                    <i class="fa-regular fa-copy text-[#1f4f9c] ml-1 cursor-pointer" data-tip="Duplicar"></i>
+                    <span class="font-semibold ml-1 font-mono">{{ processo.numero }}</span>
+                    <i class="fa-regular fa-clipboard text-acao ml-2 cursor-pointer" data-tip="Copiar"></i>
+                    <i class="fa-regular fa-copy text-acao ml-1 cursor-pointer" data-tip="Duplicar"></i>
                 </div>
                 <div class="mt-0.5">
                     <span class="text-texto-neutro">Área</span>
-                    <span class="font-bold">{{ processo.tipo_processo.nome }}</span>
+                    <span class="font-semibold">{{ processo.tipo_processo.nome }}</span>
                 </div>
             </div>
             <div class="flex items-center gap-2 mt-3 ml-4">
-                <a href="{% url 'processos:pagina_aluno' %}" class="btn-blue">
+                <a href="{% url 'processos:pagina_aluno' %}" class="btn-secondary inline-flex items-center">
                     <i class="fa-solid fa-arrow-left mr-1"></i> Voltar
                 </a>
                 <div class="opcoes-wrapper" id="opcoesWrapper">
@@ -281,13 +284,13 @@
 
                     </div>
                 </div>
-                <button type="button" class="btn-blue" disabled>Outras</button>
+                <button type="button" class="{% classe_botao 'desabilitado' padding=True %}" disabled>Outras</button>
             </div>
         </div>
         <div class="mt-2 flex flex-col items-end gap-2">
             {% pill_status_processo processo.status_atual %}
             <div class="autos-actions">
-                <span class="ai" data-tip="Relatório do Processo"><i class="fa-solid fa-folder-open" style="color:#a96400;"></i></span>
+                <span class="ai" data-tip="Relatório do Processo"><i class="fa-solid fa-folder-open text-atencao-txt"></i></span>
                 {% comment %} <span class="ai" data-tip="Pin Vermelho"><i class="fa-solid fa-thumbtack" style="color:#c0392b;"></i></span>
                 <span class="ai" data-tip="Pin Azul"><i class="fa-solid fa-thumbtack" style="color:#1f4f9c;"></i></span> {% endcomment %}
             </div>
@@ -326,7 +329,7 @@
         </div>
         {% empty %}
         <div class="panel-inner">
-            <div class="text-rotulo italic text-[11px]">Nenhuma parte cadastrada no polo ativo.</div>
+            <div class="text-rotulo italic text-apoio">Nenhuma parte cadastrada no polo ativo.</div>
         </div>
         {% endfor %}
 
@@ -359,7 +362,7 @@
         </div>
         {% empty %}
         <div class="panel-inner">
-            <div class="text-rotulo italic text-[11px]">Nenhuma parte cadastrada no polo passivo.</div>
+            <div class="text-rotulo italic text-apoio">Nenhuma parte cadastrada no polo passivo.</div>
         </div>
         {% endfor %}
 
@@ -394,52 +397,52 @@
         {% endif %}
 
         <!-- OUTRAS INFORMAÇÕES -->
-        <div class="section-title" style="margin-top: 14px; background: #f7faff;">
+        <div class="section-title">
             <i class="fa-solid fa-circle-info"></i> OUTRAS INFORMAÇÕES
         </div>
         <div class="panel-inner mt-0">
-            <div class="grid grid-cols-2 gap-x-8 gap-y-2 text-[12px]">
+            <div class="grid grid-cols-2 gap-x-[28px] gap-y-2 text-corpo">
                 <div class="flex">
                     <div class="w-40 text-texto-neutro">Serventia</div>
-                    <div class="font-bold flex-1">
+                    <div class="font-semibold flex-1">
                         {% if grupo_serventia %}{{ grupo_serventia.nome }}{% else %}—{% endif %}
                     </div>
                 </div>
                 <div class="flex">
                     <div class="w-40 text-texto-neutro">Vara / Comarca</div>
-                    <div class="font-bold flex-1">{{ processo.vara.nome }} — {{ processo.vara.comarca.nome }}</div>
+                    <div class="font-semibold flex-1">{{ processo.vara.nome }} — {{ processo.vara.comarca.nome }}</div>
                 </div>
 
                 <div class="flex col-span-2">
                     <div class="w-40 text-texto-neutro">Classe</div>
-                    <div class="font-bold flex-1">{{ processo.classe.nome }}</div>
+                    <div class="font-semibold flex-1">{{ processo.classe.nome }}</div>
                 </div>
 
                 <div class="flex">
                     <div class="w-40 text-texto-neutro">Tipo de Processo</div>
-                    <div class="font-bold">{{ processo.tipo_processo.nome }}</div>
+                    <div class="font-semibold">{{ processo.tipo_processo.nome }}</div>
                 </div>
                 <div class="flex">
                     <div class="w-40 text-texto-neutro">Valor da Causa</div>
-                    <div class="font-bold">R$ {{ processo.valor_causa|floatformat:2 }}</div>
+                    <div class="font-semibold">R$ {{ processo.valor_causa|floatformat:2 }}</div>
                 </div>
 
                 <div class="flex">
                     <div class="w-40 text-texto-neutro">Dt. Autuação</div>
-                    <div class="font-bold">{{ processo.data_autuacao|date:"d/m/Y H:i:s" }}</div>
+                    <div class="font-semibold">{{ processo.data_autuacao|date:"d/m/Y H:i:s" }}</div>
                 </div>
                 <div class="flex">
                     <div class="w-40 text-texto-neutro">Segredo de Justiça</div>
-                    <div class="font-bold">{% if processo.segredo_justica %}Sim{% else %}Não{% endif %}</div>
+                    <div class="font-semibold">{% if processo.segredo_justica %}Sim{% else %}Não{% endif %}</div>
                 </div>
 
                 <div class="flex">
                     <div class="w-40 text-texto-neutro">Status</div>
-                    <div class="font-bold">{{ processo.status_atual.nome_status }}</div>
+                    <div class="font-semibold">{{ processo.status_atual.nome_status }}</div>
                 </div>
                 <div class="flex">
                     <div class="w-40 text-texto-neutro">Ciclo</div>
-                    <div class="font-bold">{{ processo.ciclo }}</div>
+                    <div class="font-semibold">{{ processo.ciclo }}</div>
                 </div>
 
                 {% if grupos_vinculados %}
@@ -447,7 +450,7 @@
                     <div class="w-40 text-texto-neutro">Grupos Vinculados</div>
                     <div class="flex-1 flex flex-wrap gap-2">
                         {% for g in grupos_vinculados %}
-                        <span class="grupo-badge">
+                        <span class="pill bg-linha-hover text-acao border-[#c9d5ea] gap-1">
                             <i class="fa-solid fa-users text-[10px]"></i>
                             {{ g.nome }} ({{ g.cargo_simulacao.nome }})
                         </span>
@@ -478,7 +481,7 @@
             <div class="tab">Navegação de Arquivo</div>
         </div>
 
-        <div class="filters">
+        <div class="filtros-evento">
             <label><input type="radio" name="evf" checked disabled> TODOS</label>
             <label><input type="radio" name="evf" disabled> Cadastro do Processo</label>
             <label><input type="radio" name="evf" disabled> Juntada de Documentos</label>
@@ -558,15 +561,15 @@
                                 <div class="arquivo-item">
                                     <span class="arq-nome">
                                         {% if "pdf" in doc.caminho_arquivo.name|lower %}
-                                            <i class="fa-solid fa-file-pdf" style="color:#c0392b;"></i>
+                                            <i class="fa-solid fa-file-pdf text-validacao"></i>
                                         {% elif "doc" in doc.caminho_arquivo.name|lower %}
-                                            <i class="fa-solid fa-file-word" style="color:#1f4f9c;"></i>
+                                            <i class="fa-solid fa-file-word text-acao"></i>
                                         {% elif "jpg" in doc.caminho_arquivo.name|lower or "jpeg" in doc.caminho_arquivo.name|lower or "png" in doc.caminho_arquivo.name|lower %}
-                                            <i class="fa-solid fa-file-image" style="color:#0a083d;"></i>
+                                            <i class="fa-solid fa-file-image text-navy"></i>
                                         {% elif "html" in doc.caminho_arquivo.name|lower %}
-                                            <i class="fa-solid fa-file-code" style="color:#a96400;"></i>
+                                            <i class="fa-solid fa-file-code text-atencao-txt"></i>
                                         {% else %}
-                                            <i class="fa-solid fa-file" style="color:#6b7280;"></i>
+                                            <i class="fa-solid fa-file text-rotulo"></i>
                                         {% endif %}
                                         {{ doc.titulo_arquivo }}
                                     </span>
@@ -589,7 +592,7 @@
                 {% endif %}
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center italic py-4" style="color: #6b7280;">
+                    <td colspan="6" class="text-center italic py-[22px] text-rotulo">
                         Nenhuma movimentação registrada.
                     </td>
                 </tr>
@@ -598,12 +601,12 @@
         </table>
 
         {% if movimentacoes %}
-        <div class="flex items-center justify-between mt-3 text-[11px] text-texto-neutro">
+        <div class="flex items-center justify-between mt-3 text-apoio text-texto-neutro">
             <div>Exibindo <strong>{{ movimentacoes|length }}</strong> movimentaç{{ movimentacoes|length|pluralize:"ão,ões" }}</div>
             <div class="flex items-center gap-1">
-                <button class="px-2 py-0.5 border border-campo-borda bg-white" disabled><i class="fa-solid fa-angle-left"></i></button>
-                <span class="px-2 py-0.5 bg-[#1f4f9c] text-white font-bold rounded-sm">1</span>
-                <button class="px-2 py-0.5 border border-campo-borda bg-white" disabled><i class="fa-solid fa-angle-right"></i></button>
+                <button class="px-2 py-1 text-meta font-bold text-rotulo disabled:opacity-30 disabled:cursor-not-allowed" disabled><i class="fa-solid fa-angle-left"></i></button>
+                <span class="w-7 h-7 inline-flex items-center justify-center text-meta font-bold bg-navy text-white border border-navy">1</span>
+                <button class="px-2 py-1 text-meta font-bold text-rotulo disabled:opacity-30 disabled:cursor-not-allowed" disabled><i class="fa-solid fa-angle-right"></i></button>
             </div>
         </div>
         {% endif %}
