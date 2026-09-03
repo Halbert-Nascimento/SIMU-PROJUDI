@@ -1,68 +1,64 @@
 {% extends 'base/layouts/layout_admin.html' %}
 {% load ciclos_ui %}
 {% load ui %}
-{% load static %}
 
 {% block title %}Editar Ciclo — {{ ciclo.nome_edicao }} - Projudi{% endblock %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/painel.css' %}">
-{% endblock %}
 
 {% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
 
 
 {% block content %}
-<main class="main-container px-10 py-8 mt-10">
+<main class="max-w-conteudo mx-auto px-7 py-5">
 
     {% include 'base/components/_breadcrumbs.html' %}
 
     <!-- Cabeçalho da Página -->
-    <div class="mb-6 border-b border-divisor pb-4">
+    <div class="mb-[14px] pb-[14px] border-b border-contorno">
         <a href="{% url 'acesso:painel_administrativo' %}"
-            class="text-rotulo hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors w-fit">
+            class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
             <i class="fa-solid fa-arrow-left"></i> Voltar para o Painel
         </a>
-        <h2 class="text-tjgo-blue text-2xl font-bold flex items-center gap-2 mt-1">
+        <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
             <i class="fa-solid fa-pen-to-square"></i> Editar Ciclo
-        </h2>
-        <p class="text-rotulo text-sm mt-1">Atualize as informações do ciclo de simulação.</p>
+        </h1>
+        <p class="text-corpo text-texto-neutro mt-1.5">Atualize as informações do ciclo de simulação.</p>
     </div>
 
     <!-- Mensagens de feedback -->
     {% include 'base/components/_mensagens.html' %}
 
-    <div class="grid grid-cols-1 lg:grid-cols-[60%_38%] gap-[2%]">
+    <!-- Guia seção 08: colunas em frações, gap de 14px entre cards. -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-[14px] items-start">
 
         <!-- Formulário de Edição -->
         {% card titulo="Dados do Ciclo" icone="fa-folder-open" %}
-            <form method="post" action="" class="p-6 space-y-4 text-sm">
+            <form method="post" action="" class="px-4 py-[14px] flex flex-col gap-3">
                 {% csrf_token %}
 
-                {% campo label="Nome / Edição do Ciclo *" erros=form.nome_edicao.errors %}
-                    <input type="text" name="nome_edicao"
+                {% campo label="Nome / Edição do Ciclo *" para="id_nome_edicao" erros=form.nome_edicao.errors %}
+                    <input type="text" name="nome_edicao" id="id_nome_edicao"
                         value="{{ form.nome_edicao.value|default:'' }}"
                         placeholder="Ex: Simulação NPJ - Turma A"
                         maxlength="150" required class="{% classe_campo %}">
                 {% endcampo %}
 
-                <div class="grid grid-cols-2 gap-4">
-                    {% campo label="Semestre *" erros=form.semestre.errors %}
-                        <select name="semestre" required class="{% classe_campo %}">
+                <div class="grid grid-cols-2 gap-3">
+                    {% campo label="Semestre *" para="id_semestre" erros=form.semestre.errors %}
+                        <select name="semestre" id="id_semestre" required class="{% classe_campo %}">
                             <option value="">Selecione...</option>
                             <option value="1" {% if form.semestre.value|stringformat:"s" == "1" %}selected{% endif %}>1º Semestre</option>
                             <option value="2" {% if form.semestre.value|stringformat:"s" == "2" %}selected{% endif %}>2º Semestre</option>
                         </select>
                     {% endcampo %}
-                    {% campo label="Ano *" erros=form.ano.errors %}
-                        <input type="number" name="ano"
+                    {% campo label="Ano *" para="id_ano" erros=form.ano.errors %}
+                        <input type="number" name="ano" id="id_ano"
                             value="{{ form.ano.value|default:'' }}"
-                            min="2000" required class="{% classe_campo %}">
+                            min="2000" required class="{% classe_campo %} font-mono">
                     {% endcampo %}
                 </div>
 
-                {% campo label="Status *" erros=form.status.errors %}
-                    <select name="status" required class="{% classe_campo %}">
+                {% campo label="Status *" para="id_status" erros=form.status.errors %}
+                    <select name="status" id="id_status" required class="{% classe_campo %}">
                         <option value="">Selecione...</option>
                         {% for s in status_ciclo_opcoes %}
                         <option value="{{ s.pk }}" {% if form.status.value|stringformat:"s" == s.pk|stringformat:"s" %}selected{% endif %}>
@@ -73,8 +69,8 @@
                 {% endcampo %}
 
                 {% if form.coordenador %}
-                {% campo label="Coordenador do ciclo *" erros=form.coordenador.errors %}
-                    <select name="coordenador" required class="{% classe_campo %}">
+                {% campo label="Coordenador do ciclo *" para="id_coordenador" erros=form.coordenador.errors %}
+                    <select name="coordenador" id="id_coordenador" required class="{% classe_campo %}">
                         <option value="">Selecione o coordenador...</option>
                         {% for usuario in form.coordenador.field.queryset %}
                         <option value="{{ usuario.pk }}"
@@ -85,58 +81,58 @@
                     </select>
                 {% endcampo %}
                 {% else %}
-                <div class="bg-linha-hover border border-[#c9d5ea] rounded px-3 py-2 text-xs text-acao flex items-center gap-2">
+                <div class="bg-linha-hover border border-[#c9d5ea] px-3 py-2 text-apoio text-acao flex items-center gap-2">
                     <i class="fa-solid fa-circle-info"></i>
-                    Coordenador atual: <strong class="ml-1">{{ ciclo.coordenador.get_full_name|default:ciclo.coordenador.username }}</strong>
+                    Coordenador atual: <strong class="ml-1 font-semibold">{{ ciclo.coordenador.get_full_name|default:ciclo.coordenador.username }}</strong>
                 </div>
                 {% endif %}
 
-                <!-- Ações -->
-                <div class="flex justify-end gap-2 pt-2 border-t border-divisor">
-                    <a href="{% url 'acesso:painel_administrativo' %}"
-                        class="bg-white border border-campo-borda hover:bg-tabela-topo text-texto-neutro font-bold py-1.5 px-4 text-xs rounded shadow-sm transition-colors uppercase">
-                        Cancelar
-                    </a>
+                <!-- Ações — guia seção 04: primário à esquerda do secundário, gap 8px. -->
+                <div class="flex gap-2 pt-3 border-t border-divisor">
                     <button type="submit"
-                        class="{% classe_botao 'primario' %} py-1.5 px-6 text-xs uppercase flex items-center gap-2">
+                        class="{% classe_botao 'primario' padding=True %} flex items-center gap-2">
                         <i class="fa-solid fa-floppy-disk"></i> Salvar Alterações
                     </button>
+                    <a href="{% url 'acesso:painel_administrativo' %}"
+                        class="{% classe_botao 'secundario' padding=True %} inline-flex items-center">
+                        Cancelar
+                    </a>
                 </div>
             </form>
         {% endcard %}
 
         <!-- Painel Lateral: Informações do Ciclo -->
-        <div class="space-y-4">
+        <div class="flex flex-col gap-[14px]">
 
             <!-- Card: Status Atual -->
-            {% card titulo="Situação Atual" icone="fa-circle-info" classe_corpo="p-4 space-y-3 text-sm" %}
-                    <div class="flex justify-between items-center">
-                        <span class="text-[11px] text-rotulo uppercase font-bold">Status</span>
+            {% card titulo="Situação Atual" icone="fa-circle-info" classe_corpo="px-4 py-[14px] flex flex-col gap-3" %}
+                    <div class="flex justify-between items-center gap-3">
+                        <span class="text-micro font-semibold uppercase text-rotulo">Status</span>
                         {% badge_status_ciclo ciclo.status %}
                     </div>
-                    <div class="flex justify-between items-center border-t border-divisor pt-3">
-                        <span class="text-[11px] text-rotulo uppercase font-bold">Semestre / Ano</span>
-                        <span class="text-xs font-bold text-tjgo-navy">{{ ciclo.semestre }}º / {{ ciclo.ano }}</span>
+                    <div class="flex justify-between items-center gap-3 border-t border-divisor pt-3">
+                        <span class="text-micro font-semibold uppercase text-rotulo">Semestre / Ano</span>
+                        <span class="text-dado font-semibold text-navy font-mono">{{ ciclo.semestre }}º / {{ ciclo.ano }}</span>
                     </div>
-                    <div class="flex justify-between items-center border-t border-divisor pt-3">
-                        <span class="text-[11px] text-rotulo uppercase font-bold">Grupos</span>
-                        <span class="text-xs font-bold text-tjgo-navy">{{ ciclo.grupos.count }} grupo{{ ciclo.grupos.count|pluralize }}</span>
+                    <div class="flex justify-between items-center gap-3 border-t border-divisor pt-3">
+                        <span class="text-micro font-semibold uppercase text-rotulo">Grupos</span>
+                        <span class="text-dado font-semibold text-navy">{{ ciclo.grupos.count }} grupo{{ ciclo.grupos.count|pluralize }}</span>
                     </div>
-                    <div class="flex justify-between items-center border-t border-divisor pt-3">
-                        <span class="text-[11px] text-rotulo uppercase font-bold">Criado em</span>
-                        <span class="text-xs text-rotulo">{{ ciclo.data_criacao|date:"d/m/Y" }}</span>
+                    <div class="flex justify-between items-center gap-3 border-t border-divisor pt-3">
+                        <span class="text-micro font-semibold uppercase text-rotulo">Criado em</span>
+                        <span class="text-dado text-rotulo font-mono">{{ ciclo.data_criacao|date:"d/m/Y" }}</span>
                     </div>
             {% endcard %}
 
             <!-- Ação: Ver Detalhes -->
             <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
-                class="flex items-center justify-center gap-2 border border-tjgo-gray-border bg-white hover:bg-card-topo shadow-sm rounded-sm p-3 text-xs font-bold text-tjgo-blue transition-colors">
+                class="{% classe_botao 'secundario' %} px-4 py-2.5 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-eye"></i> Visualizar Detalhes do Ciclo
             </a>
 
             <!-- Ação: Gerenciar Grupos -->
             <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
-                class="flex items-center justify-center gap-2 border border-tjgo-gray-border bg-white hover:bg-card-topo shadow-sm rounded-sm p-3 text-xs font-bold text-tjgo-blue transition-colors">
+                class="{% classe_botao 'secundario' %} px-4 py-2.5 flex items-center justify-center gap-2">
                 <i class="fa-solid fa-users-gear"></i> Gerenciar Grupos
             </a>
 

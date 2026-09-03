@@ -1,465 +1,556 @@
-{% extends 'base/layouts/layout_admin.html' %}
-{% load ui %}
-{% load ciclos_ui %}
-{% load static %}
-
-{% block title %}Gerenciar Grupos — {{ ciclo.nome_edicao }} - Projudi{% endblock %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/painel.css' %}">
-{% endblock %}
-
-{% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
-
-
-{% block content %}
-<main class="main-container px-10 py-8 mt-10 flex flex-col">
-
-    {% include 'base/components/_breadcrumbs.html' %}
-
-    <!-- Cabeçalho da Página -->
-    <div class="mb-6 border-b border-divisor pb-4 flex items-start justify-between shrink-0">
-        <div>
-            <a href="{% url 'acesso:painel_administrativo' %}"
-                class="text-rotulo hover:text-tjgo-blue text-xs font-bold mb-2 flex items-center gap-1 transition-colors">
-                <i class="fa-solid fa-arrow-left"></i> Voltar para Ciclos
-            </a>
-            <h2 class="text-tjgo-blue text-2xl font-bold flex items-center gap-2 mt-1">
-                <i class="fa-solid fa-users-gear"></i> Grupos:
-                <span class="text-tjgo-navy">{{ ciclo.nome_edicao }}</span>
-            </h2>
-            <p class="text-rotulo text-sm mt-1">
-                {{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}
-                {% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %}
-                &nbsp;·&nbsp;
-                {% ponto_status_ciclo ciclo.status %}
-            </p>
-        </div>
-        <span class="bg-linha-hover text-acao text-xs font-bold px-3 py-1.5 rounded border border-[#c9d5ea] shadow-sm flex items-center gap-2 mt-6">
-            <i class="fa-solid fa-graduation-cap"></i>
-            {{ total_alunos_ativos }} Aluno{{ total_alunos_ativos|pluralize }} Ativo{{ total_alunos_ativos|pluralize }}
-        </span>
-    </div>
-
-    <!-- Mensagens de feedback (servidor) -->
-    {% include 'base/components/_mensagens.html' %}
-
-    <!-- Grid Principal -->
-    <div class="flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-[30%_68%] gap-[2%]">
-
-        <!-- ── Painel Esquerdo: Lista de Grupos ──────────────────────────────── -->
-        <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden flex flex-col min-h-[450px] lg:h-full">
-            <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center justify-between shrink-0">
-                <div class="flex items-center">
-                    <i class="fa-solid fa-layer-group mr-2 text-sm"></i>
-                    Equipes Criadas ({{ grupos|length }})
-                </div>
-                <button type="button" onclick="abrirModalGrupo()"
-                    class="bg-[#0a083d] hover:bg-[#0a083d] text-white px-3 py-1 rounded-sm transition-colors text-xs lowercase flex items-center gap-1 shadow-sm">
-                    <i class="fa-solid fa-plus"></i> novo grupo
-                </button>
-            </div>
-
-            <div class="overflow-y-auto flex-1 p-2 space-y-1.5">
-                {% for grupo in grupos %}
-                <div id="grupo-item-{{ grupo.pk }}"
-                    onclick="selecionarGrupo(this, {{ grupo.pk }}, '{{ grupo.nome|escapejs }}', '{{ grupo.cargo_simulacao.nome|escapejs }}')"
-                    class="grupo-item border border-contorno hover:border-campo-borda hover:bg-card-topo cursor-pointer p-3 rounded-sm transition-colors">
-                    <div class="flex justify-between items-center">
-                        <div class="flex-1 min-w-0 pr-2">
-                            <h3 class="text-xs font-bold text-texto-neutro mb-0.5 truncate">{{ grupo.nome }}</h3>
-                            <span class="text-[10px] text-rotulo">{{ grupo.cargo_simulacao }}</span>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <span class="membros-count-badge bg-tabela-topo text-texto-neutro border border-contorno text-[9px] font-bold px-1.5 py-0.5 rounded-full">
-                                {{ grupo.membros.all|length }} Al.
-                            </span>
-                            <button type="button"
-                                onclick="event.stopPropagation(); abrirModalGrupo({{ grupo.pk }}, '{{ grupo.nome|escapejs }}', {{ grupo.cargo_simulacao.pk }})"
-                                class="text-rotulo hover:text-tjgo-blue transition-colors p-0.5" title="Editar grupo">
-                                <i class="fa-solid fa-pen text-[10px]"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                {% empty %}
-                <div class="flex flex-col items-center justify-center h-32 text-center px-4">
-                    <i class="fa-solid fa-layer-group text-2xl text-rotulo mb-2"></i>
-                    <p class="text-xs text-rotulo italic">Nenhum grupo criado ainda.</p>
-                    <p class="text-[10px] text-rotulo mt-1">Clique em "+ novo grupo" para começar.</p>
-                </div>
-                {% endfor %}
-            </div>
-        </div>
-
-        <!-- ── Painel Direito: Gerenciar Membros ─────────────────────────────── -->
-        <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden flex flex-col min-h-[450px] lg:h-full">
-
-            <!-- Header dinâmico -->
-            <div class="bg-tjgo-navy text-white p-2.5 flex justify-between items-center shrink-0">
-                <div>
-                    <span class="text-[10px] font-bold text-rotulo uppercase block mb-0.5">Editando Grupo:</span>
-                    <h3 id="nome-grupo-selecionado" class="text-sm font-bold text-rotulo italic">
-                        Selecione um grupo
-                    </h3>
-                </div>
-                <div class="text-right">
-                    <span class="text-[10px] font-bold text-rotulo uppercase block mb-0.5">Papel Processual:</span>
-                    <span id="papel-grupo-selecionado" class="text-xs font-bold text-rotulo italic">—</span>
-                </div>
-            </div>
-
-            <!-- Estado vazio -->
-            <div id="painel-direito-vazio" class="flex-1 flex flex-col items-center justify-center text-center px-6">
-                <i class="fa-solid fa-hand-pointer text-3xl text-rotulo mb-3"></i>
-                <p class="text-sm text-rotulo font-bold">Nenhum grupo selecionado</p>
-                <p class="text-xs text-rotulo mt-1">Clique em um grupo no painel esquerdo para gerenciar seus membros.</p>
-            </div>
-
-            <!-- Conteúdo (grupo selecionado) -->
-            <div id="painel-direito-conteudo" class="flex-1 overflow-hidden hidden">
-
-                <!-- Coluna: Membros do Grupo -->
-                <div class="w-1/2 border-r border-contorno flex flex-col bg-card-topo/50">
-                    <div class="p-2.5 border-b border-contorno shrink-0">
-                        <span class="text-[11px] font-bold uppercase text-texto-neutro">
-                            Membros da Equipe (<span id="membros-count">0</span>)
-                        </span>
-                    </div>
-                    <div id="lista-membros" class="flex-1 overflow-y-auto p-3 space-y-2">
-                        <!-- Renderizado via JS -->
-                    </div>
-                </div>
-
-                <!-- Coluna: Adicionar Aluno -->
-                <div class="w-1/2 flex flex-col bg-white">
-                    <div class="p-2.5 border-b border-contorno bg-card-topo/50 shrink-0">
-                        <span class="text-[11px] font-bold uppercase text-texto-neutro block mb-2">
-                            Adicionar ao Grupo
-                        </span>
-                        <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-rotulo text-xs"></i>
-                            <input
-                                type="text"
-                                id="pesquisa-alunos"
-                                oninput="renderizarDisponiveis()"
-                                placeholder="Buscar por nome ou matrícula..."
-                                class="w-full border border-campo-borda pl-8 pr-3 py-1.5 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                        </div>
-                    </div>
-                    <div class="px-3 pt-1.5 shrink-0">
-                        <p class="text-[10px] text-rotulo font-bold uppercase">
-                            Alunos sem grupo (<span id="alunos-sem-grupo-count">0</span>):
-                        </p>
-                    </div>
-                    <div id="lista-alunos-disponiveis" class="flex-1 overflow-y-auto px-3 pb-3 space-y-0.5">
-                        <!-- Renderizado via JS -->
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-</main>
-
-<!-- Toast container (notificações AJAX) -->
-<div id="toast-container" class="fixed top-4 right-4 z-[100] space-y-2 pointer-events-none"></div>
-
-<!-- Modal: Criar / Editar Grupo -->
-<div id="modal-grupo" class="fixed inset-0 z-[60] hidden items-center justify-center">
-    <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="fecharModalGrupo()"></div>
-    <div class="relative bg-white w-full max-w-md shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
-        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center shrink-0">
-            <span id="modal-grupo-titulo"><i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo</span>
-            <button onclick="fecharModalGrupo()" class="hover:text-rotulo text-lg"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <form method="post" action="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}" class="flex flex-col overflow-hidden">
-            {% csrf_token %}
-            <input type="hidden" name="grupo_id" id="modal-grupo-id" value="">
-            <div class="p-6 overflow-y-auto space-y-4 text-sm">
-                <div>
-                    <label class="block text-[11px] font-bold text-texto-neutro uppercase mb-1">Nome do Grupo *</label>
-                    <input
-                        type="text"
-                        name="nome"
-                        id="modal-grupo-nome"
-                        placeholder="Ex: Escritório Polo Ativo 01"
-                        maxlength="150"
-                        required
-                        class="{% classe_campo %}">
-                </div>
-                <div>
-                    <label class="block text-[11px] font-bold text-texto-neutro uppercase mb-1">Papel na Simulação *</label>
-                    <select
-                        name="cargo_simulacao"
-                        id="modal-grupo-cargo"
-                        required
-                        class="{% classe_campo %}">
-                        <option value="">Selecione o papel...</option>
-                        {% for cargo in cargos %}
-                        <option value="{{ cargo.pk }}">{{ cargo.nome }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-            </div>
-            <div class="bg-card-topo p-4 border-t border-contorno flex justify-end gap-2 shrink-0">
-                <button type="button" onclick="fecharModalGrupo()"
-                    class="bg-white border border-campo-borda hover:bg-tabela-topo text-texto-neutro font-bold py-1.5 px-4 text-xs rounded-sm shadow-sm transition-colors uppercase">
-                    Cancelar
-                </button>
-                <button type="submit"
-                    class="{% classe_botao 'primario' %} py-1.5 px-6 text-xs uppercase flex items-center gap-2">
-                    <i class="fa-solid fa-floppy-disk"></i> Salvar
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-{# Dados pré-carregados de forma segura (escaping automático pelo Django) #}
-{{ membros_por_grupo|json_script:"membros-data" }}
-{{ alunos_lista|json_script:"alunos-data" }}
-
-<script>
-    // ── Dados e estado ────────────────────────────────────────────────────────
-    const CSRF_TOKEN = '{{ csrf_token }}';
-    const membrosData = JSON.parse(document.getElementById('membros-data').textContent);
-    let alunosData = JSON.parse(document.getElementById('alunos-data').textContent);
-    let grupoAtualId = null;
-
-    // URLs construídas via Django (sentinelas substituídas em runtime)
-    const URL_ADICIONAR_TPL = "{% url 'ciclos:adicionar_membro' ciclo.pk 99997 %}";
-    const URL_REMOVER_TPL   = "{% url 'ciclos:remover_membro'   ciclo.pk 99997 99998 %}";
-
-    function urlAdicionar(grupoId) {
-        return URL_ADICIONAR_TPL.replace('/99997/', '/' + grupoId + '/');
-    }
-    function urlRemover(grupoId, usuarioId) {
-        return URL_REMOVER_TPL
-            .replace('/99997/', '/' + grupoId + '/')
-            .replace('/99998/', '/' + usuarioId + '/');
-    }
-
-    // ── Renderização do painel direito ────────────────────────────────────────
-    function renderizarMembros() {
-        const membros = membrosData[String(grupoAtualId)] || [];
-        const container = document.getElementById('lista-membros');
-        const counter   = document.getElementById('membros-count');
-        counter.textContent = membros.length;
-
-        if (membros.length === 0) {
-            container.innerHTML = '<p class="text-[10px] text-rotulo italic text-center py-6">Nenhum membro neste grupo.</p>';
-            return;
-        }
-
-        container.innerHTML = membros.map(m => `
-            <div class="bg-white border border-contorno p-2 text-xs flex justify-between items-center rounded-sm shadow-sm">
-                <div>
-                    <span class="font-bold text-tjgo-navy block">${escHtml(m.nome)}</span>
-                    <span class="text-[10px] text-rotulo">Matrícula: ${escHtml(m.matricula)}</span>
-                </div>
-                <button onclick="removerMembro(${m.id})"
-                    class="text-rotulo hover:text-erro-txt transition-colors p-1" title="Remover aluno">
-                    <i class="fa-solid fa-trash-can text-sm"></i>
-                </button>
-            </div>
-        `).join('');
-    }
-
-    function renderizarDisponiveis() {
-        const filtro    = (document.getElementById('pesquisa-alunos').value || '').toLowerCase();
-        const container = document.getElementById('lista-alunos-disponiveis');
-        const counter   = document.getElementById('alunos-sem-grupo-count');
-        counter.textContent = alunosData.length;
-
-        const filtrados = filtro
-            ? alunosData.filter(a =>
-                a.nome.toLowerCase().includes(filtro) ||
-                a.matricula.toLowerCase().includes(filtro)
-              )
-            : alunosData;
-
-        if (filtrados.length === 0) {
-            container.innerHTML = `<p class="text-[10px] text-rotulo italic text-center py-6">${
-                filtro ? 'Nenhum aluno encontrado.' : 'Nenhum aluno disponível para este ciclo.'
-            }</p>`;
-            return;
-        }
-
-        container.innerHTML = filtrados.map(a => `
-            <div class="border-b border-divisor py-2 flex justify-between items-center hover:bg-linha-hover/30 pr-1 transition-colors">
-                <div>
-                    <span class="font-bold text-tjgo-navy text-xs block">${escHtml(a.nome)}</span>
-                    <span class="text-[10px] text-rotulo">Matrícula: ${escHtml(a.matricula)}</span>
-                </div>
-                <button onclick="adicionarMembro(${a.id})"
-                    class="bg-ok-bg text-ok-txt border border-ok-bd hover:bg-ok-txt hover:text-white px-2 py-1 rounded-sm text-[10px] font-bold uppercase transition-colors shadow-sm shrink-0 ml-2">
-                    + Add
-                </button>
-            </div>
-        `).join('');
-    }
-
-    // ── Ações AJAX: adicionar / remover ───────────────────────────────────────
-    function adicionarMembro(usuarioId) {
-        const fd = new FormData();
-        fd.append('usuario_id', usuarioId);
-        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
-
-        fetch(urlAdicionar(grupoAtualId), { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(data => {
-                if (data.sucesso) {
-                    // Adiciona à lista de membros do grupo
-                    if (!membrosData[String(grupoAtualId)]) membrosData[String(grupoAtualId)] = [];
-                    membrosData[String(grupoAtualId)].push(data.membro);
-
-                    // Remove da lista de disponíveis
-                    alunosData = alunosData.filter(a => a.id !== usuarioId);
-
-                    renderizarMembros();
-                    renderizarDisponiveis();
-                    atualizarBadgeGrupo(grupoAtualId, membrosData[String(grupoAtualId)].length);
-                    mostrarToast('sucesso', `"${escHtml(data.membro.nome)}" adicionado ao grupo.`);
-                } else {
-                    mostrarToast('erro', data.erro || 'Erro ao adicionar membro.');
-                }
-            })
-            .catch(() => mostrarToast('erro', 'Erro de conexão. Tente novamente.'));
-    }
-
-    function removerMembro(usuarioId) {
-        const membro = (membrosData[String(grupoAtualId)] || []).find(m => m.id === usuarioId);
-        const fd = new FormData();
-        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
-
-        fetch(urlRemover(grupoAtualId, usuarioId), { method: 'POST', body: fd })
-            .then(r => r.json())
-            .then(data => {
-                if (data.sucesso) {
-                    // Remove da lista de membros
-                    membrosData[String(grupoAtualId)] = (membrosData[String(grupoAtualId)] || [])
-                        .filter(m => m.id !== usuarioId);
-
-                    // Se foi removido do ciclo, torna-se disponível novamente
-                    if (data.removido_do_ciclo && membro) {
-                        alunosData.push(membro);
-                        alunosData.sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
-                    }
-
-                    renderizarMembros();
-                    renderizarDisponiveis();
-                    atualizarBadgeGrupo(grupoAtualId, membrosData[String(grupoAtualId)].length);
-                    mostrarToast('sucesso', membro ? `"${escHtml(membro.nome)}" removido do grupo.` : 'Membro removido.');
-                } else {
-                    mostrarToast('erro', data.erro || 'Erro ao remover membro.');
-                }
-            })
-            .catch(() => mostrarToast('erro', 'Erro de conexão. Tente novamente.'));
-    }
-
-    // ── Seleção de grupo no painel esquerdo ───────────────────────────────────
-    function selecionarGrupo(elemento, grupoId, nomeGrupo, papel) {
-        document.querySelectorAll('.grupo-item').forEach(el => {
-            el.classList.remove('border-tjgo-blue', 'bg-linha-hover');
-            el.classList.add('border-contorno', 'hover:border-campo-borda', 'hover:bg-card-topo');
-            const ind = el.querySelector('.indicador-ativo');
-            if (ind) ind.remove();
-        });
-
-        elemento.classList.remove('border-contorno', 'hover:border-campo-borda', 'hover:bg-card-topo');
-        elemento.classList.add('border-tjgo-blue', 'bg-linha-hover', 'relative');
-        elemento.insertAdjacentHTML(
-            'afterbegin',
-            '<div class="indicador-ativo absolute left-0 top-0 bottom-0 w-1 bg-tjgo-blue rounded-l-sm"></div>'
-        );
-
-        const nomeEl = document.getElementById('nome-grupo-selecionado');
-        nomeEl.textContent = nomeGrupo;
-        nomeEl.classList.remove('text-rotulo', 'italic');
-        nomeEl.classList.add('text-white');
-
-        const papelEl = document.getElementById('papel-grupo-selecionado');
-        papelEl.textContent = papel;
-        papelEl.classList.remove('text-rotulo', 'italic');
-        papelEl.classList.add('text-atencao-txt');
-
-        grupoAtualId = grupoId;
-
-        document.getElementById('painel-direito-vazio').classList.add('hidden');
-        const conteudo = document.getElementById('painel-direito-conteudo');
-        conteudo.classList.remove('hidden');
-        conteudo.classList.add('flex');
-
-        // Limpa filtro e renderiza painéis com os dados do grupo selecionado
-        const pesquisa = document.getElementById('pesquisa-alunos');
-        if (pesquisa) pesquisa.value = '';
-        renderizarMembros();
-        renderizarDisponiveis();
-    }
-
-    // ── Utilitários ───────────────────────────────────────────────────────────
-    function atualizarBadgeGrupo(grupoId, count) {
-        const badge = document.querySelector(`#grupo-item-${grupoId} .membros-count-badge`);
-        if (badge) badge.textContent = `${count} Al.`;
-    }
-
-    function escHtml(str) {
-        const d = document.createElement('div');
-        d.appendChild(document.createTextNode(String(str)));
-        return d.innerHTML;
-    }
-
-    function mostrarToast(tipo, mensagem) {
-        const container = document.getElementById('toast-container');
-        const ok = tipo === 'sucesso';
-        const el = document.createElement('div');
-        el.className = [
-            'pointer-events-auto p-3 text-xs border rounded shadow-md flex items-center gap-2 min-w-[260px] transition-opacity duration-300',
-            ok ? 'bg-ok-bg border-ok-bd text-ok-txt'
-               : 'bg-erro-bg border-erro-bd text-erro-txt',
-        ].join(' ');
-        el.innerHTML = `<i class="fa-solid ${ok ? 'fa-circle-check' : 'fa-circle-xmark'}"></i><span class="flex-1">${mensagem}</span>`;
-        container.appendChild(el);
-        setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 4000);
-    }
-
-    // ── Modal de Grupo (criar/editar) ─────────────────────────────────────────
-    function abrirModalGrupo(grupoId = null, nome = '', cargoId = null) {
-        const modal  = document.getElementById('modal-grupo');
-        const titulo = document.getElementById('modal-grupo-titulo');
-        document.getElementById('modal-grupo-id').value   = grupoId || '';
-        document.getElementById('modal-grupo-nome').value = nome;
-        document.getElementById('modal-grupo-cargo').value = cargoId || '';
-
-        titulo.innerHTML = grupoId
-            ? '<i class="fa-solid fa-pen mr-2"></i> Editar Grupo'
-            : '<i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo';
-
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        setTimeout(() => { modal.classList.add('modal-active'); }, 10);
-        setTimeout(() => { document.getElementById('modal-grupo-nome').focus(); }, 150);
-    }
-
-    function fecharModalGrupo() {
-        const modal = document.getElementById('modal-grupo');
-        modal.classList.remove('modal-active');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }, 200);
-    }
-
-    // ── Reabre modal se houve erro de validação ────────────────────────────────
-    {% if reabrir_modal %}
-    document.addEventListener('DOMContentLoaded', () => {
-        abrirModalGrupo(
-            '{{ grupo_editando.pk|default:"" }}',
-            '{{ form.nome.value|default:""|escapejs }}',
-            '{{ form.cargo_simulacao.value|default:"" }}'
-        );
-    });
-    {% endif %}
-</script>
-{% endblock %}
+{% extends 'base/layouts/layout_admin.html' %}
+{% load ui %}
+{% load ciclos_ui %}
+{% load static %}
+
+{% block title %}Gerenciar Grupos — {{ ciclo.nome_edicao }} - Projudi{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/painel.css' %}">
+<script src="{% static 'js/paginador.js' %}"></script>
+{% endblock %}
+
+{% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
+
+
+{% block content %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+
+    {% include 'base/components/_breadcrumbs.html' %}
+
+    <!-- Cabeçalho da Página -->
+    <div class="mb-[14px] pb-[14px] border-b border-contorno flex items-start justify-between gap-4 shrink-0">
+        <div>
+            <a href="{% url 'acesso:painel_administrativo' %}"
+                class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
+                <i class="fa-solid fa-arrow-left"></i> Voltar para Ciclos
+            </a>
+            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+                <i class="fa-solid fa-users-gear"></i> Grupos:
+                <span class="text-navy">{{ ciclo.nome_edicao }}</span>
+            </h1>
+            <p class="text-corpo text-texto-neutro mt-1.5">
+                {{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}
+                {% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %}
+                &nbsp;·&nbsp;
+                {% ponto_status_ciclo ciclo.status %}
+            </p>
+        </div>
+        <span class="pill bg-linha-hover text-acao border-[#c9d5ea] gap-2 shrink-0">
+            <i class="fa-solid fa-graduation-cap"></i>
+            {{ total_alunos_ativos }} Aluno{{ total_alunos_ativos|pluralize }} Ativo{{ total_alunos_ativos|pluralize }}
+        </span>
+    </div>
+
+    <!-- Mensagens de feedback (servidor) -->
+    {% include 'base/components/_mensagens.html' %}
+
+    <!-- Grid Principal — guia seção 08: frações, nunca percentuais mistos. -->
+    <!-- Guia seção 08: frações, nunca percentuais mistos.
+
+         A altura dos painéis é FIXA a partir de `lg`, e isso é o que impede o
+         painel de encolher quando a última página traz menos linhas que as
+         outras. Antes, `main` não tinha altura definida, então o `flex-1` daqui
+         não tinha folga para distribuir e o `h-full` dos painéis (uma
+         porcentagem sobre contêiner de altura automática) resolvia para `auto`:
+         a altura vinha do conteúdo, com `min-h` só de piso. Seis linhas passavam
+         de 450px, duas linhas caíam abaixo, e o painel pulava entre os dois.
+
+         Com altura definida o `flex-1 min-h-0 overflow-y-auto` das listas
+         finalmente rola, que era a intenção original do código.
+
+         600px cabe as 6 linhas por página das duas colunas com folga (a coluna
+         de membros precisa de ~400px e recebe ~438px). Mexer em `porPagina` no
+         JS pede refazer esta conta.
+
+         A altura vale em todas as larguras, e não só em `lg`: o `min-h` que
+         havia antes era piso, não altura, e deixava o mesmo pulo acontecer na
+         tela estreita. -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1fr_2.2fr] gap-[14px]">
+
+        <!-- ── Painel Esquerdo: Lista de Grupos ──────────────────────────────── -->
+        <div class="border border-contorno bg-white overflow-hidden flex flex-col h-[600px]">
+            <!-- Guia seção 07: cabeçalho de card é #fbfbfc com borda inferior e
+                 título navy — não navy sólido. -->
+            <div class="px-4 py-[9px] border-b border-contorno bg-card-topo flex items-center justify-between gap-3 shrink-0">
+                <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-rotulo"></i>
+                    Equipes Criadas ({{ grupos|length }})
+                </span>
+                <!-- Cor primária com o espaçamento da ação de linha: é a ação
+                     principal do painel, mas o padding padrão levaria o
+                     cabeçalho de 30px para 48px. -->
+                <button type="button" onclick="abrirModalGrupo()"
+                    class="{% classe_botao 'primario' %} {% padding_botao 'linha' %} flex items-center gap-1.5 shrink-0">
+                    <i class="fa-solid fa-plus"></i> novo grupo
+                </button>
+            </div>
+
+            <div class="overflow-y-auto flex-1 p-2 flex flex-col gap-1.5">
+                {% for grupo in grupos %}
+                <div id="grupo-item-{{ grupo.pk }}"
+                    onclick="selecionarGrupo(this, {{ grupo.pk }}, '{{ grupo.nome|escapejs }}', '{{ grupo.cargo_simulacao.nome|escapejs }}')"
+                    class="grupo-item border border-contorno hover:border-campo-borda hover:bg-linha-hover cursor-pointer p-3 transition-colors">
+                    <div class="flex justify-between items-center">
+                        <div class="flex-1 min-w-0 pr-2">
+                            <h3 class="text-dado font-semibold text-texto mb-0.5 truncate">{{ grupo.nome }}</h3>
+                            <span class="text-meta text-rotulo">{{ grupo.cargo_simulacao }}</span>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="membros-count-badge pill gray">
+                                {{ grupo.membros.all|length }} Al.
+                            </span>
+                            <button type="button"
+                                onclick="event.stopPropagation(); abrirModalGrupo({{ grupo.pk }}, '{{ grupo.nome|escapejs }}', {{ grupo.cargo_simulacao.pk }})"
+                                class="text-rotulo hover:text-acao transition-colors p-0.5" title="Editar grupo">
+                                <i class="fa-solid fa-pen text-[10px]"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="flex flex-col items-center justify-center h-32 text-center px-4">
+                    <i class="fa-solid fa-layer-group text-2xl text-rotulo mb-2"></i>
+                    <p class="text-apoio text-rotulo italic">Nenhum grupo criado ainda.</p>
+                    <p class="text-meta text-rotulo mt-1">Clique em "+ novo grupo" para começar.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- ── Painel Direito: Gerenciar Membros ─────────────────────────────── -->
+        <div class="border border-contorno bg-white overflow-hidden flex flex-col h-[600px]">
+
+            <!-- Header dinâmico -->
+            <div class="px-4 py-[9px] border-b border-contorno bg-card-topo flex justify-between items-center gap-4 shrink-0">
+                <div>
+                    <span class="text-micro font-semibold uppercase text-rotulo block mb-0.5">Editando Grupo:</span>
+                    <h3 id="nome-grupo-selecionado" class="text-dado font-semibold text-rotulo italic">
+                        Selecione um grupo
+                    </h3>
+                </div>
+                <div class="text-right">
+                    <span class="text-micro font-semibold uppercase text-rotulo block mb-0.5">Papel Processual:</span>
+                    <span id="papel-grupo-selecionado" class="text-dado font-semibold text-rotulo italic">—</span>
+                </div>
+            </div>
+
+            <!-- Estado vazio -->
+            <div id="painel-direito-vazio" class="flex-1 flex flex-col items-center justify-center text-center px-6">
+                <i class="fa-solid fa-hand-pointer text-3xl text-rotulo mb-3"></i>
+                <p class="text-corpo text-rotulo font-semibold">Nenhum grupo selecionado</p>
+                <p class="text-apoio text-rotulo mt-1">Clique em um grupo no painel esquerdo para gerenciar seus membros.</p>
+            </div>
+
+            <!-- Conteúdo (grupo selecionado) -->
+            <div id="painel-direito-conteudo" class="flex-1 overflow-hidden hidden">
+
+                <!-- Coluna: Membros do Grupo.
+                     As duas listas são paginadas (6 por página) para que escolher
+                     um grupo não estique a página: o que passa da página fica
+                     atrás dos controles, não abaixo. -->
+                <div class="w-1/2 border-r border-contorno flex flex-col bg-card-topo">
+                    <div class="px-4 py-[9px] border-b border-contorno shrink-0">
+                        <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy">
+                            Membros da Equipe (<span id="membros-count">0</span>)
+                        </span>
+                    </div>
+                    <!-- Sem `flex` aqui de propósito: quando a lista fica vazia o
+                         paginador acrescenta `hidden`, e `hidden` contra `flex` no
+                         mesmo elemento depende da ordem em que o Tailwind emite as
+                         duas. O espaçamento vem do `mb-2` de cada linha. -->
+                    <div id="lista-membros" class="flex-1 min-h-0 overflow-y-auto p-3">
+                        <!-- Renderizado via JS -->
+                    </div>
+                    {% include 'base/components/_estado_vazio.html' with id="membros-vazio" mensagem="Nenhum membro neste grupo." oculto=True only %}
+                    <div class="px-3 pb-3 shrink-0">
+                        {% include 'base/components/_paginacao.html' with container_id="paginacao-membros" info_id="paginacao-membros-info" paginas_id="paginacao-membros-paginas" btn_prefixo="btn-mem" handler="mudarPaginaMembros" only %}
+                    </div>
+                </div>
+
+                <!-- Coluna: Adicionar Aluno -->
+                <div class="w-1/2 flex flex-col bg-white">
+                    <div class="px-4 py-[9px] border-b border-contorno bg-card-topo shrink-0">
+                        <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy block mb-2">
+                            Adicionar ao Grupo
+                        </span>
+                        <div class="relative">
+                            <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-2.5 text-rotulo text-apoio"></i>
+                            <input
+                                type="text"
+                                id="pesquisa-alunos"
+                                oninput="filtrarAlunos()"
+                                placeholder="Buscar por nome ou e-mail..."
+                                class="{% classe_campo %} pl-8">
+                        </div>
+                    </div>
+                    <div class="px-3 pt-1.5 shrink-0">
+                        <p class="text-micro font-semibold uppercase text-rotulo">
+                            Alunos sem grupo (<span id="alunos-sem-grupo-count">0</span>):
+                        </p>
+                    </div>
+                    <div id="lista-alunos-disponiveis" class="flex-1 min-h-0 overflow-y-auto px-3">
+                        <!-- Renderizado via JS -->
+                    </div>
+                    {% include 'base/components/_estado_vazio.html' with id="alunos-vazio" mensagem="Nenhum aluno disponível para este ciclo." oculto=True only %}
+                    <div class="px-3 pb-3 shrink-0">
+                        {% include 'base/components/_paginacao.html' with container_id="paginacao-alunos" info_id="paginacao-alunos-info" paginas_id="paginacao-alunos-paginas" btn_prefixo="btn-alu" handler="mudarPaginaAlunos" only %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</main>
+
+<!-- Toast container (notificações AJAX) — guia seção 07: canto inferior
+     direito, 26px de margem. Empilha vários avisos, ao contrário do componente
+     _toast.html, que tem um elemento só. -->
+<div id="toast-container" class="fixed bottom-[26px] right-[26px] z-toast flex flex-col gap-2 pointer-events-none"></div>
+
+<!-- Modal: Criar / Editar Grupo.
+     Mantém o contrato .modal-overlay/.modal-active de painel.css, e não o
+     .modal-fundo/.open do componente — o mesmo que painel_administrativo usa.
+     Unificar os dois é tarefa da conversão daquela tela. -->
+<div id="modal-grupo" class="fixed inset-0 z-modal hidden items-center justify-center">
+    <div class="absolute inset-0 modal-overlay" style="background: rgba(10,8,61,.55);" onclick="fecharModalGrupo()"></div>
+    <div class="relative bg-white w-full max-w-[560px] border border-contorno shadow-modal overflow-hidden modal-content flex flex-col max-h-[90vh]">
+        <div class="bg-navy text-white px-5 py-3.5 flex justify-between items-center gap-4 shrink-0">
+            <span id="modal-grupo-titulo" class="text-apoio font-bold uppercase tracking-[.12em] flex items-center gap-2"><i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo</span>
+            <button onclick="fecharModalGrupo()" title="Fechar"
+                class="text-navy-40 hover:text-white transition-colors text-base leading-none"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form method="post" action="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}" class="flex flex-col overflow-hidden">
+            {% csrf_token %}
+            <input type="hidden" name="grupo_id" id="modal-grupo-id" value="">
+            <div class="px-4 py-[14px] overflow-y-auto flex flex-col gap-3">
+                {% campo label="Nome do Grupo *" para="modal-grupo-nome" %}
+                    <input
+                        type="text"
+                        name="nome"
+                        id="modal-grupo-nome"
+                        placeholder="Ex: Escritório Polo Ativo 01"
+                        maxlength="150"
+                        required
+                        class="{% classe_campo %}">
+                {% endcampo %}
+                {% campo label="Papel na Simulação *" para="modal-grupo-cargo" %}
+                    <select
+                        name="cargo_simulacao"
+                        id="modal-grupo-cargo"
+                        required
+                        class="{% classe_campo %}">
+                        <option value="">Selecione o papel...</option>
+                        {% for cargo in cargos %}
+                        <option value="{{ cargo.pk }}">{{ cargo.nome }}</option>
+                        {% endfor %}
+                    </select>
+                {% endcampo %}
+            </div>
+            <!-- Guia seção 04: primário à esquerda do secundário, gap 8px. -->
+            <div class="modal-acoes shrink-0">
+                <button type="submit"
+                    class="{% classe_botao 'primario' padding=True %} flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar
+                </button>
+                <button type="button" onclick="fecharModalGrupo()"
+                    class="{% classe_botao 'secundario' padding=True %}">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{# Dados pré-carregados de forma segura (escaping automático pelo Django) #}
+{{ membros_por_grupo|json_script:"membros-data" }}
+{{ alunos_lista|json_script:"alunos-data" }}
+
+<script>
+    // ── Dados e estado ────────────────────────────────────────────────────────
+    const CSRF_TOKEN = '{{ csrf_token }}';
+    const membrosData = JSON.parse(document.getElementById('membros-data').textContent);
+    let alunosData = JSON.parse(document.getElementById('alunos-data').textContent);
+    let grupoAtualId = null;
+
+    // URLs construídas via Django (sentinelas substituídas em runtime)
+    const URL_ADICIONAR_TPL = "{% url 'ciclos:adicionar_membro' ciclo.pk 99997 %}";
+    const URL_REMOVER_TPL   = "{% url 'ciclos:remover_membro'   ciclo.pk 99997 99998 %}";
+
+    function urlAdicionar(grupoId) {
+        return URL_ADICIONAR_TPL.replace('/99997/', '/' + grupoId + '/');
+    }
+    function urlRemover(grupoId, usuarioId) {
+        return URL_REMOVER_TPL
+            .replace('/99997/', '/' + grupoId + '/')
+            .replace('/99998/', '/' + usuarioId + '/');
+    }
+
+    // ── Renderização do painel direito ────────────────────────────────────────
+    // As duas listas põem TODAS as linhas no DOM; quem esconde o que passa da
+    // página (e o que o filtro descarta) é o criarPaginador de paginador.js,
+    // o mesmo do painel administrativo.
+    let alunoBusca = '';
+
+    function renderizarMembros() {
+        const membros = membrosData[String(grupoAtualId)] || [];
+        const container = document.getElementById('lista-membros');
+        document.getElementById('membros-count').textContent = membros.length;
+
+        container.innerHTML = membros.map(m => `
+            <div class="membro-row bg-white border border-contorno p-2 mb-2 flex justify-between items-center gap-2">
+                <div class="flex flex-col gap-0.5 min-w-0">
+                    <span class="text-dado font-semibold text-navy truncate">${escHtml(m.nome)}</span>
+                    <span class="text-meta text-rotulo truncate">${escHtml(m.email || '—')}</span>
+                </div>
+                <button onclick="removerMembro(${m.id})"
+                    class="text-rotulo hover:text-erro-txt transition-colors p-1 shrink-0" title="Remover aluno">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `).join('');
+
+        paginadorMembros.resetar();
+    }
+
+    function renderizarDisponiveis() {
+        const container = document.getElementById('lista-alunos-disponiveis');
+        document.getElementById('alunos-sem-grupo-count').textContent = alunosData.length;
+
+        // data-i guarda o índice em alunosData: o filtro lê o objeto de lá em vez
+        // de reescrever nome e e-mail em atributos, que exigiria escapar aspas.
+        container.innerHTML = alunosData.map((a, i) => `
+            <div class="aluno-row border-b border-divisor py-2 flex justify-between items-center gap-2 hover:bg-linha-hover pr-1 transition-colors" data-i="${i}">
+                <div class="flex flex-col gap-0.5 min-w-0">
+                    <span class="text-dado font-semibold text-navy truncate">${escHtml(a.nome)}</span>
+                    <span class="text-meta text-rotulo truncate">${escHtml(a.email || '—')}</span>
+                </div>
+                <button onclick="adicionarMembro(${a.id})"
+                    class="bg-white hover:bg-[#f2f6fd] text-acao border border-[#c9d5ea] hover:border-acao text-micro font-bold uppercase tracking-[.07em] transition-colors px-2.5 py-[5px] shrink-0 ml-2 whitespace-nowrap">
+                    + Add
+                </button>
+            </div>
+        `).join('');
+
+        paginadorAlunos.resetar();
+    }
+
+    function filtrarAlunos() {
+        alunoBusca = (document.getElementById('pesquisa-alunos').value || '').toLowerCase();
+        // o vazio da lista tem dois motivos, e o texto diz qual é
+        document.getElementById('alunos-vazio').textContent = alunoBusca
+            ? 'Nenhum aluno encontrado.'
+            : 'Nenhum aluno disponível para este ciclo.';
+        paginadorAlunos.resetar();
+    }
+
+    // ── Paginação das duas listas ─────────────────────────────────────────────
+    const paginadorMembros = criarPaginador({
+        rowSelector: '#lista-membros .membro-row',
+        porPagina: 6,
+        tabelaId: 'lista-membros',
+        msgVazioId: 'membros-vazio',
+        paginacaoId: 'paginacao-membros',
+        infoId: 'paginacao-membros-info',
+        paginasContainerId: 'paginacao-membros-paginas',
+        btnPrimeiraId: 'btn-mem-primeira',
+        btnAnteriorId: 'btn-mem-anterior',
+        btnProximaId: 'btn-mem-proxima',
+        btnUltimaId: 'btn-mem-ultima',
+    });
+
+    const paginadorAlunos = criarPaginador({
+        rowSelector: '#lista-alunos-disponiveis .aluno-row',
+        porPagina: 6,
+        tabelaId: 'lista-alunos-disponiveis',
+        msgVazioId: 'alunos-vazio',
+        paginacaoId: 'paginacao-alunos',
+        infoId: 'paginacao-alunos-info',
+        paginasContainerId: 'paginacao-alunos-paginas',
+        btnPrimeiraId: 'btn-alu-primeira',
+        btnAnteriorId: 'btn-alu-anterior',
+        btnProximaId: 'btn-alu-proxima',
+        btnUltimaId: 'btn-alu-ultima',
+        filtrarRows: (todas) => !alunoBusca ? todas : todas.filter(r => {
+            const a = alunosData[Number(r.dataset.i)];
+            return a && (a.nome.toLowerCase().includes(alunoBusca)
+                      || (a.email || '').toLowerCase().includes(alunoBusca));
+        }),
+    });
+
+    function mudarPaginaMembros(acao) { paginadorMembros.mudarPagina(acao); }
+    function mudarPaginaAlunos(acao)  { paginadorAlunos.mudarPagina(acao); }
+
+    // ── Ações AJAX: adicionar / remover ───────────────────────────────────────
+    function adicionarMembro(usuarioId) {
+        const fd = new FormData();
+        fd.append('usuario_id', usuarioId);
+        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+        fetch(urlAdicionar(grupoAtualId), { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.sucesso) {
+                    // Adiciona à lista de membros do grupo
+                    if (!membrosData[String(grupoAtualId)]) membrosData[String(grupoAtualId)] = [];
+                    membrosData[String(grupoAtualId)].push(data.membro);
+
+                    // Remove da lista de disponíveis
+                    alunosData = alunosData.filter(a => a.id !== usuarioId);
+
+                    renderizarMembros();
+                    renderizarDisponiveis();
+                    atualizarBadgeGrupo(grupoAtualId, membrosData[String(grupoAtualId)].length);
+                    mostrarToast('sucesso', `"${escHtml(data.membro.nome)}" adicionado ao grupo.`);
+                } else {
+                    mostrarToast('erro', data.erro || 'Erro ao adicionar membro.');
+                }
+            })
+            .catch(() => mostrarToast('erro', 'Erro de conexão. Tente novamente.'));
+    }
+
+    function removerMembro(usuarioId) {
+        const membro = (membrosData[String(grupoAtualId)] || []).find(m => m.id === usuarioId);
+        const fd = new FormData();
+        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+
+        fetch(urlRemover(grupoAtualId, usuarioId), { method: 'POST', body: fd })
+            .then(r => r.json())
+            .then(data => {
+                if (data.sucesso) {
+                    // Remove da lista de membros
+                    membrosData[String(grupoAtualId)] = (membrosData[String(grupoAtualId)] || [])
+                        .filter(m => m.id !== usuarioId);
+
+                    // Se foi removido do ciclo, torna-se disponível novamente
+                    if (data.removido_do_ciclo && membro) {
+                        alunosData.push(membro);
+                        alunosData.sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
+                    }
+
+                    renderizarMembros();
+                    renderizarDisponiveis();
+                    atualizarBadgeGrupo(grupoAtualId, membrosData[String(grupoAtualId)].length);
+                    mostrarToast('sucesso', membro ? `"${escHtml(membro.nome)}" removido do grupo.` : 'Membro removido.');
+                } else {
+                    mostrarToast('erro', data.erro || 'Erro ao remover membro.');
+                }
+            })
+            .catch(() => mostrarToast('erro', 'Erro de conexão. Tente novamente.'));
+    }
+
+    // ── Seleção de grupo no painel esquerdo ───────────────────────────────────
+    function selecionarGrupo(elemento, grupoId, nomeGrupo, papel) {
+        document.querySelectorAll('.grupo-item').forEach(el => {
+            el.classList.remove('border-acao', 'bg-linha-hover');
+            el.classList.add('border-contorno', 'hover:border-campo-borda', 'hover:bg-linha-hover');
+            const ind = el.querySelector('.indicador-ativo');
+            if (ind) ind.remove();
+        });
+
+        elemento.classList.remove('border-contorno', 'hover:border-campo-borda', 'hover:bg-linha-hover');
+        elemento.classList.add('border-acao', 'bg-linha-hover', 'relative');
+        // faixa de 3px do guia (seção 01), no lugar de sombra
+        elemento.insertAdjacentHTML(
+            'afterbegin',
+            '<div class="indicador-ativo absolute left-0 top-0 bottom-0 w-[3px] bg-acao"></div>'
+        );
+
+        // o cabeçalho do painel agora é claro: o nome escolhido fica em navy
+        const nomeEl = document.getElementById('nome-grupo-selecionado');
+        nomeEl.textContent = nomeGrupo;
+        nomeEl.classList.remove('text-rotulo', 'italic');
+        nomeEl.classList.add('text-navy');
+
+        const papelEl = document.getElementById('papel-grupo-selecionado');
+        papelEl.textContent = papel;
+        papelEl.classList.remove('text-rotulo', 'italic');
+        papelEl.classList.add('text-acao');
+
+        grupoAtualId = grupoId;
+
+        document.getElementById('painel-direito-vazio').classList.add('hidden');
+        const conteudo = document.getElementById('painel-direito-conteudo');
+        conteudo.classList.remove('hidden');
+        conteudo.classList.add('flex');
+
+        // Limpa filtro e renderiza painéis com os dados do grupo selecionado.
+        // O campo e a variável de busca são zerados juntos: só apagar o input
+        // deixaria o paginador filtrando pelo texto anterior.
+        const pesquisa = document.getElementById('pesquisa-alunos');
+        if (pesquisa) pesquisa.value = '';
+        alunoBusca = '';
+        document.getElementById('alunos-vazio').textContent =
+            'Nenhum aluno disponível para este ciclo.';
+
+        renderizarMembros();
+        renderizarDisponiveis();
+    }
+
+    // ── Utilitários ───────────────────────────────────────────────────────────
+    function atualizarBadgeGrupo(grupoId, count) {
+        const badge = document.querySelector(`#grupo-item-${grupoId} .membros-count-badge`);
+        if (badge) badge.textContent = `${count} Al.`;
+    }
+
+    function escHtml(str) {
+        const d = document.createElement('div');
+        d.appendChild(document.createTextNode(String(str)));
+        return d.innerHTML;
+    }
+
+    function mostrarToast(tipo, mensagem) {
+        const container = document.getElementById('toast-container');
+        const ok = tipo === 'sucesso';
+        const el = document.createElement('div');
+        // guia seção 07: navy com fio de assinatura à esquerda; no erro o fio
+        // muda de cor e o fundo continua navy
+        el.className = [
+            'pointer-events-auto bg-navy text-white border-l-[3px] px-5 py-[13px] text-corpo font-medium',
+            'flex items-center gap-2.5 min-w-[260px] transition-opacity duration-300',
+            ok ? 'border-marca' : 'border-erro-txt',
+        ].join(' ');
+        el.innerHTML = `<i class="fa-solid ${ok ? 'fa-circle-check' : 'fa-circle-xmark'}"></i><span class="flex-1">${mensagem}</span>`;
+        container.appendChild(el);
+        setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 4000);
+    }
+
+    // ── Modal de Grupo (criar/editar) ─────────────────────────────────────────
+    function abrirModalGrupo(grupoId = null, nome = '', cargoId = null) {
+        const modal  = document.getElementById('modal-grupo');
+        const titulo = document.getElementById('modal-grupo-titulo');
+        document.getElementById('modal-grupo-id').value   = grupoId || '';
+        document.getElementById('modal-grupo-nome').value = nome;
+        document.getElementById('modal-grupo-cargo').value = cargoId || '';
+
+        titulo.innerHTML = grupoId
+            ? '<i class="fa-solid fa-pen mr-2"></i> Editar Grupo'
+            : '<i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo';
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => { modal.classList.add('modal-active'); }, 10);
+        setTimeout(() => { document.getElementById('modal-grupo-nome').focus(); }, 150);
+    }
+
+    function fecharModalGrupo() {
+        const modal = document.getElementById('modal-grupo');
+        modal.classList.remove('modal-active');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+
+    // ── Reabre modal se houve erro de validação ────────────────────────────────
+    {% if reabrir_modal %}
+    document.addEventListener('DOMContentLoaded', () => {
+        abrirModalGrupo(
+            '{{ grupo_editando.pk|default:"" }}',
+            '{{ form.nome.value|default:""|escapejs }}',
+            '{{ form.cargo_simulacao.value|default:"" }}'
+        );
+    });
+    {% endif %}
+</script>
+{% endblock %}
