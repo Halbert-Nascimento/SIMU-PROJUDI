@@ -177,20 +177,47 @@ O que existe hoje é um teste de comportamento do paginador:
 node scripts/teste_paginador.mjs
 ```
 
-Ele roda `static/js/paginador.js` contra um DOM mínimo (39 asserções) e cobre,
+Ele roda `static/js/paginador.js` contra um DOM mínimo (49 asserções) e cobre,
 entre outras coisas, a **reserva de espaço**: um bloco paginado não pode encolher
 quando a última página tem menos linhas, e numa tabela a linha solitária não pode
 ficar centralizada num bloco alto. Esse defeito já apareceu três vezes, por
 caminhos diferentes — **ao criar uma listagem paginada nova, acrescente o caso
 aqui e confira a última página no navegador antes de considerar pronto.**
 
+> Verde não é prova: antes de confiar numa asserção nova, reintroduza o defeito
+> e confira que o teste fica **vermelho**. Já aconteceu de o simulador de DOM
+> confirmar a suposição errada do código que ele deveria testar.
+
+### Verificação da interface
+
+Dois scripts guardam a troca de pele pelo Guia de Design:
+
+```bash
+python scripts/verificar.py snapshot   # antes de mexer numa tela
+python scripts/verificar.py check      # compilação, aninhamento, classes órfãs,
+                                       # escala tipográfica, raio/sombra em CSS
+python scripts/verificar.py diff       # o que mudou de texto visível e de id
+python scripts/render_smoke.py         # renderiza as telas do lote, com e sem dados
+```
+
+O invariante de uma troca de pele: **o texto visível e o conjunto de `id` não
+mudam — só atributos.** `snapshot` grava o estado antes, `diff` acusa o que
+sumiu. `check` não renderiza; `render_smoke.py` é quem executa `{% card %}`,
+`{% campo %}` e os `{% include %}` de componente, onde os erros de argumento
+aparecem.
+
 ## 🎨 Identidade Visual
 
-O projeto segue a identidade visual do sistema Projudi do TJGO, utilizando:
+O projeto segue o **Guia de Design da Faculdade IESGO** (versão 1.0), em
+`design/Guia de Design SIMU-PROJUDI.dc.html`:
 
-- Azul marinho (#153a61) - Header e elementos principais
-- Azul (#1a5b9e) - Botões e links
-- Cinza claro (#e9e9e9) - Cards e backgrounds
+- Navy IESGO (#0a083d) — cabeçalho, títulos e botão primário
+- Azul de ação (#1f4f9c) — links, aba ativa e foco de campo
+- Vermelho institucional (#d30000) — só fio de assinatura, nunca botão ou link
+- Barlow (interface) + IBM Plex Mono (dado codificado), base 12px
+- Cantos retos, sem sombra fora de modal; hierarquia por borda de 1px e faixa de 3px
+
+O acompanhamento da reformulação está em `../NOVO-DESIGN.md`.
 
 ## 📄 Licença
 

@@ -338,14 +338,77 @@ ok(visiveis(tbody, 'ciclo-row') === 1, 'última página mostra 1 de 11');
 ok(preench() === 1, 'e completa com uma linha de preenchimento');
 ok(tbody.offsetHeight === alturaCheiaTbody,
    `altura do corpo continua ${alturaCheiaTbody}px — o bloco não muda de tamanho`);
+// sem `?.` o teste ESTOURA quando o preenchimento nao existe, e as asseroes
+// seguintes nunca rodam — foi o que escondeu uma falha ao reintroduzir o defeito
 const filler = tbody.children.find(c => c.classList.contains('paginador-preenchimento'));
-ok(filler.style.height === '240px',
-   `o preenchimento repõe a altura que falta, não um número de linhas (${filler.style.height})`);
+ok(filler?.style.height === '240px',
+   `o preenchimento repõe a altura que falta, não um número de linhas (${filler?.style.height})`);
 ok(tbody.style.minHeight === undefined || tbody.style.minHeight === '',
    'ainda sem min-height: o espaço vem das linhas, no fim da lista');
 
 paginadorCiclos.mudarPagina('primeira');
 ok(preench() === 0, 'voltar para uma página cheia remove o preenchimento');
+
+// ── Listagem reconstruida a cada filtro (minhas_notas) ─────────────────────
+// Aqui o filtro NAO passa por `filtrarRows`: a tela reescreve o <tbody> inteiro
+// com as linhas do filtro e chama resetar(). O paginador tem que remedir a
+// pagina cheia a cada reconstrucao — se ele guardasse a altura da lista antiga,
+// filtrar deixaria a reserva errada.
+const avalBody = novoEl('avalBody', '');
+avalBody.tagName = 'TBODY';
+novoEl('tabela-avaliacoes', '');
+novoEl('avaliacoes-vazio', 'hidden');
+const pagAval = novoEl('paginacao-avaliacoes', 'hidden');
+novoEl('paginacao-avaliacoes-info');
+novoEl('paginacao-avaliacoes-paginas');
+for (const b of ['primeira', 'anterior', 'proxima', 'ultima']) novoEl('btn-aval-' + b);
+
+const paginadorAvaliacoes = criarPaginador({
+    rowSelector: '#avalBody .aval-row',
+    porPagina: 10,
+    tabelaId: 'tabela-avaliacoes',
+    msgVazioId: 'avaliacoes-vazio',
+    paginacaoId: 'paginacao-avaliacoes',
+    infoId: 'paginacao-avaliacoes-info',
+    paginasContainerId: 'paginacao-avaliacoes-paginas',
+    btnPrimeiraId: 'btn-aval-primeira',
+    btnAnteriorId: 'btn-aval-anterior',
+    btnProximaId: 'btn-aval-proxima',
+    btnUltimaId: 'btn-aval-ultima',
+});
+
+// 60px: a linha tem celula dupla (movimentacao + numero do processo)
+function renderAvaliacoes(quantas) {
+    avalBody.innerHTML = Array.from({ length: quantas }, () =>
+        '<div class="aval-row" data-altura="60"><div class="c1"></div></div>').join('');
+    paginadorAvaliacoes.resetar();
+}
+
+renderAvaliacoes(23);
+ok(visiveis(avalBody, 'aval-row') === 10, '23 avaliações -> 10 na página');
+ok(document.getElementById('paginacao-avaliacoes-info').textContent === 'Exibindo 1–10 de 23',
+   'info: "Exibindo 1–10 de 23"');
+const alturaCheiaAval = avalBody.offsetHeight;
+ok(alturaCheiaAval === 600, `página cheia = 10 linhas de 60px (${alturaCheiaAval})`);
+
+paginadorAvaliacoes.mudarPagina('ultima');
+ok(visiveis(avalBody, 'aval-row') === 3, 'última página -> 3 de 23');
+ok(avalBody.offsetHeight === alturaCheiaAval,
+   'última página mantém a altura da página cheia');
+
+renderAvaliacoes(4);   // filtro "Sem nota": a tela reescreve o corpo inteiro
+ok(visiveis(avalBody, 'aval-row') === 4, 'filtrar para 4 -> as 4 aparecem');
+ok(pagAval.classList.contains('hidden'), '4 avaliações -> uma página só, sem controles');
+ok(avalBody.children.filter(c => c.classList.contains('paginador-preenchimento')).length === 0,
+   'uma página só não reserva espaço — filtrar pode encolher a lista');
+
+renderAvaliacoes(23);  // limpar o filtro
+ok(document.getElementById('paginacao-avaliacoes-info').textContent === 'Exibindo 1–10 de 23',
+   'limpar o filtro volta para a página 1');
+
+renderAvaliacoes(0);
+ok(!document.getElementById('avaliacoes-vazio').classList.contains('hidden'),
+   'filtro sem resultado -> estado vazio visível');
 
 
 console.log(falhas ? `\n${falhas} falha(s)` : '\ntudo passou');

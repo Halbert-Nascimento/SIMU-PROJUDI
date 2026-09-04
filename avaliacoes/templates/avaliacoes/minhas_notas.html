@@ -6,47 +6,37 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
+<script src="{% static 'js/paginador.js' %}"></script>
 <style>
 
-    .stat-card {
-        background: #fff; border: 1px solid #c9d5ea;
-        padding: 12px 14px; display: flex; align-items: center; gap: 12px;
+    /* Barra de progresso da média — sem raio, na cor de ação do guia. */
+    .progress-bg { width: 100%; height: 8px; background: #f1f2f4; overflow: hidden; }
+    .progress-fill { height: 100%; background: #1f4f9c; transition: width .4s ease; }
+
+    /* Etiqueta de nota: é a .pill do guia; aqui só a largura mínima, para a
+       coluna não mudar de tamanho a cada linha. */
+    .nota-badge { min-width: 46px; justify-content: center; }
+
+    /* Destaque da nota no modal — trio de estado do guia (seção 02). A banda é
+       decidida pelo mesmo getNotaClass() da etiqueta da tabela. */
+    .nota-destaque {
+        display: flex; align-items: center; gap: 14px;
+        padding: 14px 16px; margin-bottom: 14px; border: 1px solid;
     }
-    .stat-card .ico {
-        width: 42px; height: 42px; border-radius: 4px;
-        display: flex; align-items: center; justify-content: center;
-        color: #fff; font-size: 18px; flex-shrink: 0;
-    }
-    .stat-card .lbl { color: #6b7280; font-size: 10px; text-transform: uppercase; font-weight: bold; }
-    .stat-card .num { font-size: 22px; font-weight: bold; color: #1f4f9c; line-height: 1; }
-    .stat-card .sub { font-size: 10px; color: #6b7280; }
-    .progress-bg {
-        width: 100%; height: 8px; background: #f7f8fa; border-radius: 4px; overflow: hidden;
-    }
-    .progress-fill {
-        height: 100%; background: #1f4f9c;
-        border-radius: 4px; transition: width .4s ease;
-    }
-    .nota-badge {
-        display: inline-block; padding: 2px 8px; font-size: 12px;
-        font-weight: bold; border-radius: 3px; min-width: 40px; text-align: center;
-    }
-    .nota-A { background: #eaf4ec; color: #2e7d32; border: 1px solid #bee0c2; }
-    .nota-B { background: #f7faff; color: #1f4f9c; border: 1px solid #c9d5ea; }
-    .nota-C { background: #fff5e4; color: #a96400; border: 1px solid #f1d59c; }
-    .nota-D { background: #fdeeee; color: #b33a3a; border: 1px solid #f3cfcf; }
-    .nota-pend { background: #f1f2f4; color: #6b7280; border: 1px solid #d3d7de; font-style: italic; }
-    .chip-filter {
-        padding: 4px 12px; font-size: 11px;
-        border: 1px solid #d3d7de; background: #fff;
-        border-radius: 14px; cursor: pointer;
-        color: #4b5563; font-weight: bold;
-    }
-    .chip-filter:hover { background: #f7faff; border-color: #1f4f9c; color: #1f4f9c; }
-    .chip-filter.active { background: #1f4f9c; color: #fff; border-color: #1f4f9c; }
+    .nota-destaque .valor { font-size: 28px; font-weight: 700; line-height: 1; }
+    .nota-destaque.ok   { background: #eaf4ec; border-color: #bee0c2; }
+    .nota-destaque.ok   .valor { color: #2e7d32; }
+    .nota-destaque.warn { background: #fff5e4; border-color: #f1d59c; }
+    .nota-destaque.warn .valor { color: #a96400; }
+    .nota-destaque.erro { background: #fdeeee; border-color: #f3cfcf; }
+    .nota-destaque.erro .valor { color: #b33a3a; }
+    .nota-destaque.gray { background: #f1f2f4; border-color: #d8dbe1; }
+    .nota-destaque.gray .valor { color: #5b6270; }
+
+    /* Faixa de destaque — 3px, como o guia pede (seção 01). */
     .banner-ult {
         background: #f7faff;
-        border: 1px solid #c9d5ea; border-left: 4px solid #1f4f9c;
+        border: 1px solid #c9d5ea; border-left: 3px solid #1f4f9c;
         padding: 10px 14px; display: flex; align-items: center; gap: 10px;
         margin-bottom: 12px; font-size: 12px;
     }
@@ -60,9 +50,9 @@
 {% endblock %}
 
 {% block content %}
-{% nav_secundaria %}
+{% nav_secundaria ativo='notas' %}
 
-<main class="max-w-[1200px] mx-auto px-6 py-5 bg-white min-h-screen" style="box-shadow: 0 0 10px rgba(0,0,0,0.05);">
+<main class="max-w-conteudo mx-auto px-7 py-5">
 
     {% include 'base/components/_breadcrumbs.html' %}
 
@@ -73,38 +63,22 @@
             <div class="flex items-center gap-4">
                 <div class="avatar lg">{{ request.user.first_name|first|default:request.user.username|first|upper }}{{ request.user.last_name|first|upper }}</div>
                 <div class="flex-1">
-                    <div class="field-value text-[14px]">{{ request.user.get_full_name|default:request.user.username|upper }}</div>
+                    <div class="field-value text-dado">{{ request.user.get_full_name|default:request.user.username|upper }}</div>
                     <div class="field-label">{{ request.user.username }}</div>
                 </div>
             </div>
         </div>
 
         <!-- Cards de resumo -->
-        <div class="grid grid-cols-3 gap-3 mt-3">
-            <div class="stat-card">
-                <div class="ico" style="background:#1f4f9c;"><i class="fa-solid fa-chart-line"></i></div>
-                <div>
-                    <div class="lbl">Média Geral</div>
-                    <div class="num">{% if media_geral is not None %}{{ media_geral|floatformat:2 }}{% else %}—{% endif %}</div>
-                    <div class="sub">das avaliações com nota</div>
-                </div>
+        <div class="grid grid-cols-3 gap-[14px] mt-3">
+            {% include 'base/components/_card_kpi.html' with rotulo="Média Geral" numero=media_geral|floatformat:2|default:"—" apoio="das avaliações com nota" only %}
+            <!-- direto na classe: o apoio interpola um contador, e o include recebe texto pronto -->
+            <div class="card-kpi">
+                <span class="rotulo">Avaliadas</span>
+                <span class="numero">{{ total_avaliadas }}</span>
+                <span class="apoio">de {{ total_movimentacoes }} movimentações</span>
             </div>
-            <div class="stat-card">
-                <div class="ico" style="background:#2e7d32;"><i class="fa-solid fa-clipboard-check"></i></div>
-                <div>
-                    <div class="lbl">Avaliadas</div>
-                    <div class="num">{{ total_avaliadas }}</div>
-                    <div class="sub">de {{ total_movimentacoes }} movimentações</div>
-                </div>
-            </div>
-            <div class="stat-card">
-                <div class="ico" style="background:#0a083d;"><i class="fa-solid fa-trophy"></i></div>
-                <div>
-                    <div class="lbl">Melhor Nota</div>
-                    <div class="num">{% if melhor_nota is not None %}{{ melhor_nota|floatformat:1 }}{% else %}—{% endif %}</div>
-                    <div class="sub">nota mais alta recebida</div>
-                </div>
-            </div>
+            {% include 'base/components/_card_kpi.html' with rotulo="Melhor Nota" numero=melhor_nota|floatformat:1|default:"—" apoio="nota mais alta recebida" only %}
         </div>
 
         {% if media_geral is not None %}
@@ -127,7 +101,7 @@
             <em>"{{ ultima_avaliacao.movimentacao.tipo_movimento.nome_movimentacao }}"</em>
             — {{ ultima_avaliacao.data_feedback|date:"d/m/Y" }}
             {% if ultima_avaliacao.nota is not None %}
-            · Nota: <strong>{{ ultima_avaliacao.nota|floatformat:1 }}</strong>
+            · Nota: <strong class="font-mono">{{ ultima_avaliacao.nota|floatformat:1 }}</strong>
             {% endif %}
         </div>
     </div>
@@ -137,18 +111,19 @@
     <div class="section-title">
         <i class="fa-solid fa-list-check"></i> HISTÓRICO DE AVALIAÇÕES
     </div>
-    <div class="panel-inner" style="margin-top: 4px;">
+    <div class="panel-inner">
 
-        <!-- Filtros -->
-        <div class="flex items-center justify-between mb-3 flex-wrap gap-2">
-            <div class="flex gap-2 flex-wrap" id="filterChips">
-                <button class="chip-filter active" data-filter="todas">Todas</button>
-                <button class="chip-filter" data-filter="avaliadas">Com nota</button>
-                <button class="chip-filter" data-filter="sem_nota">Sem nota</button>
-            </div>
-            <div class="flex items-center gap-2">
-                <label class="text-[11px] text-texto-neutro">Ordenar:</label>
-                <select id="filterSort" class="border border-campo-borda px-2 py-1 text-[11px]">
+        {% if feedbacks %}
+        <!-- Filtros: abas do guia (seção 07), com a ordenação empurrada ao fim.
+             Só existem quando há avaliação: sem nenhuma não há o que filtrar, e o
+             JS de filtro procuraria um tbody que a tela não renderizou. -->
+        <div class="tabs interativa mb-3" id="filterChips">
+            <button type="button" class="tab active" data-filter="todas">Todas</button>
+            <button type="button" class="tab" data-filter="avaliadas">Com nota</button>
+            <button type="button" class="tab" data-filter="sem_nota">Sem nota</button>
+            <div class="ml-auto flex items-center gap-2 pb-2 pr-1">
+                <label for="filterSort" class="text-micro font-semibold uppercase text-rotulo">Ordenar:</label>
+                <select id="filterSort" class="{% classe_campo %}" style="width:150px;">
                     <option value="data-desc">Mais recente</option>
                     <option value="data-asc">Mais antiga</option>
                     <option value="nota-desc">Maior nota</option>
@@ -157,30 +132,24 @@
             </div>
         </div>
 
-        {% if feedbacks %}
-        <table class="tbl">
+        <table class="tbl" id="tabela-avaliacoes">
             <thead>
                 <tr>
                     <th style="width:90px;">Data</th>
                     <th>Movimentação</th>
                     <th style="width:160px;">Professor</th>
                     <th style="width:70px;" class="text-center">Nota</th>
-                    <th style="width:60px;" class="text-center">Ações</th>
+                    <th class="col-acoes text-center">Ações</th>
                 </tr>
             </thead>
             <tbody id="avalBody">
             </tbody>
         </table>
 
-        <div class="flex items-center justify-between mt-3 text-[11px] text-texto-neutro">
-            <div>Exibindo <strong id="showCount">0</strong> de <strong>{{ feedbacks|length }}</strong> avaliações</div>
-            <div class="flex items-center gap-1" id="paginacao"></div>
-        </div>
+        {% include 'base/components/_estado_vazio.html' with id="avaliacoes-vazio" mensagem="Nenhuma avaliação neste filtro." oculto=True only %}
+        {% include 'base/components/_paginacao.html' with container_id="paginacao-avaliacoes" info_id="paginacao-avaliacoes-info" paginas_id="paginacao-avaliacoes-paginas" btn_prefixo="btn-aval" handler="mudarPaginaAvaliacoes" only %}
         {% else %}
-        <div class="text-center py-8 text-rotulo italic text-[12px]">
-            <i class="fa-solid fa-inbox text-3xl text-rotulo mb-2"></i>
-            <div>Nenhuma avaliação recebida ainda.</div>
-        </div>
+        {% include 'base/components/_estado_vazio.html' with mensagem="Nenhuma avaliação recebida ainda." only %}
         {% endif %}
     </div>
 
@@ -188,8 +157,8 @@
 
 <!-- Modal Detalhe -->
 {% modal id="avalModal" titulo="Detalhe da Avaliação" icone="fa-clipboard-check" tamanho="lg" fechar_onclick="closeModal()" %}
-        <div class="modal-body p-5 text-[12px]" id="modalContent"></div>
-        <div class="bg-card-topo px-5 py-3 flex justify-end gap-2 border-t border-contorno">
+        <div class="modal-body p-5 text-corpo" id="modalContent"></div>
+        <div class="modal-acoes">
             <button type="button" class="btn-secondary" onclick="closeModal()">Fechar</button>
         </div>
     {% endmodal %}
@@ -202,8 +171,6 @@
 var avaliacoes = JSON.parse(document.getElementById('feedbacks-data').textContent);
 var currentFilter = 'todas';
 var currentSort = 'data-desc';
-var PER_PAGE = 10;
-var currentPage = 1;
 
 function escapeHtml(s) {
     var div = document.createElement('div');
@@ -211,12 +178,12 @@ function escapeHtml(s) {
     return div.innerHTML;
 }
 
+// As faixas são os quatro trios de estado do guia (seção 02): não há um quinto.
 function getNotaClass(n) {
-    if (n === null) return 'nota-pend';
-    if (n >= 9) return 'nota-A';
-    if (n >= 7.5) return 'nota-B';
-    if (n >= 6) return 'nota-C';
-    return 'nota-D';
+    if (n === null) return 'gray';
+    if (n >= 7.5) return 'ok';
+    if (n >= 6) return 'warn';
+    return 'erro';
 }
 
 function parseDate(d) {
@@ -241,80 +208,65 @@ function getFiltered() {
     return arr;
 }
 
-function renderAval() {
-    var arr = getFiltered();
-    var totalPages = Math.ceil(arr.length / PER_PAGE) || 1;
-    if (currentPage > totalPages) currentPage = totalPages;
-    var start = (currentPage - 1) * PER_PAGE;
-    var pageItems = arr.slice(start, start + PER_PAGE);
+// A paginação é do criarPaginador: renderAval() escreve TODAS as linhas do
+// filtro e o componente esconde o que passa da página — é ele que reserva a
+// altura da página cheia (ver "Componente com paginação" no CLAUDE.md).
+var paginadorAvaliacoes = criarPaginador({
+    rowSelector: '#avalBody .aval-row',
+    porPagina: 10,
+    tabelaId: 'tabela-avaliacoes',
+    msgVazioId: 'avaliacoes-vazio',
+    paginacaoId: 'paginacao-avaliacoes',
+    infoId: 'paginacao-avaliacoes-info',
+    paginasContainerId: 'paginacao-avaliacoes-paginas',
+    btnPrimeiraId: 'btn-aval-primeira',
+    btnAnteriorId: 'btn-aval-anterior',
+    btnProximaId: 'btn-aval-proxima',
+    btnUltimaId: 'btn-aval-ultima',
+});
 
-    document.getElementById('showCount').textContent = arr.length;
+function mudarPaginaAvaliacoes(acao) {
+    paginadorAvaliacoes.mudarPagina(acao);
+}
+
+function renderAval() {
     var body = document.getElementById('avalBody');
-    body.innerHTML = pageItems.map(function(a) {
+    body.innerHTML = getFiltered().map(function(a) {
         var notaTxt = a.nota === null ? '—' : a.nota.toFixed(1).replace('.', ',');
         var realIdx = avaliacoes.indexOf(a);
-        return '<tr onclick="openAval(' + realIdx + ')">' +
-            '<td class="font-mono text-[11px]">' + escapeHtml(a.data) + '</td>' +
-            '<td><span class="font-bold text-[#1f4f9c]">' + escapeHtml(a.mov) + '</span>' +
-            '<div class="text-[10px] text-rotulo font-mono">' + escapeHtml(a.proc) + '</div></td>' +
-            '<td class="text-[11px]">' + escapeHtml(a.prof) + '</td>' +
-            '<td class="text-center"><span class="nota-badge ' + getNotaClass(a.nota) + '">' + notaTxt + '</span></td>' +
-            '<td class="text-center"><i class="fa-solid fa-eye text-[#1f4f9c] cursor-pointer" data-tip="Ver detalhes" onclick="event.stopPropagation(); openAval(' + realIdx + ')"></i></td>' +
+        return '<tr class="aval-row" onclick="openAval(' + realIdx + ')">' +
+            '<td class="font-mono">' + escapeHtml(a.data) + '</td>' +
+            '<td><div class="celula-dupla"><span class="principal">' + escapeHtml(a.mov) + '</span>' +
+            '<span class="secundario font-mono">' + escapeHtml(a.proc) + '</span></div></td>' +
+            '<td>' + escapeHtml(a.prof) + '</td>' +
+            '<td class="text-center"><span class="pill nota-badge ' + getNotaClass(a.nota) + '">' + notaTxt + '</span></td>' +
+            '<td class="col-acoes text-center"><i class="fa-solid fa-eye text-acao cursor-pointer" data-tip="Ver detalhes" onclick="event.stopPropagation(); openAval(' + realIdx + ')"></i></td>' +
             '</tr>';
     }).join('');
-
-    var pagDiv = document.getElementById('paginacao');
-    if (totalPages <= 1) {
-        pagDiv.innerHTML = '';
-        return;
-    }
-    var html = '';
-    html += '<button class="px-2 py-0.5 border border-campo-borda bg-white hover:bg-tabela-topo' + (currentPage === 1 ? ' opacity-50' : '') + '" onclick="goPage(' + (currentPage - 1) + ')" ' + (currentPage === 1 ? 'disabled' : '') + '><i class="fa-solid fa-angle-left"></i></button>';
-    for (var i = 1; i <= totalPages; i++) {
-        if (i === currentPage) {
-            html += '<span class="px-2 py-0.5 bg-[#1f4f9c] text-white font-bold rounded-sm">' + i + '</span>';
-        } else {
-            html += '<button class="px-2 py-0.5 border border-campo-borda bg-white hover:bg-tabela-topo" onclick="goPage(' + i + ')">' + i + '</button>';
-        }
-    }
-    html += '<button class="px-2 py-0.5 border border-campo-borda bg-white hover:bg-tabela-topo' + (currentPage === totalPages ? ' opacity-50' : '') + '" onclick="goPage(' + (currentPage + 1) + ')" ' + (currentPage === totalPages ? 'disabled' : '') + '><i class="fa-solid fa-angle-right"></i></button>';
-    pagDiv.innerHTML = html;
+    paginadorAvaliacoes.resetar();
 }
 
-function goPage(p) {
-    var arr = getFiltered();
-    var totalPages = Math.ceil(arr.length / PER_PAGE) || 1;
-    if (p < 1 || p > totalPages) return;
-    currentPage = p;
-    renderAval();
-}
-
-// Filtros
-document.querySelectorAll('.chip-filter').forEach(function(c) {
+// Filtros — o estado da aba mora numa classe só (.active), e não numa cor
+document.querySelectorAll('#filterChips .tab').forEach(function(c) {
     c.addEventListener('click', function() {
-        document.querySelectorAll('.chip-filter').forEach(function(x) { x.classList.remove('active'); });
+        document.querySelectorAll('#filterChips .tab').forEach(function(x) { x.classList.remove('active'); });
         c.classList.add('active');
         currentFilter = c.dataset.filter;
-        currentPage = 1;
         renderAval();
     });
 });
-document.getElementById('filterSort').addEventListener('change', function(e) {
-    currentSort = e.target.value;
-    currentPage = 1;
-    renderAval();
-});
+var seletorOrdem = document.getElementById('filterSort');
+if (seletorOrdem) {
+    seletorOrdem.addEventListener('change', function(e) {
+        currentSort = e.target.value;
+        renderAval();
+    });
+}
 
 // Modal
 function openAval(idx) {
     var a = avaliacoes[idx];
-    var notaTxt = a.nota === null ? 'Sem nota' : a.nota.toFixed(2).replace('.', ',') + ' / 10,00';
-    var notaColor = a.nota === null ? '#6b7280' :
-        a.nota >= 9 ? '#2e7d32' :
-        a.nota >= 7.5 ? '#1f4f9c' :
-        a.nota >= 6 ? '#a96400' : '#c0392b';
-    var bgColor = a.nota === null ? '#f7f8fa' : '#eaf4ec';
-    var bdColor = a.nota === null ? '#e2e5ea' : '#bee0c2';
+    var banda = getNotaClass(a.nota);
 
     var docsHtml = '';
     if (a.documentos && a.documentos.length > 0) {
@@ -324,25 +276,25 @@ function openAval(idx) {
                 (ext === 'jpg' || ext === 'jpeg' || ext === 'png') ? '<i class="fa-solid fa-file-image text-acao"></i>' :
                 '<i class="fa-solid fa-file text-acao"></i>';
             return '<div class="flex items-center gap-2 py-1 border-b border-divisor last:border-0">' +
-                ico + ' <span class="flex-1 text-[11px]">' + escapeHtml(d.titulo) + '</span>' +
-                (d.url ? '<a href="' + escapeHtml(d.url) + '" target="_blank" class="text-[#1f4f9c] text-[11px]"><i class="fa-solid fa-eye" data-tip="Visualizar"></i></a> ' +
-                '<a href="' + escapeHtml(d.url) + '" download class="text-[#1f4f9c] text-[11px]"><i class="fa-solid fa-download" data-tip="Baixar"></i></a>' : '') +
+                ico + ' <span class="flex-1 text-apoio">' + escapeHtml(d.titulo) + '</span>' +
+                (d.url ? '<a href="' + escapeHtml(d.url) + '" target="_blank" class="text-acao text-apoio"><i class="fa-solid fa-eye" data-tip="Visualizar"></i></a> ' +
+                '<a href="' + escapeHtml(d.url) + '" download class="text-acao text-apoio"><i class="fa-solid fa-download" data-tip="Baixar"></i></a>' : '') +
                 '</div>';
         }).join('');
     }
 
     var html = '';
     // Cabeçalho com nota
-    html += '<div class="flex items-center gap-4 p-4 mb-4" style="background:' + bgColor + '; border:1px solid ' + bdColor + ';">';
+    html += '<div class="nota-destaque ' + banda + '">';
     html += '<div class="text-center pr-4 border-r border-campo-borda">';
-    html += '<div class="text-[10px] uppercase text-texto-neutro font-bold">Nota</div>';
-    html += '<div class="text-[36px] font-bold leading-none" style="color:' + notaColor + ';">' + (a.nota === null ? '—' : a.nota.toFixed(1).replace('.', ',')) + '</div>';
-    html += '<div class="text-[10px] text-rotulo mt-1">/ 10,00</div>';
+    html += '<div class="field-label">Nota</div>';
+    html += '<div class="valor font-mono">' + (a.nota === null ? '—' : a.nota.toFixed(1).replace('.', ',')) + '</div>';
+    html += '<div class="text-meta text-rotulo mt-1">/ 10,00</div>';
     html += '</div>';
     html += '<div class="flex-1">';
-    html += '<div class="font-bold text-[#1f4f9c] text-[13px]">' + escapeHtml(a.mov) + '</div>';
-    html += '<div class="text-[11px] text-texto-neutro mt-1">Processo: <span class="font-mono">' + escapeHtml(a.proc) + '</span></div>';
-    html += '<div class="text-[11px] text-texto-neutro">Data: <strong>' + escapeHtml(a.data) + '</strong></div>';
+    html += '<div class="font-semibold text-acao text-dado">' + escapeHtml(a.mov) + '</div>';
+    html += '<div class="text-apoio text-texto-neutro mt-1">Processo: <span class="font-mono">' + escapeHtml(a.proc) + '</span></div>';
+    html += '<div class="text-apoio text-texto-neutro">Data: <strong class="font-mono">' + escapeHtml(a.data) + '</strong></div>';
     html += '</div></div>';
 
     // Avaliador

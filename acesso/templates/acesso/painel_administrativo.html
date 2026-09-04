@@ -224,7 +224,7 @@
                                     <th>Partes</th>
                                     <th>Classe</th>
                                     <th>Status</th>
-                                    <th class="text-right">Ação</th>
+                                    <th class="col-acoes">Ação</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -243,10 +243,10 @@
                                     <td>
                                         {% badge_status_processo processo.status_atual %}
                                     </td>
-                                    <td class="text-right">
+                                    <td class="col-acoes">
                                         <a href="{% url 'processos:visualizar_processo' processo.numero %}"
-                                           class="{% classe_botao 'primario' %} py-1.5 px-3 text-[11px] uppercase inline-flex items-center gap-1 whitespace-nowrap">
-                                            <i class="fa-solid fa-eye text-[10px]"></i> Ver Autos
+                                           class="{% classe_botao 'linha' padding=True %} inline-flex items-center gap-1 whitespace-nowrap">
+                                            <i class="fa-solid fa-eye"></i> Ver Autos
                                         </a>
                                     </td>
                                 </tr>

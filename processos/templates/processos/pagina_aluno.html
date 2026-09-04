@@ -44,6 +44,7 @@
 
     /* Cartão de grupo dentro do modal de atribuição */
     .grp-card {
+        position: relative;
         border: 1px solid #e2e5ea;
         padding: 11px 12px;
         display: flex; align-items: center; gap: 11px;
@@ -51,7 +52,13 @@
         transition: background-color .12s ease, border-color .12s ease;
     }
     .grp-card:hover { background: #f7faff; border-color: #1f4f9c; }
-    .grp-card.selected { background: #f7faff; border-color: #1f4f9c; box-shadow: inset 0 0 0 1px #1f4f9c; }
+    .grp-card.selected { background: #f7faff; border-color: #1f4f9c; }
+    /* selecao marcada pela faixa de 3px do guia (secao 01), nao por sombra —
+       o mesmo indicador que o .grupo-item de gerenciar_grupos usa */
+    .grp-card.selected::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+        width: 3px; background: #1f4f9c;
+    }
     .grp-avatar {
         width: 34px; height: 34px; border-radius: 50%;
         background: #1f4f9c; color: #fff;

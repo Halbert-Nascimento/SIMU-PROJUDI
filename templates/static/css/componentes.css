@@ -112,8 +112,11 @@
 /* Densidade padrão — listagens de processo e de arquivo */
 .tbl-projudi, .tbl-files { font-size: 11.5px; }
 .tbl-projudi tbody td, .tbl-files tbody td { padding: 11px 16px; vertical-align: middle; }
-.tbl-projudi a, .tbl-mov a { color: #1f4f9c; font-weight: 500; }
-.tbl-projudi a:hover, .tbl-mov a:hover { color: #0a083d; text-decoration: underline; }
+/* Só link. `.tbl-projudi a` tem especificidade 0-1-1 e vencia o `text-white`
+   (0-1-0) do botão primário na coluna de ação: o rótulo saía em #1f4f9c sobre
+   fundo #0a083d, ilegível. `.btn` marca botão — ver CLASSES_BOTAO em base/ui.py. */
+.tbl-projudi a:not(.btn), .tbl-mov a:not(.btn) { color: #1f4f9c; font-weight: 500; }
+.tbl-projudi a:not(.btn):hover, .tbl-mov a:not(.btn):hover { color: #0a083d; text-decoration: underline; }
 .tbl-files .empty td {
     text-align: center; color: #6b7280; font-style: italic;
     padding: 22px; background: #fbfbfc;

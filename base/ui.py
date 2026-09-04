@@ -22,36 +22,39 @@ CLASSE_CAMPO = (
 # Mesmo campo, para número CNJ, CPF/CNPJ, valor e demais dados codificados.
 CLASSE_CAMPO_MONO = CLASSE_CAMPO + " font-mono"
 
+# `btn` não pinta nada: é o marcador de "isto é botão, não link". `componentes.css`
+# usa em `.tbl-projudi a:not(.btn)` — sem ele, o seletor de link de tabela (0-1-1)
+# vence o `text-white` da variante (0-1-0) e repinta o rótulo de azul sobre navy.
 CLASSES_BOTAO = {
     # Uma única ação principal por tela ou por barra.
     "primario": (
-        "bg-navy hover:bg-acao text-white border border-navy hover:border-acao "
+        "btn bg-navy hover:bg-acao text-white border border-navy hover:border-acao "
         "text-meta font-bold uppercase tracking-[.1em] transition-colors"
     ),
     # Apoio: limpar, cancelar, exportar.
     "secundario": (
-        "bg-white hover:border-navy text-texto-neutro hover:text-navy "
+        "btn bg-white hover:border-navy text-texto-neutro hover:text-navy "
         "border border-campo-borda "
         "text-meta font-bold uppercase tracking-[.1em] transition-colors"
     ),
     # Dentro de tabela — menor, para não engordar a linha.
     "linha": (
-        "bg-white hover:bg-[#f2f6fd] text-acao border border-[#c9d5ea] hover:border-acao "
+        "btn bg-white hover:bg-[#f2f6fd] text-acao border border-[#c9d5ea] hover:border-acao "
         "text-micro font-bold uppercase tracking-[.07em] transition-colors"
     ),
     # Nunca vermelho sólido; a confirmação vem no modal.
     "destrutivo": (
-        "bg-white hover:bg-erro-bg text-erro-txt border border-erro-bd hover:border-erro-txt "
+        "btn bg-white hover:bg-erro-bg text-erro-txt border border-erro-bd hover:border-erro-txt "
         "text-meta font-bold uppercase tracking-[.1em] transition-colors"
     ),
     # Guia seção 04: sem opacidade global — fundo, texto e cursor próprios.
     "desabilitado": (
-        "bg-neutro-bg text-desabilitado border border-neutro-bd cursor-not-allowed "
+        "btn bg-neutro-bg text-desabilitado border border-neutro-bd cursor-not-allowed "
         "text-meta font-bold uppercase tracking-[.1em]"
     ),
     # Sobre o navy do cabeçalho.
     "sobre-navy": (
-        "bg-transparent border border-white/25 hover:border-marca "
+        "btn bg-transparent border border-white/25 hover:border-marca "
         "text-[#d8dae9] hover:text-white "
         "text-micro font-bold uppercase tracking-[.08em] transition-colors"
     ),

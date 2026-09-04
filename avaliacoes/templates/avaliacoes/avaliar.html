@@ -15,7 +15,7 @@
     .file-row:last-child { border-bottom: none; }
     .file-row .ext {
         font-size: 9px; font-weight: bold; padding: 3px 6px;
-        border-radius: 2px; text-transform: uppercase; color: #fff;
+        border-radius: 0; text-transform: uppercase; color: #fff;
     }
     .file-row .ext.pdf { background: #c0392b; }
     .file-row .ext.doc, .file-row .ext.docx { background: #1f4f9c; }
@@ -27,30 +27,17 @@
         color: #1f4f9c; cursor: pointer; font-size: 13px;
     }
     .file-row .acts i:hover { color: #0a083d; }
+
+    /* Campo de nota — campo de formulário do guia (seção 05) com o número na
+       escala de KPI: raio 2px, borda de 1px, foco só por borda, sem halo. */
     .grade-input {
-        width: 80px; font-size: 22px; font-weight: bold;
-        text-align: center; border: 2px solid #bee0c2;
-        border-radius: 3px; padding: 6px 4px;
-        color: #2e7d32; outline: none;
+        width: 92px; font-size: 28px; font-weight: 700; line-height: 1;
+        text-align: center; border: 1px solid #d3d7de;
+        border-radius: 2px; padding: 8px 9px;
+        color: #0a083d; outline: none; background: #fff;
     }
-    .grade-input:focus { border-color: #2e7d32; box-shadow: 0 0 0 2px rgba(31,96,32,.15); }
-    .grade-suffix { color: #6b7280; font-size: 13px; font-weight: bold; }
-    .obs {
-        width: 100%; border: 1px solid #d3d7de; border-radius: 3px;
-        padding: 8px 10px; font-size: 12px; resize: vertical;
-        line-height: 1.5; font-family: inherit;
-    }
-    .obs:focus { border-color: #1f4f9c; outline: none; }
-    /* Ação primária da tela — botão primário do guia (seção 04). */
-    .btn-green {
-        background: #0a083d; color: #fff;
-        border: 1px solid #0a083d; border-radius: 0;
-        padding: 8px 18px;
-        font-size: 10.5px; font-weight: 700;
-        letter-spacing: .1em; text-transform: uppercase;
-        cursor: pointer; transition: background-color .15s ease, border-color .15s ease;
-    }
-    .btn-green:hover { background: #1f4f9c; border-color: #1f4f9c; }
+    .grade-input:focus { border-color: #1f4f9c; }
+    .grade-suffix { color: #6b7280; font-size: 11.5px; font-weight: 600; }
 </style>
 {% endblock %}
 
@@ -58,27 +45,20 @@
 {% url 'processos:visualizar_processo' processo.numero as url_processo %}
 {% nav_secundaria voltar_url=url_processo voltar_label="Voltar ao Processo" %}
 
-<main class="max-w-[1200px] mx-auto px-6 py-5 bg-white min-h-screen" style="box-shadow: 0 0 10px rgba(0,0,0,0.05);">
+<main class="max-w-conteudo mx-auto px-7 py-5">
 
     {% include 'base/components/_breadcrumbs.html' %}
 
     {% include 'base/components/_mensagens.html' %}
 
-    <!-- Breadcrumb -->
-    <div class="text-[11px] text-texto-neutro mb-2">
-        <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="text-[#1f4f9c] hover:underline">Processo {{ processo.numero }}</a>
-        <i class="fa-solid fa-angle-right mx-1 text-[9px]"></i>
-        <span>Avaliação de Movimentação</span>
-    </div>
-
     <!-- Cabeçalho -->
     <div class="flex items-start justify-between">
         <div class="flex-1">
             <div class="autos-title"><i class="fa-solid fa-clipboard-check"></i> AVALIAÇÃO DE MOVIMENTAÇÃO</div>
-            <div class="ml-4 mt-1 text-[12px] leading-tight">
+            <div class="ml-4 mt-1 text-corpo leading-tight">
                 <div>
                     <span class="text-texto-neutro">Processo</span>
-                    <span class="font-bold ml-1">{{ processo.numero }}</span>
+                    <span class="font-mono font-semibold ml-1">{{ processo.numero }}</span>
                 </div>
                 <div class="mt-0.5">
                     <span class="text-texto-neutro">Ciclo</span>
@@ -90,8 +70,8 @@
                 </div>
             </div>
         </div>
-        <div class="text-right text-[11px] text-texto-neutro mt-1">
-            <div>Avaliador: <strong class="text-[#1f4f9c]">{{ request.user.get_full_name|default:request.user.username|upper }}</strong></div>
+        <div class="text-right text-apoio text-texto-neutro mt-1">
+            <div>Avaliador: <strong class="text-acao">{{ request.user.get_full_name|default:request.user.username|upper }}</strong></div>
             {% if feedback_existente %}
             <div>Última avaliação: <strong>{{ feedback_existente.data_feedback|date:"d/m/Y H:i" }}</strong></div>
             {% endif %}
@@ -128,7 +108,7 @@
                         </div>
                     </div>
                     {% else %}
-                    <div class="text-rotulo italic text-[11px]">Nenhum grupo vinculado</div>
+                    <div class="text-rotulo italic text-apoio">Nenhum grupo vinculado</div>
                     {% endif %}
                 </div>
             </div>
@@ -137,10 +117,10 @@
         <!-- Dados da movimentação -->
         <div class="autos-title mt-3">MOVIMENTAÇÃO REGISTRADA</div>
         <div class="panel-inner">
-            <div class="grid grid-cols-2 gap-x-8 gap-y-1.5 text-[12px] mb-3">
+            <div class="grid grid-cols-2 gap-x-8 gap-y-1.5 text-corpo mb-3">
                 <div class="flex">
                     <div class="w-32 text-texto-neutro">Processo vinculado</div>
-                    <div class="font-bold flex-1">{{ processo.numero }}</div>
+                    <div class="font-mono font-semibold flex-1">{{ processo.numero }}</div>
                 </div>
                 <div class="flex">
                     <div class="w-32 text-texto-neutro">Tipo</div>
@@ -173,7 +153,7 @@
                 </div>
                 {% endwith %}
                 <div class="flex-1">
-                    <div class="font-bold text-[#1f4f9c] text-[12px]">{{ doc.titulo_arquivo }}</div>
+                    <div class="font-semibold text-acao text-dado">{{ doc.titulo_arquivo }}</div>
                     <div class="info-meta">Enviado em {{ doc.data_upload|date:"d/m/Y H:i:s" }}</div>
                 </div>
                 <div class="acts">
@@ -194,7 +174,7 @@
         {% if mov_origem %}
         <div class="autos-title mt-3"><i class="fa-solid fa-link"></i> MOVIMENTAÇÃO CORRIGIDA</div>
         <div class="panel-inner">
-            <div class="text-[12px]">
+            <div class="text-corpo">
                 <div class="flex gap-4 mb-1">
                     <div>
                         <span class="text-texto-neutro">Movimentação original:</span>
@@ -214,7 +194,7 @@
                     {% if feedback_origem.nota is not None %}
                     <div>
                         <span class="text-texto-neutro">Nota:</span>
-                        <span class="font-bold">{{ feedback_origem.nota }}</span>
+                        <span class="font-mono font-semibold">{{ feedback_origem.nota }}</span>
                     </div>
                     {% else %}
                     <div>
@@ -223,7 +203,7 @@
                     {% endif %}
                 </div>
                 {% else %}
-                <div class="text-rotulo italic text-[11px] mt-1">Movimentação original ainda não avaliada.</div>
+                <div class="text-rotulo italic text-apoio mt-1">Movimentação original ainda não avaliada.</div>
                 {% endif %}
             </div>
         </div>
@@ -231,7 +211,7 @@
     </div>
 
     <!-- AVALIAÇÃO DO PROFESSOR -->
-    <div class="section-title green" style="margin-top: 18px;">
+    <div class="section-title green">
         <i class="fa-solid fa-clipboard-check"></i> AVALIAÇÃO DO PROFESSOR
     </div>
     <form method="post" id="avaliacaoForm">
@@ -246,47 +226,50 @@
                             <input type="number" name="nota" id="gradeInput"
                                    min="0" max="10" step="0.01"
                                    value="{% if form.nota.value is not None %}{{ form.nota.value }}{% endif %}"
-                                   class="grade-input"
+                                   class="grade-input font-mono"
                                    placeholder="—" />
-                            <span class="grade-suffix">/ 10,00</span>
+                            <span class="grade-suffix font-mono">/ 10,00</span>
                         </div>
                         {% if form.nota.errors %}
-                        <div class="text-validacao text-[10px] mt-1">{{ form.nota.errors.0 }}</div>
+                        <div class="text-validacao text-meta font-semibold mt-1">{{ form.nota.errors.0 }}</div>
                         {% endif %}
                     </div>
                     <div class="flex-1 min-w-0">
-                        <div class="field-label mb-1">Comentário ao aluno (visível para {{ autor.get_full_name|default:autor.username }})</div>
-                        <textarea name="comentario" id="comentario" class="obs"
-                                  style="min-height: 160px;"
+                        <!-- rótulo à mão: o texto interpola o nome do autor, e o
+                             `label=` da tag campo só aceita literal -->
+                        <label for="comentario" class="field-label mb-1 block">Comentário ao aluno (visível para {{ autor.get_full_name|default:autor.username }})</label>
+                        <textarea name="comentario" id="comentario"
+                                  class="{% classe_campo %} resize-y min-h-[160px] leading-normal"
                                   placeholder="Mensagem que será exibida para o(a) aluno(a) ao receber a avaliação..."
                                   required>{% if form.comentario.value %}{{ form.comentario.value }}{% endif %}</textarea>
                         {% if form.comentario.errors %}
-                        <div class="text-validacao text-[10px] mt-1">{{ form.comentario.errors.0 }}</div>
+                        <div class="text-validacao text-meta font-semibold mt-1">{{ form.comentario.errors.0 }}</div>
                         {% endif %}
                     </div>
                 </div>
             </div>
 
+            <!-- Guia seção 04: primário à esquerda do secundário -->
             <div class="flex justify-end gap-2 mt-4">
-                <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="btn-secondary">
-                    <i class="fa-solid fa-arrow-left mr-1"></i> Voltar
-                </a>
+                <button type="button" class="btn-blue" onclick="openConfirm()">
+                    <i class="fa-solid fa-check mr-1"></i> Concluir Avaliação
+                </button>
                 <button type="submit" name="acao" value="devolver" class="btn-secondary">
                     <i class="fa-solid fa-rotate-left mr-1"></i> Devolver para revisão
                 </button>
-                <button type="button" class="btn-green" onclick="openConfirm()">
-                    <i class="fa-solid fa-check mr-1"></i> Concluir Avaliação
-                </button>
+                <a href="{% url 'processos:visualizar_processo' processo.numero %}" class="btn-secondary">
+                    <i class="fa-solid fa-arrow-left mr-1"></i> Voltar
+                </a>
             </div>
         </div>
     </form>
 
     <!-- HISTÓRICO DO ALUNO NO CICLO -->
     {% if historico %}
-    <div class="section-title" style="margin-top: 18px;">
+    <div class="section-title">
         <i class="fa-solid fa-clock-rotate-left"></i> HISTÓRICO DESTE ALUNO NO CICLO
     </div>
-    <div class="panel-inner" style="margin-top: 4px;">
+    <div class="panel-inner">
         <table class="tbl-hist">
             <thead>
                 <tr>
@@ -301,8 +284,8 @@
                 <tr>
                     <td>{{ fb.data_feedback|date:"d/m/Y" }}</td>
                     <td>{{ fb.movimentacao.tipo_movimento.nome_movimentacao }}</td>
-                    <td>{{ fb.movimentacao.processo.numero }}</td>
-                    <td class="text-center font-bold">
+                    <td class="font-mono">{{ fb.movimentacao.processo.numero }}</td>
+                    <td class="text-center font-mono font-semibold">
                         {% if fb.nota is not None %}
                             {{ fb.nota }}
                         {% else %}
@@ -314,8 +297,8 @@
             </tbody>
         </table>
         {% if media_notas is not None %}
-        <div class="text-right mt-2 text-[11px]">
-            Média atual do(a) aluno(a) no ciclo: <strong class="text-[#1f4f9c] text-[13px]">{{ media_notas|floatformat:2 }}</strong>
+        <div class="text-right mt-2 text-apoio">
+            Média atual do(a) aluno(a) no ciclo: <strong class="text-acao font-mono text-dado">{{ media_notas|floatformat:2 }}</strong>
         </div>
         {% endif %}
     </div>
@@ -325,31 +308,31 @@
 
 <!-- Modal de Confirmação -->
 {% modal id="confirmModal" titulo="Confirmar Avaliação" icone="fa-clipboard-check" tamanho="sm" fechar_onclick="closeConfirm()" %}
-        <div class="p-5 text-[12px]">
+        <div class="p-5 text-corpo">
             <p class="mb-3">Você está prestes a concluir a avaliação da movimentação
                 <strong>{{ movimentacao.tipo_movimento.nome_movimentacao }}</strong>
-                do processo <strong>{{ processo.numero }}</strong>.
+                do processo <strong class="font-mono">{{ processo.numero }}</strong>.
             </p>
-            <div class="bg-card-topo border border-contorno p-3 rounded-sm">
+            <div class="bg-card-topo border border-contorno p-3">
                 <div class="flex justify-between mb-1">
                     <span class="text-texto-neutro">Aluno(a):</span>
                     <strong>{{ autor.get_full_name|default:autor.username }}</strong>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-texto-neutro">Nota:</span>
-                    <strong class="text-[#1f4f9c] text-[14px]" id="cnfNota">—</strong>
+                    <strong class="text-acao font-mono text-dado" id="cnfNota">—</strong>
                 </div>
             </div>
-            <p class="mt-3 text-texto-neutro text-[11px]">
+            <p class="mt-3 text-texto-neutro text-apoio">
                 <i class="fa-solid fa-circle-info mr-1"></i>
                 O comentário e a nota serão visíveis para o aluno.
             </p>
         </div>
-        <div class="bg-card-topo px-5 py-3 flex justify-end gap-2 border-t border-contorno">
-            <button type="button" class="btn-secondary" onclick="closeConfirm()">Cancelar</button>
-            <button type="button" class="btn-green" onclick="confirmEval()">
+        <div class="modal-acoes">
+            <button type="button" class="btn-blue" onclick="confirmEval()">
                 <i class="fa-solid fa-check mr-1"></i> Confirmar e Enviar
             </button>
+            <button type="button" class="btn-secondary" onclick="closeConfirm()">Cancelar</button>
         </div>
     {% endmodal %}
 
