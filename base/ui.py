@@ -10,8 +10,11 @@ entre botão padrão (8px 18px) e ação de linha (5px 10px).
 """
 from __future__ import annotations
 
+# `block` não é decoração: como caixa inline, o campo herda a caixa de linha do
+# pai e sobra folga de descida embaixo dele — o que desalinha qualquer botão
+# posto ao lado numa linha flex. Em bloco, a altura da linha é a do campo.
 CLASSE_CAMPO = (
-    "w-full bg-white border border-campo-borda rounded-campo px-[9px] py-2 "
+    "block w-full bg-white border border-campo-borda rounded-campo px-[9px] py-2 "
     "text-corpo text-texto placeholder:text-rotulo "
     "focus:outline-none focus:border-acao"
 )

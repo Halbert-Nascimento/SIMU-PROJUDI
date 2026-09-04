@@ -182,16 +182,19 @@
                             <i class="fa-solid fa-file-lines lbl-icon"></i>
                             Carregar Modelo de Documento
                         </label>
-                        <div class="flex gap-2 items-center">
+                        <!-- items-stretch pelo mesmo motivo da busca de parte em
+                             cadastro_processo: campo e botão têm alturas diferentes
+                             por definição do guia, e a linha manda. -->
+                        <div class="flex gap-2 items-stretch">
                             <select id="modeloSelect" class="{% classe_campo %} flex-1">
                                 <option value="">— Selecione um modelo —</option>
                             </select>
                             <button type="button" onclick="carregarModelo()"
-                                    class="{% classe_botao 'primario' padding=True %} flex items-center gap-1.5">
+                                    class="{% classe_botao 'primario' %} px-[18px] flex items-center justify-center gap-1.5">
                                 <i class="fa-solid fa-file-import"></i> Carregar
                             </button>
                             <button type="button" onclick="limparEditor()" title="Limpar editor"
-                                    class="{% classe_botao 'secundario' %} px-3 py-2">
+                                    class="{% classe_botao 'secundario' %} px-3 flex items-center justify-center">
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
