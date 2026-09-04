@@ -37,31 +37,6 @@ tailwind.config = {
                 'validacao':  '#c0392b',  // erro de validação de campo
                 'desabilitado': '#9ca3af',  // texto de botão desabilitado (guia seção 04)
 
-                /* ── Compatibilidade temporária ────────────────────────────
-                   Os nomes antigos apontam para a paleta nova, para que as
-                   telas ainda não convertidas exibam as cores do guia em vez
-                   de ficarem sem cor nenhuma.
-                   REMOVER quando a Fase 3 terminar — a guarda de classes
-                   órfãs acusa qualquer uso remanescente. */
-                'tjgo-navy':            '#0a083d',
-                'tjgo-blue':            '#1f4f9c',
-                'tjgo-light-blue':      '#1f4f9c',
-                'tjgo-gray-bg':         '#f4f5f7',
-                'tjgo-gray-card':       '#f1f2f4',
-                'tjgo-gray-card-hover': '#eef0f3',
-                'tjgo-gray-border':     '#e2e5ea',
-                'tjgo-text-main':       '#23262e',
-                'tjgo-text-light':      '#6b7280',
-                'azul-marinho':         '#0a083d',
-                'azul-primario':        '#1f4f9c',
-                'azul-botao':           '#0a083d',
-                'fundo-geral':          '#f4f5f7',
-                'fundo-container':      '#ffffff',
-                'fundo-caixa':          '#fbfbfc',
-                'hover-caixa':          '#eef0f3',
-                'texto-principal':      '#23262e',
-                'texto-secundario':     '#6b7280',
-                'borda':                '#e2e5ea',
             },
 
             fontFamily: {

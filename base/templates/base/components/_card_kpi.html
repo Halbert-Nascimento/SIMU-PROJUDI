@@ -2,8 +2,11 @@
 Card de indicador — guia seção 07: faixa superior de 3px em navy, número em 28px/700.
 
     {% include 'base/components/_card_kpi.html' with rotulo="Processos ativos" numero=18 apoio="3 com prazo nesta semana" only %}
+
+`variante="alerta"` pinta a faixa e o número no trio de erro, para o indicador
+que pede ação — o guia define o trio, e não um card à parte.
 {% endcomment %}
-<div class="card-kpi">
+<div class="card-kpi{% if variante %} card-kpi--{{ variante }}{% endif %}">
     <span class="rotulo">{{ rotulo }}</span>
     <span class="numero">{{ numero }}</span>
     {% if apoio %}<span class="apoio">{{ apoio }}</span>{% endif %}

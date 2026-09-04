@@ -1,751 +1,731 @@
-{% extends 'base/layouts/layout_admin.html' %}
-{% load ui %}
-{% load processos_ui %}
-{% load ciclos_ui %}
-{% load static %}
-
-{% block title %}Painel de Gestão - Projudi{% endblock %}
-
-{% block extra_head %}
-<link rel="stylesheet" href="{% static 'css/painel.css' %}">
-<script src="{% static 'js/paginador.js' %}"></script>
-{% endblock %}
-
-{% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
-
-
-
-
-{% block content %}
-<main class="main-container px-10 py-8 mt-10">
-
-    <!-- Cabeçalho da Página -->
-        <div class="mb-4 border-b border-divisor pb-4">
-            <h2 class="text-tjgo-blue text-2xl font-bold flex items-center gap-2">
-                <i class="fa-solid fa-chart-line"></i> Painel de Controle
-            </h2>
-            <p class="text-rotulo text-sm mt-1">Visão geral dos ciclos de simulação, turmas e avaliações pendentes.</p>
-        </div>
-
-        <!-- Mensagens de feedback -->
-        {% include 'base/components/_mensagens.html' %}
-
-        <!-- BANNER DE ALERTA (Aprovações Pendentes) -->
-        {% if usuarios_pendentes_count %}
-        <div class="mb-6 bg-atencao-bg border-l-4 border-atencao-bd p-4 shadow-sm flex items-center justify-between rounded-r-sm">
-            <div class="flex items-center gap-4">
-                <div class="bg-atencao-bg p-2 rounded-full">
-                    <i class="fa-solid fa-user-clock text-atencao-txt text-xl"></i>
-                </div>
-                <div>
-                    <p class="text-sm font-bold text-atencao-txt">Aprovações de Cadastro Pendentes</p>
-                    <p class="text-xs text-atencao-txt mt-0.5">
-                        Existem <strong>{{ usuarios_pendentes_count }} novo{{ usuarios_pendentes_count|pluralize }} aluno{{ usuarios_pendentes_count|pluralize }}</strong> aguardando liberação de perfil.
-                    </p>
-                </div>
-            </div>
-            <button type="button" onclick="openModal('modal-usuarios'); switchTab('pendentes')"
-                class="bg-atencao-txt hover:bg-atencao-txt text-white text-xs font-bold py-2 px-4 rounded shadow-sm transition-colors uppercase flex items-center gap-2">
-                Analisar Cadastros <i class="fa-solid fa-arrow-right"></i>
-            </button>
-        </div>
-        {% endif %}
-
-        <div class="grid grid-cols-1 lg:grid-cols-[65%_32%] gap-x-[3%]">
-
-            <!-- COLUNA ESQUERDA (Tabelas de Gestão) -->
-            <section>
-
-                <!-- BLOCO: Gestão de Ciclos -->
-                <div class="border border-tjgo-gray-border bg-white mb-8 shadow-sm rounded-sm overflow-hidden">
-                    <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fa-solid fa-folder-tree mr-2 text-sm"></i> GESTÃO DE CICLOS DE SIMULAÇÃO
-                        </div>
-                        {% if status_ciclo_opcoes %}
-                        <button type="button" onclick="openModal('modal-ciclo')" class="bg-[#0a083d] hover:bg-[#0a083d] text-white px-3 py-1 rounded-sm transition-colors text-xs flex items-center gap-1 shadow-sm">
-                            <i class="fa-solid fa-plus"></i> Novo ciclo
-                        </button>
-                        {% endif %}
-                    </div>
-                    <div class="p-5 text-[13px] leading-relaxed text-texto overflow-x-auto">
-                        {% if ciclos %}
-                        <!-- Busca de ciclos -->
-                        <div class="mb-4 flex items-center gap-2">
-                            <div class="relative flex-1">
-                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-rotulo text-xs"></i>
-                                <input id="busca-ciclos" type="text" placeholder="Pesquisar ciclo por nome..."
-                                    oninput="filtrarCiclos()"
-                                    class="w-full border border-campo-borda pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                            </div>
-                        </div>
-                        <table class="w-full text-left border-collapse" id="tabela-ciclos">
-                            <thead>
-                                <tr class="text-[11px] uppercase text-rotulo border-b-2 border-divisor bg-card-topo/50">
-                                    <th class="py-2 pr-3 pl-2">Edição / Semestre</th>
-                                    <th class="py-2 pr-3">Status</th>
-                                    <th class="py-2 pr-3">Grupos</th>
-                                    <th class="py-2 pr-3 text-right">Ações</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for ciclo in ciclos %}
-                                <tr class="ciclo-row border-b border-divisor text-sm hover:bg-linha-hover/30 transition-colors"
-                                    data-nome="{{ ciclo.nome_edicao|lower }}">
-                                    <td class="py-3 pr-3 pl-2">
-                                        <span class="font-bold
-                                            {% if ciclo.status.nome_status == 'em andamento' %}text-tjgo-blue
-                                            {% elif ciclo.status.nome_status == 'finalizado' %}text-tjgo-navy
-                                            {% else %}text-rotulo{% endif %}">
-                                            {{ ciclo.nome_edicao }}
-                                        </span>
-                                        <span class="block text-[10px] text-rotulo mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %} - Responsável: {{ ciclo.coordenador.first_name | capfirst }} </span>
-                                    </td>
-                                    <td class="py-3 pr-3">
-                                        {% badge_status_ciclo ciclo.status %}
-                                    </td>
-                                    <td class="py-3 pr-3 font-semibold text-texto-neutro">{{ ciclo.num_grupos }} Grupo{{ ciclo.num_grupos|pluralize }}</td>
-                                    <td class="py-3 pr-3 align-middle">
-                                        <div class="flex justify-end items-center gap-3">
-                                            <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
-                                               class="text-tjgo-blue text-[11px] font-bold hover:underline flex items-center gap-1">
-                                                <i class="fa-solid fa-users"></i> Gerenciar Grupos
-                                            </a>
-                                            {% if ciclo.pk in ciclos_editaveis %}
-                                            <a href="{% url 'ciclos:editar_ciclo' ciclo.pk %}"
-                                               class="text-rotulo text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
-                                                <i class="fa-solid fa-pen"></i> Editar
-                                            </a>
-                                            {% else %}
-                                            <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
-                                               class="text-rotulo text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
-                                                <i class="fa-solid fa-eye"></i> Visualizar
-                                            </a>
-                                            {% endif %}
-                                        </div>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% include 'base/components/_estado_vazio.html' with id="ciclos-vazio-busca" mensagem="Nenhum ciclo encontrado para esta pesquisa." oculto=True only %}
-                        {% include 'base/components/_paginacao.html' with container_id="paginacao-ciclos" info_id="paginacao-ciclos-info" paginas_id="paginacao-ciclos-paginas" btn_prefixo="btn-ciclo" handler="mudarPaginaCiclos" only %}
-                        {% else %}
-                        {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum ciclo de simulação cadastrado." only %}
-                        {% endif %}
-
-                        {% if ciclos_arquivados %}
-                        <!-- Separador + Toggle Arquivados -->
-                        <div class="mt-4 border-t border-contorno pt-3">
-                            <button type="button" onclick="toggleArquivados()" id="btn-toggle-arquivados"
-                                class="flex items-center gap-2 text-[11px] font-bold text-rotulo hover:text-tjgo-blue transition-colors uppercase">
-                                <i id="icon-arquivados" class="fa-solid fa-chevron-right text-[9px] transition-transform duration-200"></i>
-                                <i class="fa-solid fa-box-archive text-xs"></i>
-                                Ciclos Arquivados
-                                <span class="bg-contorno text-texto-neutro text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-1">{{ ciclos_arquivados|length }}</span>
-                            </button>
-                            <div id="secao-arquivados" class="hidden mt-3">
-                                <!-- Busca de ciclos arquivados -->
-                                <div class="mb-3 flex items-center gap-2">
-                                    <div class="relative flex-1">
-                                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-rotulo text-xs"></i>
-                                        <input id="busca-ciclos-arq" type="text" placeholder="Pesquisar ciclo arquivado por nome..."
-                                            oninput="filtrarCiclosArq()"
-                                            class="w-full border border-campo-borda pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                                    </div>
-                                </div>
-                                <table class="w-full text-left border-collapse" id="tabela-ciclos-arq">
-                                    <thead>
-                                        <tr class="text-[11px] uppercase text-rotulo border-b-2 border-divisor bg-card-topo/50">
-                                            <th class="py-2 pr-3 pl-2">Edição / Semestre</th>
-                                            <th class="py-2 pr-3">Status</th>
-                                            <th class="py-2 pr-3">Grupos</th>
-                                            <th class="py-2 pr-3 text-right">Ações</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {% for ciclo in ciclos_arquivados %}
-                                        <tr class="ciclo-arq-row border-b border-divisor text-sm hover:bg-card-topo transition-colors opacity-75"
-                                            data-nome="{{ ciclo.nome_edicao|lower }}">
-                                            <td class="py-3 pr-3 pl-2">
-                                                <span class="font-bold text-rotulo">{{ ciclo.nome_edicao }}</span>
-                                                <span class="block text-[10px] text-rotulo mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %} - Responsável: {{ ciclo.coordenador.first_name|capfirst }}</span>
-                                            </td>
-                                            <td class="py-3 pr-3">
-                                                <span class="inline-flex items-center gap-1 bg-tabela-topo text-rotulo border border-contorno text-[10px] font-bold px-2.5 py-1 rounded uppercase">
-                                                    <span class="w-1.5 h-1.5 rounded-full bg-neutro-txt inline-block"></span>{{ ciclo.status }}
-                                                </span>
-                                            </td>
-                                            <td class="py-3 pr-3 font-semibold text-rotulo">{{ ciclo.num_grupos }} Grupo{{ ciclo.num_grupos|pluralize }}</td>
-                                            <td class="py-3 pr-3 align-middle">
-                                                <div class="flex justify-end items-center gap-3">
-                                                    <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
-                                                       class="text-rotulo text-[11px] font-bold hover:text-tjgo-blue hover:underline flex items-center gap-1">
-                                                        <i class="fa-solid fa-eye"></i> Visualizar
-                                                    </a>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
-                                </table>
-                                {% include 'base/components/_estado_vazio.html' with id="ciclos-arq-vazio-busca" mensagem="Nenhum ciclo arquivado encontrado para esta pesquisa." oculto=True only %}
-                                {% include 'base/components/_paginacao.html' with container_id="paginacao-ciclos-arq" info_id="paginacao-ciclos-arq-info" paginas_id="paginacao-ciclos-arq-paginas" btn_prefixo="btn-ciclo-arq" handler="mudarPaginaCiclosArq" only %}
-                            </div>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- BLOCO: Processos dos Ciclos Ativos -->
-                <div class="border border-tjgo-gray-border bg-white mb-8 shadow-sm rounded-sm overflow-hidden">
-                    <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center justify-between">
-                        <div class="flex items-center">
-                            <i class="fa-solid fa-gavel mr-2 text-sm"></i> PROCESSOS DOS CICLOS ATIVOS
-                        </div>
-                        {% if ciclos_ativos_professor|length > 1 %}
-                        <select id="filtro-ciclo-processos" onchange="filtrarProcessosPorCiclo(this.value)"
-                            class="bg-[#0a083d] text-white text-[11px] font-bold border border-white/30 rounded-sm px-2 py-1 focus:outline-none cursor-pointer">
-                            {% for c in ciclos_ativos_professor %}
-                            <option value="{{ c.pk }}" {% if forloop.first %}selected{% endif %}>{{ c.nome_edicao }}</option>
-                            {% endfor %}
-                            <option value="todos">Todos os ciclos</option>
-                        </select>
-                        {% elif ciclos_ativos_professor|length == 1 %}
-                        <span class="text-[10px] font-normal opacity-80">{{ ciclos_ativos_professor.0.nome_edicao }}</span>
-                        {% endif %}
-                    </div>
-                    <div class="p-5 text-[13px] leading-relaxed text-texto overflow-x-auto">
-                        {% if processos_professor %}
-                        <table class="w-full text-left border-collapse" id="tabela-processos-ciclo">
-                            <thead>
-                                <tr class="text-[11px] uppercase text-rotulo border-b-2 border-divisor bg-card-topo/50">
-                                    <th class="py-2 pr-2 pl-2">Nº Processo</th>
-                                    <th class="py-2 pr-2">Partes</th>
-                                    <th class="py-2 pr-2">Classe</th>
-                                    <th class="py-2 pr-2">Status</th>
-                                    <th class="py-2 pr-2 text-right">Ação</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for processo in processos_professor %}
-                                <tr class="processo-row border-b border-divisor text-sm hover:bg-linha-hover/30 transition-colors" data-ciclo-id="{{ processo.ciclo_id }}">
-                                    <td class="py-3 pr-2 pl-2">
-                                        <span class="block font-bold text-tjgo-navy text-xs">{{ processo.numero }}</span>
-                                        {% if ciclos_ativos_professor|length > 1 %}
-                                        <span class="block text-[10px] text-rotulo mt-0.5">{{ processo.ciclo.nome_edicao }}</span>
-                                        {% endif %}
-                                    </td>
-                                    <td class="py-3 pr-2">
-                                        <span class="text-xs text-texto-neutro">{{ processo.partes_resumo }}</span>
-                                    </td>
-                                    <td class="py-3 pr-2 text-xs text-texto-neutro">{{ processo.classe }}</td>
-                                    <td class="py-3 pr-2">
-                                        {% badge_status_processo processo.status_atual %}
-                                    </td>
-                                    <td class="py-3 pr-2 text-right">
-                                        <a href="{% url 'processos:visualizar_processo' processo.numero %}"
-                                           class="{% classe_botao 'primario' %} py-1.5 px-3 text-[11px] uppercase inline-flex items-center gap-1 whitespace-nowrap">
-                                            <i class="fa-solid fa-eye text-[10px]"></i> Ver Autos
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% include 'base/components/_paginacao.html' with container_id="paginacao-processos" info_id="paginacao-info" paginas_id="paginacao-paginas" btn_prefixo="btn" handler="mudarPagina" only %}
-                        {% include 'base/components/_estado_vazio.html' with id="processos-vazio-filtro" mensagem="Nenhum processo encontrado neste ciclo." oculto=True only %}
-                        {% else %}
-                        {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum processo encontrado nos ciclos ativos." only %}
-                        {% endif %}
-                    </div>
-                </div>
-            </section>
-
-            <!-- COLUNA DIREITA (Resumo e Ações Rápidas) -->
-            <aside>
-                {% card titulo="Resumo do Semestre (Atual)" icone="fa-chart-pie" classe="mb-6" classe_corpo="p-4 bg-card-topo/50" %}
-                        <div class="grid grid-cols-2 gap-3">
-                            <div class="bg-white border border-contorno p-3 rounded text-center shadow-sm flex flex-col justify-center items-center">
-                                <span class="block text-3xl font-bold text-tjgo-blue mb-1">45</span>
-                                <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">Processos<br>Ativos</span>
-                            </div>
-                            <div class="bg-white border border-[#f3cfcf] p-3 rounded text-center shadow-sm flex flex-col justify-center items-center">
-                                <span class="block text-3xl font-bold text-[#b33a3a] mb-1">12</span>
-                                <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">Avaliações<br>Pendentes</span>
-                            </div>
-                            <div class="bg-white border border-contorno p-3 rounded text-center shadow-sm flex flex-col justify-center items-center">
-                                <span class="block text-3xl font-bold text-texto-neutro mb-1">8</span>
-                                <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">Grupos de<br>Trabalho</span>
-                            </div>
-                            <div class="bg-white border border-contorno p-3 rounded text-center shadow-sm flex flex-col justify-center items-center">
-                                <span class="block text-3xl font-bold text-texto-neutro mb-1">20</span>
-                                {% comment %} <span class="block text-3xl font-bold text-texto-neutro mb-1">{{ total_alunos_vinculados }}</span> {% endcomment %}
-                                <span class="text-[10px] text-rotulo uppercase font-bold leading-tight">Alunos<br>Vinculados</span>
-                            </div>
-                        </div>
-                    {% endcard %}
-
-                <div>
-                    <h3 class="text-tjgo-blue text-lg font-bold mb-3 flex items-center gap-2 border-b border-contorno pb-2">
-                        <i class="fa-solid fa-bolt text-atencao-txt"></i> Ações Rápidas
-                    </h3>
-                    <div class="grid grid-cols-2 gap-3">
-                        <a href="#" class="bg-tjgo-gray-card hover:bg-neutro-bd transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-campo-borda">
-                            <i class="fa-solid fa-file-circle-plus text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-[11px] font-bold leading-tight text-texto">Distribuir<br>Novo Processo</span>
-                        </a>
-                        <button type="button" onclick="openModal('modal-usuarios'); switchTab('todos')"
-                            class="bg-tjgo-gray-card hover:bg-neutro-bd transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-campo-borda w-full">
-                            <i class="fa-solid fa-users-gear text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-[11px] font-bold leading-tight text-texto">Gerir<br>Usuários</span>
-                        </button>
-                        <a href="#" class="bg-tjgo-gray-card hover:bg-neutro-bd transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-campo-borda">
-                            <i class="fa-solid fa-calendar-days text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-[11px] font-bold leading-tight text-texto">Agendar<br>Audiência</span>
-                        </a>
-                        <a href="#" class="bg-tjgo-gray-card hover:bg-neutro-bd transition-all duration-200 hover:-translate-y-0.5 cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] shadow-sm rounded border border-transparent hover:border-campo-borda">
-                            <i class="fa-solid fa-clipboard-check text-2xl text-tjgo-navy mb-2"></i>
-                            <span class="text-[11px] font-bold leading-tight text-texto">Relatório de<br>Notas</span>
-                        </a>
-                    </div>
-                </div>
-            </aside>
-        </div>
-
-</main>
-
-<!-- Modal: Gestão de Usuários -->
-{% if usuarios %}
-<div id="modal-usuarios" class="fixed inset-0 z-[60] hidden items-center justify-center">
-    <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="closeModal('modal-usuarios')"></div>
-    <div class="relative bg-white w-full max-w-4xl shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
-
-        <!-- Cabeçalho -->
-        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center shrink-0">
-            <span><i class="fa-solid fa-users-gear mr-2"></i> Gestão de Usuários</span>
-            <button onclick="closeModal('modal-usuarios')" class="hover:text-rotulo text-lg"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-
-        <!-- Abas -->
-        <div class="border-b border-contorno px-5 flex gap-0 shrink-0 bg-white">
-            <button id="tab-btn-pendentes" onclick="switchTab('pendentes')"
-                class="tab-btn px-5 py-3 text-xs font-bold border-b-2 border-tjgo-blue text-tjgo-blue transition-colors -mb-px">
-                <i class="fa-solid fa-user-clock mr-1"></i> Pendentes
-                <span id="badge-pendentes" class="ml-1.5 bg-erro-txt text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">{{ usuarios_pendentes_count }}</span>
-            </button>
-            <button id="tab-btn-todos" onclick="switchTab('todos')"
-                class="tab-btn px-5 py-3 text-xs font-bold border-b-2 border-transparent text-rotulo hover:text-tjgo-blue transition-colors -mb-px">
-                <i class="fa-solid fa-list mr-1"></i> Todos os Usuários
-            </button>
-        </div>
-
-        <!-- Conteúdo rolável -->
-        <div class="overflow-y-auto flex-1">
-
-            <!-- Aba: Pendentes -->
-            <div id="tab-pendentes" class="p-5">
-                {% if usuarios_pendentes_count %}
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="text-[10px] uppercase text-rotulo border-b-2 border-divisor bg-card-topo/50">
-                            <th class="py-2 pr-3 pl-2">Usuário</th>
-                            <th class="py-2 pr-3">Email</th>
-                            <th class="py-2 pr-3">Data do Cadastro</th>
-                            <th class="py-2 pr-3 text-right">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for u in usuarios %}{% if not u.is_active %}
-                        <tr class="border-b border-divisor hover:bg-atencao-bg/40 transition-colors">
-                            <td class="py-2.5 pr-3 pl-2">
-                                <span class="font-bold text-tjgo-navy text-xs block">{{ u.username }}</span>
-                                <span class="text-[10px] text-rotulo">{{ u.get_full_name }}</span>
-                            </td>
-                            <td class="py-2.5 pr-3 text-xs text-texto-neutro">{{ u.email }}</td>
-                            <td class="py-2.5 pr-3 text-xs text-rotulo">{{ u.date_joined|date:"d/m/Y H:i" }}</td>
-                            <td class="py-2.5 pr-3 text-right">
-                                <button type="button"
-                                    class="bg-atencao-txt hover:bg-atencao-txt text-white text-[10px] font-bold px-3 py-1.5 rounded shadow-sm transition-colors uppercase"
-                                    onclick="abrirEdicao('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.tipo_perfil_global }}', false)">
-                                    <i class="fa-solid fa-user-check mr-1"></i> Aprovar / Editar
-                                </button>
-                            </td>
-                        </tr>
-                        {% endif %}{% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="py-10 text-center">
-                    <i class="fa-solid fa-circle-check text-ok-txt text-3xl mb-3"></i>
-                    <p class="text-sm text-rotulo font-medium">Nenhum cadastro pendente de aprovação.</p>
-                    <p class="text-[11px] text-rotulo mt-1">Todos os usuários já foram analisados.</p>
-                </div>
-                {% endif %}
-            </div>
-
-            <!-- Aba: Todos -->
-            <div id="tab-todos" class="p-5 hidden">
-                <!-- Busca -->
-                <div class="mb-4 flex items-center gap-2">
-                    <div class="relative flex-1">
-                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-rotulo text-xs"></i>
-                        <input id="busca-usuarios" type="text" placeholder="Pesquisar por nome ou email..."
-                            oninput="filtrarUsuarios()"
-                            class="w-full border border-campo-borda pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-tjgo-blue focus:ring-1 focus:ring-tjgo-blue rounded-sm">
-                    </div>
-                </div>
-                <table class="w-full text-left border-collapse" id="tabela-todos-usuarios">
-                    <thead>
-                        <tr class="text-[10px] uppercase text-rotulo border-b-2 border-divisor bg-card-topo/50">
-                            <th class="py-2 pr-3 pl-2">Usuário</th>
-                            <th class="py-2 pr-3">Email</th>
-                            <th class="py-2 pr-3">Tipo de Perfil</th>
-                            <th class="py-2 pr-3">Status</th>
-                            <th class="py-2 pr-3 text-right">Ação</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for u in usuarios %}
-                        <tr class="usuario-row border-b border-divisor hover:bg-linha-hover/30 transition-colors"
-                            data-nome="{{ u.username|lower }} {{ u.get_full_name|lower }}"
-                            data-email="{{ u.email|lower }}">
-                            <td class="py-2.5 pr-3 pl-2">
-                                <span class="font-bold text-tjgo-navy text-xs block">{{ u.username }}</span>
-                                <span class="text-[10px] text-rotulo">{{ u.get_full_name }}</span>
-                            </td>
-                            <td class="py-2.5 pr-3 text-xs text-texto-neutro">{{ u.email }}</td>
-                            <td class="py-2.5 pr-3 text-xs text-texto-neutro">{{ u.get_tipo_perfil_global_display }}</td>
-                            <td class="py-2.5 pr-3">
-                                {% if u.is_active %}
-                                <span class="bg-ok-bg text-ok-txt border border-ok-bd text-[9px] font-bold px-2 py-0.5 rounded uppercase">Ativo</span>
-                                {% else %}
-                                <span class="bg-erro-bg text-erro-txt border border-erro-bd text-[9px] font-bold px-2 py-0.5 rounded uppercase">Pendente</span>
-                                {% endif %}
-                            </td>
-                            <td class="py-2.5 pr-3 text-right">
-                                <button type="button"
-                                    class="text-tjgo-blue text-[11px] font-bold hover:underline"
-                                    onclick="abrirEdicao('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.tipo_perfil_global }}', {% if u.is_active %}true{% else %}false{% endif %})">
-                                    <i class="fa-solid fa-pen text-[10px]"></i> editar
-                                </button>
-                            </td>
-                        </tr>
-                        {% empty %}
-                        <tr><td colspan="5" class="py-8 text-center text-sm text-rotulo italic">Nenhum usuário encontrado.</td></tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% include 'base/components/_estado_vazio.html' with id="usuarios-vazio-busca" mensagem="Nenhum usuário encontrado para esta pesquisa." oculto=True only %}
-                {% include 'base/components/_paginacao.html' with container_id="paginacao-usuarios" info_id="paginacao-usuarios-info" paginas_id="paginacao-usuarios-paginas" btn_prefixo="btn-usr" handler="mudarPaginaUsuarios" only %}
-            </div>
-
-        </div>
-    </div>
-</div>
-
-<!-- Modal: Editar Usuário (aninhado, z maior) -->
-<div id="modal-editar-usuario" class="fixed inset-0 z-[70] hidden items-center justify-center">
-    <div class="absolute inset-0 bg-black/30" onclick="fecharEdicao()"></div>
-    <div class="relative bg-white w-full max-w-sm shadow-modal rounded-sm overflow-hidden modal-content flex flex-col">
-        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center">
-            <span><i class="fa-solid fa-user-pen mr-2"></i> Editar / Aprovar Usuário</span>
-            <button onclick="fecharEdicao()" class="hover:text-rotulo text-lg"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <div class="p-5 text-sm">
-            <div class="mb-4 pb-3 border-b border-divisor">
-                <span class="font-bold text-tjgo-navy text-sm block mb-0.5" id="edicao-username">-</span>
-                <span class="text-xs text-rotulo" id="edicao-email">-</span>
-            </div>
-            <form method="post" action="{% url 'acesso:usuario_atualizar' %}" class="space-y-4">
-                {% csrf_token %}
-                <input type="hidden" name="user_id" id="edicao-user-id">
-                <input type="hidden" name="next" value="{% url 'acesso:painel_administrativo' %}">
-                <div>
-                    <label class="block text-[11px] font-bold text-texto-neutro uppercase mb-1">Tipo de Perfil</label>
-                    <select id="edicao-tipo" name="tipo_perfil_global"
-                        class="{% classe_campo %}">
-                        {% for value, label in tipos_opcoes %}
-                        <option value="{{ value }}">{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="flex items-center gap-2 bg-card-topo border border-contorno p-3 rounded">
-                    <input id="edicao-ativo" name="is_active" type="checkbox" value="on"
-                        class="h-4 w-4 border-campo-borda text-tjgo-blue focus:ring-tjgo-blue rounded">
-                    <label for="edicao-ativo" class="text-xs font-bold text-texto-neutro uppercase cursor-pointer">Ativo (liberar acesso ao sistema)</label>
-                </div>
-                <div class="flex gap-2 pt-1">
-                    <button type="submit"
-                        class="flex-1 {% classe_botao 'primario' %} py-2 text-xs uppercase">
-                        <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar
-                    </button>
-                    <button type="button" onclick="fecharEdicao()"
-                        class="flex-1 bg-tabela-topo hover:bg-contorno text-texto-neutro font-bold py-2 text-xs rounded shadow-sm transition uppercase">
-                        Cancelar
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-{% endif %}
-
-<!-- Modal: Novo Ciclo -->
-{% if status_ciclo_opcoes %}
-<div id="modal-ciclo" class="fixed inset-0 z-[60] hidden items-center justify-center">
-    <div class="absolute inset-0 bg-black/50 modal-overlay" onclick="closeModal('modal-ciclo')"></div>
-    <div class="relative bg-white w-full max-w-lg shadow-modal rounded-sm overflow-hidden modal-content flex flex-col max-h-[90vh]">
-        <div class="bg-tjgo-navy text-white p-3 text-xs font-bold uppercase flex justify-between items-center shrink-0">
-            <span><i class="fa-solid fa-folder-plus mr-2"></i> Novo Ciclo de Simulação</span>
-            <button onclick="closeModal('modal-ciclo')" class="hover:text-rotulo text-lg"><i class="fa-solid fa-xmark"></i></button>
-        </div>
-        <form method="post" action="{% url 'ciclos:criar_ciclo' %}" class="flex flex-col overflow-hidden">
-            {% csrf_token %}
-            <div class="p-6 overflow-y-auto space-y-4 text-sm">
-
-                <!-- Nome da Edição -->
-                <div>
-                    <label class="block text-[11px] font-bold text-texto-neutro uppercase mb-1">
-                        Nome / Edição do Ciclo *
-                    </label>
-                    <input
-                        type="text"
-                        name="nome_edicao"
-                        placeholder="Ex: Simulação NPJ - Turma A"
-                        maxlength="150"
-                        required
-                        class="{% classe_campo %}">
-                </div>
-
-                <!-- Semestre e Ano -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-[11px] font-bold text-texto-neutro uppercase mb-1">Semestre *</label>
-                        <select
-                            name="semestre"
-                            required
-                            class="{% classe_campo %}">
-                            <option value="">Selecione...</option>
-                            <option value="1">1º Semestre</option>
-                            <option value="2">2º Semestre</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[11px] font-bold text-texto-neutro uppercase mb-1">Ano *</label>
-                        <input
-                            type="number"
-                            name="ano"
-                            value="{{ ano_atual }}"
-                            min="2000"
-                            max="{{ ano_atual|add:5 }}"
-                            required
-                            class="{% classe_campo %}">
-                    </div>
-                </div>
-
-                
-
-                <!-- Info coordenador (somente leitura) -->
-                <div class="bg-linha-hover border border-[#c9d5ea] rounded px-3 py-2 text-xs text-acao flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info"></i>
-                    Você será registrado automaticamente como <strong>Coordenador</strong> deste ciclo.
-                </div>
-
-            </div>
-            <div class="bg-card-topo p-4 border-t border-contorno flex justify-end gap-2 shrink-0">
-                <button type="button" onclick="closeModal('modal-ciclo')"
-                    class="bg-white border border-campo-borda hover:bg-tabela-topo text-texto-neutro font-bold py-1.5 px-4 text-xs rounded shadow-sm transition-colors uppercase">
-                    Cancelar
-                </button>
-                <button type="submit"
-                    class="{% classe_botao 'primario' %} py-1.5 px-6 text-xs uppercase flex items-center gap-2">
-                    <i class="fa-solid fa-floppy-disk"></i> Salvar Ciclo
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-{% endif %}
-
-<script>
-    let cicloFiltrado = 'todos';
-    let usrBusca = '';
-    let cicloBusca = '';
-    let cicloArqBusca = '';
-
-    (function() {
-        const sel = document.getElementById('filtro-ciclo-processos');
-        if (sel) cicloFiltrado = sel.value;
-    })();
-
-    const paginadorProcessos = criarPaginador({
-        rowSelector: '.processo-row',
-        porPagina: 4,
-        tabelaId: 'tabela-processos-ciclo',
-        msgVazioId: 'processos-vazio-filtro',
-        paginacaoId: 'paginacao-processos',
-        infoId: 'paginacao-info',
-        paginasContainerId: 'paginacao-paginas',
-        btnPrimeiraId: 'btn-primeira',
-        btnAnteriorId: 'btn-anterior',
-        btnProximaId: 'btn-proxima',
-        btnUltimaId: 'btn-ultima',
-        filtrarRows: (todas) => cicloFiltrado === 'todos' ? todas : todas.filter(r => r.dataset.cicloId === cicloFiltrado),
-    });
-
-    const paginadorUsuarios = criarPaginador({
-        rowSelector: '.usuario-row',
-        porPagina: 10,
-        tabelaId: 'tabela-todos-usuarios',
-        msgVazioId: 'usuarios-vazio-busca',
-        paginacaoId: 'paginacao-usuarios',
-        infoId: 'paginacao-usuarios-info',
-        paginasContainerId: 'paginacao-usuarios-paginas',
-        btnPrimeiraId: 'btn-usr-primeira',
-        btnAnteriorId: 'btn-usr-anterior',
-        btnProximaId: 'btn-usr-proxima',
-        btnUltimaId: 'btn-usr-ultima',
-        filtrarRows: (todas) => !usrBusca ? todas : todas.filter(r => r.dataset.nome.includes(usrBusca) || r.dataset.email.includes(usrBusca)),
-    });
-
-    const paginadorCiclos = criarPaginador({
-        rowSelector: '.ciclo-row',
-        porPagina: 5,
-        tabelaId: 'tabela-ciclos',
-        msgVazioId: 'ciclos-vazio-busca',
-        paginacaoId: 'paginacao-ciclos',
-        infoId: 'paginacao-ciclos-info',
-        paginasContainerId: 'paginacao-ciclos-paginas',
-        btnPrimeiraId: 'btn-ciclo-primeira',
-        btnAnteriorId: 'btn-ciclo-anterior',
-        btnProximaId: 'btn-ciclo-proxima',
-        btnUltimaId: 'btn-ciclo-ultima',
-        filtrarRows: (todas) => !cicloBusca ? todas : todas.filter(r => r.dataset.nome.includes(cicloBusca)),
-    });
-
-    const paginadorCiclosArq = criarPaginador({
-        rowSelector: '.ciclo-arq-row',
-        porPagina: 5,
-        tabelaId: 'tabela-ciclos-arq',
-        msgVazioId: 'ciclos-arq-vazio-busca',
-        paginacaoId: 'paginacao-ciclos-arq',
-        infoId: 'paginacao-ciclos-arq-info',
-        paginasContainerId: 'paginacao-ciclos-arq-paginas',
-        btnPrimeiraId: 'btn-ciclo-arq-primeira',
-        btnAnteriorId: 'btn-ciclo-arq-anterior',
-        btnProximaId: 'btn-ciclo-arq-proxima',
-        btnUltimaId: 'btn-ciclo-arq-ultima',
-        filtrarRows: (todas) => !cicloArqBusca ? todas : todas.filter(r => r.dataset.nome.includes(cicloArqBusca)),
-    });
-
-    function mudarPagina(acao) { paginadorProcessos.mudarPagina(acao); }
-    function mudarPaginaUsuarios(acao) { paginadorUsuarios.mudarPagina(acao); }
-    function mudarPaginaCiclos(acao) { paginadorCiclos.mudarPagina(acao); }
-    function mudarPaginaCiclosArq(acao) { paginadorCiclosArq.mudarPagina(acao); }
-
-    function filtrarProcessosPorCiclo(cicloId) {
-        cicloFiltrado = cicloId;
-        paginadorProcessos.resetar();
-    }
-
-    function filtrarUsuarios() {
-        usrBusca = document.getElementById('busca-usuarios').value.toLowerCase().trim();
-        paginadorUsuarios.resetar();
-    }
-
-    function filtrarCiclos() {
-        cicloBusca = document.getElementById('busca-ciclos').value.toLowerCase().trim();
-        paginadorCiclos.resetar();
-    }
-
-    function filtrarCiclosArq() {
-        cicloArqBusca = document.getElementById('busca-ciclos-arq').value.toLowerCase().trim();
-        paginadorCiclosArq.resetar();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        if (document.querySelector('.processo-row')) paginadorProcessos.renderizar();
-        if (document.querySelector('.usuario-row')) paginadorUsuarios.renderizar();
-        if (document.querySelector('.ciclo-row')) paginadorCiclos.renderizar();
-        if (document.querySelector('.ciclo-arq-row')) paginadorCiclosArq.renderizar();
-    });
-
-    function toggleArquivados() {
-        const secao = document.getElementById('secao-arquivados');
-        const icon = document.getElementById('icon-arquivados');
-        secao.classList.toggle('hidden');
-        icon.style.transform = secao.classList.contains('hidden') ? '' : 'rotate(90deg)';
-    }
-
-    function openModal(modalId) {
-        const modal = document.getElementById(modalId);
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        setTimeout(() => { modal.classList.add('modal-active'); }, 10);
-    }
-
-    function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        modal.classList.remove('modal-active');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }, 200);
-    }
-
-    function switchTab(tab) {
-        const tabs = ['pendentes', 'todos'];
-        tabs.forEach(t => {
-            document.getElementById('tab-' + t).classList.add('hidden');
-            const btn = document.getElementById('tab-btn-' + t);
-            btn.classList.remove('border-tjgo-blue', 'text-tjgo-blue');
-            btn.classList.add('border-transparent', 'text-rotulo');
-        });
-        document.getElementById('tab-' + tab).classList.remove('hidden');
-        const activeBtn = document.getElementById('tab-btn-' + tab);
-        activeBtn.classList.remove('border-transparent', 'text-rotulo');
-        activeBtn.classList.add('border-tjgo-blue', 'text-tjgo-blue');
-    }
-
-    function abrirEdicao(id, username, email, tipo, ativo) {
-        document.getElementById('edicao-user-id').value = id;
-        document.getElementById('edicao-username').textContent = username;
-        document.getElementById('edicao-email').textContent = email;
-        document.getElementById('edicao-tipo').value = tipo;
-        document.getElementById('edicao-ativo').checked = ativo;
-        const modal = document.getElementById('modal-editar-usuario');
-        modal.classList.remove('hidden');
-        modal.classList.add('flex');
-        setTimeout(() => { modal.classList.add('modal-active'); }, 10);
-    }
-
-    function fecharEdicao() {
-        const modal = document.getElementById('modal-editar-usuario');
-        modal.classList.remove('modal-active');
-        setTimeout(() => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }, 200);
-    }
-
-    {% if messages %}
-    document.addEventListener('DOMContentLoaded', () => {
-        let abrirCiclo = false;
-        let abrirUsuarios = false;
-        {% for message in messages %}
-            {% if 'ciclo' in message.tags %}abrirCiclo = true;{% endif %}
-            {% if 'usuario' in message.tags %}abrirUsuarios = true;{% endif %}
-        {% endfor %}
-        if (abrirCiclo) {
-            const m = document.getElementById('modal-ciclo');
-            if (m) openModal('modal-ciclo');
-        }
-        if (abrirUsuarios) {
-            const m = document.getElementById('modal-usuarios');
-            if (m) { openModal('modal-usuarios'); switchTab('todos'); }
-        }
-    });
-    {% endif %}
-</script>
-{% endblock %}
+{% extends 'base/layouts/layout_admin.html' %}
+{% load ui %}
+{% load processos_ui %}
+{% load ciclos_ui %}
+{% load static %}
+
+{% block title %}Painel de Gestão - Projudi{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/painel.css' %}">
+<script src="{% static 'js/paginador.js' %}"></script>
+{% endblock %}
+
+{% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
+
+
+
+
+{% block content %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+
+    <!-- Cabeçalho da Página -->
+        <div class="mb-[14px] border-b border-contorno pb-[14px]">
+            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+                <i class="fa-solid fa-chart-line"></i> Painel de Controle
+            </h1>
+            <p class="text-corpo text-texto-neutro mt-1.5">Visão geral dos ciclos de simulação, turmas e avaliações pendentes.</p>
+        </div>
+
+        <!-- Mensagens de feedback -->
+        {% include 'base/components/_mensagens.html' %}
+
+        <!-- BANNER DE ALERTA (Aprovações Pendentes) -->
+        {% if usuarios_pendentes_count %}
+        <div class="mb-[14px] bg-atencao-bg border border-atencao-bd border-l-[3px] border-l-atencao-txt px-4 py-[14px] flex items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="p-2">
+                    <i class="fa-solid fa-user-clock text-atencao-txt text-xl"></i>
+                </div>
+                <div>
+                    <p class="text-corpo font-semibold text-atencao-txt">Aprovações de Cadastro Pendentes</p>
+                    <p class="text-apoio text-atencao-txt mt-0.5">
+                        Existem <strong>{{ usuarios_pendentes_count }} novo{{ usuarios_pendentes_count|pluralize }} aluno{{ usuarios_pendentes_count|pluralize }}</strong> aguardando liberação de perfil.
+                    </p>
+                </div>
+            </div>
+            <button type="button" onclick="openModal('modal-usuarios'); switchTab('pendentes')"
+                class="{% classe_botao 'primario' padding=True %} flex items-center gap-2 shrink-0 whitespace-nowrap">
+                Analisar Cadastros <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </div>
+        {% endif %}
+
+        <div class="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-[14px] items-start">
+
+            <!-- COLUNA ESQUERDA (Tabelas de Gestão) -->
+            <section>
+
+                <!-- BLOCO: Gestão de Ciclos -->
+                <div class="border border-contorno bg-white mb-[14px] overflow-hidden">
+                    <div class="px-4 py-[9px] border-b border-contorno bg-card-topo flex items-center justify-between gap-3">
+                        <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy flex items-center gap-2">
+                            <i class="fa-solid fa-folder-tree text-rotulo"></i> GESTÃO DE CICLOS DE SIMULAÇÃO
+                        </span>
+                        {% if status_ciclo_opcoes %}
+                        <button type="button" onclick="openModal('modal-ciclo')" class="{% classe_botao 'primario' %} {% padding_botao 'linha' %} flex items-center gap-1 shrink-0">
+                            <i class="fa-solid fa-plus"></i> Novo ciclo
+                        </button>
+                        {% endif %}
+                    </div>
+                    <div class="px-4 py-[14px] text-corpo text-texto overflow-x-auto">
+                        {% if ciclos %}
+                        <!-- Busca de ciclos -->
+                        <div class="mb-4 flex items-center gap-2">
+                            <div class="relative flex-1">
+                                <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-rotulo text-xs"></i>
+                                <input id="busca-ciclos" type="text" placeholder="Pesquisar ciclo por nome..."
+                                    oninput="filtrarCiclos()"
+                                    class="{% classe_campo %} pl-9">
+                            </div>
+                        </div>
+                        <table class="tbl-projudi" id="tabela-ciclos">
+                            <thead>
+                                <tr>
+                                    <th>Edição / Semestre</th>
+                                    <th>Status</th>
+                                    <th>Grupos</th>
+                                    <th class="text-right">Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ciclo in ciclos %}
+                                <tr class="ciclo-row"
+                                    data-nome="{{ ciclo.nome_edicao|lower }}">
+                                    <td>
+                                        <span class="font-bold
+                                            {% if ciclo.status.nome_status == 'em andamento' %}text-acao
+                                            {% elif ciclo.status.nome_status == 'finalizado' %}text-navy
+                                            {% else %}text-rotulo{% endif %}">
+                                            {{ ciclo.nome_edicao }}
+                                        </span>
+                                        <span class="block text-[10px] text-rotulo mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %} - Responsável: {{ ciclo.coordenador.first_name | capfirst }} </span>
+                                    </td>
+                                    <td>
+                                        {% badge_status_ciclo ciclo.status %}
+                                    </td>
+                                    <td class="font-semibold text-texto-neutro">{{ ciclo.num_grupos }} Grupo{{ ciclo.num_grupos|pluralize }}</td>
+                                    <td class="align-middle">
+                                        <div class="flex justify-end items-center gap-3">
+                                            <a href="{% url 'ciclos:gerenciar_grupos' ciclo.pk %}"
+                                               class="text-acao text-[11px] font-bold hover:underline flex items-center gap-1">
+                                                <i class="fa-solid fa-users"></i> Gerenciar Grupos
+                                            </a>
+                                            {% if ciclo.pk in ciclos_editaveis %}
+                                            <a href="{% url 'ciclos:editar_ciclo' ciclo.pk %}"
+                                               class="text-rotulo text-[11px] font-bold hover:text-navy hover:underline flex items-center gap-1">
+                                                <i class="fa-solid fa-pen"></i> Editar
+                                            </a>
+                                            {% else %}
+                                            <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
+                                               class="text-rotulo text-[11px] font-bold hover:text-navy hover:underline flex items-center gap-1">
+                                                <i class="fa-solid fa-eye"></i> Visualizar
+                                            </a>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% include 'base/components/_estado_vazio.html' with id="ciclos-vazio-busca" mensagem="Nenhum ciclo encontrado para esta pesquisa." oculto=True only %}
+                        {% include 'base/components/_paginacao.html' with container_id="paginacao-ciclos" info_id="paginacao-ciclos-info" paginas_id="paginacao-ciclos-paginas" btn_prefixo="btn-ciclo" handler="mudarPaginaCiclos" only %}
+                        {% else %}
+                        {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum ciclo de simulação cadastrado." only %}
+                        {% endif %}
+
+                        {% if ciclos_arquivados %}
+                        <!-- Separador + Toggle Arquivados -->
+                        <div class="mt-4 border-t border-contorno pt-3">
+                            <button type="button" onclick="toggleArquivados()" id="btn-toggle-arquivados"
+                                class="flex items-center gap-2 text-[11px] font-bold text-rotulo hover:text-navy transition-colors uppercase">
+                                <i id="icon-arquivados" class="fa-solid fa-chevron-right text-[9px] transition-transform duration-200"></i>
+                                <i class="fa-solid fa-box-archive text-xs"></i>
+                                Ciclos Arquivados
+                                <span class="bg-contorno text-texto-neutro text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-1">{{ ciclos_arquivados|length }}</span>
+                            </button>
+                            <div id="secao-arquivados" class="hidden mt-3">
+                                <!-- Busca de ciclos arquivados -->
+                                <div class="mb-3 flex items-center gap-2">
+                                    <div class="relative flex-1">
+                                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-rotulo text-xs"></i>
+                                        <input id="busca-ciclos-arq" type="text" placeholder="Pesquisar ciclo arquivado por nome..."
+                                            oninput="filtrarCiclosArq()"
+                                            class="{% classe_campo %} pl-9">
+                                    </div>
+                                </div>
+                                <table class="tbl-projudi" id="tabela-ciclos-arq">
+                                    <thead>
+                                        <tr>
+                                            <th>Edição / Semestre</th>
+                                            <th>Status</th>
+                                            <th>Grupos</th>
+                                            <th class="text-right">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ciclo in ciclos_arquivados %}
+                                        <tr class="ciclo-arq-row opacity-75"
+                                            data-nome="{{ ciclo.nome_edicao|lower }}">
+                                            <td>
+                                                <span class="font-bold text-rotulo">{{ ciclo.nome_edicao }}</span>
+                                                <span class="block text-[10px] text-rotulo mt-0.5">{{ ciclo.semestre }}º Sem. / {{ ciclo.ano }}{% if ciclo.periodo %} — {{ ciclo.periodo }}{% endif %} - Responsável: {{ ciclo.coordenador.first_name|capfirst }}</span>
+                                            </td>
+                                            <td>
+                                                <span class="inline-flex items-center gap-1 bg-tabela-topo text-rotulo border border-contorno text-[10px] font-bold px-2.5 py-1 rounded uppercase">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-neutro-txt inline-block"></span>{{ ciclo.status }}
+                                                </span>
+                                            </td>
+                                            <td class="font-semibold text-rotulo">{{ ciclo.num_grupos }} Grupo{{ ciclo.num_grupos|pluralize }}</td>
+                                            <td class="align-middle">
+                                                <div class="flex justify-end items-center gap-3">
+                                                    <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
+                                                       class="text-rotulo text-[11px] font-bold hover:text-navy hover:underline flex items-center gap-1">
+                                                        <i class="fa-solid fa-eye"></i> Visualizar
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% include 'base/components/_estado_vazio.html' with id="ciclos-arq-vazio-busca" mensagem="Nenhum ciclo arquivado encontrado para esta pesquisa." oculto=True only %}
+                                {% include 'base/components/_paginacao.html' with container_id="paginacao-ciclos-arq" info_id="paginacao-ciclos-arq-info" paginas_id="paginacao-ciclos-arq-paginas" btn_prefixo="btn-ciclo-arq" handler="mudarPaginaCiclosArq" only %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- BLOCO: Processos dos Ciclos Ativos -->
+                <div class="border border-contorno bg-white mb-[14px] overflow-hidden">
+                    <div class="px-4 py-[9px] border-b border-contorno bg-card-topo flex items-center justify-between gap-3">
+                        <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy flex items-center gap-2">
+                            <i class="fa-solid fa-gavel text-rotulo"></i> PROCESSOS DOS CICLOS ATIVOS
+                        </span>
+                        {% if ciclos_ativos_professor|length > 1 %}
+                        <select id="filtro-ciclo-processos" onchange="filtrarProcessosPorCiclo(this.value)"
+                            class="bg-white border border-campo-borda rounded-campo text-apoio text-texto px-2 py-1 focus:outline-none focus:border-acao cursor-pointer shrink-0">
+                            {% for c in ciclos_ativos_professor %}
+                            <option value="{{ c.pk }}" {% if forloop.first %}selected{% endif %}>{{ c.nome_edicao }}</option>
+                            {% endfor %}
+                            <option value="todos">Todos os ciclos</option>
+                        </select>
+                        {% elif ciclos_ativos_professor|length == 1 %}
+                        <span class="text-meta text-rotulo font-normal normal-case tracking-normal shrink-0">{{ ciclos_ativos_professor.0.nome_edicao }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="px-4 py-[14px] text-corpo text-texto overflow-x-auto">
+                        {% if processos_professor %}
+                        <table class="tbl-projudi" id="tabela-processos-ciclo">
+                            <thead>
+                                <tr>
+                                    <th>Nº Processo</th>
+                                    <th>Partes</th>
+                                    <th>Classe</th>
+                                    <th>Status</th>
+                                    <th class="text-right">Ação</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for processo in processos_professor %}
+                                <tr class="processo-row" data-ciclo-id="{{ processo.ciclo_id }}">
+                                    <td>
+                                        <span class="block font-semibold text-navy font-mono">{{ processo.numero }}</span>
+                                        {% if ciclos_ativos_professor|length > 1 %}
+                                        <span class="block text-[10px] text-rotulo mt-0.5">{{ processo.ciclo.nome_edicao }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-texto-neutro">{{ processo.partes_resumo }}</span>
+                                    </td>
+                                    <td class="text-texto-neutro">{{ processo.classe }}</td>
+                                    <td>
+                                        {% badge_status_processo processo.status_atual %}
+                                    </td>
+                                    <td class="text-right">
+                                        <a href="{% url 'processos:visualizar_processo' processo.numero %}"
+                                           class="{% classe_botao 'primario' %} py-1.5 px-3 text-[11px] uppercase inline-flex items-center gap-1 whitespace-nowrap">
+                                            <i class="fa-solid fa-eye text-[10px]"></i> Ver Autos
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% include 'base/components/_paginacao.html' with container_id="paginacao-processos" info_id="paginacao-info" paginas_id="paginacao-paginas" btn_prefixo="btn" handler="mudarPagina" only %}
+                        {% include 'base/components/_estado_vazio.html' with id="processos-vazio-filtro" mensagem="Nenhum processo encontrado neste ciclo." oculto=True only %}
+                        {% else %}
+                        {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum processo encontrado nos ciclos ativos." only %}
+                        {% endif %}
+                    </div>
+                </div>
+            </section>
+
+            <!-- COLUNA DIREITA (Resumo e Ações Rápidas) -->
+            <aside>
+                <h2 class="section-title !mt-0">
+                    <i class="fa-solid fa-chart-pie"></i> Resumo do Semestre (Atual)
+                </h2>
+                <div class="grid grid-cols-2 gap-[14px] mb-[14px] mt-[14px]">
+                    {% include 'base/components/_card_kpi.html' with rotulo="Processos Ativos" numero=45 only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Avaliações Pendentes" numero=12 variante="alerta" only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Grupos de Trabalho" numero=8 only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Alunos Vinculados" numero=20 only %}
+                </div>
+
+                <div>
+                    <h2 class="section-title">
+                        <i class="fa-solid fa-bolt"></i> Ações Rápidas
+                    </h2>
+                    <div class="grid grid-cols-2 gap-[14px] mt-[14px]">
+                        <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
+                            <i class="fa-solid fa-file-circle-plus text-2xl text-navy mb-2"></i>
+                            <span class="text-[11px] font-bold leading-tight text-texto">Distribuir<br>Novo Processo</span>
+                        </a>
+                        <button type="button" onclick="openModal('modal-usuarios'); switchTab('todos')"
+                            class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px] w-full">
+                            <i class="fa-solid fa-users-gear text-2xl text-navy mb-2"></i>
+                            <span class="text-[11px] font-bold leading-tight text-texto">Gerir<br>Usuários</span>
+                        </button>
+                        <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
+                            <i class="fa-solid fa-calendar-days text-2xl text-navy mb-2"></i>
+                            <span class="text-[11px] font-bold leading-tight text-texto">Agendar<br>Audiência</span>
+                        </a>
+                        <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
+                            <i class="fa-solid fa-clipboard-check text-2xl text-navy mb-2"></i>
+                            <span class="text-[11px] font-bold leading-tight text-texto">Relatório de<br>Notas</span>
+                        </a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+
+</main>
+
+<!-- Modal: Gestão de Usuários -->
+{% if usuarios %}
+<div id="modal-usuarios" class="fixed inset-0 z-modal hidden items-center justify-center">
+    <div class="absolute inset-0 modal-overlay" style="background: rgba(10,8,61,.55);" onclick="closeModal('modal-usuarios')"></div>
+    <div class="relative bg-white w-full max-w-4xl border border-contorno shadow-modal overflow-hidden modal-content flex flex-col max-h-[90vh]">
+
+        <!-- Cabeçalho -->
+        <div class="bg-navy text-white px-5 py-3.5 text-apoio font-bold uppercase tracking-[.12em] flex justify-between items-center gap-4 shrink-0">
+            <span><i class="fa-solid fa-users-gear mr-2"></i> Gestão de Usuários</span>
+            <button onclick="closeModal('modal-usuarios')" class="text-navy-40 hover:text-white transition-colors text-base leading-none" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Abas -->
+        <div class="tabs interativa px-5 shrink-0">
+            <button id="tab-btn-pendentes" onclick="switchTab('pendentes')" class="tab tab-btn active">
+                <i class="fa-solid fa-user-clock mr-1"></i> Pendentes
+                <span id="badge-pendentes" class="ml-1.5 bg-erro-bg text-erro-txt border border-erro-bd text-micro font-bold px-1.5">{{ usuarios_pendentes_count }}</span>
+            </button>
+            <button id="tab-btn-todos" onclick="switchTab('todos')" class="tab tab-btn">
+                <i class="fa-solid fa-list mr-1"></i> Todos os Usuários
+            </button>
+        </div>
+
+        <!-- Conteúdo rolável -->
+        <div class="overflow-y-auto flex-1">
+
+            <!-- Aba: Pendentes -->
+            <div id="tab-pendentes" class="p-5">
+                {% if usuarios_pendentes_count %}
+                <table class="tbl-projudi">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Email</th>
+                            <th>Data do Cadastro</th>
+                            <th class="text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}{% if not u.is_active %}
+                        <tr>
+                            <td>
+                                <span class="font-semibold text-navy block">{{ u.username }}</span>
+                                <span class="text-[10px] text-rotulo">{{ u.get_full_name }}</span>
+                            </td>
+                            <td class="text-texto-neutro">{{ u.email }}</td>
+                            <td class="text-rotulo">{{ u.date_joined|date:"d/m/Y H:i" }}</td>
+                            <td class="text-right">
+                                <button type="button"
+                                    class="{% classe_botao 'primario' %} {% padding_botao 'linha' %} whitespace-nowrap"
+                                    onclick="abrirEdicao('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.tipo_perfil_global }}', false)">
+                                    <i class="fa-solid fa-user-check mr-1"></i> Aprovar / Editar
+                                </button>
+                            </td>
+                        </tr>
+                        {% endif %}{% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="py-10 text-center">
+                    <i class="fa-solid fa-circle-check text-ok-txt text-3xl mb-3"></i>
+                    <p class="text-corpo text-rotulo font-medium">Nenhum cadastro pendente de aprovação.</p>
+                    <p class="text-[11px] text-rotulo mt-1">Todos os usuários já foram analisados.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Aba: Todos -->
+            <div id="tab-todos" class="p-5 hidden">
+                <!-- Busca -->
+                <div class="mb-4 flex items-center gap-2">
+                    <div class="relative flex-1">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-rotulo text-xs"></i>
+                        <input id="busca-usuarios" type="text" placeholder="Pesquisar por nome ou email..."
+                            oninput="filtrarUsuarios()"
+                            class="{% classe_campo %} pl-9">
+                    </div>
+                </div>
+                <table class="tbl-projudi" id="tabela-todos-usuarios">
+                    <thead>
+                        <tr>
+                            <th>Usuário</th>
+                            <th>Email</th>
+                            <th>Tipo de Perfil</th>
+                            <th>Status</th>
+                            <th class="text-right">Ação</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in usuarios %}
+                        <tr class="usuario-row"
+                            data-nome="{{ u.username|lower }} {{ u.get_full_name|lower }}"
+                            data-email="{{ u.email|lower }}">
+                            <td>
+                                <span class="font-semibold text-navy block">{{ u.username }}</span>
+                                <span class="text-[10px] text-rotulo">{{ u.get_full_name }}</span>
+                            </td>
+                            <td class="text-texto-neutro">{{ u.email }}</td>
+                            <td class="text-texto-neutro">{{ u.get_tipo_perfil_global_display }}</td>
+                            <td>
+                                {% if u.is_active %}
+                                <span class="pill ok">Ativo</span>
+                                {% else %}
+                                <span class="pill gray">Pendente</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">
+                                <button type="button"
+                                    class="text-acao text-[11px] font-bold hover:underline"
+                                    onclick="abrirEdicao('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.tipo_perfil_global }}', {% if u.is_active %}true{% else %}false{% endif %})">
+                                    <i class="fa-solid fa-pen text-[10px]"></i> editar
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr><td colspan="5" class="text-center text-rotulo italic py-[22px]">Nenhum usuário encontrado.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% include 'base/components/_estado_vazio.html' with id="usuarios-vazio-busca" mensagem="Nenhum usuário encontrado para esta pesquisa." oculto=True only %}
+                {% include 'base/components/_paginacao.html' with container_id="paginacao-usuarios" info_id="paginacao-usuarios-info" paginas_id="paginacao-usuarios-paginas" btn_prefixo="btn-usr" handler="mudarPaginaUsuarios" only %}
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- Modal: Editar Usuário (aninhado, z maior) -->
+<div id="modal-editar-usuario" class="fixed inset-0 z-[61] hidden items-center justify-center">
+    <div class="absolute inset-0" style="background: rgba(10,8,61,.35);" onclick="fecharEdicao()"></div>
+    <div class="relative bg-white w-full max-w-sm border border-contorno shadow-modal overflow-hidden modal-content flex flex-col">
+        <div class="bg-navy text-white px-5 py-3.5 text-apoio font-bold uppercase tracking-[.12em] flex justify-between items-center gap-4">
+            <span><i class="fa-solid fa-user-pen mr-2"></i> Editar / Aprovar Usuário</span>
+            <button onclick="fecharEdicao()" class="text-navy-40 hover:text-white transition-colors text-base leading-none" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="px-4 py-[14px] text-corpo">
+            <div class="mb-4 pb-3 border-b border-divisor">
+                <span class="font-semibold text-navy text-corpo block mb-0.5" id="edicao-username">-</span>
+                <span class="text-apoio text-rotulo" id="edicao-email">-</span>
+            </div>
+            <form method="post" action="{% url 'acesso:usuario_atualizar' %}" class="space-y-4">
+                {% csrf_token %}
+                <input type="hidden" name="user_id" id="edicao-user-id">
+                <input type="hidden" name="next" value="{% url 'acesso:painel_administrativo' %}">
+                <div>
+                    <label class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">Tipo de Perfil</label>
+                    <select id="edicao-tipo" name="tipo_perfil_global"
+                        class="{% classe_campo %}">
+                        {% for value, label in tipos_opcoes %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 bg-card-topo border border-contorno p-3">
+                    <input id="edicao-ativo" name="is_active" type="checkbox" value="on"
+                        class="w-3.5 h-3.5 accent-acao">
+                    <label for="edicao-ativo" class="text-micro font-semibold uppercase text-rotulo cursor-pointer">Ativo (liberar acesso ao sistema)</label>
+                </div>
+                <div class="flex gap-2 pt-1">
+                    <button type="submit" class="flex-1 {% classe_botao 'primario' %} py-2">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar
+                    </button>
+                    <button type="button" onclick="fecharEdicao()" class="flex-1 {% classe_botao 'secundario' %} py-2">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Modal: Novo Ciclo -->
+{% if status_ciclo_opcoes %}
+<div id="modal-ciclo" class="fixed inset-0 z-modal hidden items-center justify-center">
+    <div class="absolute inset-0 modal-overlay" style="background: rgba(10,8,61,.55);" onclick="closeModal('modal-ciclo')"></div>
+    <div class="relative bg-white w-full max-w-[560px] border border-contorno shadow-modal overflow-hidden modal-content flex flex-col max-h-[90vh]">
+        <div class="bg-navy text-white px-5 py-3.5 text-apoio font-bold uppercase tracking-[.12em] flex justify-between items-center gap-4 shrink-0">
+            <span><i class="fa-solid fa-folder-plus mr-2"></i> Novo Ciclo de Simulação</span>
+            <button onclick="closeModal('modal-ciclo')" class="text-navy-40 hover:text-white transition-colors text-base leading-none" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form method="post" action="{% url 'ciclos:criar_ciclo' %}" class="flex flex-col overflow-hidden">
+            {% csrf_token %}
+            <div class="px-4 py-[14px] overflow-y-auto flex flex-col gap-3 text-corpo">
+
+                <!-- Nome da Edição -->
+                <div>
+                    <label class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">
+                        Nome / Edição do Ciclo *
+                    </label>
+                    <input
+                        type="text"
+                        name="nome_edicao"
+                        placeholder="Ex: Simulação NPJ - Turma A"
+                        maxlength="150"
+                        required
+                        class="{% classe_campo %}">
+                </div>
+
+                <!-- Semestre e Ano -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">Semestre *</label>
+                        <select
+                            name="semestre"
+                            required
+                            class="{% classe_campo %}">
+                            <option value="">Selecione...</option>
+                            <option value="1">1º Semestre</option>
+                            <option value="2">2º Semestre</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">Ano *</label>
+                        <input
+                            type="number"
+                            name="ano"
+                            value="{{ ano_atual }}"
+                            min="2000"
+                            max="{{ ano_atual|add:5 }}"
+                            required
+                            class="{% classe_campo %}">
+                    </div>
+                </div>
+
+                
+
+                <!-- Info coordenador (somente leitura) -->
+                <div class="bg-linha-hover border border-[#c9d5ea] px-3 py-2 text-dado text-acao flex items-center gap-2">
+                    <i class="fa-solid fa-circle-info"></i>
+                    Você será registrado automaticamente como <strong>Coordenador</strong> deste ciclo.
+                </div>
+
+            </div>
+            <div class="modal-acoes shrink-0">
+                <button type="submit" class="{% classe_botao 'primario' padding=True %} flex items-center gap-2">
+                    <i class="fa-solid fa-floppy-disk"></i> Salvar Ciclo
+                </button>
+                <button type="button" onclick="closeModal('modal-ciclo')" class="{% classe_botao 'secundario' padding=True %}">
+                    Cancelar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endif %}
+
+<script>
+    let cicloFiltrado = 'todos';
+    let usrBusca = '';
+    let cicloBusca = '';
+    let cicloArqBusca = '';
+
+    (function() {
+        const sel = document.getElementById('filtro-ciclo-processos');
+        if (sel) cicloFiltrado = sel.value;
+    })();
+
+    const paginadorProcessos = criarPaginador({
+        rowSelector: '.processo-row',
+        porPagina: 4,
+        tabelaId: 'tabela-processos-ciclo',
+        msgVazioId: 'processos-vazio-filtro',
+        paginacaoId: 'paginacao-processos',
+        infoId: 'paginacao-info',
+        paginasContainerId: 'paginacao-paginas',
+        btnPrimeiraId: 'btn-primeira',
+        btnAnteriorId: 'btn-anterior',
+        btnProximaId: 'btn-proxima',
+        btnUltimaId: 'btn-ultima',
+        filtrarRows: (todas) => cicloFiltrado === 'todos' ? todas : todas.filter(r => r.dataset.cicloId === cicloFiltrado),
+    });
+
+    const paginadorUsuarios = criarPaginador({
+        rowSelector: '.usuario-row',
+        porPagina: 10,
+        tabelaId: 'tabela-todos-usuarios',
+        msgVazioId: 'usuarios-vazio-busca',
+        paginacaoId: 'paginacao-usuarios',
+        infoId: 'paginacao-usuarios-info',
+        paginasContainerId: 'paginacao-usuarios-paginas',
+        btnPrimeiraId: 'btn-usr-primeira',
+        btnAnteriorId: 'btn-usr-anterior',
+        btnProximaId: 'btn-usr-proxima',
+        btnUltimaId: 'btn-usr-ultima',
+        filtrarRows: (todas) => !usrBusca ? todas : todas.filter(r => r.dataset.nome.includes(usrBusca) || r.dataset.email.includes(usrBusca)),
+    });
+
+    const paginadorCiclos = criarPaginador({
+        rowSelector: '.ciclo-row',
+        porPagina: 5,
+        tabelaId: 'tabela-ciclos',
+        msgVazioId: 'ciclos-vazio-busca',
+        paginacaoId: 'paginacao-ciclos',
+        infoId: 'paginacao-ciclos-info',
+        paginasContainerId: 'paginacao-ciclos-paginas',
+        btnPrimeiraId: 'btn-ciclo-primeira',
+        btnAnteriorId: 'btn-ciclo-anterior',
+        btnProximaId: 'btn-ciclo-proxima',
+        btnUltimaId: 'btn-ciclo-ultima',
+        filtrarRows: (todas) => !cicloBusca ? todas : todas.filter(r => r.dataset.nome.includes(cicloBusca)),
+    });
+
+    const paginadorCiclosArq = criarPaginador({
+        rowSelector: '.ciclo-arq-row',
+        porPagina: 5,
+        tabelaId: 'tabela-ciclos-arq',
+        msgVazioId: 'ciclos-arq-vazio-busca',
+        paginacaoId: 'paginacao-ciclos-arq',
+        infoId: 'paginacao-ciclos-arq-info',
+        paginasContainerId: 'paginacao-ciclos-arq-paginas',
+        btnPrimeiraId: 'btn-ciclo-arq-primeira',
+        btnAnteriorId: 'btn-ciclo-arq-anterior',
+        btnProximaId: 'btn-ciclo-arq-proxima',
+        btnUltimaId: 'btn-ciclo-arq-ultima',
+        filtrarRows: (todas) => !cicloArqBusca ? todas : todas.filter(r => r.dataset.nome.includes(cicloArqBusca)),
+    });
+
+    function mudarPagina(acao) { paginadorProcessos.mudarPagina(acao); }
+    function mudarPaginaUsuarios(acao) { paginadorUsuarios.mudarPagina(acao); }
+    function mudarPaginaCiclos(acao) { paginadorCiclos.mudarPagina(acao); }
+    function mudarPaginaCiclosArq(acao) { paginadorCiclosArq.mudarPagina(acao); }
+
+    function filtrarProcessosPorCiclo(cicloId) {
+        cicloFiltrado = cicloId;
+        paginadorProcessos.resetar();
+    }
+
+    function filtrarUsuarios() {
+        usrBusca = document.getElementById('busca-usuarios').value.toLowerCase().trim();
+        paginadorUsuarios.resetar();
+    }
+
+    function filtrarCiclos() {
+        cicloBusca = document.getElementById('busca-ciclos').value.toLowerCase().trim();
+        paginadorCiclos.resetar();
+    }
+
+    function filtrarCiclosArq() {
+        cicloArqBusca = document.getElementById('busca-ciclos-arq').value.toLowerCase().trim();
+        paginadorCiclosArq.resetar();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.querySelector('.processo-row')) paginadorProcessos.renderizar();
+        if (document.querySelector('.usuario-row')) paginadorUsuarios.renderizar();
+        if (document.querySelector('.ciclo-row')) paginadorCiclos.renderizar();
+        if (document.querySelector('.ciclo-arq-row')) paginadorCiclosArq.renderizar();
+    });
+
+    function toggleArquivados() {
+        const secao = document.getElementById('secao-arquivados');
+        const icon = document.getElementById('icon-arquivados');
+        secao.classList.toggle('hidden');
+        icon.style.transform = secao.classList.contains('hidden') ? '' : 'rotate(90deg)';
+    }
+
+    function openModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => { modal.classList.add('modal-active'); }, 10);
+    }
+
+    function closeModal(modalId) {
+        const modal = document.getElementById(modalId);
+        modal.classList.remove('modal-active');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+
+    function switchTab(tab) {
+        const tabs = ['pendentes', 'todos'];
+        tabs.forEach(t => {
+            document.getElementById('tab-' + t).classList.add('hidden');
+            const btn = document.getElementById('tab-btn-' + t);
+            btn.classList.remove('active');
+        });
+        document.getElementById('tab-' + tab).classList.remove('hidden');
+        const activeBtn = document.getElementById('tab-btn-' + tab);
+        activeBtn.classList.add('active');
+    }
+
+    function abrirEdicao(id, username, email, tipo, ativo) {
+        document.getElementById('edicao-user-id').value = id;
+        document.getElementById('edicao-username').textContent = username;
+        document.getElementById('edicao-email').textContent = email;
+        document.getElementById('edicao-tipo').value = tipo;
+        document.getElementById('edicao-ativo').checked = ativo;
+        const modal = document.getElementById('modal-editar-usuario');
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        setTimeout(() => { modal.classList.add('modal-active'); }, 10);
+    }
+
+    function fecharEdicao() {
+        const modal = document.getElementById('modal-editar-usuario');
+        modal.classList.remove('modal-active');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }, 200);
+    }
+
+    {% if messages %}
+    document.addEventListener('DOMContentLoaded', () => {
+        let abrirCiclo = false;
+        let abrirUsuarios = false;
+        {% for message in messages %}
+            {% if 'ciclo' in message.tags %}abrirCiclo = true;{% endif %}
+            {% if 'usuario' in message.tags %}abrirUsuarios = true;{% endif %}
+        {% endfor %}
+        if (abrirCiclo) {
+            const m = document.getElementById('modal-ciclo');
+            if (m) openModal('modal-ciclo');
+        }
+        if (abrirUsuarios) {
+            const m = document.getElementById('modal-usuarios');
+            if (m) { openModal('modal-usuarios'); switchTab('todos'); }
+        }
+    });
+    {% endif %}
+</script>
+{% endblock %}
