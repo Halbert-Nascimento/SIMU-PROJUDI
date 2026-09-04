@@ -34,19 +34,27 @@
 .accordion-item-aberto { background: #0a083d; color: #fff; }
 .accordion-item-aberto i { font-size: 10px; margin-right: 8px; color: #a7abcd; }
 
-/* Bloco de destaque da tela de login */
-.icon-sessao-virtual {
+/* Marca da tela de login. Era .icon-sessao-virtual com um icone de grupo de
+   pessoas — heranca do bloco "Sessao Virtual" do Projudi, onde o icone levava
+   as sessoes. Aqui nao levava a nada, e o guia poe "sem icone decorativo" em
+   Nao faca; sobrou o letreiro. O fio de 4px e o unico papel que o guia reserva
+   a cor marca, entao e dele o vermelho. */
+.marca-simulador {
     display: flex; justify-content: center; align-items: center;
     width: 100px; height: 70px;
-    background: #1f4f9c; color: #fff;
-    font-size: 38px;
+    background: #0a083d; color: #fff;
     border: 1px solid #0a083d;
     position: relative;
 }
-.icon-sessao-virtual::after {
+.marca-simulador::after {
     content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
-    width: 40px; height: 4px; background: #0a083d;
+    width: 40px; height: 4px; background: #d30000;
 }
+
+/* Card de manual da tela de login. O card sem manual anexado nao reage ao
+   ponteiro: sem hover, para nao prometer um clique que nao existe. */
+.card-manual { transition: background-color .15s ease, border-color .15s ease; }
+.card-manual:not(.card-manual-vazio):hover { border-color: #1f4f9c; background: #f7faff; }
 
 /* Rodapé */
 .footer {

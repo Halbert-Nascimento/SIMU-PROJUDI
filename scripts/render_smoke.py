@@ -165,7 +165,25 @@ def ctx_visualizar(sem_movimentacao=False, com_arquivo=True, pode_alterar=True):
     }
 
 
+def ctx_login(com_erros=False, expirada=False):
+    anonimo = Obj(is_authenticated=False)
+    erros = ["Por favor, entre com um Usuário e senha corretos."] if com_erros else []
+    return {
+        "user": anonimo,
+        "request": Obj(user=anonimo, path="/",
+                       GET={"exp": "1"} if expirada else {}),
+        "form": Obj(
+            username=campo_form("maria.souza" if com_erros else None),
+            password=campo_form(),
+            non_field_errors=erros,
+        ),
+    }
+
+
 CASOS = [
+    ("acesso/login.html", "form limpo", ctx_login()),
+    ("acesso/login.html", "credenciais inválidas", ctx_login(com_erros=True)),
+    ("acesso/login.html", "sessão expirada", ctx_login(expirada=True)),
     ("processos/visualizar_processo.html", "12 movimentações", ctx_visualizar()),
     ("processos/visualizar_processo.html", "sem movimentação", ctx_visualizar(sem_movimentacao=True)),
     ("processos/visualizar_processo.html", "sem arquivo anexo", ctx_visualizar(com_arquivo=False)),
