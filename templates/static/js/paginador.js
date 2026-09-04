@@ -13,6 +13,12 @@
  *
  * Em ambos, a reserva só existe enquanto houver mais de uma página: filtrar até
  * um resultado deve encolher a lista mesmo — o que não pode é encolher ao paginar.
+ *
+ * `aoAtualizar` é chamado a cada render, depois de decidir quais linhas
+ * aparecem e antes de medir a reserva. Serve para listagem em que uma linha
+ * acompanha outra — em visualizar_processo cada movimentação tem uma segunda
+ * <tr> com os arquivos dela, que o rowSelector não seleciona e que ficaria
+ * visível sozinha ao trocar de página.
  */
 function criarPaginador(config) {
     let paginaAtual = 1;
@@ -100,6 +106,12 @@ function criarPaginador(config) {
 
         document.querySelectorAll(config.rowSelector).forEach(r => r.style.display = 'none');
         rows.forEach((r, i) => { r.style.display = (i >= inicio && i < fim) ? '' : 'none'; });
+
+        // Roda depois de decidir quais linhas aparecem e ANTES de medir a
+        // reserva — é aqui que mora a linha que precisa acompanhar outra (a
+        // lista de arquivos de uma movimentação, por exemplo). Se rodasse
+        // depois, a reserva mediria uma altura que o callback ainda ia mudar.
+        if (config.aoAtualizar) config.aoAtualizar();
 
         const visiveis = Math.min(fim, total) - inicio;
         reservarEspaco(alvo, rows[0] && rows[0].parentElement, rows[inicio],
