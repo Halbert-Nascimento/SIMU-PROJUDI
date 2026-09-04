@@ -26,7 +26,7 @@
                 <i class="fa-solid fa-arrow-left"></i> Voltar para Ciclos
             </a>
             <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
-                <i class="fa-solid fa-users-gear"></i> Grupos:
+                Grupos:
                 <span class="text-navy">{{ ciclo.nome_edicao }}</span>
             </h1>
             <p class="text-corpo text-texto-neutro mt-1.5">
@@ -74,7 +74,6 @@
                  título navy — não navy sólido. -->
             <div class="px-4 py-[9px] border-b border-contorno bg-card-topo flex items-center justify-between gap-3 shrink-0">
                 <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy flex items-center gap-2">
-                    <i class="fa-solid fa-layer-group text-rotulo"></i>
                     Equipes Criadas ({{ grupos|length }})
                 </span>
                 <!-- Cor primária com o espaçamento da ação de linha: é a ação
@@ -214,7 +213,7 @@
      Unificar os dois é tarefa da conversão daquela tela. -->
 <div id="modal-grupo" class="fixed inset-0 z-modal hidden items-center justify-center">
     <div class="absolute inset-0 modal-overlay" style="background: rgba(10,8,61,.55);" onclick="fecharModalGrupo()"></div>
-    <div class="relative bg-white w-full max-w-[560px] border border-contorno shadow-modal overflow-hidden modal-content flex flex-col max-h-[90vh]">
+    <div class="relative bg-white w-full max-w-[560px] shadow-modal overflow-hidden modal-content flex flex-col max-h-[90vh]">
         <div class="bg-navy text-white px-5 py-3.5 flex justify-between items-center gap-4 shrink-0">
             <span id="modal-grupo-titulo" class="text-apoio font-bold uppercase tracking-[.12em] flex items-center gap-2"><i class="fa-solid fa-layer-group mr-2"></i> Novo Grupo</span>
             <button onclick="fecharModalGrupo()" title="Fechar"

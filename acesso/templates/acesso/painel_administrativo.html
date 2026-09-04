@@ -21,8 +21,8 @@
 
     <!-- Cabeçalho da Página -->
         <div class="mb-[14px] border-b border-contorno pb-[14px]">
-            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
-                <i class="fa-solid fa-chart-line"></i> Painel de Controle
+            <h1 class="text-navy text-h1 font-bold">
+                Painel de Controle
             </h1>
             <p class="text-corpo text-texto-neutro mt-1.5">Visão geral dos ciclos de simulação, turmas e avaliações pendentes.</p>
         </div>
@@ -60,7 +60,7 @@
                 <div class="border border-contorno bg-white mb-[14px] overflow-hidden">
                     <div class="px-4 py-[9px] border-b border-contorno bg-card-topo flex items-center justify-between gap-3">
                         <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy flex items-center gap-2">
-                            <i class="fa-solid fa-folder-tree text-rotulo"></i> GESTÃO DE CICLOS DE SIMULAÇÃO
+                            GESTÃO DE CICLOS DE SIMULAÇÃO
                         </span>
                         {% if status_ciclo_opcoes %}
                         <button type="button" onclick="openModal('modal-ciclo')" class="{% classe_botao 'primario' %} {% padding_botao 'linha' %} flex items-center gap-1 shrink-0">
@@ -119,7 +119,7 @@
                                             {% else %}
                                             <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
                                                class="text-rotulo text-[11px] font-bold hover:text-navy hover:underline flex items-center gap-1">
-                                                <i class="fa-solid fa-eye"></i> Visualizar
+                                                Visualizar
                                             </a>
                                             {% endif %}
                                         </div>
@@ -140,7 +140,6 @@
                             <button type="button" onclick="toggleArquivados()" id="btn-toggle-arquivados"
                                 class="flex items-center gap-2 text-[11px] font-bold text-rotulo hover:text-navy transition-colors uppercase">
                                 <i id="icon-arquivados" class="fa-solid fa-chevron-right text-[9px] transition-transform duration-200"></i>
-                                <i class="fa-solid fa-box-archive text-xs"></i>
                                 Ciclos Arquivados
                                 <span class="bg-contorno text-texto-neutro text-[9px] font-bold px-1.5 py-0.5 rounded-full ml-1">{{ ciclos_arquivados|length }}</span>
                             </button>
@@ -181,7 +180,7 @@
                                                 <div class="flex justify-end items-center gap-3">
                                                     <a href="{% url 'ciclos:detalhe_ciclo' ciclo.pk %}"
                                                        class="text-rotulo text-[11px] font-bold hover:text-navy hover:underline flex items-center gap-1">
-                                                        <i class="fa-solid fa-eye"></i> Visualizar
+                                                        Visualizar
                                                     </a>
                                                 </div>
                                             </td>
@@ -201,7 +200,7 @@
                 <div class="border border-contorno bg-white mb-[14px] overflow-hidden">
                     <div class="px-4 py-[9px] border-b border-contorno bg-card-topo flex items-center justify-between gap-3">
                         <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy flex items-center gap-2">
-                            <i class="fa-solid fa-gavel text-rotulo"></i> PROCESSOS DOS CICLOS ATIVOS
+                            PROCESSOS DOS CICLOS ATIVOS
                         </span>
                         {% if ciclos_ativos_professor|length > 1 %}
                         <select id="filtro-ciclo-processos" onchange="filtrarProcessosPorCiclo(this.value)"
@@ -246,7 +245,7 @@
                                     <td class="col-acoes">
                                         <a href="{% url 'processos:visualizar_processo' processo.numero %}"
                                            class="{% classe_botao 'linha' padding=True %} inline-flex items-center gap-1 whitespace-nowrap">
-                                            <i class="fa-solid fa-eye"></i> Ver Autos
+                                            Ver Autos
                                         </a>
                                     </td>
                                 </tr>
@@ -265,7 +264,7 @@
             <!-- COLUNA DIREITA (Resumo e Ações Rápidas) -->
             <aside>
                 <h2 class="section-title !mt-0">
-                    <i class="fa-solid fa-chart-pie"></i> Resumo do Semestre (Atual)
+                    Resumo do Semestre (Atual)
                 </h2>
                 <div class="grid grid-cols-2 gap-[14px] mb-[14px] mt-[14px]">
                     {% include 'base/components/_card_kpi.html' with rotulo="Processos Ativos" numero=45 only %}
@@ -276,7 +275,7 @@
 
                 <div>
                     <h2 class="section-title">
-                        <i class="fa-solid fa-bolt"></i> Ações Rápidas
+                        Ações Rápidas
                     </h2>
                     <div class="grid grid-cols-2 gap-[14px] mt-[14px]">
                         <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
@@ -307,22 +306,22 @@
 {% if usuarios %}
 <div id="modal-usuarios" class="fixed inset-0 z-modal hidden items-center justify-center">
     <div class="absolute inset-0 modal-overlay" style="background: rgba(10,8,61,.55);" onclick="closeModal('modal-usuarios')"></div>
-    <div class="relative bg-white w-full max-w-4xl border border-contorno shadow-modal overflow-hidden modal-content flex flex-col max-h-[90vh]">
+    <div class="relative bg-white w-full max-w-4xl shadow-modal overflow-hidden modal-content flex flex-col max-h-[90vh]">
 
         <!-- Cabeçalho -->
         <div class="bg-navy text-white px-5 py-3.5 text-apoio font-bold uppercase tracking-[.12em] flex justify-between items-center gap-4 shrink-0">
-            <span><i class="fa-solid fa-users-gear mr-2"></i> Gestão de Usuários</span>
+            <span>Gestão de Usuários</span>
             <button onclick="closeModal('modal-usuarios')" class="text-navy-40 hover:text-white transition-colors text-base leading-none" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
         <!-- Abas -->
         <div class="tabs interativa px-5 shrink-0">
             <button id="tab-btn-pendentes" onclick="switchTab('pendentes')" class="tab tab-btn active">
-                <i class="fa-solid fa-user-clock mr-1"></i> Pendentes
+                Pendentes
                 <span id="badge-pendentes" class="ml-1.5 bg-erro-bg text-erro-txt border border-erro-bd text-micro font-bold px-1.5">{{ usuarios_pendentes_count }}</span>
             </button>
             <button id="tab-btn-todos" onclick="switchTab('todos')" class="tab tab-btn">
-                <i class="fa-solid fa-list mr-1"></i> Todos os Usuários
+                Todos os Usuários
             </button>
         </div>
 
@@ -354,7 +353,7 @@
                                 <button type="button"
                                     class="{% classe_botao 'primario' %} {% padding_botao 'linha' %} whitespace-nowrap"
                                     onclick="abrirEdicao('{{ u.id }}', '{{ u.username|escapejs }}', '{{ u.email|escapejs }}', '{{ u.tipo_perfil_global }}', false)">
-                                    <i class="fa-solid fa-user-check mr-1"></i> Aprovar / Editar
+                                    Aprovar / Editar
                                 </button>
                             </td>
                         </tr>
@@ -363,7 +362,6 @@
                 </table>
                 {% else %}
                 <div class="py-10 text-center">
-                    <i class="fa-solid fa-circle-check text-ok-txt text-3xl mb-3"></i>
                     <p class="text-corpo text-rotulo font-medium">Nenhum cadastro pendente de aprovação.</p>
                     <p class="text-[11px] text-rotulo mt-1">Todos os usuários já foram analisados.</p>
                 </div>
@@ -433,9 +431,9 @@
 <!-- Modal: Editar Usuário (aninhado, z maior) -->
 <div id="modal-editar-usuario" class="fixed inset-0 z-[61] hidden items-center justify-center">
     <div class="absolute inset-0" style="background: rgba(10,8,61,.35);" onclick="fecharEdicao()"></div>
-    <div class="relative bg-white w-full max-w-sm border border-contorno shadow-modal overflow-hidden modal-content flex flex-col">
+    <div class="relative bg-white w-full max-w-sm shadow-modal overflow-hidden modal-content flex flex-col">
         <div class="bg-navy text-white px-5 py-3.5 text-apoio font-bold uppercase tracking-[.12em] flex justify-between items-center gap-4">
-            <span><i class="fa-solid fa-user-pen mr-2"></i> Editar / Aprovar Usuário</span>
+            <span>Editar / Aprovar Usuário</span>
             <button onclick="fecharEdicao()" class="text-navy-40 hover:text-white transition-colors text-base leading-none" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <div class="px-4 py-[14px] text-corpo">
@@ -463,7 +461,7 @@
                 </div>
                 <div class="flex gap-2 pt-1">
                     <button type="submit" class="flex-1 {% classe_botao 'primario' %} py-2">
-                        <i class="fa-solid fa-floppy-disk mr-1"></i> Salvar
+                        Salvar
                     </button>
                     <button type="button" onclick="fecharEdicao()" class="flex-1 {% classe_botao 'secundario' %} py-2">
                         Cancelar
@@ -479,9 +477,9 @@
 {% if status_ciclo_opcoes %}
 <div id="modal-ciclo" class="fixed inset-0 z-modal hidden items-center justify-center">
     <div class="absolute inset-0 modal-overlay" style="background: rgba(10,8,61,.55);" onclick="closeModal('modal-ciclo')"></div>
-    <div class="relative bg-white w-full max-w-[560px] border border-contorno shadow-modal overflow-hidden modal-content flex flex-col max-h-[90vh]">
+    <div class="relative bg-white w-full max-w-[560px] shadow-modal overflow-hidden modal-content flex flex-col max-h-[90vh]">
         <div class="bg-navy text-white px-5 py-3.5 text-apoio font-bold uppercase tracking-[.12em] flex justify-between items-center gap-4 shrink-0">
-            <span><i class="fa-solid fa-folder-plus mr-2"></i> Novo Ciclo de Simulação</span>
+            <span>Novo Ciclo de Simulação</span>
             <button onclick="closeModal('modal-ciclo')" class="text-navy-40 hover:text-white transition-colors text-base leading-none" title="Fechar"><i class="fa-solid fa-xmark"></i></button>
         </div>
         <form method="post" action="{% url 'ciclos:criar_ciclo' %}" class="flex flex-col overflow-hidden">
@@ -532,14 +530,13 @@
 
                 <!-- Info coordenador (somente leitura) -->
                 <div class="bg-linha-hover border border-[#c9d5ea] px-3 py-2 text-dado text-acao flex items-center gap-2">
-                    <i class="fa-solid fa-circle-info"></i>
                     Você será registrado automaticamente como <strong>Coordenador</strong> deste ciclo.
                 </div>
 
             </div>
             <div class="modal-acoes shrink-0">
-                <button type="submit" class="{% classe_botao 'primario' padding=True %} flex items-center gap-2">
-                    <i class="fa-solid fa-floppy-disk"></i> Salvar Ciclo
+                <button type="submit" class="{% classe_botao 'primario' padding=True %}">
+                    Salvar Ciclo
                 </button>
                 <button type="button" onclick="closeModal('modal-ciclo')" class="{% classe_botao 'secundario' padding=True %}">
                     Cancelar

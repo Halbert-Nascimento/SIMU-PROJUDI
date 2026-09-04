@@ -43,13 +43,16 @@ def padding_botao(variante: str = "primario") -> str:
 # ---------------------------------------------------------------------------
 
 @register.simple_block_tag
-def card(content, titulo, icone="fa-folder-open", classe="", classe_corpo="", contador=None):
+def card(content, titulo, icone="", classe="", classe_corpo="", contador=None):
     """
-    Painel padrão: moldura, cabeçalho navy com ícone e corpo livre.
+    Painel padrão: moldura, cabeçalho claro e corpo livre.
 
-        {% card titulo="Dados do Ciclo" icone="fa-folder-open" %}
+        {% card titulo="Dados do Ciclo" %}
             <form>...</form>
         {% endcard %}
+
+    `icone` é opcional e sai vazio por padrão — o guia lista ícone decorativo
+    em "Não faça"; passe um só quando ele carregar significado.
     """
     return mark_safe(render_to_string(
         "base/components/_card.html",

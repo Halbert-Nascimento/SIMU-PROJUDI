@@ -18,8 +18,8 @@
             class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
             <i class="fa-solid fa-arrow-left"></i> Voltar para o Painel
         </a>
-        <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
-            <i class="fa-solid fa-pen-to-square"></i> Editar Ciclo
+        <h1 class="text-navy text-h1 font-bold">
+            Editar Ciclo
         </h1>
         <p class="text-corpo text-texto-neutro mt-1.5">Atualize as informações do ciclo de simulação.</p>
     </div>
@@ -31,7 +31,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-[14px] items-start">
 
         <!-- Formulário de Edição -->
-        {% card titulo="Dados do Ciclo" icone="fa-folder-open" %}
+        {% card titulo="Dados do Ciclo" %}
             <form method="post" action="" class="px-4 py-[14px] flex flex-col gap-3">
                 {% csrf_token %}
 
@@ -105,7 +105,7 @@
         <div class="flex flex-col gap-[14px]">
 
             <!-- Card: Status Atual -->
-            {% card titulo="Situação Atual" icone="fa-circle-info" classe_corpo="px-4 py-[14px] flex flex-col gap-3" %}
+            {% card titulo="Situação Atual" classe_corpo="px-4 py-[14px] flex flex-col gap-3" %}
                     <div class="flex justify-between items-center gap-3">
                         <span class="text-micro font-semibold uppercase text-rotulo">Status</span>
                         {% badge_status_ciclo ciclo.status %}
