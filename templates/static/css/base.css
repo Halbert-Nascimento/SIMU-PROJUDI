@@ -1,14 +1,8 @@
 /* Estrutura de página — Guia de Design (IESGO), seção 08.
-   Conteúdo limitado a 1280px com padding lateral de 28px. */
-
-.main-container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding-left: 28px;
-    padding-right: 28px;
-    background: #fff;
-    min-height: 100vh;
-}
+   O contêiner de página é `max-w-conteudo mx-auto px-7 py-5` no template: os
+   mesmos 1280px/28px do guia, alinhados com o cabeçalho e a navegação. A classe
+   .main-container que vivia aqui saiu junto com a última tela que a usava — ela
+   pintava #fff sobre 100vh e cobria o #f4f5f7 que o guia pede como fundo. */
 
 /* Ícone da barra superior, sobre navy */
 .top-bar-icon {

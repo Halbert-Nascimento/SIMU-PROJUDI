@@ -63,5 +63,6 @@ dmypy.json
 
 
 # outros
+.verificacao-snapshot.json
 docs-tuto/
 CLAUDE.md

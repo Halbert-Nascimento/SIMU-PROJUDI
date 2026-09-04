@@ -4,50 +4,42 @@
 {% block title %}Redirecionamento de Teste{% endblock %}
 
 {% block header_acoes %}
-<a href="{% url 'base:home' %}" class="text-xs font-bold hover:underline">Voltar</a>
+<a href="{% url 'base:home' %}" class="text-apoio font-bold hover:underline">Voltar</a>
 {% endblock %}
 
 {% block content %}
-<main class="main-container px-10 py-8">
-    <div class="mx-auto w-full max-w-2xl border border-contorno bg-white">
-        <div class="bg-card-topo text-navy border-b border-contorno p-2.5 text-apoio font-bold uppercase tracking-[.12em] flex items-center">
-            <i class="fa-solid fa-check mr-2 text-sm"></i> Resultado da acao
-        </div>
-
-        <div class="p-6 text-[13px] leading-relaxed text-texto">
-            <h2 class="text-navy text-h1 font-bold mb-3 flex items-center gap-2">
+<main class="max-w-conteudo mx-auto px-7 py-5">
+    {% card titulo="Resultado da acao" icone="fa-check" classe="mx-auto w-full max-w-2xl" %}
+        <div class="p-6 text-corpo text-texto">
+            <h1 class="text-navy text-h1 font-bold mb-3 flex items-center gap-2">
                 <i class="fa-solid fa-circle-check"></i> Acao realizada com sucesso
-            </h2>
+            </h1>
             <p class="text-texto-neutro mb-4">
                 Esta tela foi criada para uso de redirecionamento de teste.
             </p>
 
-            <a href="{% url 'base:home' %}" class="{% classe_botao 'primario' %} py-1 px-4 text-sm inline-block">
+            <a href="{% url 'base:home' %}" class="{% classe_botao 'primario' padding=True %} inline-block">
                 Ir para a pagina inicial
             </a>
 
-            <div class="mt-6 border border-contorno">
-                <div class="bg-card-topo text-navy border-b border-contorno p-2.5 text-apoio font-bold uppercase tracking-[.12em] flex items-center">
-                    <i class="fa-solid fa-route mr-2 text-sm"></i> Lista de URLs do Sistema (Teste)
-                </div>
-
-                <div class="max-h-[420px] overflow-auto bg-white">
-                    <table class="w-full text-left border-collapse text-xs">
-                        <thead class="bg-card-topo text-texto-neutro uppercase">
+            <div class="mt-6">
+                {% card titulo="Lista de URLs do Sistema (Teste)" icone="fa-route" classe_corpo="max-h-[420px] overflow-auto" %}
+                    <table class="tbl-projudi">
+                        <thead>
                             <tr>
-                                <th class="py-2 px-3 border-b">Rota</th>
-                                <th class="py-2 px-3 border-b">Nome</th>
-                                <th class="py-2 px-3 border-b">Acesso</th>
+                                <th>Rota</th>
+                                <th>Nome</th>
+                                <th class="col-acoes">Acesso</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for item in all_routes %}
-                                <tr class="border-b border-divisor">
-                                    <td class="py-2 px-3 font-mono text-[11px]">/{{ item.route }}</td>
-                                    <td class="py-2 px-3">{{ item.name }}</td>
-                                    <td class="py-2 px-3">
+                                <tr>
+                                    <td class="font-mono">/{{ item.route }}</td>
+                                    <td>{{ item.name }}</td>
+                                    <td class="col-acoes">
                                         {% if item.clickable %}
-                                            <a href="/{{ item.route }}" class="text-acao font-bold hover:underline">abrir</a>
+                                            <a href="/{{ item.route }}">abrir</a>
                                         {% else %}
                                             <span class="text-rotulo">requer parametro</span>
                                         {% endif %}
@@ -55,14 +47,14 @@
                                 </tr>
                             {% empty %}
                                 <tr>
-                                    <td class="py-3 px-3 text-rotulo" colspan="3">Nenhuma URL encontrada.</td>
+                                    <td colspan="3" class="text-rotulo italic text-center">Nenhuma URL encontrada.</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
-                </div>
+                {% endcard %}
             </div>
         </div>
-    </div>
+    {% endcard %}
 </main>
 {% endblock %}
