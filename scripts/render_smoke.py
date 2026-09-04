@@ -119,7 +119,43 @@ def ctx_redirecionamento(vazio=False):
     return {"user": ALUNO, "request": Obj(user=ALUNO), "all_routes": rotas}
 
 
+def ctx_visualizar(sem_movimentacao=False, com_arquivo=True):
+    doc = Obj(titulo_arquivo="contestacao.pdf", data_upload=QUANDO,
+              caminho_arquivo=Obj(url="/media/contestacao.pdf", name="contestacao.pdf"))
+    movs = [] if sem_movimentacao else [
+        Obj(id=i, autor_id=9, nome="Juntada de contestação",
+            descricao="Documento juntado aos autos.", data=QUANDO,
+            autor_nome="Ana Ribeiro Alves",
+            documentos=[doc] if (com_arquivo and i % 2 == 0) else [],
+            tem_feedback=i % 3 == 0)
+        for i in range(1, 13)
+    ]
+    parte = Obj(nome="Maria Souza Lima", documento="123.456.789-00",
+                tipo_parte=Obj(nome="Autor"))
+    return {
+        "user": PROFESSOR, "request": Obj(user=PROFESSOR),
+        "processo": Obj(
+            numero=NUMERO, classe=Obj(nome="Procedimento Comum Cível"),
+            tipo_processo=Obj(nome="Cível"), comarca=Obj(nome="Goiânia"),
+            vara=Obj(nome="1ª Vara Cível"), valor_causa="15000.00",
+            data_distribuicao=QUANDO, segredo_justica=False,
+            status_atual="EM_ANDAMENTO", ciclo=Obj(nome_edicao="2026.2"),
+        ),
+        "polos_ativo": [parte], "polos_passivo": [parte], "polos_terceiro": [],
+        "grupo_serventia": Obj(nome="Serventia 1"),
+        "grupos_vinculados": [Obj(nome="Grupo 1",
+                                  cargo_simulacao=Obj(nome="Advogado do Polo Ativo"))],
+        "movimentacoes": movs,
+        "pode_avaliar": True,
+        "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
+                        {"label": f"Processo {NUMERO}", "url": None}],
+    }
+
+
 CASOS = [
+    ("processos/visualizar_processo.html", "12 movimentações", ctx_visualizar()),
+    ("processos/visualizar_processo.html", "sem movimentação", ctx_visualizar(sem_movimentacao=True)),
+    ("processos/visualizar_processo.html", "sem arquivo anexo", ctx_visualizar(com_arquivo=False)),
     ("avaliacoes/avaliar.html", "com histórico", ctx_avaliar()),
     ("avaliacoes/avaliar.html", "form com erros", ctx_avaliar(com_erros=True)),
     ("avaliacoes/avaliar.html", "sem histórico", ctx_avaliar(com_historico=False)),

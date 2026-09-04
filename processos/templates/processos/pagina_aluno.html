@@ -41,6 +41,20 @@
         border-color: #1f4f9c;
     }
     .filtros .acoes { margin-left: auto; display: flex; gap: 8px; }
+    /* O botão do guia (~33,75px) é mais baixo que o campo do guia (37,2px), e com
+       `align-items: flex-end` a folga de 3,45px aparecia toda no topo. Os dois
+       valores vêm do guia e são incompatíveis por construção: o padding do campo
+       é fixado textualmente (seção 05) e a altura do botão é chamada de
+       "resultante" (seção 04) — então quem cede é o botão. A conta fica escrita
+       para quem mexer no campo saber o que reajustar aqui.
+       As telas processuais resolvem o mesmo desencontro com `items-stretch`, que
+       aqui esticaria o botão sobre rótulo + campo: o rótulo mora DENTRO da coluna. */
+    .filtros .acoes > * {
+        min-height: calc(8px + 8px + (12px * 1.6) + 2px);   /* = altura do campo */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
 
     /* Cartão de grupo dentro do modal de atribuição */
     .grp-card {

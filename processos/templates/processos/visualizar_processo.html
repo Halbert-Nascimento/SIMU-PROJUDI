@@ -8,6 +8,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
+<script src="{% static 'js/paginador.js' %}"></script>
 <style>
     /* Colunas de largura fixa da tabela de movimentação */
     .tbl-mov .num-col { width: 32px; color: #6b7280; text-align: right; padding-right: 6px; }
@@ -482,7 +483,7 @@
             </div>
         </div>
 
-        <table class="tbl-mov">
+        <table class="tbl-mov" id="tabela-movimentacoes">
             <thead>
                 <tr>
                     <th class="num-col">Nº</th>
@@ -495,7 +496,7 @@
             </thead>
             <tbody>
                 {% for mov in movimentacoes %}
-                <tr>
+                <tr class="mov-row" id="mov-{{ mov.id }}">
                     <td class="num-col">{{ forloop.revcounter }}</td>
                     <td>
                         <div class="sub">{{ mov.nome }}</div>
@@ -541,7 +542,7 @@
                     </td>
                 </tr>
                 {% if mov.documentos %}
-                <tr class="arquivos-row">
+                <tr class="arquivos-row" data-mov="{{ mov.id }}">
                     <td colspan="6">
                         <div class="arquivos-collapse" id="arquivos-{{ mov.id }}">
                             <div class="arquivo-list">
@@ -589,14 +590,7 @@
         </table>
 
         {% if movimentacoes %}
-        <div class="flex items-center justify-between mt-3 text-apoio text-texto-neutro">
-            <div>Exibindo <strong>{{ movimentacoes|length }}</strong> movimentaç{{ movimentacoes|length|pluralize:"ão,ões" }}</div>
-            <div class="flex items-center gap-1">
-                <button class="px-2 py-1 text-meta font-bold text-rotulo disabled:opacity-30 disabled:cursor-not-allowed" disabled><i class="fa-solid fa-angle-left"></i></button>
-                <span class="w-7 h-7 inline-flex items-center justify-center text-meta font-bold bg-navy text-white border border-navy">1</span>
-                <button class="px-2 py-1 text-meta font-bold text-rotulo disabled:opacity-30 disabled:cursor-not-allowed" disabled><i class="fa-solid fa-angle-right"></i></button>
-            </div>
-        </div>
+        {% include 'base/components/_paginacao.html' with container_id="paginacao-mov" info_id="paginacao-mov-info" paginas_id="paginacao-mov-paginas" btn_prefixo="btn-mov" handler="mudarPaginaMovimentacoes" only %}
         {% endif %}
     </div>
 
@@ -609,6 +603,43 @@ function toggleArquivos(id) {
     collapse.classList.toggle('open');
     btn.classList.toggle('open');
 }
+
+// Cada movimentação ocupa DUAS <tr>: a dela e a da lista de arquivos. O
+// paginador só conhece a primeira, então a segunda acompanha por aqui — sem
+// isso, a lista aberta de uma linha da página 1 continuaria visível na página 2.
+function acompanharLinhasDeArquivo() {
+    document.querySelectorAll('.arquivos-row').forEach(function (linha) {
+        const mov = document.getElementById('mov-' + linha.dataset.mov);
+        const visivel = mov && mov.style.display !== 'none';
+        linha.style.display = visivel ? '' : 'none';
+        if (!visivel) {
+            const collapse = document.getElementById('arquivos-' + linha.dataset.mov);
+            const btn = document.getElementById('btn-arq-' + linha.dataset.mov);
+            if (collapse) collapse.classList.remove('open');
+            if (btn) btn.classList.remove('open');
+        }
+    });
+}
+
+const paginadorMovimentacoes = document.querySelector('.mov-row') ? criarPaginador({
+    rowSelector: '.mov-row',
+    porPagina: 10,
+    tabelaId: 'tabela-movimentacoes',
+    paginacaoId: 'paginacao-mov',
+    infoId: 'paginacao-mov-info',
+    paginasContainerId: 'paginacao-mov-paginas',
+    btnPrimeiraId: 'btn-mov-primeira',
+    btnAnteriorId: 'btn-mov-anterior',
+    btnProximaId: 'btn-mov-proxima',
+    btnUltimaId: 'btn-mov-ultima',
+    aoAtualizar: acompanharLinhasDeArquivo,
+}) : null;
+
+function mudarPaginaMovimentacoes(acao) {
+    if (paginadorMovimentacoes) paginadorMovimentacoes.mudarPagina(acao);
+}
+
+if (paginadorMovimentacoes) paginadorMovimentacoes.renderizar();
 
 function toggleOpcoes(e) {
     e.stopPropagation();

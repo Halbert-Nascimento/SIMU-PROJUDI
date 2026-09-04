@@ -177,7 +177,7 @@ O que existe hoje é um teste de comportamento do paginador:
 node scripts/teste_paginador.mjs
 ```
 
-Ele roda `static/js/paginador.js` contra um DOM mínimo (49 asserções) e cobre,
+Ele roda `static/js/paginador.js` contra um DOM mínimo (57 asserções) e cobre,
 entre outras coisas, a **reserva de espaço**: um bloco paginado não pode encolher
 quando a última página tem menos linhas, e numa tabela a linha solitária não pode
 ficar centralizada num bloco alto. Esse defeito já apareceu três vezes, por

@@ -62,10 +62,18 @@ class El {
      * a primeira versao do preenchimento.
      */
     get offsetHeight() {
+        // altura declarada manda, INCLUSIVE zero: a linha de arquivos fechada
+        // mede 0 de verdade (padding 0 + max-height 0), e um `|| 40` a fazia
+        // valer 40 — o simulador escondendo o caso que ele deveria exercitar
+        const alturaDe = (c) => {
+            const s = parseInt(c.style.height, 10);
+            if (!Number.isNaN(s)) return s;
+            const d = parseInt(c._alturaLinha, 10);
+            return Number.isNaN(d) ? 40 : d;
+        };
         return this.children
             .filter(c => c.style.display !== 'none')
-            .reduce((h, c) => h + (parseInt(c.style.height, 10)
-                                   || parseInt(c._alturaLinha, 10) || 40), 0);
+            .reduce((h, c) => h + alturaDe(c), 0);
     }
     appendChild(c) { c._pai = this; this.children.push(c); return c; }
     set innerHTML(h) {
@@ -93,9 +101,13 @@ function parseLinhas(html) {
             const cls = /class="([^"]*)"/.exec(t[2]);
             const di = /data-i="([^"]*)"/.exec(t[2]);
             const alt = /data-altura="([^"]*)"/.exec(t[2]);
+            const mov = /data-mov="([^"]*)"/.exec(t[2]);
+            const id = /\bid="([^"]*)"/.exec(t[2]);
             el.className = cls ? cls[1] : '';
             if (di) el.dataset.i = di[1];
             if (alt) el._alturaLinha = alt[1];
+            if (mov) el.dataset.mov = mov[1];
+            if (id) { el.id = id[1]; porId.set(id[1], el); }
             out.push(el);
         }
         prof++;
@@ -110,6 +122,12 @@ globalThis.document = {
         if (m) {
             const cont = porId.get(m[1]);
             return cont ? cont.children.filter(c => c.classList.contains(m[2])) : [];
+        }
+        // classe solta: e o que painel_administrativo e visualizar_processo usam
+        const c = /^\.([\w-]+)$/.exec(sel);
+        if (c) {
+            return todosEls.flatMap(e => e.children)
+                           .filter(x => x.classList.contains(c[1]));
         }
         throw new Error('seletor nao suportado: ' + sel);
     },
@@ -409,6 +427,77 @@ ok(document.getElementById('paginacao-avaliacoes-info').textContent === 'Exibind
 renderAvaliacoes(0);
 ok(!document.getElementById('avaliacoes-vazio').classList.contains('hidden'),
    'filtro sem resultado -> estado vazio visível');
+
+
+// ── Linha que acompanha outra (visualizar_processo) ────────────────────────
+// Cada movimentacao ocupa DUAS <tr>: a dela e a da lista de arquivos. O
+// rowSelector so conhece a primeira; a segunda acompanha pelo `aoAtualizar`.
+// Sem isso, a lista aberta de uma linha da pagina 1 aparece na pagina 2.
+const tbodyMov = novoEl('tbody-mov', '');
+tbodyMov.tagName = 'TBODY';
+novoEl('tabela-movimentacoes', '');
+const pagMov = novoEl('paginacao-mov', 'hidden');
+novoEl('paginacao-mov-info');
+novoEl('paginacao-mov-paginas');
+for (const b of ['primeira', 'anterior', 'proxima', 'ultima']) novoEl('btn-mov-' + b);
+
+const abertos = new Set();   // ids com a lista de arquivos expandida
+
+function acompanharLinhasDeArquivo() {
+    document.querySelectorAll('.arquivos-row').forEach(linha => {
+        const mov = porId.get('mov-' + linha.dataset.mov);
+        const visivel = mov && mov.style.display !== 'none';
+        linha.style.display = visivel ? '' : 'none';
+        if (!visivel) abertos.delete(linha.dataset.mov);
+    });
+}
+
+const paginadorMov = criarPaginador({
+    rowSelector: '.mov-row',
+    porPagina: 10,
+    tabelaId: 'tabela-movimentacoes',
+    paginacaoId: 'paginacao-mov',
+    infoId: 'paginacao-mov-info',
+    paginasContainerId: 'paginacao-mov-paginas',
+    btnPrimeiraId: 'btn-mov-primeira',
+    btnAnteriorId: 'btn-mov-anterior',
+    btnProximaId: 'btn-mov-proxima',
+    btnUltimaId: 'btn-mov-ultima',
+    aoAtualizar: acompanharLinhasDeArquivo,
+});
+
+// 12 movimentacoes; as pares tem arquivo. A linha de arquivo fechada mede 0.
+tbodyMov.innerHTML = Array.from({ length: 12 }, (_, i) => {
+    const linha = `<div class="mov-row" id="mov-${i}" data-altura="46"><div class="c"></div></div>`;
+    const arq = i % 2 === 0
+        ? `<div class="arquivos-row" data-mov="${i}" data-altura="0"><div class="c"></div></div>`
+        : '';
+    return linha + arq;
+}).join('');
+paginadorMov.renderizar();
+
+const movVisiveis = () => tbodyMov.children
+    .filter(c => c.classList.contains('mov-row') && c.style.display !== 'none').length;
+const arqVisiveis = () => tbodyMov.children
+    .filter(c => c.classList.contains('arquivos-row') && c.style.display !== 'none').length;
+
+ok(movVisiveis() === 10, '12 movimentações -> 10 na página');
+ok(document.getElementById('paginacao-mov-info').textContent === 'Exibindo 1–10 de 12',
+   'info: "Exibindo 1–10 de 12"');
+ok(arqVisiveis() === 5, 'só as linhas de arquivo das 10 visíveis aparecem (mov 0,2,4,6,8)');
+
+abertos.add('0');
+abertos.add('2');
+paginadorMov.mudarPagina('proxima');
+ok(movVisiveis() === 2, 'página 2 -> 2 movimentações');
+ok(arqVisiveis() === 1, 'e só a linha de arquivo da mov 10 — a da mov 0 não vazou');
+ok(abertos.size === 0, 'lista aberta na página 1 é fechada ao sair da página');
+
+ok(tbodyMov.offsetHeight === 460,
+   `a reserva mede a página cheia mesmo com as linhas de arquivo (${tbodyMov.offsetHeight})`);
+
+paginadorMov.mudarPagina('primeira');
+ok(arqVisiveis() === 5, 'voltar para a página 1 traz as linhas de arquivo de volta');
 
 
 console.log(falhas ? `\n${falhas} falha(s)` : '\ntudo passou');
