@@ -1,0 +1,20 @@
+{% comment %}
+Card de manual da tela de login. `codigo` e a sigla do cargo de simulacao
+(SC, APA, APP, MP, JZ), ou "Geral" no guia que nao pertence a nenhum cargo.
+
+Sem `url`, o card sai sem href: continua legivel, mas nao promete um clique
+que ainda nao leva a lugar nenhum.
+{% endcomment %}
+<a {% if url %}href="{{ url }}" {% endif %}class="card-manual{% if not url %} card-manual-vazio{% endif %} flex flex-col min-h-[128px] p-[14px] bg-white border border-contorno">
+    <div class="flex items-center justify-between gap-2 mb-3">
+        <i class="fa-solid {{ icone }} text-[20px] text-navy"></i>
+        <span class="font-mono text-micro font-semibold uppercase text-neutro-txt bg-neutro-bg border border-neutro-bd px-[9px] py-[3px]">{{ codigo }}</span>
+    </div>
+    <span class="text-apoio font-semibold leading-tight text-texto mb-1.5">{{ titulo }}</span>
+    <span class="text-meta text-rotulo flex-grow">{{ descricao }}</span>
+    {% if url %}
+        <span class="font-mono text-micro uppercase text-acao mt-3">Abrir manual</span>
+    {% else %}
+        <span class="pill warn self-start mt-3">Em breve</span>
+    {% endif %}
+</a>

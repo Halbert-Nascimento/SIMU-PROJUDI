@@ -14,54 +14,21 @@
 
             <!-- COLUNA ESQUERDA -->
             <div>
-                <!-- Seção: Acesso Rápido -->
+                <!-- Seção: Manuais de utilização -->
                 <section class="mb-[18px]">
                     <h2 class="section-title">
-                        <i class="fa-solid fa-hand-pointer"></i> Acesso Rápido
+                        <i class="fa-solid fa-book-open"></i> Manuais de utilização
                     </h2>
 
-                    <!-- Guia seção 01: hierarquia por borda de 1px, não por sombra. -->
-                    <div class="grid grid-cols-4 gap-[14px] mt-[14px]">
-                        <!-- Card 1 -->
-                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
-                            <i class="fa-solid fa-table-cells-large text-2xl text-navy mb-2"></i>
-                            <span class="text-apoio font-semibold leading-tight text-texto">Tabelas<br>Processuais<br>Unificadas</span>
-                        </div>
-                        <!-- Card 2 -->
-                        <a href="{% url 'acesso:cadastro' %}" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
-                            <i class="fa-solid fa-pen-to-square text-2xl text-navy mb-2"></i>
-                            <span class="text-apoio font-semibold leading-tight text-texto">Cadastro</span>
-                        </a>
-                        <!-- Card 3 -->
-                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
-                            <i class="fa-solid fa-chart-pie text-2xl text-navy mb-2"></i>
-                            <span class="text-apoio font-semibold leading-tight text-texto">SIGESCON<br><span class="font-normal text-meta text-rotulo">Sistema Gestão e<br>Controle</span></span>
-                        </div>
-                        <!-- Card 4 -->
-                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
-                            <i class="fa-solid fa-chart-column text-2xl text-navy mb-2"></i>
-                            <span class="text-apoio font-semibold leading-tight text-texto">Gestão à Vista</span>
-                        </div>
-                        <!-- Card 5 -->
-                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
-                            <i class="fa-solid fa-comments text-2xl text-navy mb-2"></i>
-                            <span class="text-apoio font-semibold leading-tight text-texto">Simples e Fácil<br><span class="font-normal text-meta text-rotulo">Programa de<br>linguagem simples<br>do TJGO</span></span>
-                        </div>
-                        <!-- Card 6 -->
-                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
-                            <i class="fa-solid fa-microchip text-2xl text-navy mb-2"></i>
-                            <span class="text-apoio font-semibold leading-tight text-texto">AGAIA</span>
-                        </div>
-                        <!-- Card 7 -->
-                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
-                            <i class="fa-solid fa-head-side-virus text-2xl text-navy mb-2"></i>
-                            <span class="text-apoio font-semibold leading-tight text-texto">Berna IA</span>
-                        </div>
-                        <!-- Card 8 -->
-                        <div class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[110px]">
-                            <i class="fa-solid fa-sitemap text-2xl text-navy mb-2"></i>
-                            <span class="text-apoio font-semibold leading-tight text-texto">SET<br><span class="font-normal text-meta text-rotulo">Sistema de<br>Estatística e<br>Transparência</span></span>
-                        </div>
+                    <!-- Um card por cargo de simulação, mais o guia geral: fecha as duas
+                         fileiras de três e usa o mesmo vocabulário de cargo_simulacao. -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[14px] mt-[14px]">
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-book" codigo="Geral" titulo="Guia geral do simulador" descricao="Primeiro acesso, navegação, ciclos e prazos." only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-box-archive" codigo="SC" titulo="Serventia / Cartório" descricao="Autuação, distribuição e movimentação dos autos." only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-file-arrow-up" codigo="APA" titulo="Advogados — Polo Ativo" descricao="Petição inicial, juntada de documentos e réplica." only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-shield-halved" codigo="APP" titulo="Advogados — Polo Passivo" descricao="Contestação, prazos de defesa e acompanhamento." only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-file-circle-check" codigo="MP" titulo="Ministério Público" descricao="Parecer, manifestação e intervenção no feito." only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-scale-balanced" codigo="JZ" titulo="Juiz" descricao="Despacho, decisão interlocutória e sentença." only %}
                     </div>
                 </section>
 
@@ -72,139 +39,64 @@
                     </h2>
 
                     <div id="accordion-container" class="border-x border-b border-contorno bg-white">
-                        <!-- Item 0 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-aberto">
                                 <i class="fa-solid fa-caret-down accordion-icon"></i>
-                                Esqueceu a sua senha?
+                                Primeiro acesso — liberação pelo coordenador
                             </div>
                             <div class="accordion-content px-4 py-[14px] bg-white text-corpo text-texto">
-                                <p class="text-rotulo mb-[14px]">31/05/2026</p>
                                 <p class="mb-[14px] text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                                </p>
-                                <p class="mb-[14px] text-justify">
-                                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                                </p>
-                            </div>
-                        </div>
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right accordion-icon"></i>
-                                APRIMORAMENTO DE ACESSO INTERNO PELO AMBIENTE CORPORATIVO
-                            </div>
-                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
-                                <p class="text-rotulo mb-[14px]">01/03/2026</p>
-                                <p class="mb-[14px] text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-                                </p>
-                                <p class="mb-[14px] text-justify">
-                                    Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                                    Novos usuários solicitam o cadastro pela própria tela de acesso. O perfil entra
+                                    como Pendente e só passa a acessar o sistema depois que o coordenador confirmar a
+                                    matrícula e atribuir o cargo de simulação dentro de um ciclo.
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Item 2 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
                                 <i class="fa-solid fa-caret-right accordion-icon"></i>
-                                VÍDEO TUTORIAL - ACESSO CORPORATIVO PROJUDI
+                                Limite de 7 MB por arquivo enviado
                             </div>
                             <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
-                                <p class="text-rotulo mb-[14px]">28/02/2026</p>
                                 <p class="mb-[14px] text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                                    Cada documento anexado a uma movimentação pode ter até 7 MB, nos formatos PDF,
+                                    DOCX, JPG e JPEG. O sistema confere o conteúdo do arquivo, e não só a extensão:
+                                    renomear um arquivo para .pdf não o faz passar.
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Item 3 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
                                 <i class="fa-solid fa-caret-right accordion-icon"></i>
-                                USUÁRIO DE ACESSO
+                                A sessão encerra após 15 minutos sem atividade
                             </div>
                             <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
-                                <p class="text-rotulo mb-[14px]">25/02/2026</p>
                                 <p class="mb-[14px] text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac turpis egestas.
+                                    Um aviso aparece antes do fim do prazo, com a opção de continuar. Sem resposta, a
+                                    sessão é encerrada e o sistema volta para esta tela. Peticione com calma, mas não
+                                    deixe um formulário longo aberto sem salvar.
                                 </p>
                             </div>
                         </div>
 
-                        <!-- Item 4 -->
                         <div class="accordion-item">
                             <div class="accordion-header accordion-item-closed">
                                 <i class="fa-solid fa-caret-right accordion-icon"></i>
-                                ATIVO PROVISORIAMENTE - DESABILITAÇÃO
+                                Processos em segredo de justiça
                             </div>
                             <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
-                                <p class="text-rotulo mb-[14px]">20/02/2026</p>
                                 <p class="mb-[14px] text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vivamus lacinia odio vitae vestibulum vestibulum.
+                                    Processos marcados como segredo de justiça só aparecem para quem atua neles. Não
+                                    é uma etiqueta visual: quem não é parte, nem o cartório ou o juízo do feito, não
+                                    encontra o processo nem pelas listagens nem pela busca.
                                 </p>
                             </div>
                         </div>
-
-                        <!-- Item 7 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right accordion-icon"></i>
-                                ERRO AO TENTAR REALIZAR LOGIN
-                            </div>
-                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
-                                <p class="text-rotulo mb-[14px]">05/02/2026</p>
-                                <p class="mb-[14px] text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante venenatis dapibus posuere velit aliquet.
-                                </p>
-                            </div>
-                        </div>
-
-                        <!-- Item 10 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right accordion-icon"></i>
-                                LIMITE DO TAMANHO DE ARQUIVOS 7MB
-                            </div>
-                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
-                                <p class="text-rotulo mb-[14px]">25/01/2026</p>
-                                <p class="mb-[14px] text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent commodo cursus magna, vel scelerisque nisl consectetur et.
-                                </p>
-                            </div>
-                        </div>
-
-                        {% comment %} <!-- Item 11 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right accordion-icon"></i>
-                                NOVO ASSINADOR MULTI-ARQUIVO
-                            </div>
-                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
-                                <p class="text-rotulo mb-[14px]">20/01/2026</p>
-                                <p class="mb-[14px] text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum id ligula porta felis euismod semper.
-                                </p>
-                            </div>
-                        </div> {% endcomment %}
-
-                        <!-- Item 13 -->
-                        <div class="accordion-item">
-                            <div class="accordion-header accordion-item-closed">
-                                <i class="fa-solid fa-caret-right accordion-icon"></i>
-                                SUPORTE AO ADVOGADO
-                            </div>
-                            <div class="accordion-content hidden px-4 py-[14px] bg-white text-corpo text-texto">
-                                <p class="text-rotulo mb-[14px]">10/01/2026</p>
-                                <p class="mb-[14px] text-justify">
-                                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur blandit tempus porttitor.
-                                </p>
-                            </div>
-                        </div>
-
                     </div>
 
-                    <div class="text-right mt-2">
+                    <div class="text-center mt-2">
                         <a href="#" class="text-acao text-apoio font-semibold hover:underline">+ informações importantes</a>
                     </div>
                 </section>
@@ -212,60 +104,30 @@
 
             <!-- COLUNA DIREITA -->
             <div>
-                <!-- Seção: Simulador Projudi -->
-                <section class="mb-[18px]">
+                <!-- Seção: Marca. O mt-[14px] repõe a margem que .section-title dá às
+                     outras seções — sem ele esta coluna começa 14px acima da outra. -->
+                <section class="mt-[14px] mb-[18px]">
                     <div class="bg-white border border-contorno p-[18px] flex flex-col items-center justify-center cursor-default">
-                        <div class="icon-sessao-virtual mb-3">
-                            <i class="fa-solid fa-users text-4xl"></i>
+                        <div class="marca-simulador mb-3">
+                            <span class="text-h1 font-bold tracking-[.12em] leading-none">SIMU</span>
                         </div>
                         <span class="text-acao font-bold text-corpo">Simulador Projudi</span>
+                        <span class="text-meta text-rotulo mt-1">Ambiente acadêmico · Faculdade IESGO</span>
                     </div>
                 </section>
 
-                <!-- Seção: Acesso Processo Judicial (Login) -->
-                <section>
+                <!-- Seção: Acesso ao sistema (Login) -->
+                <section class="mb-[18px]">
                     <h2 class="section-title">
-                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Acesso Processo Judicial
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> Acesso ao sistema
                     </h2>
 
                     <div class="border-x border-b border-contorno bg-white px-4 py-[18px] flex flex-col items-center">
                         <form id="login-form" class="w-full max-w-[280px]" method="post" action="{% url 'acesso:login' %}">
                             {% csrf_token %}
-                            <!-- Campo Usuário -->
-                            <div class="relative mb-3">
-                                <i class="fa-solid fa-user input-group-icon"></i>
-                                <input
-                                type="text"
-                                name="username"
-                                value="{{ form.username.value|default_if_none:'' }}"
-                                placeholder="Usuário"
-                                class="{% classe_campo %} pl-8">
-                            </div>
 
-                            <!-- Campo Senha -->
-                            <div class="relative mb-[14px] flex items-center">
-                                <div class="relative w-full">
-                                    <i class="fa-solid fa-lock input-group-icon"></i>
-                                    <input
-                                    type="password"
-                                    name="password"
-                                    value="{{ form.password.value|default_if_none:'' }}"
-                                    placeholder="Senha"
-                                    class="{% classe_campo %} pl-8">
-                                </div>
-                                {% comment %} <i class="fa-solid fa-keyboard text-acao ml-2 cursor-pointer" title="Teclado Virtual"></i> {% endcomment %}
-                            </div>
-
-                            <!-- Botões de Ação — guia seção 04: um só primário por bloco,
-                                 e "limpar" é ação de apoio. -->
-                            <div class="flex justify-center gap-2 mb-[14px]">
-                                <button type="submit" class="{% classe_botao 'primario' padding=True %}">Entrar</button>
-                                <button id="btn-limpar-login" type="button" class="{% classe_botao 'secundario' padding=True %}">Limpar</button>
-                            </div>
-
-                            <div class="text-center mb-[28px]">
-                                <a href="#" class="text-acao text-apoio hover:underline">Esqueceu a sua senha?</a>
-                            </div>
+                            <!-- O aviso vem antes dos campos: depois do link de senha ele caía
+                                 fora do campo de visão de quem acabou de errar o login. -->
                             <div id="login-errors-wrapper">
                                 {% if request.GET.exp %}
                                     <div class="bg-atencao-bg border border-atencao-bd text-atencao-txt text-dado px-[15px] py-[11px] mb-3 flex items-center gap-2.5">
@@ -280,37 +142,61 @@
                                 {% endif %}
                             </div>
 
-                            <!-- Outras formas de acesso. São opções reais do Projudi que o
-                                 simulador não implementa: recebem a variante desabilitada do
-                                 guia, em vez de disputarem atenção com o botão Entrar. -->
-                            <div class="w-full">
-                                <p class="text-micro font-semibold uppercase text-rotulo mb-3">Você também pode:</p>
+                            <!-- Campo Usuário -->
+                            <div class="relative mb-3">
+                                <i class="fa-solid fa-user input-group-icon"></i>
+                                <input
+                                type="text"
+                                name="username"
+                                value="{{ form.username.value|default_if_none:'' }}"
+                                placeholder="Usuário"
+                                class="{% classe_campo %} pl-8">
+                            </div>
 
-                                <div class="flex flex-col gap-3">
-                                    <button type="button" class="simulacao-opcao w-full {% classe_botao 'desabilitado' padding=True %}">
-                                        Acesso Corporativo
-                                    </button>
-
-                                    <button type="button" class="simulacao-opcao w-full {% classe_botao 'desabilitado' padding=True %}">
-                                        Acessar com PDPJ
-                                    </button>
-
-                                    <div class="flex items-center gap-1">
-                                        <button type="button" class="simulacao-opcao w-full {% classe_botao 'desabilitado' padding=True %}">
-                                            Acessar com Certificado Digital
-                                        </button>
-                                    </div>
-
-                                    <button type="button" class="simulacao-opcao w-full {% classe_botao 'desabilitado' padding=True %}">
-                                        Cadastro com Certificado Digital
-                                    </button>
+                            <!-- Campo Senha — o olho de mostrar/ocultar é injetado por base.html -->
+                            <div class="relative mb-[14px] flex items-center">
+                                <div class="relative w-full">
+                                    <i class="fa-solid fa-lock input-group-icon"></i>
+                                    <input
+                                    type="password"
+                                    name="password"
+                                    value="{{ form.password.value|default_if_none:'' }}"
+                                    placeholder="Senha"
+                                    class="{% classe_campo %} pl-8">
                                 </div>
+                            </div>
 
-                                <p id="aviso-simulacao-opcao" class="mt-2 hidden border border-atencao-bd bg-atencao-bg px-2 py-1 text-apoio text-atencao-txt opacity-0 translate-y-1 transition-all duration-300">
-                                    Opcao desativada para simulacao. Use apenas o login do sistema.
-                                </p>
+                            <!-- Botões de Ação — guia seção 04: um só primário por bloco,
+                                 e "limpar" é ação de apoio. -->
+                            <div class="flex justify-center gap-2 mb-[14px]">
+                                <button type="submit" class="{% classe_botao 'primario' padding=True %}">Entrar</button>
+                                <button id="btn-limpar-login" type="button" class="{% classe_botao 'secundario' padding=True %}">Limpar</button>
+                            </div>
+
+                            <div class="text-center">
+                                <a href="#" class="text-acao text-apoio hover:underline">Esqueceu a sua senha?</a>
                             </div>
                         </form>
+                    </div>
+                </section>
+
+                <!-- Seção: Primeiro acesso (Cadastro) -->
+                <section>
+                    <h2 class="section-title">
+                        <i class="fa-solid fa-user-plus"></i> Primeiro acesso
+                    </h2>
+
+                    <!-- Cadastro é secundário de propósito: o primário do bloco ao lado é
+                         "Entrar", e dois botões navy empilhados dividiriam a atenção. -->
+                    <div class="border-x border-b border-contorno bg-white px-4 py-[18px]">
+                        <p class="text-apoio text-texto-neutro mb-[14px] text-justify">
+                            Ainda não tem acesso? Solicite o cadastro com sua matrícula. O coordenador confirma os
+                            dados e atribui o cargo de simulação antes da liberação.
+                        </p>
+                        <a href="{% url 'acesso:cadastro' %}"
+                           class="{% classe_botao 'secundario' padding=True %} w-full flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-user-plus"></i> Solicitar cadastro
+                        </a>
                     </div>
                 </section>
             </div>
@@ -325,9 +211,6 @@
             const loginForm = document.getElementById('login-form');
             const btnLimparLogin = document.getElementById('btn-limpar-login');
             const loginErrors = document.getElementById('login-errors');
-            const botoesSimulacao = document.querySelectorAll('.simulacao-opcao');
-            const avisoSimulacao = document.getElementById('aviso-simulacao-opcao');
-            let avisoTimeoutId;
 
             accordionItems.forEach(item => {
                 const header = item.querySelector('.accordion-header');
@@ -376,28 +259,6 @@
                     if (usuarioInput) {
                         usuarioInput.focus();
                     }
-                });
-            }
-
-            if (botoesSimulacao.length && avisoSimulacao) {
-                botoesSimulacao.forEach((botao) => {
-                    botao.addEventListener('click', function() {
-                        clearTimeout(avisoTimeoutId);
-
-                        avisoSimulacao.classList.remove('hidden', 'opacity-0', 'translate-y-1', '-translate-y-2');
-                        avisoSimulacao.classList.add('opacity-100', 'translate-y-0');
-
-                        avisoTimeoutId = setTimeout(() => {
-                            avisoSimulacao.classList.remove('opacity-100', 'translate-y-0');
-                            avisoSimulacao.classList.add('opacity-0', '-translate-y-2');
-
-                            setTimeout(() => {
-                                avisoSimulacao.classList.add('hidden');
-                                avisoSimulacao.classList.remove('-translate-y-2');
-                                avisoSimulacao.classList.add('translate-y-1');
-                            }, 300);
-                        }, 2000);
-                    });
                 });
             }
         });
