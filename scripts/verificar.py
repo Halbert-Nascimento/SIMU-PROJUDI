@@ -107,6 +107,7 @@ def texto_visivel(fonte: str) -> list[str]:
 
     s = re.sub(r"(?is)<(script|style)\b.*?</\1>", " ", fonte)
     s = re.sub(r"(?s)\{%\s*comment\s*%\}.*?\{%\s*endcomment\s*%\}", " ", s)
+    s = re.sub(r"(?s)\{#.*?#\}", " ", s)          # comentario Django de uma linha
     s = re.sub(r"(?s)<!--.*?-->", " ", s)
     s = re.sub(r"(?s)\{%.*?%\}", " ", s)
     s = re.sub(r"(?s)\{\{.*?\}\}", " ", s)

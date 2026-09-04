@@ -54,7 +54,8 @@
                     {% endif %}
                 {% endblock %}
 
-                {% if user.is_authenticated and ciclos_disponiveis %}
+                {# indicador de ciclo é só do Aluno — ver pode_trocar_ciclo_ativo #}
+                {% if pode_trocar_ciclo and ciclos_disponiveis %}
                     {% if ciclos_disponiveis|length == 1 %}
                         <span class="text-apoio border-r border-white/20 pr-4 pl-4 flex items-center gap-1.5 whitespace-nowrap" title="Ciclo ativo">
                             <i class="fa-solid fa-rotate"></i>
@@ -101,19 +102,14 @@
                     {% endif %}
                 {% endif %}
                 {% block header_acoes %}
-                <div class="flex items-center gap-1 border-r border-white/20 pr-4">
-                    <i class="fa-solid fa-circle-half-stroke top-bar-icon" title="Alto Contraste"></i>
-                    <span class="font-bold ml-2 text-apoio cursor-pointer" title="Aumentar fonte">A+</span>
-                    <span class="font-bold ml-1 text-apoio cursor-pointer" title="Diminuir fonte">A-</span>
+                <!-- pl-4/pr-4 é como o cabeçalho separa os segmentos: 16px de cada
+                     lado do fio. O fio e o recuo só existem com o Sair depois deles. -->
+                <div class="flex items-center gap-2{% if user.is_authenticated %} pl-4 border-r border-white/20 pr-4{% endif %}">
+                    <span class="font-bold text-apoio cursor-pointer" title="Aumentar fonte">A+</span>
+                    <span class="font-bold text-apoio cursor-pointer" title="Diminuir fonte">A-</span>
                 </div>
-                <i class="fa-solid fa-magnifying-glass top-bar-icon" title="Pesquisar"></i>
-                <i class="fa-solid fa-file-lines top-bar-icon" title="Documentos"></i>
-                <i class="fa-solid fa-dollar-sign top-bar-icon" title="Custas"></i>
-                <i class="fa-solid fa-list-check top-bar-icon" title="Pendências"></i>
-                <i class="fa-solid fa-circle-question top-bar-icon" title="Ajuda"></i>
-                <i class="fa-solid fa-download top-bar-icon" title="Exportar"></i>
                 {% if user.is_authenticated %}
-                    <form id="logout-form" method="post" action="{% url 'acesso:logout' %}" class="ml-3">
+                    <form id="logout-form" method="post" action="{% url 'acesso:logout' %}" class="ml-4">
                         {% csrf_token %}
                         <button type="submit" class="{% classe_botao 'sobre-navy' padding=True %} flex items-center gap-1.5">
                             <i class="fa-solid fa-right-from-bracket"></i> Sair

@@ -51,6 +51,19 @@ def pode_gerenciar_grupos_ciclo(user: Usuario, ciclo) -> bool:
     return False
 
 
+def pode_trocar_ciclo_ativo(user: Usuario) -> bool:
+    """
+    Quem troca de ciclo pela barra do cabeçalho.
+
+    Só o Aluno: ele atua dentro de um ciclo por vez. Admin, Coordenador e
+    Professor enxergam todos os ciclos pelo painel, e o seletor sugeriria um
+    escopo que as telas deles não têm.
+    """
+    if not user.is_authenticated:
+        return False
+    return user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO
+
+
 def pode_ver_todos_ciclos(user: Usuario) -> bool:
     if not user.is_authenticated:
         return False
