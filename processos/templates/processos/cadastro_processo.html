@@ -6,6 +6,7 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<script src="{% static 'js/mascara_moeda.js' %}"></script>
 <style>
     /* Trilha de passos — raio 0 como todo contêiner do guia; o número do passo
        também, porque o círculo é reservado a avatar e ponto de status. */
@@ -65,7 +66,7 @@
     <!-- Main Content -->
     <main class="max-w-conteudo mx-auto px-7 py-5">
 
-        <h1 class="text-navy text-h1 font-bold mb-[14px]">&raquo; Cadastro de Processo Comum</h1>
+        <h1 class="text-navy text-h1 font-bold mb-[14px]">Cadastro de Processo Comum</h1>
 
         {% include 'base/components/_mensagens.html' %}
 
@@ -160,21 +161,24 @@
                     </fieldset>
 
                     <!-- Valor da Causa e Segredo de Justica -->
-                    <div class="grid grid-cols-2 gap-5 mb-5">
-                        <div>
-                            <label for="id_valor_causa_display" class="text-micro font-semibold uppercase text-rotulo">Valor da Causa (R$)</label>
-                            <input type="text" id="id_valor_causa_display" inputmode="numeric" autocomplete="off"
-                                   value="R$ 0,00"
-                                   class="{% classe_campo mono=True %} mt-1">
-                            <input type="hidden" id="id_valor_causa" name="valor_causa" value="{{ form.valor_causa.value|default:'0.00' }}">
+                    <fieldset class="p-5 mb-5">
+                        <legend>VALOR DA CAUSA E SIGILO</legend>
+                        <div class="grid grid-cols-2 gap-5">
+                            <div>
+                                <label for="id_valor_causa_display" class="text-micro font-semibold uppercase text-rotulo">Valor da Causa (R$)</label>
+                                <input type="text" id="id_valor_causa_display" inputmode="numeric" autocomplete="off"
+                                       value="R$ 0,00"
+                                       class="{% classe_campo mono=True %} mt-1">
+                                <input type="hidden" id="id_valor_causa" name="valor_causa" value="{{ form.valor_causa.value|default:'0.00' }}">
+                            </div>
+                            <div class="flex items-end pb-2">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="id_segredo_justica" name="segredo_justica" {% if form.segredo_justica.value %}checked{% endif %} class="accent-acao w-3.5 h-3.5">
+                                    <span class="text-micro font-semibold uppercase text-rotulo">Segredo de Justiça</span>
+                                </label>
+                            </div>
                         </div>
-                        <div class="flex items-end pb-2">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" id="id_segredo_justica" name="segredo_justica" {% if form.segredo_justica.value %}checked{% endif %} class="accent-acao w-3.5 h-3.5">
-                                <span class="text-micro font-semibold uppercase text-rotulo">Segredo de Justiça</span>
-                            </label>
-                        </div>
-                    </div>
+                    </fieldset>
 
                     <!-- POLO ATIVO -->
                     <fieldset class="p-5 mb-5" data-polo="ativo">
@@ -327,11 +331,11 @@
                 </fieldset>
 
                 <div class="flex items-center justify-center gap-3 mt-10 mb-10">
-                    <button type="button" id="btnStep1Next" class="{% classe_botao 'primario' padding=True %}">
-                        Próximo <i class="fas fa-arrow-right ml-1"></i>
-                    </button>
                     <button type="reset" class="{% classe_botao 'secundario' padding=True %}">
                         Limpar
+                    </button>
+                    <button type="button" id="btnStep1Next" class="{% classe_botao 'primario' padding=True %}">
+                        Próximo <i class="fas fa-arrow-right ml-1"></i>
                     </button>
                 </div>
             </div>
@@ -362,11 +366,11 @@
                 </fieldset>
 
                 <div class="flex items-center justify-center gap-3 mt-10 mb-10">
-                    <button type="button" id="btnStep2Next" class="{% classe_botao 'primario' padding=True %}">
-                        Próximo <i class="fas fa-arrow-right ml-1"></i>
-                    </button>
                     <button type="button" id="btnStep2Prev" class="{% classe_botao 'secundario' padding=True %}">
                         <i class="fas fa-arrow-left mr-1"></i> Anterior
+                    </button>
+                    <button type="button" id="btnStep2Next" class="{% classe_botao 'primario' padding=True %}">
+                        Próximo <i class="fas fa-arrow-right ml-1"></i>
                     </button>
                 </div>
             </div>
@@ -382,11 +386,11 @@
                 </fieldset>
 
                 <div class="flex items-center justify-center gap-3 mt-10 mb-10">
-                    <button type="submit" class="{% classe_botao 'primario' padding=True %}">
-                        <i class="fas fa-check mr-1"></i> Cadastrar Processo
-                    </button>
                     <button type="button" id="btnStep3Prev" class="{% classe_botao 'secundario' padding=True %}">
                         <i class="fas fa-arrow-left mr-1"></i> Anterior
+                    </button>
+                    <button type="submit" class="{% classe_botao 'primario' padding=True %}">
+                        <i class="fas fa-check mr-1"></i> Cadastrar Processo
                     </button>
                 </div>
             </div>
@@ -394,48 +398,12 @@
     </main>
 
     <script>
-    // ===================== MÁSCARA MONETÁRIA ATM =====================
-    function formatarMoedaBR(valor) {
-        return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-    }
-
-    (function initMascaraMoeda() {
-        const display = document.getElementById("id_valor_causa_display");
-        const hidden  = document.getElementById("id_valor_causa");
-
-        // centavos acumulados como inteiro (evita ponto flutuante)
-        let centavos = Math.round(parseFloat(hidden.value || "0") * 100);
-
-        function atualizar() {
-            display.value = formatarMoedaBR(centavos / 100);
-            hidden.value  = (centavos / 100).toFixed(2);
-        }
-
-        atualizar(); // aplica valor inicial vindo do servidor
-
-        display.addEventListener("keydown", function (e) {
-            if (e.key >= "0" && e.key <= "9") {
-                e.preventDefault();
-                if (centavos < 999_999_999_99) {   // limite: R$ 9.999.999.999,99
-                    centavos = centavos * 10 + parseInt(e.key);
-                    atualizar();
-                }
-            } else if (e.key === "Backspace") {
-                e.preventDefault();
-                centavos = Math.floor(centavos / 10);
-                atualizar();
-            } else if (e.key === "Delete") {
-                e.preventDefault();
-                centavos = 0;
-                atualizar();
-            }
-            // ignora qualquer outra tecla
-        });
-
-        // bloqueia paste e entrada direta não numérica
-        display.addEventListener("paste", e => e.preventDefault());
-        display.addEventListener("input",  e => { display.value = formatarMoedaBR(centavos / 100); });
-    })();
+    // Máscara monetária — static/js/mascara_moeda.js, compartilhada com
+    // visualizar_processo (modal "Modificar Dados").
+    criarMascaraMoeda({
+        displayId: "id_valor_causa_display",
+        hiddenId: "id_valor_causa",
+    });
 
     document.addEventListener("DOMContentLoaded", function () {
         const csrfToken = document.querySelector("[name=csrfmiddlewaretoken]").value;

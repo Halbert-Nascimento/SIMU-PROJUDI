@@ -54,19 +54,19 @@
     <!-- Cabeçalho -->
     <div class="flex items-start justify-between">
         <div class="flex-1">
-            <div class="autos-title"><i class="fa-solid fa-clipboard-check"></i> AVALIAÇÃO DE MOVIMENTAÇÃO</div>
-            <div class="ml-4 mt-1 text-corpo leading-tight">
-                <div>
-                    <span class="text-texto-neutro">Processo</span>
-                    <span class="font-mono font-semibold ml-1">{{ processo.numero }}</span>
+            <div class="autos-title">AVALIAÇÃO DE MOVIMENTAÇÃO</div>
+            <div class="mt-1 text-corpo leading-tight flex flex-col gap-0.5">
+                <div class="flex">
+                    <div class="w-32 text-texto-neutro">Processo</div>
+                    <div class="font-mono font-semibold">{{ processo.numero }}</div>
                 </div>
-                <div class="mt-0.5">
-                    <span class="text-texto-neutro">Ciclo</span>
-                    <span class="font-bold ml-1">{{ ciclo }}</span>
+                <div class="flex">
+                    <div class="w-32 text-texto-neutro">Ciclo</div>
+                    <div class="font-bold">{{ ciclo }}</div>
                 </div>
-                <div class="mt-0.5">
-                    <span class="text-texto-neutro">Movimentação</span>
-                    <span class="font-bold ml-1">{{ movimentacao.tipo_movimento.nome_movimentacao }}</span>
+                <div class="flex">
+                    <div class="w-32 text-texto-neutro">Movimentação</div>
+                    <div class="font-bold">{{ movimentacao.tipo_movimento.nome_movimentacao }}</div>
                 </div>
             </div>
         </div>
@@ -79,7 +79,7 @@
     </div>
 
     <!-- DADOS DA MOVIMENTAÇÃO -->
-    <div class="section-title"><i class="fa-solid fa-file-lines"></i> DADOS DA MOVIMENTAÇÃO</div>
+    <div class="section-title">DADOS DA MOVIMENTAÇÃO</div>
     <div class="panel">
         <div class="grid grid-cols-2 gap-3">
             <!-- Autor -->
@@ -212,7 +212,7 @@
 
     <!-- AVALIAÇÃO DO PROFESSOR -->
     <div class="section-title green">
-        <i class="fa-solid fa-clipboard-check"></i> AVALIAÇÃO DO PROFESSOR
+        AVALIAÇÃO DO PROFESSOR
     </div>
     <form method="post" id="avaliacaoForm">
         {% csrf_token %}
@@ -267,7 +267,7 @@
     <!-- HISTÓRICO DO ALUNO NO CICLO -->
     {% if historico %}
     <div class="section-title">
-        <i class="fa-solid fa-clock-rotate-left"></i> HISTÓRICO DESTE ALUNO NO CICLO
+        HISTÓRICO DESTE ALUNO NO CICLO
     </div>
     <div class="panel-inner">
         <table class="tbl-hist">

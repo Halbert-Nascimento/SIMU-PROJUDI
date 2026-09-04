@@ -119,7 +119,7 @@ def ctx_redirecionamento(vazio=False):
     return {"user": ALUNO, "request": Obj(user=ALUNO), "all_routes": rotas}
 
 
-def ctx_visualizar(sem_movimentacao=False, com_arquivo=True):
+def ctx_visualizar(sem_movimentacao=False, com_arquivo=True, pode_alterar=True):
     doc = Obj(titulo_arquivo="contestacao.pdf", data_upload=QUANDO,
               caminho_arquivo=Obj(url="/media/contestacao.pdf", name="contestacao.pdf"))
     movs = [] if sem_movimentacao else [
@@ -137,9 +137,11 @@ def ctx_visualizar(sem_movimentacao=False, com_arquivo=True):
         "processo": Obj(
             numero=NUMERO, classe=Obj(nome="Procedimento Comum Cível"),
             tipo_processo=Obj(nome="Cível"), comarca=Obj(nome="Goiânia"),
-            vara=Obj(nome="1ª Vara Cível"), valor_causa="15000.00",
+            vara=Obj(nome="1ª Vara Cível", comarca=Obj(nome="Goiânia"), comarca_id=1),
+            valor_causa="15000.00",
             data_distribuicao=QUANDO, segredo_justica=False,
             status_atual="EM_ANDAMENTO", ciclo=Obj(nome_edicao="2026.2"),
+            vara_id=10, tipo_processo_id=1, classe_id=5,
         ),
         "polos_ativo": [parte], "polos_passivo": [parte], "polos_terceiro": [],
         "grupo_serventia": Obj(nome="Serventia 1"),
@@ -147,6 +149,17 @@ def ctx_visualizar(sem_movimentacao=False, com_arquivo=True):
                                   cargo_simulacao=Obj(nome="Advogado do Polo Ativo"))],
         "movimentacoes": movs,
         "pode_avaliar": True,
+        "pode_editar_processo": pode_alterar,
+        "comarcas": [Obj(pk=1, nome="Goiânia"), Obj(pk=2, nome="Anápolis")],
+        "varas_da_comarca": [Obj(pk=10, nome="1ª Vara Cível"), Obj(pk=11, nome="2ª Vara Cível")],
+        "tipos_processo": [Obj(pk=1, nome="Cível"), Obj(pk=2, nome="Criminal")],
+        "classes_processuais": [Obj(pk=5, nome="Procedimento Comum Cível")],
+        "partes_json": [
+            {"id": 1, "nome_razao": "Maria Souza Lima", "cpf_cnpj": "123.456.789-00",
+             "tipo_pessoa": "Física", "polo": "Ativo"},
+            {"id": 2, "nome_razao": "Construtora Alfa Ltda.", "cpf_cnpj": "12.345.678/0001-90",
+             "tipo_pessoa": "Jurídica", "polo": "Passivo"},
+        ],
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
                         {"label": f"Processo {NUMERO}", "url": None}],
     }
@@ -156,6 +169,7 @@ CASOS = [
     ("processos/visualizar_processo.html", "12 movimentações", ctx_visualizar()),
     ("processos/visualizar_processo.html", "sem movimentação", ctx_visualizar(sem_movimentacao=True)),
     ("processos/visualizar_processo.html", "sem arquivo anexo", ctx_visualizar(com_arquivo=False)),
+    ("processos/visualizar_processo.html", "sem permissão de editar", ctx_visualizar(pode_alterar=False)),
     ("avaliacoes/avaliar.html", "com histórico", ctx_avaliar()),
     ("avaliacoes/avaliar.html", "form com erros", ctx_avaliar(com_erros=True)),
     ("avaliacoes/avaliar.html", "sem histórico", ctx_avaliar(com_historico=False)),
