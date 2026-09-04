@@ -40,7 +40,6 @@
         padding: 10px 14px; display: flex; align-items: center; gap: 10px;
         margin-bottom: 12px; font-size: 12px;
     }
-    .banner-ult i { color: #1f4f9c; font-size: 18px; }
     .prof-comment {
         background: #eaf4ec; border-left: 3px solid #2e7d32;
         padding: 10px 12px; font-size: 12px; line-height: 1.55;
@@ -57,7 +56,7 @@
     {% include 'base/components/_breadcrumbs.html' %}
 
     <!-- IDENTIFICAÇÃO DO ALUNO -->
-    <div class="autos-title"><i class="fa-solid fa-chart-line"></i> MEU DESEMPENHO</div>
+    <div class="autos-title">MEU DESEMPENHO</div>
     <div class="panel">
         <div class="panel-inner">
             <div class="flex items-center gap-4">
@@ -93,7 +92,6 @@
     <!-- ÚLTIMA AVALIAÇÃO -->
     {% if ultima_avaliacao %}
     <div class="banner-ult mt-4">
-        <i class="fa-solid fa-clipboard-check"></i>
         <div class="flex-1">
             <strong>Última avaliação:</strong>
             {{ ultima_avaliacao.professor.get_full_name|default:ultima_avaliacao.professor.username }}
@@ -109,7 +107,7 @@
 
     <!-- HISTÓRICO DE AVALIAÇÕES -->
     <div class="section-title">
-        <i class="fa-solid fa-list-check"></i> HISTÓRICO DE AVALIAÇÕES
+        HISTÓRICO DE AVALIAÇÕES
     </div>
     <div class="panel-inner">
 
@@ -139,7 +137,7 @@
                     <th>Movimentação</th>
                     <th style="width:160px;">Professor</th>
                     <th style="width:70px;" class="text-center">Nota</th>
-                    <th class="col-acoes text-center">Ações</th>
+                    <th class="col-acoes">Ações</th>
                 </tr>
             </thead>
             <tbody id="avalBody">
@@ -240,7 +238,7 @@ function renderAval() {
             '<span class="secundario font-mono">' + escapeHtml(a.proc) + '</span></div></td>' +
             '<td>' + escapeHtml(a.prof) + '</td>' +
             '<td class="text-center"><span class="pill nota-badge ' + getNotaClass(a.nota) + '">' + notaTxt + '</span></td>' +
-            '<td class="col-acoes text-center"><i class="fa-solid fa-eye text-acao cursor-pointer" data-tip="Ver detalhes" onclick="event.stopPropagation(); openAval(' + realIdx + ')"></i></td>' +
+            '<td class="col-acoes"><i class="fa-solid fa-eye text-acao cursor-pointer" data-tip="Ver detalhes" onclick="event.stopPropagation(); openAval(' + realIdx + ')"></i></td>' +
             '</tr>';
     }).join('');
     paginadorAvaliacoes.resetar();

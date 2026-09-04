@@ -131,9 +131,11 @@
 .tbl tbody td { padding: 10px 16px; vertical-align: middle; }
 .tbl tbody tr:hover td { cursor: pointer; }
 
-/* Coluna de ação tem largura fixa — o guia proíbe `auto` aqui. */
+/* Coluna de ação tem largura fixa — o guia proíbe `auto` aqui. O alinhamento
+   é o mesmo das demais colunas: o guia fixa a largura, não o alinhamento, e
+   uma última coluna à direita destoava de todas as outras à esquerda. */
 .tbl-projudi .col-acoes, .tbl .col-acoes,
-.tbl-hist .col-acoes, .tbl-mov .col-acoes { width: 118px; text-align: right; }
+.tbl-hist .col-acoes, .tbl-mov .col-acoes { width: 118px; text-align: left; }
 
 /* Linha de preenchimento do paginador — segura a altura da página cheia sem
    parecer um registro. Ver static/js/paginador.js. */

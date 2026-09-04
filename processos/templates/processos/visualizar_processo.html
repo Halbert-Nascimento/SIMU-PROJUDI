@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
 <script src="{% static 'js/paginador.js' %}"></script>
+<script src="{% static 'js/mascara_moeda.js' %}"></script>
 <style>
     /* Colunas de largura fixa da tabela de movimentação */
     .tbl-mov .num-col { width: 32px; color: #6b7280; text-align: right; padding-right: 6px; }
@@ -31,9 +32,6 @@
         align-items: center; justify-content: center;
         cursor: default; font-size: 18px;
     }
-    .info-actions { display: flex; align-items: center; gap: 8px; }
-    .info-actions i { font-size: 16px; color: #1f4f9c; cursor: default; }
-    .info-actions .red { color: #c0392b; }
     .polo-actions { display: flex; align-items: center; gap: 10px; }
     .polo-actions .pa { color: #1f4f9c; font-size: 14px; cursor: default; font-weight: 600; }
     .icon-action { color: #1f4f9c; cursor: default; font-size: 14px; margin: 0 2px; }
@@ -195,20 +193,23 @@
     <!-- AUTOS -->
     <div class="flex items-start justify-between">
         <div class="flex-1">
-            <div class="autos-title"><i class="fa-solid fa-folder-open"></i> AUTOS</div>
-            <div class="ml-4 mt-1 text-corpo leading-tight">
+            <div class="autos-title">AUTOS</div>
+            <div class="mt-1 text-corpo leading-tight">
                 <div>
                     <span class="text-texto-neutro">Número</span>
-                    <span class="font-semibold ml-1 font-mono">{{ processo.numero }}</span>
-                    <i class="fa-regular fa-clipboard text-acao ml-2 cursor-pointer" data-tip="Copiar"></i>
-                    <i class="fa-regular fa-copy text-acao ml-1 cursor-pointer" data-tip="Duplicar"></i>
+                    <span id="numero-processo" class="font-semibold ml-1 font-mono">{{ processo.numero }}</span>
+                    <button type="button" onclick="copiarNumeroProcesso()"
+                            class="text-acao hover:text-navy ml-2 cursor-pointer"
+                            data-tip="Copiar" title="Copiar número do processo">
+                        <i class="fa-regular fa-clipboard"></i>
+                    </button>
                 </div>
                 <div class="mt-0.5">
                     <span class="text-texto-neutro">Área</span>
                     <span class="font-semibold">{{ processo.tipo_processo.nome }}</span>
                 </div>
             </div>
-            <div class="flex items-center gap-2 mt-3 ml-4">
+            <div class="flex items-center gap-2 mt-3">
                 <a href="{% url 'processos:pagina_aluno' %}" class="btn-secondary inline-flex items-center">
                     <i class="fa-solid fa-arrow-left mr-1"></i> Voltar
                 </a>
@@ -236,9 +237,11 @@
                         <div class="opcoes-sub-wrap">
                             <div class="opcoes-item">Partes <i class="fa-solid fa-chevron-right sub-arrow"></i></div>
                             <div class="opcoes-submenu">
-                                <div class="opcoes-item">Incluir Parte</div>
-                                <div class="opcoes-item">Alterar Parte</div>
-                                <div class="opcoes-item">Excluir Parte</div>
+                                {% if pode_editar_processo %}
+                                <div class="opcoes-item" onclick="abrirAlterarParte()">Alterar Parte</div>
+                                {% else %}
+                                <div class="opcoes-item text-rotulo" title="Seu perfil não altera partes deste processo">Alterar Parte</div>
+                                {% endif %}
                             </div>
                         </div>
                         {% comment %} <div class="opcoes-sub-wrap">
@@ -261,7 +264,11 @@
                         <div class="opcoes-item">Apensar/Desapensar Processo</div>
                         <div class="opcoes-item">Habilitar Advogados</div>
                         <div class="opcoes-item">Inverter Polos</div> {% endcomment %}
-                        <div class="opcoes-item">Modificar Dados</div>
+                        {% if pode_editar_processo %}
+                        <div class="opcoes-item" onclick="abrirModificarDados()">Modificar Dados</div>
+                        {% else %}
+                        <div class="opcoes-item text-rotulo" title="Seu perfil não modifica dados deste processo">Modificar Dados</div>
+                        {% endif %}
 
                         <!-- Movimentar — link funcional -->
                         <a href="{% url 'processos:movimentar_processo' processo.numero %}"
@@ -269,11 +276,9 @@
                             Movimentar
                         </a>
 
-                        <div class="opcoes-item" style="border-bottom:0;">Redistribuir</div>
 
                     </div>
                 </div>
-                <button type="button" class="{% classe_botao 'desabilitado' padding=True %}" disabled>Outras</button>
             </div>
         </div>
         <div class="mt-2 flex flex-col items-end gap-2">
@@ -287,11 +292,11 @@
     </div>
 
     <!-- DADOS DO PROCESSO -->
-    <div class="section-title"><i class="fa-solid fa-file-lines"></i> DADOS DO PROCESSO</div>
+    <div class="section-title">DADOS DO PROCESSO</div>
 
     <div class="panel">
         <!-- POLO ATIVO -->
-        <div class="autos-title" id="secao-polos"><i class="fa-solid fa-user"></i> POLO ATIVO | REQUERENTE</div>
+        <div class="autos-title" id="secao-polos">POLO ATIVO | REQUERENTE</div>
         {% for polo in polos_ativo %}
         <div class="panel-inner {% if not forloop.first %}mt-2{% endif %}">
             <div class="grid grid-cols-12 gap-3 items-start">
@@ -323,7 +328,7 @@
         {% endfor %}
 
         <!-- POLO PASSIVO -->
-        <div class="autos-title mt-3"><i class="fa-solid fa-user"></i> POLO PASSIVO | REQUERIDO</div>
+        <div class="autos-title mt-3">POLO PASSIVO | REQUERIDO</div>
         {% for polo in polos_passivo %}
         <div class="panel-inner {% if not forloop.first %}mt-2{% endif %}">
             <div class="grid grid-cols-12 gap-3 items-start">
@@ -387,7 +392,7 @@
 
         <!-- OUTRAS INFORMAÇÕES -->
         <div class="section-title">
-            <i class="fa-solid fa-circle-info"></i> OUTRAS INFORMAÇÕES
+            OUTRAS INFORMAÇÕES
         </div>
         <div class="panel-inner mt-0">
             <div class="grid grid-cols-2 gap-x-[28px] gap-y-2 text-corpo">
@@ -449,16 +454,6 @@
                 {% endif %}
             </div>
 
-            <div class="flex justify-end gap-3 mt-3 pt-2 border-t border-contorno info-actions">
-                <i class="fa-regular fa-calendar" data-tip="Agenda do processo"></i>
-                <i class="fa-solid fa-circle-exclamation red" data-tip="Pendencias"></i>
-                <i class="fa-solid fa-user-group" data-tip="Partes envolvidas"
-                   style="cursor:pointer;"
-                   onclick="document.getElementById('secao-polos').scrollIntoView({behavior:'smooth',block:'start'})"></i>
-                <i class="fa-solid fa-file-pdf red" data-tip="Exportar PDF"
-                   style="cursor:pointer;"
-                   onclick="window.print()"></i>
-            </div>
         </div>
     </div>
 
@@ -596,7 +591,250 @@
 
 </main>
 
+{% if pode_editar_processo %}
+{% modal id="modalAlterarParte" titulo="Alterar Parte" fechar_onclick="fecharAlterarParte()" %}
+    <div class="p-5 flex flex-col gap-3">
+        {% campo label="Parte do processo" para="parte-alvo" %}
+            <select id="parte-alvo" class="{% classe_campo %}" onchange="carregarParteSelecionada()"></select>
+        {% endcampo %}
+        {% campo label="Nome / Razão Social" para="parte-nome" %}
+            <input type="text" id="parte-nome" maxlength="150" class="{% classe_campo %}">
+        {% endcampo %}
+        {% campo label="CPF / CNPJ" para="parte-documento" %}
+            <input type="text" id="parte-documento" maxlength="20" class="{% classe_campo mono=True %}">
+        {% endcampo %}
+        {% campo label="Tipo de Pessoa" para="parte-tipo" %}
+            <select id="parte-tipo" class="{% classe_campo %}">
+                <option value="Física">Física</option>
+                <option value="Jurídica">Jurídica</option>
+            </select>
+        {% endcampo %}
+        <p id="parte-erro" class="text-meta text-validacao font-semibold hidden"></p>
+        <p class="text-meta text-rotulo">
+            Os dados da parte valem para todos os processos em que ela figura.
+        </p>
+    </div>
+    <div class="modal-acoes">
+        <button type="button" class="btn-blue" onclick="salvarParte()">Salvar</button>
+        <button type="button" class="btn-secondary" onclick="fecharAlterarParte()">Cancelar</button>
+    </div>
+{% endmodal %}
+{{ partes_json|json_script:"partes-data" }}
+
+{% modal id="modalModificarDados" titulo="Modificar Dados do Processo" fechar_onclick="fecharModificarDados()" %}
+    <div class="modal-body p-5 flex flex-col gap-3">
+        {% campo label="Comarca" para="dados-comarca" %}
+            <select id="dados-comarca" class="{% classe_campo %}" onchange="carregarVarasDaComarca()">
+                {% for c in comarcas %}
+                <option value="{{ c.pk }}" {% if c.pk == processo.vara.comarca_id %}selected{% endif %}>{{ c.nome }}</option>
+                {% endfor %}
+            </select>
+        {% endcampo %}
+        {% campo label="Vara / Serventia" para="dados-vara" %}
+            <select id="dados-vara" class="{% classe_campo %}">
+                {% for v in varas_da_comarca %}
+                <option value="{{ v.pk }}" {% if v.pk == processo.vara_id %}selected{% endif %}>{{ v.nome }}</option>
+                {% endfor %}
+            </select>
+        {% endcampo %}
+        {% campo label="Tipo de Processo" para="dados-tipo" %}
+            <select id="dados-tipo" class="{% classe_campo %}">
+                {% for t in tipos_processo %}
+                <option value="{{ t.pk }}" {% if t.pk == processo.tipo_processo_id %}selected{% endif %}>{{ t.nome }}</option>
+                {% endfor %}
+            </select>
+        {% endcampo %}
+        {% campo label="Classe Processual" para="dados-classe" %}
+            <select id="dados-classe" class="{% classe_campo %}">
+                {% for cl in classes_processuais %}
+                <option value="{{ cl.pk }}" {% if cl.pk == processo.classe_id %}selected{% endif %}>{{ cl.nome }}</option>
+                {% endfor %}
+            </select>
+        {% endcampo %}
+        {% campo label="Valor da Causa (R$)" para="dados-valor" %}
+            <input type="text" id="dados-valor" inputmode="numeric" autocomplete="off"
+                   class="{% classe_campo mono=True %}">
+            {# canônico e sem locale: floatformat renderiza "15000,00" em pt-BR #}
+            <input type="hidden" id="dados-valor-bruto" value="{{ processo.valor_causa|stringformat:'s' }}">
+        {% endcampo %}
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="dados-segredo" class="accent-acao w-3.5 h-3.5"
+                   {% if processo.segredo_justica %}checked{% endif %}>
+            <span class="text-micro font-semibold uppercase text-rotulo">Segredo de Justiça</span>
+        </label>
+        <p id="dados-erro" class="text-meta text-validacao font-semibold hidden"></p>
+        <p class="text-meta text-rotulo">
+            Número, ciclo, data de autuação e status não são alterados aqui.
+        </p>
+    </div>
+    <div class="modal-acoes">
+        <button type="button" class="btn-blue" onclick="salvarDadosProcesso()">Salvar</button>
+        <button type="button" class="btn-secondary" onclick="fecharModificarDados()">Cancelar</button>
+    </div>
+{% endmodal %}
+{% endif %}
+
+{% include 'base/components/_toast.html' %}
+
 <script>
+{% if pode_editar_processo %}
+const partesDoProcesso = JSON.parse(document.getElementById('partes-data').textContent);
+
+const mascaraValorCausa = criarMascaraMoeda({
+    displayId: 'dados-valor',
+    hiddenId: 'dados-valor-bruto',
+});
+
+function abrirModificarDados() {
+    document.getElementById('opcoesMenu').classList.remove('open');
+    mostrarErroDados('');
+    document.getElementById('modalModificarDados').classList.add('open');
+}
+
+function fecharModificarDados() {
+    document.getElementById('modalModificarDados').classList.remove('open');
+}
+
+function mostrarErroDados(msg) {
+    const alvo = document.getElementById('dados-erro');
+    alvo.textContent = msg;
+    alvo.classList.toggle('hidden', !msg);
+}
+
+/* A vara depende da comarca — mesma cascata do cadastro, pelo endpoint que já existe. */
+function carregarVarasDaComarca() {
+    const comarcaId = document.getElementById('dados-comarca').value;
+    const alvo = document.getElementById('dados-vara');
+    alvo.innerHTML = '<option value="">Carregando...</option>';
+    fetch('/processos/api/varas/' + comarcaId + '/')
+        .then(r => r.json())
+        .then(varas => {
+            alvo.innerHTML = varas.map(v => `<option value="${v.id}">${v.nome}</option>`).join('')
+                || '<option value="">Nenhuma vara nesta comarca</option>';
+        })
+        .catch(() => {
+            alvo.innerHTML = '<option value="">Falha ao carregar as varas</option>';
+        });
+}
+
+function salvarDadosProcesso() {
+    fetch("{% url 'processos:modificar_dados_processo' processo.numero %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            vara_id: document.getElementById('dados-vara').value,
+            tipo_processo_id: document.getElementById('dados-tipo').value,
+            classe_id: document.getElementById('dados-classe').value,
+            valor_causa: mascaraValorCausa.valor(),
+            segredo_justica: document.getElementById('dados-segredo').checked,
+        }),
+    })
+        .then(r => r.json().then(dados => ({ ok: r.ok, dados })))
+        .then(({ ok, dados }) => {
+            if (!ok) {
+                mostrarErroDados(dados.erro || 'Não foi possível modificar os dados.');
+                return;
+            }
+            showToast('Dados do processo atualizados.');
+            setTimeout(() => window.location.reload(), 700);
+        })
+        .catch(() => mostrarErroDados('Falha de rede ao salvar os dados.'));
+}
+
+function abrirAlterarParte() {
+    document.getElementById('opcoesMenu').classList.remove('open');
+    const alvo = document.getElementById('parte-alvo');
+    alvo.innerHTML = partesDoProcesso.map((parte, i) =>
+        `<option value="${i}">${parte.polo} — ${parte.nome_razao}</option>`).join('');
+    carregarParteSelecionada();
+    document.getElementById('modalAlterarParte').classList.add('open');
+}
+
+function fecharAlterarParte() {
+    document.getElementById('modalAlterarParte').classList.remove('open');
+}
+
+function carregarParteSelecionada() {
+    const parte = partesDoProcesso[document.getElementById('parte-alvo').value];
+    if (!parte) return;
+    document.getElementById('parte-nome').value = parte.nome_razao;
+    document.getElementById('parte-documento').value = parte.cpf_cnpj;
+    document.getElementById('parte-tipo').value = parte.tipo_pessoa;
+    mostrarErroParte('');
+}
+
+function mostrarErroParte(msg) {
+    const alvo = document.getElementById('parte-erro');
+    alvo.textContent = msg;
+    alvo.classList.toggle('hidden', !msg);
+}
+
+function salvarParte() {
+    const indice = document.getElementById('parte-alvo').value;
+    const parte = partesDoProcesso[indice];
+    if (!parte) return;
+
+    fetch("{% url 'processos:alterar_parte' processo.numero %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+        },
+        body: JSON.stringify({
+            parte_id: parte.id,
+            nome_razao: document.getElementById('parte-nome').value,
+            cpf_cnpj: document.getElementById('parte-documento').value,
+            tipo_pessoa: document.getElementById('parte-tipo').value,
+        }),
+    })
+        .then(r => r.json().then(dados => ({ ok: r.ok, dados })))
+        .then(({ ok, dados }) => {
+            if (!ok) {
+                mostrarErroParte(dados.erro || 'Não foi possível alterar a parte.');
+                return;
+            }
+            // os polos são renderizados no servidor; recarregar é o que garante
+            // que a tela mostre o mesmo que ficou gravado
+            showToast('Parte alterada.');
+            setTimeout(() => window.location.reload(), 700);
+        })
+        .catch(() => mostrarErroParte('Falha de rede ao salvar a parte.'));
+}
+{% endif %}
+
+function copiarNumeroProcesso() {
+    const numero = document.getElementById('numero-processo').textContent.trim();
+    // navigator.clipboard só existe em contexto seguro (https ou localhost); em
+    // http na rede da faculdade cai no textarea temporário
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(numero).then(avisarCopiado, () => copiarPorTextarea(numero));
+    } else {
+        copiarPorTextarea(numero);
+    }
+}
+
+function copiarPorTextarea(numero) {
+    const area = document.createElement('textarea');
+    area.value = numero;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    let copiou = false;
+    try { copiou = document.execCommand('copy'); } catch (e) { copiou = false; }
+    document.body.removeChild(area);
+    if (copiou) avisarCopiado();
+    else showToast('Não foi possível copiar o número do processo.', true);
+}
+
+function avisarCopiado() {
+    showToast('Número do processo copiado.');
+}
+
 function toggleArquivos(id) {
     const collapse = document.getElementById('arquivos-' + id);
     const btn      = document.getElementById('btn-arq-' + id);

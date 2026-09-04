@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import datetime
+import decimal
 import json
 
 from django.conf import settings as django_settings
@@ -24,7 +25,7 @@ from ciclos.models import CicloSimulacao, GrupoTrabalho
 from usuarios.models import Usuario
 
 from .forms import ProcessoJudicialForm
-from .permissions import pode_visualizar_processo
+from .permissions import pode_editar_processo, pode_visualizar_processo
 from .utils import validar_multiplos_arquivos
 from .models import (
     ClasseProcessual,
@@ -36,6 +37,7 @@ from .models import (
     ProcessoJudicial,
     StatusProcessoJudicial,
     TipoMovimentacao,
+    TipoProcesso,
     VaraServentia,
 )
 
@@ -361,6 +363,103 @@ def criar_parte(request):
     })
 
 
+@login_required
+@require_POST
+def modificar_dados_processo(request, numero):
+    """Altera os dados cadastrais do processo — os que o form de cadastro edita."""
+    processo = get_object_or_404(ProcessoJudicial, numero=numero)
+
+    if not pode_editar_processo(request.user, processo):
+        raise PermissionDenied
+
+    try:
+        dados = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"erro": "JSON inválido."}, status=400)
+
+    vara = VaraServentia.objects.filter(pk=dados.get("vara_id")).first()
+    tipo = TipoProcesso.objects.filter(pk=dados.get("tipo_processo_id")).first()
+    classe = ClasseProcessual.objects.filter(pk=dados.get("classe_id")).first()
+
+    if vara is None or tipo is None or classe is None:
+        return JsonResponse({"erro": "Selecione vara, tipo e classe."}, status=400)
+
+    # o valor chega como string do campo mascarado; vazio vale zero
+    bruto = str(dados.get("valor_causa") or "0").replace(".", "").replace(",", ".")
+    try:
+        valor = decimal.Decimal(bruto)
+    except decimal.InvalidOperation:
+        return JsonResponse({"erro": "Valor da causa inválido."}, status=400)
+    if valor < 0:
+        return JsonResponse({"erro": "O valor da causa não pode ser negativo."}, status=400)
+
+    processo.vara = vara
+    processo.tipo_processo = tipo
+    processo.classe = classe
+    processo.valor_causa = valor
+    processo.segredo_justica = bool(dados.get("segredo_justica"))
+    processo.save(update_fields=[
+        "vara", "tipo_processo", "classe", "valor_causa", "segredo_justica",
+    ])
+
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+def alterar_parte(request, numero):
+    """Altera os dados cadastrais de uma parte que já figura no processo."""
+    processo = get_object_or_404(ProcessoJudicial, numero=numero)
+
+    if not pode_editar_processo(request.user, processo):
+        raise PermissionDenied
+
+    try:
+        dados = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"erro": "JSON inválido."}, status=400)
+
+    # a parte tem que figurar NESTE processo — sem isso a rota viraria um
+    # editor aberto de qualquer parte do banco
+    polo = (
+        processo.polos.select_related("parte")
+        .filter(parte_id=dados.get("parte_id"))
+        .first()
+    )
+    if polo is None:
+        return JsonResponse({"erro": "Esta parte não figura no processo."}, status=404)
+
+    nome = (dados.get("nome_razao") or "").strip()
+    cpf_cnpj = (dados.get("cpf_cnpj") or "").strip()
+    tipo_pessoa = (dados.get("tipo_pessoa") or "").strip()
+
+    if not nome or not cpf_cnpj or not tipo_pessoa:
+        return JsonResponse({"erro": "Preencha todos os campos."}, status=400)
+
+    if tipo_pessoa not in ParteFicticia.TipoPessoa.values:
+        return JsonResponse({"erro": "Tipo de pessoa inválido."}, status=400)
+
+    if (
+        ParteFicticia.objects.filter(cpf_cnpj=cpf_cnpj)
+        .exclude(pk=polo.parte_id)
+        .exists()
+    ):
+        return JsonResponse({"erro": "Já existe outra parte com este CPF/CNPJ."}, status=400)
+
+    parte = polo.parte
+    parte.nome_razao = nome
+    parte.cpf_cnpj = cpf_cnpj
+    parte.tipo_pessoa = tipo_pessoa
+    parte.save(update_fields=["nome_razao", "cpf_cnpj", "tipo_pessoa"])
+
+    return JsonResponse({
+        "id": parte.id,
+        "nome_razao": parte.nome_razao,
+        "cpf_cnpj": parte.cpf_cnpj,
+        "tipo_pessoa": parte.tipo_pessoa,
+    })
+
+
 def visualizar_processo(request, numero):
     processo = get_object_or_404(
         ProcessoJudicial.objects
@@ -447,6 +546,22 @@ def visualizar_processo(request, numero):
             "polos_ativo": polos_ativo,
             "polos_passivo": polos_passivo,
             "polos_terceiro": polos_terceiro,
+            "pode_editar_processo": pode_editar_processo(request.user, processo),
+            "comarcas": Comarca.objects.all().order_by("nome"),
+            "tipos_processo": TipoProcesso.objects.all().order_by("nome"),
+            "classes_processuais": ClasseProcessual.objects.all().order_by("nome"),
+            "varas_da_comarca": VaraServentia.objects.filter(
+                comarca_id=processo.vara.comarca_id).order_by("nome"),
+            "partes_json": [
+                {
+                    "id": p.parte_id,
+                    "nome_razao": p.parte.nome_razao,
+                    "cpf_cnpj": p.parte.cpf_cnpj,
+                    "tipo_pessoa": p.parte.tipo_pessoa,
+                    "polo": p.get_tipo_polo_display(),
+                }
+                for p in processo.polos.all()
+            ],
             "grupo_serventia": grupo_serventia,
             "grupos_vinculados": grupos_vinculados,
             "movimentacoes": movimentacoes,

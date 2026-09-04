@@ -184,6 +184,15 @@ ficar centralizada num bloco alto. Esse defeito já apareceu três vezes, por
 caminhos diferentes — **ao criar uma listagem paginada nova, acrescente o caso
 aqui e confira a última página no navegador antes de considerar pronto.**
 
+```bash
+node scripts/teste_mascara_moeda.mjs
+```
+
+Cobre a máscara monetária de `static/js/mascara_moeda.js` (18 asserções), usada
+pelo cadastro de processo e pelo modal "Modificar Dados": o dígito entra pelos
+centavos e empurra o valor para a esquerda — digitar `1` dá R$ 0,01 e `2000` em
+seguida dá R$ 120,00.
+
 > Verde não é prova: antes de confiar numa asserção nova, reintroduza o defeito
 > e confira que o teste fica **vermelho**. Já aconteceu de o simulador de DOM
 > confirmar a suposição errada do código que ele deveria testar.
