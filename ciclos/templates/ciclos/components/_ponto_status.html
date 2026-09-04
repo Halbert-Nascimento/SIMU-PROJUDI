@@ -1,4 +1,12 @@
-<span class="inline-flex items-center gap-1.5">
-    <span class="ponto-status {{ cores.ponto }}"></span>
-    {{ status.nome_status|capfirst }}
+{% comment %}
+Ponto de status + nome do status, para subtítulos em linha de texto.
+
+Fluxo inline, e não `inline-flex`: a baseline de um container flex vem do
+primeiro item dele, e o primeiro item aqui é o ponto de 6px, que não tem texto.
+O navegador então sintetiza a baseline a partir da borda de baixo do ponto, e o
+rótulo descia alguns pixels em relação ao texto em volta. Em fluxo inline a
+baseline é a do próprio texto, que é o que alinha com a linha.
+{% endcomment %}
+<span class="whitespace-nowrap">
+    <span class="ponto-status align-middle mr-1.5 {{ cores.ponto }}"></span>{{ status.nome_status|capfirst }}
 </span>

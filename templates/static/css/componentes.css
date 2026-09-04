@@ -57,9 +57,12 @@
 }
 .modal-fundo.open { display: flex; }
 
+/* Sem borda: o guia (seção 07) especifica o modal por sombra e overlay. A borda
+   de 1px só aparece na demonstração dele, onde o modal é um cartão sobre fundo
+   claro — sobre o overlay navy ela vira um halo claro em volta da caixa. */
 .modal {
     background: #fff; width: 560px; max-width: 92vw;
-    border: 1px solid #e2e5ea; border-radius: 0;
+    border-radius: 0;
     box-shadow: 0 24px 60px -12px rgba(10, 8, 61, .45);
     opacity: 0; transform: translateY(-6px);
     transition: opacity .16s ease, transform .16s ease;

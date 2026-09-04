@@ -19,8 +19,7 @@
                 class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
                 <i class="fa-solid fa-arrow-left"></i> Voltar para o Painel
             </a>
-            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
-                <i class="fa-solid fa-folder-open"></i>
+            <h1 class="text-navy text-h1 font-bold">
                 <span class="text-navy">{{ ciclo.nome_edicao }}</span>
             </h1>
             <p class="text-corpo text-texto-neutro mt-1.5">
@@ -74,7 +73,7 @@
 
     <!-- Tabela de Grupos -->
     <h2 class="section-title">
-        <i class="fa-solid fa-layer-group"></i> Grupos de Trabalho ({{ grupos|length }})
+        Grupos de Trabalho ({{ grupos|length }})
     </h2>
 
     {% if grupos %}

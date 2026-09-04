@@ -3,7 +3,7 @@
 {% load processos_ui %}
 {% load static %}
 
-{% block title %}Processo Judicial - Área do Servidor{% endblock %}
+{% block title %}Processo Judicial - Área do Aluno{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
@@ -94,15 +94,11 @@
     <!-- Cabecalho -->
     <div class="mb-5 pb-4 border-b border-contorno flex items-end gap-4">
         <div class="flex-1">
-            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
-                {% if is_serventia %}
-                <i class="fa-solid fa-user-tie"></i> Área do Serventuário
-                {% else %}
-                <i class="fa-solid fa-user"></i> Área do Servidor
-                {% endif %}
+            <h1 class="text-navy text-h1 font-bold">
+                Área do Aluno
             </h1>
             <p class="text-corpo text-texto-neutro mt-1.5">
-                {{ saudacao }}, <strong>{% if usuario.get_full_name %}{{ usuario.get_full_name|upper }}{% else %}{{ usuario.username|upper }}{% endif %}</strong> | Seja bem vindo ao <strong>Processo Judicial</strong>
+                {{ saudacao }}, <strong>{% if usuario.get_full_name %}{{ usuario.get_full_name|upper }}{% else %}{{ usuario.username|upper }}{% endif %}</strong> | Seja bem vindo ao <strong>Simulador de Processo Judicial</strong>
             </p>
             {% if serventia %}
             <p class="text-corpo text-texto-neutro">{{ serventia }}{% if cargo %} — {{ cargo }}{% endif %}</p>
