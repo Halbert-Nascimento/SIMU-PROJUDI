@@ -4,16 +4,6 @@
    .main-container que vivia aqui saiu junto com a última tela que a usava — ela
    pintava #fff sobre 100vh e cobria o #f4f5f7 que o guia pede como fundo. */
 
-/* Ícone da barra superior, sobre navy */
-.top-bar-icon {
-    font-size: 13px;
-    margin-left: 12px;
-    cursor: pointer;
-    color: #a7abcd;
-    transition: color .15s ease;
-}
-.top-bar-icon:hover { color: #fff; }
-
 /* Ícone dentro de campo com prefixo */
 .input-group-icon {
     position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
