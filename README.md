@@ -168,6 +168,22 @@ uv pip list
 uv pip install nome-do-pacote
 ```
 
+## ✅ Testes
+
+O projeto não tem suíte automatizada de back-end (os `tests.py` estão vazios).
+O que existe hoje é um teste de comportamento do paginador:
+
+```bash
+node scripts/teste_paginador.mjs
+```
+
+Ele roda `static/js/paginador.js` contra um DOM mínimo (39 asserções) e cobre,
+entre outras coisas, a **reserva de espaço**: um bloco paginado não pode encolher
+quando a última página tem menos linhas, e numa tabela a linha solitária não pode
+ficar centralizada num bloco alto. Esse defeito já apareceu três vezes, por
+caminhos diferentes — **ao criar uma listagem paginada nova, acrescente o caso
+aqui e confira a última página no navegador antes de considerar pronto.**
+
 ## 🎨 Identidade Visual
 
 O projeto segue a identidade visual do sistema Projudi do TJGO, utilizando:

@@ -129,6 +129,11 @@
 .tbl-projudi .col-acoes, .tbl .col-acoes,
 .tbl-hist .col-acoes, .tbl-mov .col-acoes { width: 118px; text-align: right; }
 
+/* Linha de preenchimento do paginador — segura a altura da página cheia sem
+   parecer um registro. Ver static/js/paginador.js. */
+.paginador-preenchimento td { background: #fff !important; border-bottom: 0 !important; padding: 0 !important; }
+.paginador-preenchimento:hover td { background: #fff !important; cursor: default !important; }
+
 /* Célula dupla: 11.5px/600 em cima, 10.5px/#6b7280 embaixo. */
 .celula-dupla { display: flex; flex-direction: column; gap: 2px; padding-right: 14px; }
 .celula-dupla .principal { font-size: 11.5px; font-weight: 600; color: #23262e; }
@@ -205,3 +210,7 @@
 }
 .card-kpi .numero { font-size: 28px; font-weight: 700; line-height: 1; color: #0a083d; }
 .card-kpi .apoio { font-size: 11px; color: #6b7280; }
+
+/* Indicador que pede ação: mesma geometria, trio de erro do guia (seção 02). */
+.card-kpi--alerta { border-top-color: #b33a3a; }
+.card-kpi--alerta .numero { color: #b33a3a; }
