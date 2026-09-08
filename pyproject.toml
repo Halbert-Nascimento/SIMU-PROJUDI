@@ -1,6 +1,6 @@
 [project]
 name = "simu-projudi"
-version = "1.0.0a2"
+version = "1.0.0a3"
 description = "Sistema de simulação Projudi"
 authors = [
     {name = "Halbert Nascimento", email = "halbert.fac@gmail.com"},
