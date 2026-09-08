@@ -11,6 +11,8 @@ from django.views.decorators.http import require_POST
 
 from base.breadcrumbs import home_breadcrumb
 
+from notificacoes.services import notificar_mudanca_status_ciclo
+
 from usuarios.models import Usuario
 
 from .forms import CicloSimulacaoForm, GrupoTrabalhoForm
@@ -58,6 +60,10 @@ def editar_ciclo(request, ciclo_id):
     if not pode_editar_ciclo(request.user, ciclo):
         raise Http404()
 
+    # Capturado ANTES do form: form.is_valid() já reatribui ciclo.status em
+    # memória (construct_instance), então capturar depois sempre daria igual.
+    status_anterior = ciclo.status
+
     if request.method == "POST":
         form = CicloSimulacaoForm(request.POST, instance=ciclo, ator=request.user)
         if form.is_valid():
@@ -65,6 +71,12 @@ def editar_ciclo(request, ciclo_id):
             if "coordenador" in form.fields:
                 ciclo_salvo.coordenador = form.cleaned_data["coordenador"]
             ciclo_salvo.save()
+            notificar_mudanca_status_ciclo(
+                ciclo=ciclo_salvo,
+                status_anterior=status_anterior,
+                status_novo=ciclo_salvo.status,
+                ator=request.user,
+            )
             messages.success(request, f'Ciclo "{ciclo_salvo.nome_edicao}" atualizado com sucesso.')
             return redirect("acesso:painel_administrativo")
         else:

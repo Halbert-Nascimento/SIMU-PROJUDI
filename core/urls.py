@@ -26,6 +26,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('acesso/', include('acesso.urls')),
     path('ciclos/', include('ciclos.urls')),
+    path('notificacoes/', include('notificacoes.urls')),
     path('processos/', include('processos.urls')),
     path('avaliacoes/', include('avaliacoes.urls')),
     path('private-media/', include('private_storage.urls')),
