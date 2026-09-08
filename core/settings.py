@@ -127,10 +127,10 @@ LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após
 LOGIN_URL = 'acesso:login'
 LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
 
-# desconfigurações de segurança (ajustar para produção)
-# SESSION_COOKIE_SECURE = True    # cookie sessionid só via HTTPS
-# SESSION_COOKIE_HTTPONLY = True  # bloqueia acesso via document.cookie (XSS)
-# CSRF_COOKIE_SECURE = True       # csrftoken só via HTTPS
+# configurações de segurança de cookies (produção com HTTPS ativo)
+SESSION_COOKIE_SECURE = True    # cookie sessionid só via HTTPS
+SESSION_COOKIE_HTTPONLY = True  # bloqueia acesso via document.cookie (XSS)
+CSRF_COOKIE_SECURE = True       # csrftoken só via HTTPS
 
 # Configurações de sessão
 # Tempo de inatividade em segundos antes de expirar (lido do .env, padrão 900 s = 15 min)
