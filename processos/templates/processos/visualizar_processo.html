@@ -271,7 +271,7 @@
                         {% endif %}
 
                         <!-- Movimentar — link funcional -->
-                        <a href="{% url 'processos:movimentar_processo' processo.numero %}"
+                        <a href="{% url 'movimentacoes:movimentar_processo' processo.numero %}"
                            class="opcoes-item movimentar-item">
                             Movimentar
                         </a>
@@ -514,7 +514,7 @@
                         {% endif %}
                     </td>
                     <td class="opc-col">
-                        <a href="{% url 'processos:editar_movimentacao' processo.numero mov.id %}"
+                        <a href="{% url 'movimentacoes:editar_movimentacao' processo.numero mov.id %}"
                            title="Editar movimentação">
                             <i class="fa-solid fa-pen icon-action"></i>
                         </a>

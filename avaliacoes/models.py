@@ -6,7 +6,7 @@ from django.db import models
 
 class FeedbackProfessor(models.Model):
     movimentacao = models.ForeignKey(
-        "processos.MovimentacaoProcessual",
+        "movimentacoes.MovimentacaoProcessual",
         on_delete=models.CASCADE,
         related_name="feedbacks",
     )

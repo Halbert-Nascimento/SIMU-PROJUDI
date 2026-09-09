@@ -27,16 +27,19 @@ from usuarios.models import Usuario
 from .forms import ProcessoJudicialForm
 from .permissions import pode_editar_processo, pode_visualizar_processo
 from .utils import validar_multiplos_arquivos
+from movimentacoes.models import (
+    DocumentoAnexado,
+    MovimentacaoProcessual,
+    TipoMovimentacao,
+)
+
 from .models import (
     ClasseProcessual,
     Comarca,
-    DocumentoAnexado,
-    MovimentacaoProcessual,
     ParteFicticia,
     PoloProcessual,
     ProcessoJudicial,
     StatusProcessoJudicial,
-    TipoMovimentacao,
     TipoProcesso,
     VaraServentia,
 )
