@@ -13,7 +13,7 @@
     .step-bar { display:flex; align-items:center; gap:0; margin-bottom:18px; }
     .step-item {
         display:flex; align-items:center; gap:8px; padding:8px 18px;
-        font-size:11px; font-weight:700; letter-spacing:.06em; text-transform:uppercase;
+        font-size: calc(11px * var(--escala-fonte, 1)); font-weight:700; letter-spacing:.06em; text-transform:uppercase;
         color:#6b7280; cursor:default;
         border:1px solid #e2e5ea; background:#f4f5f7; position:relative;
     }
@@ -21,7 +21,7 @@
     .step-item .step-num {
         width:20px; height:20px;
         display:flex; align-items:center; justify-content:center;
-        font-size:10px; font-weight:700; color:#fff; background:#d3d7de;
+        font-size: calc(10px * var(--escala-fonte, 1)); font-weight:700; color:#fff; background:#d3d7de;
     }
     .step-item.active { background:#fff; color:#0a083d; border-color:#1f4f9c; }
     .step-item.active .step-num { background:#1f4f9c; }
@@ -36,9 +36,9 @@
     .doc-card .doc-icon {
         width:36px; height:36px; background:#1f4f9c;
         display:flex; align-items:center; justify-content:center;
-        color:#fff; font-size:16px; flex-shrink:0;
+        color:#fff; font-size: calc(16px * var(--escala-fonte, 1)); flex-shrink:0;
     }
-    .doc-card .doc-size { font-size:10.5px; color:#6b7280; }
+    .doc-card .doc-size { font-size: calc(10.5px * var(--escala-fonte, 1)); color:#6b7280; }
 
     /* Blocos do resumo — cabeçalho de card do guia (11px / 700 / .12em / navy) */
     .resumo-section {
@@ -46,13 +46,13 @@
         padding:14px 16px; margin-bottom:12px;
     }
     .resumo-section h4 {
-        font-size:11px; font-weight:700; letter-spacing:.12em; color:#0a083d;
+        font-size: calc(11px * var(--escala-fonte, 1)); font-weight:700; letter-spacing:.12em; color:#0a083d;
         text-transform:uppercase; margin-bottom:8px;
         border-bottom:1px solid #e2e5ea; padding-bottom:6px;
     }
-    .resumo-row { display:flex; font-size:12px; padding:3px 0; }
+    .resumo-row { display:flex; font-size: calc(12px * var(--escala-fonte, 1)); padding:3px 0; }
     .resumo-row .resumo-label {
-        font-size:10px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+        font-size: calc(10px * var(--escala-fonte, 1)); font-weight:600; letter-spacing:.1em; text-transform:uppercase;
         color:#6b7280; width:180px; flex-shrink:0; padding-top:2px;
     }
     .resumo-row .resumo-value { color:#23262e; }
@@ -156,7 +156,7 @@
 
                     <!-- ASSUNTO(S) -->
                     <fieldset class="p-5 mb-5">
-                        <legend>*ASSUNTO(S) <i class="fas fa-search text-[11px] text-rotulo"></i></legend>
+                        <legend>*ASSUNTO(S) <i class="fas fa-search text-[calc(11px*var(--escala-fonte,1))] text-rotulo"></i></legend>
                         <p class="text-rotulo italic text-corpo">Insira um Assunto.</p>
                     </fieldset>
 
@@ -502,7 +502,7 @@
                 <div class="doc-icon"><i class="fas fa-file-alt"></i></div>
                 <div class="flex-1">
                     <div class="mb-1">
-                        <input type="file" name="documentos" class="doc-file-input text-[12px]" accept="${acceptAttr}">
+                        <input type="file" name="documentos" class="doc-file-input text-[calc(12px*var(--escala-fonte,1))]" accept="${acceptAttr}">
                     </div>
                     <p class="doc-card-erro text-validacao text-meta font-semibold mt-1 hidden"></p>
                     <div class="doc-info hidden">
@@ -609,13 +609,13 @@
 
             const docs = document.querySelectorAll("#docLista .doc-card");
             let docsHtml = docs.length === 0
-                ? '<p class="text-[12px] text-rotulo italic">Nenhum documento anexado.</p>'
+                ? '<p class="text-[calc(12px*var(--escala-fonte,1))] text-rotulo italic">Nenhum documento anexado.</p>'
                 : "";
             docs.forEach(c => {
                 const nomeDoc  = c.querySelector(".doc-nome-input").value || "Sem nome";
                 const filename = c.querySelector(".doc-filename").textContent || "—";
                 const size     = c.querySelector(".doc-size").textContent || "";
-                docsHtml += `<div class="flex items-center gap-3 py-1 text-[12px]">
+                docsHtml += `<div class="flex items-center gap-3 py-1 text-[calc(12px*var(--escala-fonte,1))]">
                     <i class="fas fa-file-alt text-[#1f4f9c]"></i>
                     <strong>${nomeDoc}</strong>
                     <span class="text-rotulo">(${filename} — ${size})</span>

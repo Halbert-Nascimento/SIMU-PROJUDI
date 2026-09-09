@@ -80,3 +80,21 @@ def pode_ver_ciclos_arquivados(user: Usuario) -> bool:
         Usuario.TipoPerfilGlobal.ADMIN,
         Usuario.TipoPerfilGlobal.COORDENADOR,
     )
+
+
+def aguarda_vinculo_a_ciclo(user: Usuario, ciclos_ativos) -> bool:
+    """
+    Aluno já aceito no sistema que ainda não foi posto em nenhum ciclo em
+    andamento — o estado em que não há processo, grupo nem nota para ver.
+
+    Recebe os ciclos em vez de consultá-los: quem chama é o middleware, que já
+    pagou essa query no `CicloAtivoMiddleware`.
+
+    Fora do nome `pode_<acao>_<recurso>` de propósito: não é autorização, é o
+    estado do cadastro. Quem autoriza continua sendo a guarda de cada tela.
+    """
+    if not user.is_authenticated:
+        return False
+    if user.tipo_perfil_global != Usuario.TipoPerfilGlobal.ALUNO:
+        return False
+    return not ciclos_ativos

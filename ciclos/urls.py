@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     adicionar_membro,
     ativar_ciclo,
+    boas_vindas,
     criar_ciclo,
     detalhe_ciclo,
     editar_ciclo,
@@ -14,6 +15,7 @@ from .views import (
 app_name = "ciclos"
 
 urlpatterns = [
+    path("boas-vindas/", boas_vindas, name="boas_vindas"),
     path("selecionar/", selecionar_ciclo, name="selecionar_ciclo"),
     path("<int:ciclo_id>/ativar/", ativar_ciclo, name="ativar_ciclo"),
     path("criar/", criar_ciclo, name="criar_ciclo"),

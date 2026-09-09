@@ -16,7 +16,7 @@
         {% for n in page_obj %}
         <a href="{{ n.link_url }}" class="block px-4 py-3 text-xs hover:bg-gray-50 {% if not n.lida %}bg-blue-50{% endif %}">
             <div class="{% if not n.lida %}font-bold{% endif %} text-tjgo-text-main">{{ n.mensagem }}</div>
-            <div class="text-[11px] text-gray-400 mt-1">{{ n.data_criacao|date:"d/m/Y H:i" }}</div>
+            <div class="text-[calc(11px*var(--escala-fonte,1))] text-gray-400 mt-1">{{ n.data_criacao|date:"d/m/Y H:i" }}</div>
         </a>
         {% empty %}
         <div class="px-4 py-6 text-xs text-gray-400 text-center">Nenhuma notificação até o momento.</div>
@@ -24,7 +24,7 @@
     </div>
 
     {% if page_obj.paginator.num_pages > 1 %}
-    <div class="flex items-center justify-end mt-4 text-[12px]">
+    <div class="flex items-center justify-end mt-4 text-[calc(12px*var(--escala-fonte,1))]">
         <div class="flex items-center gap-1">
             {% if page_obj.has_previous %}
             <a href="?page=1" class="btn-sec px-2"><i class="fa-solid fa-angles-left"></i></a>
@@ -32,9 +32,9 @@
             {% endif %}
             {% for num in page_obj.paginator.page_range %}
                 {% if num == page_obj.number %}
-                <span class="px-3 py-1 bg-[#1a5b9e] text-white font-bold text-[11px]">{{ num }}</span>
+                <span class="px-3 py-1 bg-[#1a5b9e] text-white font-bold text-[calc(11px*var(--escala-fonte,1))]">{{ num }}</span>
                 {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                <a href="?page={{ num }}" class="btn-sec px-3 text-[11px]">{{ num }}</a>
+                <a href="?page={{ num }}" class="btn-sec px-3 text-[calc(11px*var(--escala-fonte,1))]">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}

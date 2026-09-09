@@ -7,7 +7,7 @@ que ainda nao leva a lugar nenhum.
 {% endcomment %}
 <a {% if url %}href="{{ url }}" {% endif %}class="card-manual{% if not url %} card-manual-vazio{% endif %} flex flex-col min-h-[128px] p-[14px] bg-white border border-contorno">
     <div class="flex items-center justify-between gap-2 mb-3">
-        <i class="fa-solid {{ icone }} text-[20px] text-navy"></i>
+        <i class="fa-solid {{ icone }} text-[calc(20px*var(--escala-fonte,1))] text-navy"></i>
         <span class="font-mono text-micro font-semibold uppercase text-neutro-txt bg-neutro-bg border border-neutro-bd px-[9px] py-[3px]">{{ codigo }}</span>
     </div>
     <span class="text-apoio font-semibold leading-tight text-texto mb-1.5">{{ titulo }}</span>

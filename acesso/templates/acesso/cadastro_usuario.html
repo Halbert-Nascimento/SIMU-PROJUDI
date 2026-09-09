@@ -54,15 +54,15 @@
                     <div class="flex items-start gap-2">
                         <!-- Passo com raio 0, como todo contêiner do guia — o
                              círculo é reservado a avatar e ponto de status. -->
-                        <span class="shrink-0 flex items-center justify-center w-[18px] h-[18px] bg-navy text-white text-[10px] font-bold mt-px">1</span>
+                        <span class="shrink-0 flex items-center justify-center w-[18px] h-[18px] bg-navy text-white text-[calc(10px*var(--escala-fonte,1))] font-bold mt-px">1</span>
                         <span><strong class="font-semibold text-texto">Dados de Acesso</strong> — Preencha seu cadastro com os dados de login e senha.</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <span class="shrink-0 flex items-center justify-center w-[18px] h-[18px] bg-neutro-bg text-neutro-txt border border-neutro-bd text-[10px] font-bold mt-px">2</span>
+                        <span class="shrink-0 flex items-center justify-center w-[18px] h-[18px] bg-neutro-bg text-neutro-txt border border-neutro-bd text-[calc(10px*var(--escala-fonte,1))] font-bold mt-px">2</span>
                         <span><strong class="font-semibold text-texto">Ativação</strong> — Um administrador, coordenador ou professor irá ativar o cadastro, liberando seu acesso.</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <span class="shrink-0 flex items-center justify-center w-[18px] h-[18px] bg-neutro-bg text-neutro-txt border border-neutro-bd text-[10px] font-bold mt-px">3</span>
+                        <span class="shrink-0 flex items-center justify-center w-[18px] h-[18px] bg-neutro-bg text-neutro-txt border border-neutro-bd text-[calc(10px*var(--escala-fonte,1))] font-bold mt-px">3</span>
                         <span><strong class="font-semibold text-texto">Acesso Liberado</strong> — Com o acesso ativado, você já pode entrar no sistema.</span>
                     </div>
                 {% endcard %}
@@ -71,25 +71,25 @@
             {% card titulo="REQUISITOS DE SENHA" icone="fa-shield-halved" classe_corpo="px-4 py-[14px]" %}
                     <ul class="flex flex-col gap-1.5 text-apoio">
                         <li id="req_len" class="flex items-center gap-2 text-rotulo">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Mínimo de 8 caracteres
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Mínimo de 8 caracteres
                         </li>
                         {% comment %} <li id="req_upper" class="flex items-center gap-2 text-rotulo">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Ao menos uma letra maiúscula
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Ao menos uma letra maiúscula
                         </li> {% endcomment %}
                         {% comment %} <li id="req_num" class="flex items-center gap-2 text-rotulo">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Ao menos um número
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Ao menos um número
                         </li> {% endcomment %}
                         {% comment %} <li id="req_special" class="flex items-center gap-2 text-rotulo">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Ao menos um caractere especial
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Ao menos um caractere especial
                         </li> {% endcomment %}
                         <li class="flex items-center gap-2 text-rotulo   ">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser inteiramente numérica
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Não pode ser inteiramente numérica
                         </li>
                         <li class="flex items-center gap-2 text-rotulo">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser uma senha comumente utilizada
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Não pode ser uma senha comumente utilizada
                         </li>
                         <li class="flex items-center gap-2 text-rotulo">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser similar às suas informações pessoais
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Não pode ser similar às suas informações pessoais
                         </li>
                     </ul>
                 {% endcard %}
@@ -98,7 +98,7 @@
             {% card titulo="SUPORTE" icone="fa-headset" classe_corpo="px-4 py-[14px] text-apoio text-texto-neutro flex flex-col gap-2" %}
                     <p>Dúvidas sobre o cadastro? Entre em contato com a coordenação do simulador.</p>
                     <a href="mailto:simulador@tjgo.jus.br" class="text-acao font-semibold hover:underline flex items-center gap-1.5">
-                        <i class="fa-solid fa-envelope text-[11px]"></i> simulador@tjgo.jus.br
+                        <i class="fa-solid fa-envelope text-[calc(11px*var(--escala-fonte,1))]"></i> simulador@tjgo.jus.br
                     </a>
                 {% endcard %}
 
@@ -176,7 +176,7 @@
         if(!el) return;
         el.classList.toggle('text-ok-txt', ok);
         el.classList.toggle('text-rotulo', !ok);
-        el.querySelector('i').className = 'fa-solid text-[8px] ' + (ok ? 'fa-circle-check' : 'fa-circle');
+        el.querySelector('i').className = 'fa-solid text-[calc(8px*var(--escala-fonte,1))] ' + (ok ? 'fa-circle-check' : 'fa-circle');
     }
 
     pwdInput.addEventListener('input', function(){

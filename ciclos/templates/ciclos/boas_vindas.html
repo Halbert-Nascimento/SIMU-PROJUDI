@@ -1,0 +1,85 @@
+{% extends 'base/base.html' %}
+{% load ui %}
+
+{% block title %}Boas-vindas — Simulador Projudi{% endblock %}
+
+{% block content %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+    <div class="w-full max-w-[560px] mx-auto">
+
+        {% include 'base/components/_mensagens.html' %}
+
+        <!-- Sem navegação secundária: enquanto o vínculo não vem, não há segunda
+             tela para onde a barra apontar. -->
+        <div class="mb-[14px] pb-[14px] border-b border-contorno">
+            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+                <i class="fa-solid fa-hourglass-half"></i> Boas-vindas
+            </h1>
+            <p class="text-corpo text-texto-neutro mt-1.5">
+                <strong>{% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}</strong>,
+                seu acesso ao Simulador Projudi já está liberado.
+            </p>
+        </div>
+
+        <div class="bg-white border-x border-b border-contorno border-t-[3px] border-t-navy">
+
+            <div class="px-4 py-[11px] bg-card-topo border-b border-divisor flex items-center justify-between gap-4">
+                <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy">
+                    Situação do cadastro
+                </span>
+                <span class="pill warn">Aguardando vínculo</span>
+            </div>
+
+            <div class="px-4 py-[14px] flex flex-col gap-3">
+                {% if ja_participou %}
+                    <p class="text-corpo text-texto">
+                        Você não está em nenhum ciclo em andamento no momento.
+                        <strong>Aguarde um professor te vincular a um novo ciclo.</strong>
+                    </p>
+                {% else %}
+                    <p class="text-corpo text-texto">
+                        Você ainda não faz parte de nenhum grupo de trabalho.
+                        <strong>Aguarde um professor te vincular a um ciclo.</strong>
+                    </p>
+                {% endif %}
+                <p class="text-corpo text-texto-neutro">
+                    É o professor ou o coordenador do ciclo quem inclui você em um grupo e
+                    define o cargo que vai exercer na simulação — Serventia, Advogado,
+                    Ministério Público ou Juiz. Enquanto isso não acontece, não há processo
+                    para acompanhar.
+                </p>
+                <p class="text-corpo text-texto-neutro">
+                    Feito o vínculo, esta tela dá lugar à sua área de processos.
+                </p>
+            </div>
+
+            <!-- Os dados do cadastro ficam à mão porque é por eles que o professor
+                 encontra o aluno na hora de montar o grupo. -->
+            <div class="px-4 py-[11px] bg-tabela-topo border-t border-divisor flex flex-col gap-[6px]">
+                <div class="flex items-baseline gap-2">
+                    <span class="text-micro font-semibold uppercase text-rotulo w-[64px] shrink-0 whitespace-nowrap">Nome</span>
+                    <span class="text-dado font-semibold text-texto">
+                        {% if user.get_full_name %}{{ user.get_full_name }}{% else %}{{ user.username }}{% endif %}
+                    </span>
+                </div>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-micro font-semibold uppercase text-rotulo w-[64px] shrink-0 whitespace-nowrap">E-mail</span>
+                    <span class="text-dado font-semibold text-texto font-mono">{{ user.email }}</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-[14px] flex items-center gap-3">
+            <a href="{% url 'ciclos:boas_vindas' %}"
+               class="{% classe_botao 'primario' padding=True %} inline-flex items-center gap-2 whitespace-nowrap">
+                <i class="fa-solid fa-rotate"></i> Verificar novamente
+            </a>
+            <span class="text-meta text-rotulo">
+                Já falou com o professor? Recarregue para conferir o vínculo.
+            </span>
+        </div>
+
+    </div>
+</main>
+{% endblock %}

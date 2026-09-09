@@ -11,25 +11,25 @@
        Tinha raio de 2px, que o guia reserva a campo de formulário. */
     .step-badge {
         background: #0a083d; color: #fff; padding: 3px 9px;
-        font-size: 10px; font-weight: 700; letter-spacing: .07em;
+        font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 700; letter-spacing: .07em;
         text-transform: uppercase; display: inline-block;
     }
 
     /* Rótulo de campo — guia seção 03: 10px / 600 / .1em / caixa alta / #6b7280.
        Era 12px em negrito e cor de corpo, o mesmo peso do valor ao lado. */
     .lbl {
-        display: block; font-size: 10px; font-weight: 600;
+        display: block; font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 600;
         letter-spacing: .1em; text-transform: uppercase;
         color: #6b7280; margin-bottom: 5px;
     }
     .lbl .req { color: #c0392b; margin-right: 2px; }
-    .lbl-icon { color: #1f4f9c; font-size: 11px; margin-left: 2px; cursor: pointer; }
-    .lbl-x { color: #6b7280; font-size: 11px; margin-left: 2px; cursor: pointer; }
+    .lbl-icon { color: #1f4f9c; font-size: calc(11px * var(--escala-fonte, 1)); margin-left: 2px; cursor: pointer; }
+    .lbl-x { color: #6b7280; font-size: calc(11px * var(--escala-fonte, 1)); margin-left: 2px; cursor: pointer; }
 
     /* Instrução de preenchimento. Vinha em #c0392b, a cor que o guia reserva a
        erro de validação — parecia falha num campo ainda vazio. */
     .hint-campo {
-        color: #6b7280; font-weight: 400; font-size: 10.5px;
+        color: #6b7280; font-weight: 400; font-size: calc(10.5px * var(--escala-fonte, 1));
         text-transform: none; letter-spacing: normal;
     }
 
@@ -45,12 +45,12 @@
         transition: border-color .15s ease, background-color .15s ease; cursor: pointer;
     }
     .dropzone:hover, .dropzone.over { border-color: #1f4f9c; background: #f7faff; }
-    .dropzone .ico { font-size: 38px; color: #1f4f9c; margin-bottom: 8px; }
+    .dropzone .ico { font-size: calc(38px * var(--escala-fonte, 1)); color: #1f4f9c; margin-bottom: 8px; }
 
     .action-icons { display: flex; gap: 8px; margin-bottom: 4px; padding: 4px 2px; }
     .action-icons button {
         background: transparent; border: 0; cursor: pointer;
-        color: #1f4f9c; font-size: 14px; padding: 4px;
+        color: #1f4f9c; font-size: calc(14px * var(--escala-fonte, 1)); padding: 4px;
     }
     .action-icons button:hover { color: #0a083d; }
     .action-icons button.danger { color: #c0392b; }
@@ -93,20 +93,20 @@
         <legend>PASSO 1 - DADOS MOVIMENTAÇÃO</legend>
 
         <!-- Identificação do processo -->
-        <div class="bg-card-topo border border-contorno p-3 mb-4 text-[12px]">
+        <div class="bg-card-topo border border-contorno p-3 mb-4 text-[calc(12px*var(--escala-fonte,1))]">
             <div class="flex items-center gap-2 mb-1">
                 <i class="fa-solid fa-folder-open text-acao"></i>
                 <span class="font-bold text-acao">Processo nº {{ processo.numero }}</span>
                 <span class="text-rotulo font-normal">— {{ processo.vara.nome }} / {{ processo.vara.comarca.nome }}</span>
             </div>
-            <div class="text-rotulo text-[11px] mt-1">
+            <div class="text-rotulo text-[calc(11px*var(--escala-fonte,1))] mt-1">
                 <span class="font-medium text-texto">{{ processo.tipo_processo.nome }}</span>
                 &nbsp;•&nbsp;
                 {% for polo in polos_ativo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
                 <span class="mx-1">×</span>
                 {% for polo in polos_passivo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
             </div>
-            <div class="mt-1 text-[11px]">
+            <div class="mt-1 text-[calc(11px*var(--escala-fonte,1))]">
                 <span class="text-rotulo">Classe:</span>
                 <span class="font-medium">{{ processo.classe.nome }}</span>
                 &nbsp;•&nbsp;
@@ -125,7 +125,7 @@
                 <input type="text" id="tipoMovInput" autocomplete="off"
                        placeholder="— Digite ou selecione o Tipo de Movimentação —"
                        class="{% classe_campo %} pr-8"/>
-                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-rotulo text-[10px]">
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-rotulo text-[calc(10px*var(--escala-fonte,1))]">
                     <i class="fa-solid fa-chevron-down"></i>
                 </span>
                 <input type="hidden" id="tipoMov" name="tipo_movimento"/>
@@ -166,8 +166,8 @@
                 <div id="panel-upload" class="tab-panel active">
                     <div class="dropzone" id="dropZone" onclick="document.getElementById('fileInput').click()">
                         <div class="ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
-                        <div class="font-bold text-acao text-[13px]">Arraste arquivos aqui ou clique para selecionar</div>
-                        <div class="text-[11px] text-rotulo mt-1">Tamanho máximo: 10MB por arquivo • PDF, DOC, DOCX, ODT, JPG, PNG</div>
+                        <div class="font-bold text-acao text-[calc(13px*var(--escala-fonte,1))]">Arraste arquivos aqui ou clique para selecionar</div>
+                        <div class="text-[calc(11px*var(--escala-fonte,1))] text-rotulo mt-1">Tamanho máximo: 10MB por arquivo • PDF, DOC, DOCX, ODT, JPG, PNG</div>
                         <input id="fileInput" name="documentos" type="file" multiple class="hidden" accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png"/>
                     </div>
                     <div id="pendingFiles" class="mt-4 space-y-2"></div>
@@ -198,12 +198,12 @@
                                 <i class="fa-solid fa-xmark"></i>
                             </button>
                         </div>
-                        <p class="text-rotulo text-[11px] mt-1.5">
+                        <p class="text-rotulo text-[calc(11px*var(--escala-fonte,1))] mt-1.5">
                             <i class="fa-solid fa-triangle-exclamation text-atencao-txt mr-1"></i>
                             Ao carregar um modelo ou rascunho, o conteúdo atual do editor será substituído.
                         </p>
                         <div class="flex items-center gap-2 mt-2 pt-2 border-t border-contorno">
-                            <span class="text-rotulo text-[11px]">Continuar edição de rascunho salvo:</span>
+                            <span class="text-rotulo text-[calc(11px*var(--escala-fonte,1))]">Continuar edição de rascunho salvo:</span>
                             <button type="button" onclick="document.getElementById('rascunhoInput').click()"
                                     class="{% classe_botao 'secundario' %} {% padding_botao 'linha' %} flex items-center gap-1.5">
                                 <i class="fa-solid fa-folder-open"></i> Abrir Rascunho (.html)
@@ -493,7 +493,7 @@ function renderPending() {
     const c = document.getElementById('pendingFiles');
     if (pendingFiles.length === 0) { c.innerHTML = ''; return; }
     c.innerHTML = `
-        <div class="bg-card-topo border border-contorno p-2 text-[11px] font-bold uppercase text-rotulo flex items-center gap-2">
+        <div class="bg-card-topo border border-contorno p-2 text-[calc(11px*var(--escala-fonte,1))] font-bold uppercase text-rotulo flex items-center gap-2">
             <i class="fa-solid fa-circle-info text-acao"></i>
             Defina o título para cada arquivo antes de incluir na lista
         </div>
@@ -503,13 +503,13 @@ function renderPending() {
             <div class="border border-contorno bg-white p-3 flex items-center gap-3">
                 <i class="fa-solid ${ico} text-2xl" style="color:${col}"></i>
                 <div class="flex-1">
-                    <div class="text-[12px] font-bold text-texto">${f.name}
-                        <span class="text-rotulo text-[10px] font-normal">(${formatSize(f.size)})</span>
+                    <div class="text-[calc(12px*var(--escala-fonte,1))] font-bold text-texto">${f.name}
+                        <span class="text-rotulo text-[calc(10px*var(--escala-fonte,1))] font-normal">(${formatSize(f.size)})</span>
                     </div>
                     <div class="mt-1.5">
-                        <label class="lbl text-[11px]"><span class="req">*</span>Título do arquivo</label>
+                        <label class="lbl text-[calc(11px*var(--escala-fonte,1))]"><span class="req">*</span>Título do arquivo</label>
                         <input type="text"
-                               class="w-full bg-white border border-contorno py-1 px-2 text-[12px] outline-none"
+                               class="w-full bg-white border border-contorno py-1 px-2 text-[calc(12px*var(--escala-fonte,1))] outline-none"
                                value="${f.title}"
                                oninput="updateTitle(${f.id}, this.value)"
                                placeholder="Ex.: Petição inicial, Procuração, Documento pessoal..."/>
@@ -794,7 +794,7 @@ function avancar() {
             return `<li class="flex items-center gap-2">
                 <i class="fa-solid ${ico}" style="color:${col}"></i>
                 <span>${f.desc}</span>
-                <span class="text-rotulo text-[10px]">(${f.name})</span>
+                <span class="text-rotulo text-[calc(10px*var(--escala-fonte,1))]">(${f.name})</span>
             </li>`;
         }).join('');
     }

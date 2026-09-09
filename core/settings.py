@@ -69,6 +69,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'acesso.middleware.SessionActivityMiddleware',
     'ciclos.middleware.CicloAtivoMiddleware',
+    # depende de `ciclos_ativos_usuario`, populado pelo middleware acima
+    'ciclos.middleware.AlunoSemCicloMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
