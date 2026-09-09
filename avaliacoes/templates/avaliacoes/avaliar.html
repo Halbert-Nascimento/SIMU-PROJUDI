@@ -14,30 +14,30 @@
     }
     .file-row:last-child { border-bottom: none; }
     .file-row .ext {
-        font-size: 9px; font-weight: bold; padding: 3px 6px;
+        font-size: calc(9px * var(--escala-fonte, 1)); font-weight: bold; padding: 3px 6px;
         border-radius: 0; text-transform: uppercase; color: #fff;
     }
     .file-row .ext.pdf { background: #c0392b; }
     .file-row .ext.doc, .file-row .ext.docx { background: #1f4f9c; }
     .file-row .ext.jpg, .file-row .ext.jpeg { background: #2e7d32; }
     .file-row .ext.default { background: #6b7280; }
-    .file-row .info-meta { font-size: 10px; color: #6b7280; }
+    .file-row .info-meta { font-size: calc(10px * var(--escala-fonte, 1)); color: #6b7280; }
     .file-row .acts { display: flex; gap: 8px; }
     .file-row .acts i {
-        color: #1f4f9c; cursor: pointer; font-size: 13px;
+        color: #1f4f9c; cursor: pointer; font-size: calc(13px * var(--escala-fonte, 1));
     }
     .file-row .acts i:hover { color: #0a083d; }
 
     /* Campo de nota — campo de formulário do guia (seção 05) com o número na
        escala de KPI: raio 2px, borda de 1px, foco só por borda, sem halo. */
     .grade-input {
-        width: 92px; font-size: 28px; font-weight: 700; line-height: 1;
+        width: 92px; font-size: calc(28px * var(--escala-fonte, 1)); font-weight: 700; line-height: 1;
         text-align: center; border: 1px solid #d3d7de;
         border-radius: 2px; padding: 8px 9px;
         color: #0a083d; outline: none; background: #fff;
     }
     .grade-input:focus { border-color: #1f4f9c; }
-    .grade-suffix { color: #6b7280; font-size: 11.5px; font-weight: 600; }
+    .grade-suffix { color: #6b7280; font-size: calc(11.5px * var(--escala-fonte, 1)); font-weight: 600; }
 </style>
 {% endblock %}
 

@@ -20,8 +20,8 @@
 
     /* Célula dupla do guia (seção 06): 11.5px/600 em cima, 10.5px/#6b7280 embaixo.
        O nome da movimentação era azul de ação, que o guia reserva a link. */
-    .tbl-mov .sub { font-size: 11.5px; font-weight: 600; color: #23262e; }
-    .tbl-mov .sub-evt { font-size: 10.5px; color: #6b7280; }
+    .tbl-mov .sub { font-size: calc(11.5px * var(--escala-fonte, 1)); font-weight: 600; color: #23262e; }
+    .tbl-mov .sub-evt { font-size: calc(10.5px * var(--escala-fonte, 1)); color: #6b7280; }
     .tbl-mov a { color: #1f4f9c; }
     .tbl-mov a:hover { text-decoration: underline; }
 
@@ -30,11 +30,11 @@
     .autos-actions .ai {
         width: 26px; height: 26px; display: inline-flex;
         align-items: center; justify-content: center;
-        cursor: default; font-size: 18px;
+        cursor: default; font-size: calc(18px * var(--escala-fonte, 1));
     }
     .polo-actions { display: flex; align-items: center; gap: 10px; }
-    .polo-actions .pa { color: #1f4f9c; font-size: 14px; cursor: default; font-weight: 600; }
-    .icon-action { color: #1f4f9c; cursor: default; font-size: 14px; margin: 0 2px; }
+    .polo-actions .pa { color: #1f4f9c; font-size: calc(14px * var(--escala-fonte, 1)); cursor: default; font-weight: 600; }
+    .icon-action { color: #1f4f9c; cursor: default; font-size: calc(14px * var(--escala-fonte, 1)); margin: 0 2px; }
 
     /* As abas vivem em componentes.css — duas telas as usam. */
 
@@ -44,7 +44,7 @@
         background: #fbfbfc; border: 1px solid #e2e5ea; border-top: 0; border-bottom: 0;
         padding: 14px 16px;
         display: flex; flex-wrap: wrap; gap: 8px 18px;
-        align-items: center; font-size: 11px;
+        align-items: center; font-size: calc(11px * var(--escala-fonte, 1));
     }
     .filtros-evento label { display: flex; align-items: center; gap: 5px; color: #23262e; }
     .filtros-evento input[type="radio"], .lock-area input { accent-color: #1f4f9c; }
@@ -54,7 +54,7 @@
        para o sistema ter um único desenho de menu flutuante. */
     .dropdown-opcoes { position: relative; display: inline-block; }
     .dropdown-opcoes .dropdown-btn {
-        color: #1f4f9c; cursor: pointer; font-size: 14px;
+        color: #1f4f9c; cursor: pointer; font-size: calc(14px * var(--escala-fonte, 1));
         background: none; border: none; padding: 2px 6px;
     }
     .dropdown-opcoes .dropdown-btn:hover { color: #0a083d; }
@@ -66,7 +66,7 @@
     }
     .dropdown-opcoes .dropdown-menu.open { display: block; }
     .dropdown-opcoes .dropdown-menu a {
-        display: block; padding: 8px 12px; font-size: 11.5px;
+        display: block; padding: 8px 12px; font-size: calc(11.5px * var(--escala-fonte, 1));
         color: #4b5563; text-decoration: none; white-space: nowrap;
     }
     .dropdown-opcoes .dropdown-menu a:hover { background: #f7faff; color: #0a083d; }
@@ -90,7 +90,7 @@
         align-items: center;
         justify-content: space-between;
         padding: 8px 14px;
-        font-size: 12px;
+        font-size: calc(12px * var(--escala-fonte, 1));
         color: #23262e;
         cursor: pointer;
         border-bottom: 1px solid #eef0f3;
@@ -105,7 +105,7 @@
     }
     .opcoes-item:last-child { border-bottom: 0; }
     .opcoes-item:hover { background: #f7faff; color: #0a083d; }
-    .opcoes-item .sub-arrow { font-size: 9px; color: #6b7280; flex-shrink: 0; }
+    .opcoes-item .sub-arrow { font-size: calc(9px * var(--escala-fonte, 1)); color: #6b7280; flex-shrink: 0; }
     .opcoes-sub-wrap { position: relative; }
     .opcoes-submenu {
         display: none;
@@ -131,7 +131,7 @@
         background: none; border: none; cursor: pointer;
         color: #1f4f9c; padding: 2px 6px;
         display: inline-flex; align-items: center; gap: 3px;
-        font-size: 11px; font-weight: 700;
+        font-size: calc(11px * var(--escala-fonte, 1)); font-weight: 700;
     }
     .arq-toggle:hover { color: #0a083d; }
     .arq-toggle i { transition: transform .25s ease; display: inline-block; }
@@ -154,7 +154,7 @@
         display: flex; align-items: center; gap: 10px;
         padding: 7px 10px; background: #fff;
         border: 1px solid #e2e5ea;
-        font-size: 11px;
+        font-size: calc(11px * var(--escala-fonte, 1));
     }
     .arquivo-item .arq-nome {
         flex: 1; color: #23262e; font-weight: 600;
@@ -166,7 +166,7 @@
     /* Ação de linha do guia (seção 04): 5px 10px / 10px, para não engordar a
        linha. Antes eram um botão azul preenchido e um cinza, ambos com raio. */
     .arq-btn {
-        padding: 5px 10px; font-size: 10px; font-weight: 700;
+        padding: 5px 10px; font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 700;
         letter-spacing: .07em; text-transform: uppercase;
         text-decoration: none;
         display: inline-flex; align-items: center; gap: 4px;
@@ -215,7 +215,7 @@
                 </a>
                 <div class="opcoes-wrapper" id="opcoesWrapper">
                     <button type="button" class="btn-blue" id="opcoesBtn" onclick="toggleOpcoes(event)">
-                        Opções Processo <i class="fa-solid fa-caret-down ml-1" style="font-size:9px;"></i>
+                        Opções Processo <i class="fa-solid fa-caret-down ml-1" style="font-size: calc(9px * var(--escala-fonte, 1));"></i>
                     </button>
                     <div class="opcoes-menu" id="opcoesMenu">
 
@@ -316,7 +316,7 @@
                     <div class="polo-actions">
                         {% comment %} <i class="fa-solid fa-lock-open pa" data-tip="Acesso Liberado"></i>
                         <i class="fa-solid fa-envelope pa" data-tip="Mensagem"></i>
-                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span> {% endcomment %}
+                        <span class="pa" style="font-size: calc(15px * var(--escala-fonte, 1));" data-tip="Documentos">D</span> {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -348,7 +348,7 @@
                     <div class="polo-actions">
                         {% comment %} <i class="fa-solid fa-lock pa" data-tip="Acesso Bloqueado"></i>
                         <i class="fa-solid fa-envelope pa" data-tip="Mensagem"></i>
-                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span>
+                        <span class="pa" style="font-size: calc(15px * var(--escala-fonte, 1));" data-tip="Documentos">D</span>
                         <i class="fa-solid fa-table-cells pa" data-tip="Detalhes"></i> {% endcomment %}
                     </div>
                 </div>
@@ -382,7 +382,7 @@
                     <div class="polo-actions">
                         {% comment %} <i class="fa-solid fa-lock-open pa" data-tip="Acesso Liberado"></i>
                         <i class="fa-solid fa-envelope pa" data-tip="Mensagem"></i>
-                        <span class="pa" style="font-size:15px;" data-tip="Documentos">D</span> {% endcomment %}
+                        <span class="pa" style="font-size: calc(15px * var(--escala-fonte, 1));" data-tip="Documentos">D</span> {% endcomment %}
                     </div>
                 </div>
             </div>
@@ -445,7 +445,7 @@
                     <div class="flex-1 flex flex-wrap gap-2">
                         {% for g in grupos_vinculados %}
                         <span class="pill bg-linha-hover text-acao border-[#c9d5ea] gap-1">
-                            <i class="fa-solid fa-users text-[10px]"></i>
+                            <i class="fa-solid fa-users text-[calc(10px*var(--escala-fonte,1))]"></i>
                             {{ g.nome }} ({{ g.cargo_simulacao.nome }})
                         </span>
                         {% endfor %}

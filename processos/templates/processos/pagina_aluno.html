@@ -21,7 +21,7 @@
     }
     .filtros label {
         display: block;
-        font-size: 10px;
+        font-size: calc(10px * var(--escala-fonte, 1));
         font-weight: 600;
         letter-spacing: .1em;
         text-transform: uppercase;
@@ -32,7 +32,7 @@
         border: 1px solid #d3d7de;
         border-radius: 2px;
         padding: 8px 9px;
-        font-size: 12px;
+        font-size: calc(12px * var(--escala-fonte, 1));
         background: #fff;
         color: #23262e;
     }
@@ -77,9 +77,9 @@
         width: 34px; height: 34px; border-radius: 50%;
         background: #1f4f9c; color: #fff;
         display: flex; align-items: center; justify-content: center;
-        font-weight: 600; font-size: 12px; flex-shrink: 0;
+        font-weight: 600; font-size: calc(12px * var(--escala-fonte, 1)); flex-shrink: 0;
     }
-    .grp-card .check { color: #d3d7de; font-size: 16px; }
+    .grp-card .check { color: #d3d7de; font-size: calc(16px * var(--escala-fonte, 1)); }
     .grp-card.selected .check { color: #1f4f9c; }
 </style>
 {% endblock %}

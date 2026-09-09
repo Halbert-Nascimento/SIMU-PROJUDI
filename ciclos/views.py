@@ -10,6 +10,7 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from base.breadcrumbs import home_breadcrumb
+from base.navegacao import home_do_usuario
 from base.decorators import exige_permissao
 from base.mensagens import propagar_erros_form
 
@@ -20,7 +21,12 @@ from usuarios.models import Usuario
 from .forms import CicloSimulacaoForm, GrupoTrabalhoForm
 from .middleware import CICLO_SESSION_KEY
 from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
-from .permissions import pode_criar_ciclo, pode_editar_ciclo, pode_gerenciar_grupos_ciclo
+from .permissions import (
+    aguarda_vinculo_a_ciclo,
+    pode_criar_ciclo,
+    pode_editar_ciclo,
+    pode_gerenciar_grupos_ciclo,
+)
 
 
 @login_required
@@ -297,6 +303,28 @@ def remover_membro(request, ciclo_id, grupo_id, usuario_id):
 
 
 @login_required
+@login_required
+def boas_vindas(request):
+    """
+    Tela de espera do Aluno aceito que ainda não entrou em nenhum ciclo.
+
+    Quem não está nesse estado chegou aqui digitando a URL — o middleware não o
+    traria — e volta para a tela inicial do próprio perfil.
+    """
+    if not aguarda_vinculo_a_ciclo(request.user, request.ciclos_ativos_usuario):
+        return redirect(home_do_usuario(request.user)[1])
+
+    # Aluno que já esteve em ciclo e viu o ciclo encerrar não está esperando
+    # vínculo nenhum: dizer a ele "aguarde um professor" seria falso.
+    ja_participou = CicloSimulacao.objects.filter(
+        Q(coordenador=request.user) | Q(participantes=request.user)
+    ).exists()
+
+    return render(request, "ciclos/boas_vindas.html", {
+        "ja_participou": ja_participou,
+    })
+
+
 def selecionar_ciclo(request):
     """Exibe a tela para o usuário escolher em qual ciclo deseja atuar."""
     ciclos = list(

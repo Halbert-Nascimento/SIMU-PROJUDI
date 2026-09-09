@@ -111,6 +111,13 @@ def ctx_minhas_notas(vazio=False):
     }
 
 
+def ctx_boas_vindas(ja_participou=False):
+    return {
+        "user": ALUNO, "request": Obj(user=ALUNO),
+        "ja_participou": ja_participou,
+    }
+
+
 def ctx_redirecionamento(vazio=False):
     rotas = [] if vazio else [
         Obj(route="area-servidor/", name="processos:pagina_aluno", clickable=True),
@@ -193,6 +200,8 @@ CASOS = [
     ("avaliacoes/avaliar.html", "sem histórico", ctx_avaliar(com_historico=False)),
     ("avaliacoes/minhas_notas.html", "com avaliações", ctx_minhas_notas()),
     ("avaliacoes/minhas_notas.html", "sem avaliação", ctx_minhas_notas(vazio=True)),
+    ("ciclos/boas_vindas.html", "primeiro acesso", ctx_boas_vindas()),
+    ("ciclos/boas_vindas.html", "ciclo anterior encerrado", ctx_boas_vindas(ja_participou=True)),
     ("base/redirecionamento_teste_sucesso.html", "com rotas", ctx_redirecionamento()),
     ("base/redirecionamento_teste_sucesso.html", "sem rota", ctx_redirecionamento(vazio=True)),
 ]

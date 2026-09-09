@@ -12,15 +12,16 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'favicon_io/favicon-16x16.png' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'favicon_io/apple-touch-icon.png' %}">
 
-    <!-- Tipografia do guia: Barlow (interface) + IBM Plex Mono (dado codificado) -->
+    <!-- Tipografia do guia: Barlow (interface) + Lato (dado codificado) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Lato:wght@400;700;900&display=swap" rel="stylesheet">
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <script src="{% static 'js/tailwind.config.global.js' %}"></script>
+    <script src="{% static 'js/acessibilidade.js' %}"></script>
     <link rel="stylesheet" href="{% static 'css/base.css' %}">
     <link rel="stylesheet" href="{% static 'css/componentes.css' %}">
     <script src="{% static 'js/toast.js' %}"></script>
@@ -69,7 +70,7 @@
                                 title="Trocar ciclo ativo">
                                 <i class="fa-solid fa-rotate"></i>
                                 {% if ciclo_ativo %}{{ ciclo_ativo.nome_edicao }}{% else %}Selecionar ciclo{% endif %}
-                                <i class="fa-solid fa-chevron-down text-[9px] ml-0.5"></i>
+                                <i class="fa-solid fa-chevron-down text-[calc(9px*var(--escala-fonte,1))] ml-0.5"></i>
                             </button>
                             <div id="ciclo-menu"
                                 class="hidden absolute top-full right-0 mt-2 bg-white text-texto border border-contorno min-w-[220px] z-cabecalho py-1">
@@ -80,9 +81,9 @@
                                         <button type="submit"
                                             class="w-full text-left px-4 py-2 text-apoio hover:bg-linha-hover flex items-center gap-2 {% if ciclo_ativo.pk == c.pk %}font-bold text-acao{% endif %}">
                                             {% if ciclo_ativo.pk == c.pk %}
-                                                <i class="fa-solid fa-circle-dot text-acao text-[10px]"></i>
+                                                <i class="fa-solid fa-circle-dot text-acao text-[calc(10px*var(--escala-fonte,1))]"></i>
                                             {% else %}
-                                                <i class="fa-regular fa-circle text-rotulo text-[10px]"></i>
+                                                <i class="fa-regular fa-circle text-rotulo text-[calc(10px*var(--escala-fonte,1))]"></i>
                                             {% endif %}
                                             {{ c.nome_edicao }}
                                         </button>
@@ -111,7 +112,7 @@
                             class="relative flex items-center hover:text-white transition-colors" title="Notificações do Sistema">
                             <i class="fa-solid fa-bell text-base"></i>
                             <span id="notif-badge"
-                                class="{% if not notificacoes_nao_lidas_count %}hidden{% endif %} absolute -top-1.5 -right-2 bg-marca text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">{{ notificacoes_nao_lidas_count }}</span>
+                                class="{% if not notificacoes_nao_lidas_count %}hidden{% endif %} absolute -top-1.5 -right-2 bg-marca text-white text-[calc(9px*var(--escala-fonte,1))] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">{{ notificacoes_nao_lidas_count }}</span>
                         </button>
                         <div id="notif-menu" class="hidden absolute top-full right-0 mt-2 bg-white text-texto border border-contorno w-80 z-cabecalho py-1 max-h-96 overflow-y-auto">
                             {% for n in notificacoes_recentes %}
@@ -171,8 +172,14 @@
                         })();
                     </script>
                     {% endif %}
-                    <span class="font-bold text-apoio cursor-pointer" title="Aumentar fonte">A+</span>
-                    <span class="font-bold text-apoio cursor-pointer" title="Diminuir fonte">A-</span>
+                    <!-- A escala vive no <html> como --escala-fonte; estes botões só a
+                         empurram um passo. Ver o topo de tailwind.config.global.js. -->
+                    <button type="button" data-escala-fonte="1"
+                            class="font-bold text-apoio hover:text-white disabled:text-white/40 disabled:cursor-not-allowed transition-colors"
+                            title="Aumentar fonte" aria-label="Aumentar tamanho da fonte">A+</button>
+                    <button type="button" data-escala-fonte="-1"
+                            class="font-bold text-apoio hover:text-white disabled:text-white/40 disabled:cursor-not-allowed transition-colors"
+                            title="Diminuir fonte" aria-label="Diminuir tamanho da fonte">A-</button>
                 </div>
                 {% if user.is_authenticated %}
                     <form id="logout-form" method="post" action="{% url 'acesso:logout' %}" class="ml-4">
