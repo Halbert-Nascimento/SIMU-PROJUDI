@@ -326,4 +326,3 @@ class PoloProcessual(models.Model):
 
     def __str__(self) -> str:
         return f"{self.get_tipo_polo_display()} — {self.parte} › {self.processo}"
-    

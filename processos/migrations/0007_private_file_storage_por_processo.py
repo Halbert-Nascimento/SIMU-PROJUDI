@@ -2,7 +2,7 @@
 
 import private_storage.fields
 import private_storage.storage.files
-import movimentacoes.models
+import movimentacoes.models  # _upload_to_documento vive aqui: o domínio de movimentação mora no app movimentacoes
 from django.db import migrations
 
 

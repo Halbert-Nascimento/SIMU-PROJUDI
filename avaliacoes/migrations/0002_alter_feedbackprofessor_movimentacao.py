@@ -1,7 +1,4 @@
-# Repontamento de FK: MovimentacaoProcessual saiu do app `processos` e passou
-# a morar em `movimentacoes` (mesma tabela `movimentacao_processual`). Só o
-# estado do Django muda — a coluna `feedback_professor.movimentacao_id` e a
-# tabela referenciada continuam idênticas, então nada acontece no banco.
+# State-only: reaponta a FK para movimentacoes.MovimentacaoProcessual (mesma tabela).
 
 import django.db.models.deletion
 from django.db import migrations, models
