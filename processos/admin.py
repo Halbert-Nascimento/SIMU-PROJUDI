@@ -11,7 +11,6 @@ from .models import (
     StatusAudiencia,
     StatusProcessoJudicial,
     TipoAudiencia,
-    TipoMovimentacao,
     TipoProcesso,
     VaraServentia,
 )
@@ -44,13 +43,6 @@ class StatusProcessoJudicialAdmin(admin.ModelAdmin):
 @admin.register(TipoProcesso)
 class TipoProcessoAdmin(admin.ModelAdmin):
     list_display = ("nome",)
-
-
-@admin.register(TipoMovimentacao)
-class TipoMovimentacaoAdmin(admin.ModelAdmin):
-    list_display = ("nome_movimentacao",)
-    search_fields = ("nome_movimentacao",)
-    ordering = ("nome_movimentacao",)
 
 
 @admin.register(StatusAudiencia)
