@@ -28,6 +28,7 @@ urlpatterns = [
     path('ciclos/', include('ciclos.urls')),
     path('notificacoes/', include('notificacoes.urls')),
     path('processos/', include('processos.urls')),
+    path('movimentacoes/', include('movimentacoes.urls')),
     path('avaliacoes/', include('avaliacoes.urls')),
     path('private-media/', include('private_storage.urls')),
     # path('usuarios/', include('usuarios.urls')),

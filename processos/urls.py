@@ -11,10 +11,6 @@ from .views import (
     varas_por_comarca,
     visualizar_processo,
 )
-from .views_movimentacao import (
-    movimentar_processo,
-    editar_movimentacao,
-)
 
 app_name = "processos"
 
@@ -22,11 +18,9 @@ urlpatterns = [
     path("cadastrar/", cadastrar_processo, name="cadastrar_processo"),
     path("area-servidor/", pagina_aluno, name="pagina_aluno"),
 
-    # Movimentação — mais específicas antes de <str:numero>/
+    # Mais específicas antes de <str:numero>/
     path("<str:numero>/partes/alterar/", alterar_parte, name="alterar_parte"),
     path("<str:numero>/dados/", modificar_dados_processo, name="modificar_dados_processo"),
-    path("<str:numero>/movimentar/<int:mov_id>/", editar_movimentacao, name="editar_movimentacao"),
-    path("<str:numero>/movimentar/", movimentar_processo, name="movimentar_processo"),
 
     path("<str:numero>/", visualizar_processo, name="visualizar_processo"),
 

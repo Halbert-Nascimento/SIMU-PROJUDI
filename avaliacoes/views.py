@@ -12,7 +12,7 @@ from base.mensagens import propagar_erros_form
 from base.breadcrumbs import home_breadcrumb
 
 from ciclos.models import GrupoTrabalho
-from processos.models import MovimentacaoProcessual
+from movimentacoes.models import MovimentacaoProcessual
 
 from .forms import FeedbackForm
 from .models import FeedbackProfessor
