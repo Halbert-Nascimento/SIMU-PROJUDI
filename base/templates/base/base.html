@@ -153,13 +153,18 @@
                                 if (abrindo) marcarRecentesComoLidas();
                             }
 
+                            // Esta consulta nao conta como atividade (ver
+                            // SessionActivityMiddleware.ROTAS_AUTOMATICAS), entao com a
+                            // sessao expirada ela recebe o HTML do login em vez de JSON.
+                            // Quem trata a expiracao e o sessionTimer; aqui so nao se estoura.
                             function atualizarContagem() {
                                 fetch("{% url 'notificacoes:contagem' %}")
                                     .then(function (r) { return r.json(); })
                                     .then(function (data) {
                                         badge.textContent = data.nao_lidas;
                                         badge.classList.toggle('hidden', data.nao_lidas === 0);
-                                    });
+                                    })
+                                    .catch(function () {});
                             }
 
                             document.addEventListener('click', function (e) {
@@ -266,10 +271,76 @@
         const TIMEOUT   = parseInt(document.body.dataset.sessionTimeout || '900', 10);
         const WARN_SECS = Math.min(120, Math.floor(TIMEOUT * 0.2)); // aviso nos últimos 20% ou 2 min
 
+        // Espaçamento entre pings de atividade. Enquanto o usuário mexe na tela sai
+        // um por minuto — menos tráfego do que o sino já fazia, e sem recarregar nada.
+        const INTERVALO_PING = 60;
+        const CHAVE_RENOVACAO = 'simu:sessao-renovada';
+
         let remaining   = TIMEOUT;
         let ticker      = null;
         let warnShown   = false;  // impede showWarning() de re-renderizar a cada tick
         let expireHandle = null;  // referência ao setTimeout de auto-logout
+        let houveInteracao = false;
+        let pingEmVoo   = false;
+
+        function getCookie(nome) {
+            const m = document.cookie.match('(^|;)\\s*' + nome + '\\s*=\\s*([^;]+)');
+            return m ? decodeURIComponent(m.pop()) : '';
+        }
+
+        // Ação deliberada do usuário. Mover o ponteiro de propósito fica de fora:
+        // quem só passou o mouse por cima da tela não está trabalhando nela.
+        const EVENTOS_DE_INTERACAO = ['pointerdown', 'keydown', 'wheel', 'touchstart'];
+        EVENTOS_DE_INTERACAO.forEach(function (evento) {
+            document.addEventListener(evento, function () { houveInteracao = true; },
+                                      { passive: true, capture: true });
+        });
+
+        function renovado(propagar) {
+            remaining = TIMEOUT;
+            warnShown = false;
+            modal.classList.add('hidden');
+            if (expireHandle) { clearTimeout(expireHandle); expireHandle = null; }
+            // A sessão é uma só para todas as abas; o contador de cada uma, não.
+            // Sem este aviso, a aba parada chegava a zero e derrubava a sessão da
+            // aba onde o usuário estava trabalhando.
+            if (propagar) {
+                try { localStorage.setItem(CHAVE_RENOVACAO, String(Date.now())); }
+                catch (e) { /* armazenamento bloqueado: a sincronia entre abas se perde */ }
+            }
+        }
+
+        window.addEventListener('storage', function (e) {
+            if (e.key === CHAVE_RENOVACAO) renovado(false);
+        });
+
+        function renovarNoServidor(aoFalhar) {
+            if (pingEmVoo) return;
+            pingEmVoo = true;
+            houveInteracao = false;
+            fetch("{% url 'acesso:manter_sessao' %}", {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') },
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (dados) {
+                    // Sessão já expirada não devolve JSON: o middleware redireciona
+                    // para o login antes da view. Por isso confere-se o corpo — e
+                    // uma recusa explícita é o fim, venha de onde vier o ping.
+                    if (dados && dados.autenticado) renovado(true);
+                    else showExpired();
+                })
+                // Rede instável não é sessão expirada: o contador segue correndo e,
+                // se o problema persistir, a expiração acontece na hora certa.
+                .catch(function () { if (aoFalhar) aoFalhar(); })
+                .finally(function () { pingEmVoo = false; });
+        }
+
+        function talvezRenovar() {
+            if (!houveInteracao) return;
+            if (remaining > TIMEOUT - INTERVALO_PING) return;  // renovado há pouco
+            renovarNoServidor();
+        }
 
         const modal     = document.getElementById('session-modal');
         const title     = document.getElementById('session-modal-title');
@@ -326,16 +397,32 @@
 
             if (remaining <= 0)          { showExpired(); return; }
             if (remaining <= WARN_SECS)  { showWarning(); }
+
+            talvezRenovar();
         }
 
         // inicializa o display imediatamente (antes do primeiro tick de 1 s)
         const debugEl = document.getElementById('session-debug-timer');
         if (debugEl) debugEl.textContent = fmt(remaining);
 
+        // Carregar a página já carimbou a atividade no servidor; avisar as outras
+        // abas mantém todos os contadores falando do mesmo relógio.
+        renovado(true);
+
         ticker = setInterval(tick, 1000);
 
         return {
-            extend: function () { window.location.reload(); },
+            // Conteúdo em iframe (o editor do TinyMCE) não propaga evento para cá:
+            // aquela tela registra a interação por esta porta.
+            registrarInteracao: function () { houveInteracao = true; },
+            extend: function () {
+                renovarNoServidor(function () {
+                    // O clique não pode ficar sem resposta: se o servidor não
+                    // confirmou, o modal passa a dizer o que aconteceu.
+                    body.textContent = 'Não foi possível renovar a sessão agora. '
+                                     + 'Verifique sua conexão e tente novamente.';
+                });
+            },
             logout: function () { document.getElementById('logout-form').requestSubmit(); },
             expire: function () {
                 if (expireHandle) { clearTimeout(expireHandle); expireHandle = null; }

@@ -87,6 +87,7 @@ class AlunoSemCicloMiddleware:
     ROTAS_LIBERADAS = frozenset({
         "ciclos:boas_vindas",
         "acesso:logout",
+        "acesso:manter_sessao",
         "notificacoes:listar",
         "notificacoes:contagem",
         "notificacoes:marcar_recentes_lidas",

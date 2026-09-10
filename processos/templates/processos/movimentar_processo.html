@@ -649,6 +649,14 @@ tinymce.init({
         file: { title: 'Arquivo', items: 'newdocument | preview | exportarpdf exportardoc' }
     },
     setup: function(editor) {
+        // O editor roda dentro de um iframe, e evento de iframe nao sobe para o
+        // documento de fora — sem isto, escrever uma peca de meia hora conta como
+        // inatividade e a sessao expira com o texto na tela.
+        // typeof, e nao window.sessionTimer: `const` no topo do script nao vira
+        // propriedade do objeto global, e em tela sem login o timer nem existe.
+        editor.on('keydown click', function () {
+            if (typeof sessionTimer !== 'undefined') sessionTimer.registrarInteracao();
+        });
         editor.ui.registry.addMenuItem('exportarpdf', {
             text: 'Exportar PDF',
             icon: 'new-document',
