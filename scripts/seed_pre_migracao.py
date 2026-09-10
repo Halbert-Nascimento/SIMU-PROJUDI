@@ -1,7 +1,12 @@
 """
-Seed mínimo para testar o app após a migration 0009.
-Idempotente: usa get_or_create em tudo. Rodar com:
-    .venv/Scripts/python.exe manage.py shell < seed_teste.py
+Seed mínimo para o estado do código ANTERIOR à Tarefa 0 (domínio de
+movimentação ainda em `processos`). Use num checkout de `develop` (ou de
+qualquer commit antes de `71b3493`) para popular o banco no schema antigo e
+então validar a migração de app. Para o estado atual, use
+`scripts/seed_pos_migracao.py`.
+
+Idempotente (get_or_create em tudo). Rodar com:
+    .venv/Scripts/python.exe manage.py shell -c "exec(open('scripts/seed_pre_migracao.py', encoding='utf-8').read())"
 """
 from decimal import Decimal
 

@@ -5,16 +5,6 @@ from django.db import models
 from private_storage.fields import PrivateFileField
 
 
-# ---------------------------------------------------------------------------
-# Movimentação processual
-#
-# Estes models moram fisicamente nas tabelas `tipo_movimentacao`,
-# `movimentacao_processual` e `documento_anexado` — as mesmas de sempre.
-# Foram movidos do app `processos` para cá sem tocar no banco (ver
-# movimentacoes/migrations/0001_initial.py e processos/migrations/0010_*,
-# ambas SeparateDatabaseAndState).
-# ---------------------------------------------------------------------------
-
 class TipoMovimentacao(models.Model):
     nome_movimentacao = models.CharField(max_length=45)
 

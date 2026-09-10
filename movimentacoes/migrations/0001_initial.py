@@ -1,11 +1,4 @@
-# Movimentação do domínio de movimentações do app `processos` para cá.
-#
-# As tabelas `tipo_movimentacao`, `movimentacao_processual` e
-# `documento_anexado` já existem e têm dados reais — esta migration só
-# registra os models no estado do Django, apontando para as tabelas
-# existentes, sem tocar no banco (SeparateDatabaseAndState /
-# database_operations vazio). A remoção correspondente do estado do app
-# `processos` está em processos/0010, que depende desta.
+# State-only: as tabelas já existem; o par que remove o estado em `processos` é processos/0010.
 
 import django.db.models.deletion
 import movimentacoes.models

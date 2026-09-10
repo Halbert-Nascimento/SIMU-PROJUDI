@@ -1,12 +1,4 @@
-# Remove do estado do app `processos` os models de movimentação, que passaram
-# a morar no app `movimentacoes` (ver movimentacoes/0001_initial). As tabelas
-# `tipo_movimentacao`, `movimentacao_processual` e `documento_anexado`
-# continuam intactas no banco — aqui só o estado do Django é ajustado
-# (SeparateDatabaseAndState / database_operations vazio).
-#
-# Ordem no grafo: movimentacoes.0001 (cria o estado novo) →
-# avaliacoes.0002 (reaponta a FK de FeedbackProfessor) → esta migration
-# (remove o estado antigo).
+# State-only: remove do estado de `processos` os models já recriados em movimentacoes/0001.
 
 from django.db import migrations
 

@@ -107,7 +107,7 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
 # ---------------------------------------------------------------------------
 
 @login_required
-def movimentar_processo(request, numero):
+def criar_movimentacao(request, numero):
     processo = get_object_or_404(
         ProcessoJudicial.objects
         .select_related(
