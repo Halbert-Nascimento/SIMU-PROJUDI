@@ -13,7 +13,7 @@ from base.mensagens import propagar_erros_form
 
 from usuarios.models import Usuario
 
-from ciclos.models import CicloSimulacao, StatusCiclo
+from ciclos.models import CicloSimulacao, ParticipanteCiclo, StatusCiclo
 from processos.models import ProcessoJudicial
 from ciclos.permissions import (
     pode_criar_ciclo,
@@ -108,16 +108,22 @@ def painel_administrativo(request):
                 .order_by("-data_criacao")
             )
         else:
+            # O vínculo de participante entra por subconsulta, não por filtro no
+            # M2M: um join em `participantes` multiplicaria as linhas de `grupos`
+            # e num_grupos passaria a contar grupos × participantes.
+            ciclos_participados = ParticipanteCiclo.objects.filter(
+                usuario=request.user
+            ).values("ciclo")
+
             context["ciclos"] = (
                 CicloSimulacao.objects
                 .select_related("status")
                 .annotate(num_grupos=Count("grupos"))
                 .filter(
-                    Q(coordenador=request.user) | Q(participantes=request.user),
+                    Q(coordenador=request.user) | Q(pk__in=ciclos_participados),
                     status__nome_status__in=["em andamento", "finalizado"],
                 )
                 .order_by("-data_criacao")
-                .distinct()
             )
 
     if "ciclos" in context:
