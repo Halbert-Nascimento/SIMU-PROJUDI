@@ -188,22 +188,70 @@
 .ponto-status.gray  { background: #5b6270; }
 
 /* ── Toast ─────────────────────────────────────────────────────────────────
-   Guia seção 07: navy com fio de assinatura à esquerda, canto inferior
-   direito a 26px, entrada de 180ms. */
-.toast {
-    position: fixed; bottom: 26px; right: 26px;
-    background: #0a083d; color: #fff;
-    border-left: 3px solid #d30000; border-radius: 0;
-    padding: 13px 20px; font-size: calc(12px * var(--escala-fonte, 1)); font-weight: 500;
-    display: flex; align-items: center; gap: 9px;
-    transform: translateY(12px); opacity: 0; pointer-events: none;
-    transition: opacity .18s ease, transform .18s ease; z-index: 70;
+   Guia seção 07 (entrada de 180ms, z 70) com os trios de estado da seção 02:
+   a peça inteira assume a cor do estado. A pilha ancora 16px abaixo do fio de
+   assinatura do cabeçalho — 60px de altura + 3px de fio. */
+.toast-pilha {
+    position: fixed; top: 79px; left: 50%; transform: translateX(-50%);
+    width: min(520px, calc(100vw - 32px));
+    display: flex; flex-direction: column; gap: 10px;
+    z-index: 70; pointer-events: none;
 }
-.toast.show { transform: translateY(0); opacity: 1; }
-.toast.toast--erro { border-left-color: #b33a3a; }
+
+.toast {
+    pointer-events: auto; border-radius: 0;
+    background: #0a083d; color: #fff;
+    box-shadow: 0 12px 30px -12px rgba(10, 8, 61, .5);
+    opacity: 0; transform: translateY(-12px);
+    transition: opacity .18s ease, transform .18s ease;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+.toast__linha  { display: flex; align-items: stretch; }
+.toast__icone  {
+    display: flex; align-items: center; padding: 12px 0 12px 18px; flex-shrink: 0;
+    font-size: calc(15px * var(--escala-fonte, 1));
+}
+/* min-width:0 deixa o texto quebrar em vez de empurrar o botão de fechar
+   para fora da tela quando a pilha encolhe no celular. */
+.toast__corpo  {
+    flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;
+    padding: 12px 18px; overflow-wrap: anywhere;
+}
+/* Branco puro: sobre #a96400 o branco já fica em 4.66:1, e qualquer
+   transparência derruba o rótulo abaixo do mínimo de 4.5:1 da AA. */
+.toast__rotulo {
+    font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 700;
+    letter-spacing: .12em; text-transform: uppercase; color: #fff;
+}
+.toast__texto  { font-size: calc(12px * var(--escala-fonte, 1)); font-weight: 500; line-height: 1.45; }
+.toast__fechar {
+    background: none; border: 0; border-left: 1px solid rgba(255, 255, 255, .22);
+    padding: 0 14px; cursor: pointer; color: rgba(255, 255, 255, .8); flex-shrink: 0;
+    font-size: calc(11px * var(--escala-fonte, 1));
+}
+.toast__fechar:hover { color: #fff; }
+.toast__fechar:focus-visible { outline: 2px solid #fff; outline-offset: -3px; }
+
+/* Barra de tempo: a duração chega por style inline, calculada em toast.js. */
+.toast__tempo { height: 3px; background: rgba(255, 255, 255, .22); }
+.toast__tempo span {
+    display: block; height: 3px; background: rgba(255, 255, 255, .85);
+    transform-origin: left; animation: toast-tempo linear forwards;
+}
+@keyframes toast-tempo { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+
+.toast--sucesso { background: #2e7d32; }
+.toast--atencao { background: #a96400; }
+.toast--erro    { background: #b33a3a; }
+.toast--info    { background: #0a083d; }
+.toast--info .toast__rotulo,
+.toast--info .toast__fechar { color: #a7abcd; }
 
 @media (prefers-reduced-motion: reduce) {
     .toast { transition: opacity .18s ease; transform: none; }
+    .toast.show { transform: none; }
+    .toast__tempo span { animation: none; }
 }
 
 /* ── Card de KPI ───────────────────────────────────────────────────────────

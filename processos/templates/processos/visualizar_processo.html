@@ -738,7 +738,7 @@ function salvarDadosProcesso() {
                 mostrarErroDados(dados.erro || 'Não foi possível modificar os dados.');
                 return;
             }
-            showToast('Dados do processo atualizados.');
+            showToast('Dados do processo atualizados.', 'sucesso');
             setTimeout(() => window.location.reload(), 700);
         })
         .catch(() => mostrarErroDados('Falha de rede ao salvar os dados.'));
@@ -798,7 +798,7 @@ function salvarParte() {
             }
             // os polos são renderizados no servidor; recarregar é o que garante
             // que a tela mostre o mesmo que ficou gravado
-            showToast('Parte alterada.');
+            showToast('Parte alterada.', 'sucesso');
             setTimeout(() => window.location.reload(), 700);
         })
         .catch(() => mostrarErroParte('Falha de rede ao salvar a parte.'));
@@ -828,11 +828,11 @@ function copiarPorTextarea(numero) {
     try { copiou = document.execCommand('copy'); } catch (e) { copiou = false; }
     document.body.removeChild(area);
     if (copiou) avisarCopiado();
-    else showToast('Não foi possível copiar o número do processo.', true);
+    else showToast('Não foi possível copiar o número do processo.', 'erro');
 }
 
 function avisarCopiado() {
-    showToast('Número do processo copiado.');
+    showToast('Número do processo copiado.', 'sucesso');
 }
 
 function toggleArquivos(id) {

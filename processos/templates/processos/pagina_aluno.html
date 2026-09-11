@@ -392,7 +392,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("bulkAssign").addEventListener("click", function () {
         const ids = getSelectedIds();
         if (ids.length === 0) {
-            showToast("Selecione ao menos um processo.", true);
+            showToast("Selecione ao menos um processo.", "atencao");
             return;
         }
         openModal(ids, `${ids.length} processo(s) selecionado(s)`, "Atribuição em lote");
@@ -406,7 +406,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("modalConfirm").addEventListener("click", function () {
         const grupoIds = removeMode ? [] : [...selectedGrupoIds].map(Number);
         if (!removeMode && grupoIds.length === 0) {
-            showToast("Selecione ao menos um grupo.", true);
+            showToast("Selecione ao menos um grupo.", "atencao");
             return;
         }
         fetch("{% url 'processos:atribuir_grupo_processos' %}", {
@@ -423,7 +423,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(r => r.json().then(data => ({ ok: r.ok, data })))
         .then(({ ok, data }) => {
             if (!ok) {
-                showToast(data.erro || "Erro ao atribuir grupo.", true);
+                showToast(data.erro || "Erro ao atribuir grupo.", "erro");
                 return;
             }
             showToast(
@@ -431,14 +431,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     ? "Atribuições removidas com sucesso!"
                     : modalProcessos.length === 1
                         ? `${grupoIds.length} grupo(s) atribuído(s) com sucesso!`
-                        : `Atribuição em lote concluída! (${data.atualizados} processos)`
+                        : `Atribuição em lote concluída! (${data.atualizados} processos)`,
+                "sucesso"
             );
             closeModal();
             selAllChk.checked = false;
             document.querySelectorAll(".rowChk").forEach(c => c.checked = false);
             updateSelCount();
         })
-        .catch(() => showToast("Erro de conexão.", true));
+        .catch(() => showToast("Erro de conexão.", "erro"));
     });
 
     // --- Toast ---
