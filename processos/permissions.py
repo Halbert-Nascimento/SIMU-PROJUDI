@@ -34,15 +34,16 @@ def pode_editar_processo(user, processo) -> bool:
 
 def pode_visualizar_processo(user, processo) -> bool:
     """
-    Processo sem segredo de justiça: público, qualquer pessoa acessa sem login.
-    Processo com segredo de justiça:
+    Processo sem segredo de justiça e já autuado: público, qualquer pessoa acessa sem login.
+    Processo com segredo de justiça, ou ainda não autuado (status "Protocolado" — só o
+    grupo do protocolo está vinculado, a Autuação é quem expõe o processo pra quem mais atua):
       - Admin / Coordenador global: acesso irrestrito.
       - Professor: somente se for o coordenador do ciclo do processo.
       - Aluno em grupo Serventia (cod="SC") do ciclo: vê todos os processos do ciclo.
       - Aluno em outro grupo: somente se o grupo estiver vinculado ao processo.
       - Demais / não autenticado: negado.
     """
-    if not processo.segredo_justica:
+    if not processo.segredo_justica and processo.status_atual.nome_status != "Protocolado":
         return True
 
     if not user.is_authenticated:

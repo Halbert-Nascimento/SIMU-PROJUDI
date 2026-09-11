@@ -27,15 +27,13 @@ from usuarios.models import Usuario
 from .forms import ProcessoJudicialForm
 from .permissions import pode_editar_processo, pode_visualizar_processo
 from .utils import validar_multiplos_arquivos
-from movimentacoes.models import (
-    DocumentoAnexado,
-    MovimentacaoProcessual,
-    TipoMovimentacao,
-)
+from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
+from movimentacoes.services import registrar_movimentacao
 
 from .models import (
     ClasseProcessual,
     Comarca,
+    GrupoProcesso,
     ParteFicticia,
     PoloProcessual,
     ProcessoJudicial,
@@ -108,13 +106,14 @@ def cadastrar_processo(request):
 
         if not tem_erro:
             try:
-                status_autuado = StatusProcessoJudicial.objects.get(
-                    nome_status__iexact="Autuado"
+                tipo_cadastro = TipoMovimentacao.objects.select_related("efeito_status").get(
+                    nome_movimentacao="Protocolo da Petição Inicial"
                 )
-            except StatusProcessoJudicial.DoesNotExist:
+            except TipoMovimentacao.DoesNotExist:
                 messages.error(
                     request,
-                    'Status "Autuado" não encontrado. Contate o administrador do sistema.',
+                    'Tipo de movimentação "Protocolo da Petição Inicial" não encontrado. '
+                    "Contate o administrador do sistema.",
                     extra_tags="processo",
                 )
                 return render(
@@ -133,9 +132,10 @@ def cadastrar_processo(request):
                     origem=processo.vara.comarca_id,
                 )
                 processo.ciclo = ciclo
-                processo.status_atual = status_autuado
+                processo.status_atual = tipo_cadastro.efeito_status
                 processo.save()
 
+                # Livre para qualquer papel — o vínculo formal ao grupo (e ao polo) só acontece na Autuação
                 grupo_criador = request.user.grupos_trabalho.filter(ciclo=ciclo).first()
                 if grupo_criador:
                     processo.grupos.add(grupo_criador)
@@ -154,14 +154,11 @@ def cadastrar_processo(request):
                         tipo_polo="Terceiro",
                     )
 
-                tipo_cadastro, _ = TipoMovimentacao.objects.get_or_create(
-                    nome_movimentacao="Protocolo da Petição Inicial",
-                )
-                mov_cadastro = MovimentacaoProcessual.objects.create(
-                    descricao_evento=f'Processo "{processo.numero}" cadastrado.',
+                mov_cadastro = registrar_movimentacao(
                     processo=processo,
                     autor=request.user,
-                    tipo_movimento=tipo_cadastro,
+                    tipo_movimentacao=tipo_cadastro,
+                    descricao_evento=f'Processo "{processo.numero}" cadastrado.',
                 )
 
                 for arquivo, titulo in arquivos_validos:
@@ -606,18 +603,52 @@ def atribuir_grupo_processos(request):
     processos = ProcessoJudicial.objects.filter(
         pk__in=processo_ids,
         ciclo=grupo_usuario.ciclo,
-    )
+    ).select_related("status_atual")
 
     if grupo_ids:
-        grupos = GrupoTrabalho.objects.filter(
-            pk__in=grupo_ids,
-            ciclo=grupo_usuario.ciclo,
+        grupos = list(
+            GrupoTrabalho.objects.filter(pk__in=grupo_ids, ciclo=grupo_usuario.ciclo)
+            .select_related("cargo_simulacao")
         )
-        for processo in processos:
-            processo.grupos.add(*grupos)
+        tipo_autuacao = None
+        with transaction.atomic():
+            for processo in processos:
+                protocolado = processo.status_atual.nome_status == "Protocolado"
+                processo.grupos.add(*grupos)
+
+                # Polo é atribuído automaticamente pelo cargo do grupo (APA→Ativo, APP→Passivo);
+                # MP/JZ/SC seguem só vinculados ao processo via GrupoProcesso, sem ocupar polo aqui.
+                for grupo in grupos:
+                    cod = grupo.cargo_simulacao.cod
+                    if cod == "APA":
+                        PoloProcessual.objects.filter(
+                            processo=processo, tipo_polo=PoloProcessual.TipoPolo.ATIVO
+                        ).update(grupo=grupo)
+                    elif cod == "APP":
+                        PoloProcessual.objects.filter(
+                            processo=processo, tipo_polo=PoloProcessual.TipoPolo.PASSIVO
+                        ).update(grupo=grupo)
+
+                if protocolado:
+                    if tipo_autuacao is None:
+                        tipo_autuacao = TipoMovimentacao.objects.select_related("efeito_status").get(
+                            nome_movimentacao="Autuação e Distribuição"
+                        )
+                    grupo_processo_sc, _ = GrupoProcesso.objects.get_or_create(
+                        processo=processo, grupo=grupo_usuario
+                    )
+                    registrar_movimentacao(
+                        processo=processo,
+                        autor=request.user,
+                        tipo_movimentacao=tipo_autuacao,
+                        descricao_evento="Grupos atribuídos ao processo.",
+                        grupo_processo=grupo_processo_sc,
+                    )
     else:
-        for processo in processos:
-            processo.grupos.clear()
+        with transaction.atomic():
+            for processo in processos:
+                processo.grupos.clear()
+                PoloProcessual.objects.filter(processo=processo).update(grupo=None)
 
     return JsonResponse({"sucesso": True, "atualizados": processos.count()})
 

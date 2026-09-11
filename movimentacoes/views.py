@@ -15,7 +15,7 @@ from processos.utils import validar_multiplos_arquivos
 
 from .models import DocumentoAnexado, MovimentacaoProcessual, TipoMovimentacao
 from .permissions import grupo_processo_do_usuario, pode_praticar_movimentacao, tipos_praticaveis
-from .services import resolver_antecedente_logico, resolver_movimentacao_origem
+from .services import registrar_movimentacao, resolver_movimentacao_origem
 
 
 # ---------------------------------------------------------------------------
@@ -80,16 +80,13 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
         return None, erros
 
     with transaction.atomic():
-        antecedente = resolver_antecedente_logico(processo, tipo)
-
-        mov = MovimentacaoProcessual.objects.create(
+        mov = registrar_movimentacao(
             processo=processo,
             autor=request.user,
-            tipo_movimento=tipo,
+            tipo_movimentacao=tipo,
             descricao_evento=descricao,
-            antecedente_logico=antecedente,
-            movimentacao_origem=movimentacao_origem,
             grupo_processo=grupo_processo,
+            movimentacao_origem=movimentacao_origem,
         )
 
         for arquivo, titulo in arquivos_validos:
