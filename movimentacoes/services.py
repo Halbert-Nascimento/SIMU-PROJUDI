@@ -22,6 +22,23 @@ def resolver_antecedente_logico(processo, tipo_movimentacao):
     )
 
 
+def registrar_movimentacao(*, processo, autor, tipo_movimentacao, descricao_evento="", grupo_processo=None, movimentacao_origem=None):
+    """Cria a movimentação, resolve `antecedente_logico` e aplica `efeito_status` ao processo."""
+    mov = MovimentacaoProcessual.objects.create(
+        processo=processo,
+        autor=autor,
+        tipo_movimento=tipo_movimentacao,
+        descricao_evento=descricao_evento,
+        antecedente_logico=resolver_antecedente_logico(processo, tipo_movimentacao),
+        movimentacao_origem=movimentacao_origem,
+        grupo_processo=grupo_processo,
+    )
+    if tipo_movimentacao.efeito_status_id:
+        processo.status_atual = tipo_movimentacao.efeito_status
+        processo.save(update_fields=["status_atual"])
+    return mov
+
+
 def resolver_vigente(processo, tipo_movimentacao, grupo_processo):
     """Ponta da cadeia de correções: o registro do tipo/grupo que nenhuma outra correção já substituiu."""
     if grupo_processo is None:
