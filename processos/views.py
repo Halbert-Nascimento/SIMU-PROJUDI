@@ -244,7 +244,7 @@ def pagina_aluno(request):
                 ciclo=grupo.ciclo,
             )
             .select_related("classe", "status_atual", "vara", "vara__comarca")
-            .prefetch_related("polos__parte")
+            .prefetch_related("polos__parte", "grupos")
         )
     else:
         processos = (
@@ -274,6 +274,15 @@ def pagina_aluno(request):
     # Paginação
     paginator = Paginator(processos, 10)
     page_obj = paginator.get_page(request.GET.get("page", 1))
+
+    # O modal de atribuição marca por aqui quais grupos o processo já tem.
+    # Só a página corrente entra: a seleção em lote não alcança outras páginas.
+    grupos_vinculados_por_processo = {}
+    if is_serventia:
+        grupos_vinculados_por_processo = {
+            str(processo.pk): [g.pk for g in processo.grupos.all()]
+            for processo in page_obj
+        }
 
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     ip = x_forwarded_for.split(",")[0].strip() if x_forwarded_for else request.META.get("REMOTE_ADDR", "")
@@ -305,6 +314,7 @@ def pagina_aluno(request):
             "filtro_situacao": filtro_situacao,
             "is_serventia": is_serventia,
             "grupos_ciclo": grupos_ciclo,
+            "grupos_vinculados_por_processo": grupos_vinculados_por_processo,
         },
     )
 

@@ -81,6 +81,10 @@
     }
     .grp-card .check { color: #d3d7de; font-size: calc(16px * var(--escala-fonte, 1)); }
     .grp-card.selected .check { color: #1f4f9c; }
+    /* dois seletores de classe para vencer o display:inline-flex de .pill,
+       que o `hidden` do Tailwind só venceria por ordem de carga */
+    .grp-card .grp-vinculo { flex-shrink: 0; }
+    .grp-card .grp-vinculo.oculto { display: none; }
 </style>
 {% endblock %}
 
@@ -274,10 +278,11 @@
                 {% for g in grupos_ciclo %}
                 <div class="grp-card" data-grupo-id="{{ g.id }}">
                     <div class="grp-avatar">{{ g.nome|truncatechars:1 }}</div>
-                    <div class="flex-1">
+                    <div class="flex-1 min-w-0">
                         <div class="text-dado font-semibold text-texto">{{ g.nome }}</div>
                         <div class="text-meta text-rotulo">{{ g.cargo_simulacao.nome }}</div>
                     </div>
+                    <span class="pill ok grp-vinculo oculto"></span>
                     <i class="fa-solid fa-circle check"></i>
                 </div>
                 {% endfor %}
@@ -303,9 +308,12 @@
 <!-- Toast -->
 {% include 'base/components/_toast.html' %}
 
+{{ grupos_vinculados_por_processo|json_script:"grupos-vinculados" }}
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const csrfToken = "{{ csrf_token }}";
+    const gruposVinculados = JSON.parse(document.getElementById("grupos-vinculados").textContent);
     const modal = document.getElementById("grpModal");
     const selAllChk = document.getElementById("selAll");
     const selCountEl = document.getElementById("selCount");
@@ -339,8 +347,41 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("modalProcClass").textContent = subtitulo;
         selectedGrupoIds.clear();
         removeMode = false;
+        renderGrpVinculos();
         renderGrpSelection();
         modal.classList.add("open");
+    }
+
+    // Quantos dos processos abertos no modal já têm este grupo vinculado
+    function contarVinculos(grupoId) {
+        return modalProcessos.filter(function (processoId) {
+            const ids = gruposVinculados[String(processoId)] || [];
+            return ids.indexOf(Number(grupoId)) !== -1;
+        }).length;
+    }
+
+    function renderGrpVinculos() {
+        const total = modalProcessos.length;
+        document.querySelectorAll("#grpList .grp-card").forEach(card => {
+            const selo = card.querySelector(".grp-vinculo");
+            if (!selo) return;
+
+            const vinculados = contarVinculos(card.dataset.grupoId);
+            if (vinculados === 0) {
+                selo.classList.add("oculto");
+                return;
+            }
+            if (total === 1) {
+                selo.textContent = "Já vinculado";
+            } else if (vinculados === total) {
+                selo.textContent = "Em todos os " + total;
+            } else {
+                selo.textContent = "Em " + vinculados + " de " + total;
+            }
+            selo.classList.toggle("gray", vinculados < total);
+            selo.classList.toggle("ok", vinculados === total);
+            selo.classList.remove("oculto");
+        });
     }
 
     function closeModal() {
@@ -434,6 +475,17 @@ document.addEventListener("DOMContentLoaded", function () {
                         : `Atribuição em lote concluída! (${data.atualizados} processos)`,
                 "sucesso"
             );
+            // espelha o que o servidor acabou de gravar: sem isso o selo de
+            // vínculo continuaria mostrando o estado anterior ao reabrir o modal
+            modalProcessos.forEach(function (processoId) {
+                const chave = String(processoId);
+                if (removeMode) {
+                    gruposVinculados[chave] = [];
+                    return;
+                }
+                const atuais = gruposVinculados[chave] || [];
+                gruposVinculados[chave] = [...new Set([...atuais, ...grupoIds])];
+            });
             closeModal();
             selAllChk.checked = false;
             document.querySelectorAll(".rowChk").forEach(c => c.checked = false);
