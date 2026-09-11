@@ -543,12 +543,12 @@ function removePending(id) {
 function confirmFile(id) {
     const f = pendingFiles.find(x => x.id === id);
     if (!f) return;
-    if (!f.title.trim()) { showToast('Informe o título do arquivo', true); return; }
+    if (!f.title.trim()) { showToast('Informe o título do arquivo', 'atencao'); return; }
     savedFiles.push({ id: f.id, desc: f.title.trim(), name: f.name, file: f.file });
     pendingFiles = pendingFiles.filter(x => x.id !== id);
     renderPending();
     renderFiles();
-    showToast('Arquivo adicionado à lista');
+    showToast('Arquivo adicionado à lista', 'sucesso');
 }
 
 // ── Lista de arquivos ─────────────────────────────────
@@ -597,10 +597,10 @@ document.getElementById('selAllFiles').addEventListener('change', e => {
 
 function removeSelected() {
     const ids = [...document.querySelectorAll('.fileChk:checked')].map(c => parseInt(c.dataset.id));
-    if (ids.length === 0) { showToast('Selecione ao menos um arquivo', true); return; }
+    if (ids.length === 0) { showToast('Selecione ao menos um arquivo', 'atencao'); return; }
     savedFiles = savedFiles.filter(f => !ids.includes(f.id));
     renderFiles();
-    showToast(`${ids.length} arquivo(s) removido(s)`);
+    showToast(`${ids.length} arquivo(s) removido(s)`, 'sucesso');
 }
 
 // ── TinyMCE ───────────────────────────────────────────
@@ -682,10 +682,10 @@ document.getElementById('rascunhoInput').addEventListener('change', function () 
     const reader = new FileReader();
     reader.onload = function (e) {
         const ed = getEditor();
-        if (!ed) { showToast('Editor ainda carregando, aguarde...', true); return; }
+        if (!ed) { showToast('Editor ainda carregando, aguarde...', 'atencao'); return; }
         ed.setContent(e.target.result);
         document.getElementById('editorFileName').value = file.name.replace(/\.html$/i, '');
-        showToast('Rascunho carregado — continue a edição');
+        showToast('Rascunho carregado — continue a edição', 'info');
     };
     reader.readAsText(file, 'UTF-8');
     this.value = '';
@@ -699,12 +699,12 @@ function limparEditor() {
 }
 
 function assinarTexto() {
-    if (editorVazio()) { showToast('Editor vazio', true); return; }
-    showToast('Documento assinado com sucesso');
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
+    showToast('Documento assinado com sucesso', 'sucesso');
 }
 
 function salvarRascunho() {
-    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
     const html = getEditor().getContent();
     const name = (document.getElementById('editorFileName').value.trim() || 'rascunho') + '.html';
     const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
@@ -712,12 +712,12 @@ function salvarRascunho() {
     const a    = document.createElement('a');
     a.href = url; a.download = name; a.click();
     URL.revokeObjectURL(url);
-    showToast('Rascunho salvo — abra-o novamente para continuar a edição');
+    showToast('Rascunho salvo — abra-o novamente para continuar a edição', 'sucesso');
 }
 
 // ── Exportar PDF (diálogo nativo do browser, sem biblioteca) ─────────────
 function exportarPdf() {
-    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
     const html = getEditor().getContent();
     const nome = document.getElementById('editorFileName').value.trim() || 'documento';
     const iframe = document.createElement('iframe');
@@ -737,12 +737,12 @@ p{text-align:justify;margin:0 0 6px 0;}
         iframe.contentWindow.print();
         setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1500);
     }, 300);
-    showToast('Diálogo de impressão aberto — selecione "Salvar como PDF"');
+    showToast('Diálogo de impressão aberto — selecione "Salvar como PDF"', 'info');
 }
 
 // ── Exportar DOC (Word-HTML, sem biblioteca) ─────────────────────────────
 function exportarDoc() {
-    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
     const html = getEditor().getContent();
     const nome = (document.getElementById('editorFileName').value.trim() || 'documento') + '.doc';
     const conteudo = `<!DOCTYPE html>
@@ -762,12 +762,12 @@ p{text-align:justify;margin:0 0 6px 0;}
     const a    = document.createElement('a');
     a.href = url; a.download = nome; a.click();
     URL.revokeObjectURL(url);
-    showToast('Documento DOC exportado com sucesso');
+    showToast('Documento DOC exportado com sucesso', 'sucesso');
 }
 
 // ── Incluir na Movimentação (via campo oculto — sem restrição de MIME) ───
 function incluirNaMovimentacao() {
-    if (editorVazio()) { showToast('Editor vazio', true); return; }
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
     const nome = (document.getElementById('editorFileName').value.trim() || 'documento_editor');
     const html = getEditor().getContent();
     document.getElementById('editorHtmlHidden').value = html;
@@ -776,16 +776,16 @@ function incluirNaMovimentacao() {
     savedFiles = savedFiles.filter(f => !f.fromEditor);
     savedFiles.push({ id: ++fid, desc: nome, name: nome + '.html', file: null, fromEditor: true });
     renderFiles();
-    showToast('Documento incluído na lista — será anexado ao salvar');
+    showToast('Documento incluído na lista — será anexado ao salvar', 'sucesso');
 }
 
 // ── Fluxo passo 1 → passo 2 ──────────────────────────
 function avancar() {
     if (!document.getElementById('tipoMov').value) {
-        showToast('Selecione o Tipo de Movimentação', true); return;
+        showToast('Selecione o Tipo de Movimentação', 'atencao'); return;
     }
     if (pendingFiles.length > 0) {
-        showToast('Confirme ou remova os arquivos pendentes antes de avançar', true); return;
+        showToast('Confirme ou remova os arquivos pendentes antes de avançar', 'atencao'); return;
     }
 
     // Preenche card de revisão

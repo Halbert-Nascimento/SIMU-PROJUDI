@@ -343,7 +343,7 @@
 function openConfirm() {
     var comentario = document.getElementById('comentario').value.trim();
     if (!comentario) {
-        showToast('Preencha o comentário antes de concluir.', true);
+        showToast('Preencha o comentário antes de concluir.', 'atencao');
         return;
     }
     var v = parseFloat(document.getElementById('gradeInput').value);

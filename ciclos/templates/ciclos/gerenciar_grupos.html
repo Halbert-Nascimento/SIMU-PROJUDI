@@ -406,13 +406,7 @@
 
 
 
-<!-- Toast container (notificações AJAX) — guia seção 07: canto inferior
-
-     direito, 26px de margem. Empilha vários avisos, ao contrário do componente
-
-     _toast.html, que tem um elemento só. -->
-
-<div id="toast-container" class="fixed bottom-[26px] right-[26px] z-toast flex flex-col gap-2 pointer-events-none"></div>
+{% include 'base/components/_toast.html' %}
 
 
 
@@ -802,17 +796,17 @@
 
                     atualizarBadgeGrupo(grupoAtualId, membrosData[String(grupoAtualId)].length);
 
-                    mostrarToast('sucesso', `"${escHtml(data.membro.nome)}" adicionado ao grupo.`);
+                    showToast(`"${data.membro.nome}" adicionado ao grupo.`, 'sucesso');
 
                 } else {
 
-                    mostrarToast('erro', data.erro || 'Erro ao adicionar membro.');
+                    showToast(data.erro || 'Erro ao adicionar membro.', 'erro');
 
                 }
 
             })
 
-            .catch(() => mostrarToast('erro', 'Erro de conexão. Tente novamente.'));
+            .catch(() => showToast('Erro de conexão. Tente novamente.', 'erro'));
 
     }
 
@@ -862,17 +856,17 @@
 
                     atualizarBadgeGrupo(grupoAtualId, membrosData[String(grupoAtualId)].length);
 
-                    mostrarToast('sucesso', membro ? `"${escHtml(membro.nome)}" removido do grupo.` : 'Membro removido.');
+                    showToast(membro ? `"${membro.nome}" removido do grupo.` : 'Membro removido.', 'sucesso');
 
                 } else {
 
-                    mostrarToast('erro', data.erro || 'Erro ao remover membro.');
+                    showToast(data.erro || 'Erro ao remover membro.', 'erro');
 
                 }
 
             })
 
-            .catch(() => mostrarToast('erro', 'Erro de conexão. Tente novamente.'));
+            .catch(() => showToast('Erro de conexão. Tente novamente.', 'erro'));
 
     }
 
@@ -993,38 +987,6 @@
         d.appendChild(document.createTextNode(String(str)));
 
         return d.innerHTML;
-
-    }
-
-
-
-    function mostrarToast(tipo, mensagem) {
-
-        const container = document.getElementById('toast-container');
-
-        const ok = tipo === 'sucesso';
-
-        const el = document.createElement('div');
-
-        // guia seção 07: navy com fio de assinatura à esquerda; no erro o fio
-
-        // muda de cor e o fundo continua navy
-
-        el.className = [
-
-            'pointer-events-auto bg-navy text-white border-l-[3px] px-5 py-[13px] text-corpo font-medium',
-
-            'flex items-center gap-2.5 min-w-[260px] transition-opacity duration-300',
-
-            ok ? 'border-marca' : 'border-erro-txt',
-
-        ].join(' ');
-
-        el.innerHTML = `<i class="fa-solid ${ok ? 'fa-circle-check' : 'fa-circle-xmark'}"></i><span class="flex-1">${mensagem}</span>`;
-
-        container.appendChild(el);
-
-        setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 300); }, 4000);
 
     }
 
