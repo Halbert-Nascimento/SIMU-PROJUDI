@@ -139,7 +139,7 @@ if proc is None:
     PoloProcessual.objects.create(processo=proc, parte=parte_autor, tipo_polo="Ativo")
     PoloProcessual.objects.create(processo=proc, parte=parte_reu, tipo_polo="Passivo")
 
-    tipo_cadastro, _ = TipoMovimentacao.objects.get_or_create(nome_movimentacao="Cadastro do Processo")
+    tipo_cadastro, _ = TipoMovimentacao.objects.get_or_create(nome_movimentacao="Protocolo da Petição Inicial")
     MovimentacaoProcessual.objects.create(
         descricao_evento=f'Processo "{proc.numero}" cadastrado.',
         processo=proc,

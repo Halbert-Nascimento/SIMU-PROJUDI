@@ -155,7 +155,7 @@ def cadastrar_processo(request):
                     )
 
                 tipo_cadastro, _ = TipoMovimentacao.objects.get_or_create(
-                    nome_movimentacao="Cadastro do Processo",
+                    nome_movimentacao="Protocolo da Petição Inicial",
                 )
                 mov_cadastro = MovimentacaoProcessual.objects.create(
                     descricao_evento=f'Processo "{processo.numero}" cadastrado.',
@@ -505,7 +505,7 @@ def visualizar_processo(request, numero):
     feedbacks_existentes = feedbacks_ids_para_movimentacoes(mov_ids)
 
     mov_cadastro = next(
-        (m for m in movimentacoes_qs if m.tipo_movimento.nome_movimentacao == "Cadastro do Processo"),
+        (m for m in movimentacoes_qs if m.tipo_movimento.nome_movimentacao == "Protocolo da Petição Inicial"),
         None,
     )
 

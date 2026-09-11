@@ -29,7 +29,7 @@ def _contexto_base(processo):
     polos = list(processo.polos.all())
     tipos = (
         TipoMovimentacao.objects
-        .exclude(nome_movimentacao="Cadastro do Processo")
+        .exclude(nome_movimentacao="Protocolo da Petição Inicial")
         .order_by("nome_movimentacao")
     )
     return {
