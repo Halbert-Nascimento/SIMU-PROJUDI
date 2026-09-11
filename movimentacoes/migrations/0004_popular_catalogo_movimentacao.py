@@ -3,6 +3,7 @@
 from django.db import migrations
 
 STATUS_FALTANTES = [
+    "Protocolado",
     "Extinto sem resolução do mérito",
     "Em Citação",
     "Citado",
@@ -17,14 +18,14 @@ STATUS_FALTANTES = [
 TIPOS_LEGADOS_REAPROVEITADOS = {
     1: "Protocolo da Petição Inicial",
     3: "Conclusão ao Juiz",
-    4: "SENTENÇA",
+    4: "Sentença",
     5: "Custas Recolhidas",
     6: "Custas Não Recolhidas",
     7: "Intima autor p/ custas",
     8: "Custas Pagas Após Intimação",
     9: "Custas Não Pagas Após Intimação",
     10: "Cancelamento da Distribuição",
-    11: "TRÂNSITO EM JULGADO",
+    11: "Trânsito em Julgado",
     12: "Arquivamento",
 }
 
@@ -91,9 +92,9 @@ CATALOGO = [
     ("Acordo em Audiência", ("JZ",), ("Resultado da Audiência — Acordo",), None, ()),
     ("Memoriais/Alegações Finais", ("APA", "APP", "MP"), ("Resultado da Audiência — Memoriais",), None, ()),
     ("Sentença Homologatória de Acordo", ("JZ",), ("Acordo em Audiência", "Audiência de Conciliação — Com Acordo"), "Sentenciado", ()),
-    ("SENTENÇA", ("JZ",), ("Julgamento Antecipado", "Resultado da Audiência — Julgamento na Data", "Memoriais/Alegações Finais"), "Sentenciado", ()),
-    ("Tipo de Sentença — Com Mérito", ("JZ",), ("SENTENÇA",), None, ()),
-    ("Tipo de Sentença — Sem Mérito", ("JZ",), ("SENTENÇA",), None, ()),
+    ("Sentença", ("JZ",), ("Julgamento Antecipado", "Resultado da Audiência — Julgamento na Data", "Memoriais/Alegações Finais"), "Sentenciado", ()),
+    ("Tipo de Sentença — Com Mérito", ("JZ",), ("Sentença",), None, ()),
+    ("Tipo de Sentença — Sem Mérito", ("JZ",), ("Sentença",), None, ()),
     ("Com resolução do mérito", ("JZ",), ("Tipo de Sentença — Com Mérito",), None, ()),
     ("Sem resolução do mérito", ("JZ",), ("Tipo de Sentença — Sem Mérito",), None, ()),
     ("Publicação/Intimação das Partes", ("SC",), ("Com resolução do mérito", "Sem resolução do mérito"), "Publicado/Aguardando Prazo Recursal", ("notifica", "abre_prazo")),
@@ -110,8 +111,8 @@ CATALOGO = [
     ("Baixa dos Autos ao 1º Grau", (), ("Recurso Provido", "Recurso Não Provido", "Provimento Parcial", "Recurso Não Conhecido"), None, ()),
     ("Recurso Superior? (STJ/STF)", ("APA", "APP", "MP"), ("Baixa dos Autos ao 1º Grau",), None, ()),
     ("REsp/RE (STJ/STF)", ("APA", "APP", "MP"), ("Recurso Superior? (STJ/STF)",), None, ()),
-    ("TRÂNSITO EM JULGADO", ("SC",), ("Sentença Homologatória de Acordo", "Publicação/Intimação das Partes", "Decisão nos Embargos", "Recurso Superior? (STJ/STF)", "REsp/RE (STJ/STF)"), "Transitado em Julgado", ()),
-    ("Certidão de Trânsito em Julgado", ("SC",), ("TRÂNSITO EM JULGADO",), None, ()),
+    ("Trânsito em Julgado", ("SC",), ("Sentença Homologatória de Acordo", "Publicação/Intimação das Partes", "Decisão nos Embargos", "Recurso Superior? (STJ/STF)", "REsp/RE (STJ/STF)"), "Transitado em Julgado", ()),
+    ("Certidão de Trânsito em Julgado", ("SC",), ("Trânsito em Julgado",), None, ()),
     ("Arquivamento", ("SC",), ("Certidão de Trânsito em Julgado",), "Arquivado", ()),
 ]
 
