@@ -28,7 +28,7 @@ Sempre consultar e reutilizar as funções existentes antes de criar novas.
 | `acesso` | `acesso/permissions.py` | `pode_gerenciar_usuarios()`, `tipos_que_pode_atribuir()` |
 | `ciclos` | `ciclos/permissions.py` | `pode_criar_ciclo()`, `pode_editar_ciclo()`, `pode_gerenciar_grupos_ciclo()`, `pode_ver_todos_ciclos()`, `pode_ver_ciclos_arquivados()` |
 | `processos` | `processos/permissions.py` | `pode_visualizar_processo()` (inclui lógica de segredo de justiça), `pode_editar_processo()` |
-| `movimentacoes` | `movimentacoes/permissions.py` | `pode_praticar_movimentacao()`, `tipos_praticaveis()`, `grupo_processo_do_usuario()` |
+| `movimentacoes` | `movimentacoes/permissions.py` | `pode_praticar_movimentacao()`, `pode_editar_movimentacao()`, `tipos_praticaveis()`, `grupo_processo_do_usuario()` |
 | `avaliacoes` | `avaliacoes/permissions.py` | `pode_ver_minhas_notas()`, `perfil_pode_avaliar()`, `pode_avaliar_movimentacao()` |
 
 **Hierarquia de perfis:** Admin > Coordenador > Professor > Aluno > Pendente
