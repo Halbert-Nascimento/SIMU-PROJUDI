@@ -73,3 +73,15 @@ class JanelaCorrecaoTests(CenarioMovimentacoesTestCase):
         self.assertEqual(tipos_com_janela_aberta(self.processo, self.gp_apa, tipos), set())
         self.registrar(self.processo, "Emenda Apresentada", self.usuarios["APA"], grupo_processo=self.gp_apa)
         self.assertEqual(tipos_com_janela_aberta(self.processo, self.gp_apa, tipos), {tipo_emenda.pk})
+
+    def test_tipos_com_janela_aberta_nao_escala_com_tipos_nao_praticados(self):
+        """Regressão de performance: N tipos nunca praticados por esse grupo custam 1 query só, não N."""
+        tipos_amplos = list(TipoMovimentacao.objects.filter(papeis_autorizados__cod="APA")[:8])
+        with self.assertNumQueries(1):
+            resultado = tipos_com_janela_aberta(self.processo, self.gp_apa, tipos_amplos)
+        self.assertEqual(resultado, set())
+
+    def test_tipos_com_janela_aberta_aceita_queryset_fatiada(self):
+        """Regressão: `tipo_movimento_id__in=[...]` (não a queryset em si) evita erro de LIMIT dentro de IN no MySQL."""
+        tipos_fatiados = TipoMovimentacao.objects.filter(papeis_autorizados__cod="APA")[:3]
+        tipos_com_janela_aberta(self.processo, self.gp_apa, tipos_fatiados)  # não deve levantar exceção
