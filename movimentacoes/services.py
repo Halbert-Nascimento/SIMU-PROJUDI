@@ -36,7 +36,14 @@ def registrar_movimentacao(*, processo, autor, tipo_movimentacao, descricao_even
     if tipo_movimentacao.efeito_status_id:
         processo.status_atual = tipo_movimentacao.efeito_status
         processo.save(update_fields=["status_atual"])
+    processar_efeitos_colaterais(mov)
     return mov
+
+
+def processar_efeitos_colaterais(movimentacao):
+    """Ponto de conexão pra Prazos/Audiências — nenhum dos dois módulos existe ainda no sistema."""
+    for _efeito in movimentacao.tipo_movimento.efeitos_colaterais.all():
+        pass
 
 
 def resolver_vigente(processo, tipo_movimentacao, grupo_processo):

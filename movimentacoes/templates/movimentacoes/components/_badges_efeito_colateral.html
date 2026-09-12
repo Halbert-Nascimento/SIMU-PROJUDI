@@ -1,0 +1,5 @@
+{% for b in badges %}
+<span class="pill warn gap-1" title="Esta movimentação {{ b.descricao }}.">
+    <i class="fa-solid {{ b.icone }} text-[10px]"></i>{{ b.descricao|capfirst }}
+</span>
+{% endfor %}

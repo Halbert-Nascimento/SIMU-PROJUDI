@@ -127,7 +127,8 @@ def ctx_visualizar(sem_movimentacao=False, com_arquivo=True, pode_alterar=True):
             descricao="Documento juntado aos autos.", data=QUANDO,
             autor_nome="Ana Ribeiro Alves",
             documentos=[doc] if (com_arquivo and i % 2 == 0) else [],
-            tem_feedback=i % 3 == 0)
+            tem_feedback=i % 3 == 0,
+            efeitos_colaterais=["abre_prazo", "notifica"] if i == 5 else [])
         for i in range(1, 13)
     ]
     parte = Obj(nome="Maria Souza Lima", documento="123.456.789-00",
