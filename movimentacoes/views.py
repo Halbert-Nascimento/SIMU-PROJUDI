@@ -14,7 +14,12 @@ from processos.permissions import pode_visualizar_processo
 from processos.utils import validar_multiplos_arquivos
 
 from .models import DocumentoAnexado, MovimentacaoProcessual, TipoMovimentacao
-from .permissions import grupo_processo_do_usuario, pode_praticar_movimentacao, tipos_praticaveis
+from .permissions import (
+    grupo_processo_do_usuario,
+    pode_editar_movimentacao,
+    pode_praticar_movimentacao,
+    tipos_praticaveis,
+)
 from .services import registrar_movimentacao, resolver_movimentacao_origem, tipos_com_janela_aberta
 
 
@@ -174,11 +179,29 @@ def editar_movimentacao(request, numero, mov_id):
     if not pode_visualizar_processo(request.user, processo):
         raise PermissionDenied
 
-    mov_original = get_object_or_404(
+    mov_clicada = get_object_or_404(
         MovimentacaoProcessual,
         pk=mov_id,
         processo=processo,
     )
+
+    # Só o grupo dono do registro corrige — nunca outro grupo vinculado ao processo.
+    if not pode_editar_movimentacao(request.user, processo, mov_clicada):
+        raise PermissionDenied
+
+    # Resolve pelo tipo/grupo do registro clicado (não do usuário logado, que já sabemos
+    # ser o mesmo grupo aqui) — garante que o que é mostrado é exatamente o que será
+    # persistido, mesmo quando o clique caiu num elo já superado da cadeia de correção.
+    mov_original, erro_origem = resolver_movimentacao_origem(
+        processo=processo,
+        tipo_movimentacao=mov_clicada.tipo_movimento,
+        grupo_processo=mov_clicada.grupo_processo,
+        mov_origem_solicitada=mov_clicada,
+        confirma_correcao=False,
+    )
+    if erro_origem:
+        messages.error(request, erro_origem, extra_tags="movimentacao")
+        return redirect("processos:visualizar_processo", numero=numero)
 
     ctx = _contexto_base(processo, request.user)
     ctx.update({

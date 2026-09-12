@@ -72,3 +72,48 @@ class RotasMovimentacaoTests(CenarioMovimentacoesTestCase):
         esperado = set(tipos_praticaveis(self.usuarios["JZ"], self.processo).values_list("pk", flat=True))
         obtido = set(resp.context["tipos_movimentacao"].values_list("pk", flat=True))
         self.assertEqual(obtido, esperado)
+
+    def test_editar_movimentacao_grupo_diferente_bloqueado(self):
+        """Regressão: usuário de outro grupo não edita uma movimentação alheia (GET e POST)."""
+        mov = self.registrar(self.processo, "Juntada de Documentos", self.usuarios["APA"], grupo_processo=self.gp_apa)
+        client = self.cliente_logado(self.usuarios["APP"])
+        url = reverse("movimentacoes:editar_movimentacao", args=[self.processo.numero, mov.pk])
+        self.assertEqual(client.get(url).status_code, 403)
+        self.assertEqual(
+            client.post(url, {"tipo_movimento": mov.tipo_movimento_id, "descricao_evento": "invasão"}).status_code,
+            403,
+        )
+
+    def test_editar_movimentacao_resolve_pelo_vigente_nao_pelo_elo_clicado(self):
+        """Regressão: clicar em editar um elo já superado mostra e persiste como correção do vigente real."""
+        self.autuar_processo(self.processo, ["JZ"])
+        gp_jz = self.grupo_processo(self.processo, "JZ")
+        self.registrar(self.processo, "Emenda da Inicial", self.usuarios["JZ"], grupo_processo=gp_jz)
+        mov_a = self.registrar(self.processo, "Emenda Apresentada", self.usuarios["APA"], grupo_processo=self.gp_apa)
+        client = self.cliente_logado(self.usuarios["APA"])
+        tipo_emenda = self.tipo("Emenda Apresentada")
+
+        client.post(
+            reverse("movimentacoes:editar_movimentacao", args=[self.processo.numero, mov_a.pk]),
+            {"tipo_movimento": tipo_emenda.pk, "descricao_evento": "versão B"},
+        )
+        mov_b = MovimentacaoProcessual.objects.filter(
+            processo=self.processo, tipo_movimento=tipo_emenda,
+        ).order_by("-pk").first()
+        self.assertEqual(mov_b.movimentacao_origem_id, mov_a.pk)
+
+        # clicar de novo em "editar" no elo já superado (A) — precisa mostrar/persistir como
+        # correção de B (o vigente real), não reabrir A.
+        resp_get = client.get(reverse("movimentacoes:editar_movimentacao", args=[self.processo.numero, mov_a.pk]))
+        self.assertEqual(resp_get.context["movimentacao_origem_id"], mov_b.pk)
+        self.assertEqual(resp_get.context["edicao_descricao"], "versão B")
+
+        resp_post = client.post(
+            reverse("movimentacoes:editar_movimentacao", args=[self.processo.numero, mov_a.pk]),
+            {"tipo_movimento": tipo_emenda.pk, "descricao_evento": "versão C"},
+        )
+        self.assertEqual(resp_post.status_code, 302)
+        mov_c = MovimentacaoProcessual.objects.filter(
+            processo=self.processo, tipo_movimento=tipo_emenda,
+        ).order_by("-pk").first()
+        self.assertEqual(mov_c.movimentacao_origem_id, mov_b.pk)
