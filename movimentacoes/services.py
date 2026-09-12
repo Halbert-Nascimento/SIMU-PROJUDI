@@ -65,6 +65,17 @@ def _janela_aberta(vigente) -> bool:
     return not vigente.consequentes.filter(processo_id=vigente.processo_id).exists()
 
 
+def tipos_com_janela_aberta(processo, grupo_processo, tipos):
+    """IDs dos tipos com um vigente ainda dentro da janela de Emenda/Retificação, pra esse grupo — é aí que a tela oferece o toggle de correção."""
+    if grupo_processo is None:
+        return set()
+    return {
+        tipo.pk for tipo in tipos
+        if tipo.nome_movimentacao not in NOMES_TRANSVERSAIS
+        and _janela_aberta(resolver_vigente(processo, tipo, grupo_processo))
+    }
+
+
 def resolver_movimentacao_origem(*, processo, tipo_movimentacao, grupo_processo, mov_origem_solicitada, confirma_correcao):
     """Decide o `movimentacao_origem` final e valida a janela de Emenda/Retificação. Retorna (origem, erro)."""
     if tipo_movimentacao.nome_movimentacao in NOMES_TRANSVERSAIS:

@@ -528,7 +528,7 @@ def visualizar_processo(request, numero):
         movimentacoes.append({
             "id": mov_cadastro.id,
             "autor_id": mov_cadastro.autor_id,
-            "nome": "Petição Inicial",
+            "nome": mov_cadastro.tipo_movimento.nome_movimentacao,
             "descricao": mov_cadastro.descricao_evento,
             "data": mov_cadastro.data_movimento,
             "autor_nome": mov_cadastro.autor.get_full_name() or mov_cadastro.autor.username,

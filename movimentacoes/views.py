@@ -15,7 +15,7 @@ from processos.utils import validar_multiplos_arquivos
 
 from .models import DocumentoAnexado, MovimentacaoProcessual, TipoMovimentacao
 from .permissions import grupo_processo_do_usuario, pode_praticar_movimentacao, tipos_praticaveis
-from .services import registrar_movimentacao, resolver_movimentacao_origem
+from .services import registrar_movimentacao, resolver_movimentacao_origem, tipos_com_janela_aberta
 
 
 # ---------------------------------------------------------------------------
@@ -26,11 +26,13 @@ def _contexto_base(processo, user):
     """Monta polos e tipos de movimentação para o template."""
     polos = list(processo.polos.all())
     tipos = tipos_praticaveis(user, processo)
+    grupo_processo = grupo_processo_do_usuario(user, processo)
     return {
         "processo": processo,
         "polos_ativo":   [p for p in polos if p.tipo_polo == "Ativo"],
         "polos_passivo": [p for p in polos if p.tipo_polo == "Passivo"],
         "tipos_movimentacao": tipos,
+        "tipos_com_janela_aberta": tipos_com_janela_aberta(processo, grupo_processo, tipos),
     }
 
 
