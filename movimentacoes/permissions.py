@@ -72,6 +72,14 @@ def pode_praticar_movimentacao(user, processo, tipo_movimentacao) -> bool:
     return True
 
 
+def pode_editar_movimentacao(user, processo, movimentacao) -> bool:
+    """Só o grupo dono do registro (mesmo grupo_processo) pode corrigi-lo — nunca outro grupo vinculado ao processo."""
+    if movimentacao.grupo_processo_id is None:
+        return False
+    grupo_processo = grupo_processo_do_usuario(user, processo)
+    return grupo_processo is not None and grupo_processo.pk == movimentacao.grupo_processo_id
+
+
 def tipos_praticaveis(user, processo):
     """Versão em lote de `pode_praticar_movimentacao`, usada na tela de registro."""
     grupo_processo = grupo_processo_do_usuario(user, processo)

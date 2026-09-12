@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from django.urls import reverse
 
 from movimentacoes.models import MovimentacaoProcessual
@@ -70,3 +72,19 @@ class ProtocoloAutuacaoTests(CenarioMovimentacoesTestCase):
             processo=processo, tipo_movimento__nome_movimentacao="Autuação e Distribuição",
         ).count()
         self.assertEqual(count, 1)
+
+    def test_grupo_ids_invalidos_nao_autua_processo(self):
+        """Regressão: grupo_ids que não resolve pra nenhum GrupoTrabalho real não autua o processo."""
+        processo = self.criar_processo_protocolado()
+        client = self.cliente_logado(self.usuarios["SC"])
+        resp = client.post(
+            reverse("processos:atribuir_grupo_processos"),
+            data=json.dumps({"processo_ids": [processo.pk], "grupo_ids": [999999]}),
+            content_type="application/json",
+        )
+        processo.refresh_from_db()
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(processo.status_atual.nome_status, "Protocolado")
+        self.assertFalse(MovimentacaoProcessual.objects.filter(
+            processo=processo, tipo_movimento__nome_movimentacao="Autuação e Distribuição",
+        ).exists())

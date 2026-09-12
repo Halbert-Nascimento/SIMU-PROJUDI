@@ -631,7 +631,9 @@ def atribuir_grupo_processos(request):
                             processo=processo, tipo_polo=PoloProcessual.TipoPolo.PASSIVO
                         ).update(grupo=grupo)
 
-                if protocolado:
+                # Sem grupo de verdade resolvido (ids inválidos/desatualizados), não autua —
+                # senão o processo vira "Autuado" sem nenhum grupo de fato atribuído a ele.
+                if protocolado and grupos:
                     if tipo_autuacao is None:
                         tipo_autuacao = TipoMovimentacao.objects.select_related("efeito_status").get(
                             nome_movimentacao="Autuação e Distribuição"

@@ -1,7 +1,13 @@
 from __future__ import annotations
 
 from ciclos.models import CicloSimulacao, GrupoTrabalho
-from movimentacoes.permissions import grupo_processo_do_usuario, pode_praticar_movimentacao, tipos_praticaveis
+from movimentacoes.models import MovimentacaoProcessual
+from movimentacoes.permissions import (
+    grupo_processo_do_usuario,
+    pode_editar_movimentacao,
+    pode_praticar_movimentacao,
+    tipos_praticaveis,
+)
 from processos.models import ProcessoJudicial
 from usuarios.models import Usuario
 
@@ -62,3 +68,23 @@ class RegraCentralPermissaoTests(CenarioMovimentacoesTestCase):
         self.assertFalse(pode_praticar_movimentacao(coordenador, processo, self.tipo("Juntada de Documentos")))
         self.assertFalse(pode_praticar_movimentacao(self.professor, processo, self.tipo("Juntada de Documentos")))
         self.assertEqual(tipos_praticaveis(self.professor, processo).count(), 0)
+
+
+class PodeEditarMovimentacaoTests(CenarioMovimentacoesTestCase):
+    """Regressão: só o grupo dono do registro (mesmo grupo_processo) pode corrigi-lo."""
+
+    def test_grupo_diferente_do_autor_nao_edita(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP"])
+        gp_apa = self.grupo_processo(processo, "APA")
+        mov = self.registrar(processo, "Juntada de Documentos", self.usuarios["APA"], grupo_processo=gp_apa)
+        self.assertFalse(pode_editar_movimentacao(self.usuarios["APP"], processo, mov))
+        self.assertTrue(pode_editar_movimentacao(self.usuarios["APA"], processo, mov))
+
+    def test_movimentacao_sem_grupo_processo_nao_e_editavel_por_ninguem(self):
+        processo = self.criar_processo_protocolado(autor=self.usuarios["APA"])
+        mov_legado = MovimentacaoProcessual.objects.create(
+            processo=processo, autor=self.usuarios["APA"], tipo_movimento=self.tipo("Juntada de Documentos"),
+            descricao_evento="legado, sem grupo_processo",
+        )
+        self.assertFalse(pode_editar_movimentacao(self.usuarios["APA"], processo, mov_legado))
