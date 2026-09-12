@@ -2,8 +2,12 @@
 
 from django.db import migrations
 
+# Lista completa de status que o catálogo referencia como efeito_status — "Autuado",
+# "Arquivado" e "Sentenciado" só não quebravam porque já existiam no banco de dev desde
+# antes do módulo de movimentações (nunca precisaram de get_or_create até faltar num banco novo).
 STATUS_FALTANTES = [
     "Protocolado",
+    "Autuado",
     "Extinto sem resolução do mérito",
     "Em Citação",
     "Citado",
@@ -13,6 +17,18 @@ STATUS_FALTANTES = [
     "Em Fase Recursal",
     "Remetido ao 2º Grau",
     "Transitado em Julgado",
+    "Sentenciado",
+    "Arquivado",
+]
+
+# CargoSimulacao nunca teve migração de dados própria (só SQL manual/scripts de seed) —
+# sem isso, o lookup por cod abaixo quebra num banco criado do zero (ex.: banco de teste).
+CARGOS_FALTANTES = [
+    ("Serventia/Cartório", "SC"),
+    ("Advogados Polo Ativo", "APA"),
+    ("Advogados Polo Passivo", "APP"),
+    ("Ministério Público", "MP"),
+    ("Juiz", "JZ"),
 ]
 
 TIPOS_LEGADOS_REAPROVEITADOS = {
@@ -133,6 +149,9 @@ def popular(apps, schema_editor):
 
     for nome in STATUS_FALTANTES:
         StatusProcessoJudicial.objects.get_or_create(nome_status=nome)
+
+    for nome, cod in CARGOS_FALTANTES:
+        CargoSimulacao.objects.get_or_create(cod=cod, defaults={"nome": nome})
 
     for old_id, novo_nome in TIPOS_LEGADOS_REAPROVEITADOS.items():
         TipoMovimentacao.objects.filter(pk=old_id).update(nome_movimentacao=novo_nome)
