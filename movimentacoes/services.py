@@ -64,9 +64,19 @@ def tipos_com_janela_aberta(processo, grupo_processo, tipos):
     """IDs dos tipos com um vigente ainda dentro da janela de Emenda/Retificação, pra esse grupo — é aí que a tela oferece o toggle de correção."""
     if grupo_processo is None:
         return set()
+    tipos = list(tipos)  # materializa uma vez — pks explícitos, nunca a queryset como subquery de IN
+    # só um tipo já praticado por esse grupo pode ter algo pra corrigir — poupa
+    # resolver_vigente/_janela_aberta (uma consulta a mais cada) pros demais tipos praticáveis.
+    ja_praticados = set(
+        MovimentacaoProcessual.objects
+        .filter(processo=processo, grupo_processo=grupo_processo, tipo_movimento_id__in=[t.pk for t in tipos])
+        .values_list("tipo_movimento_id", flat=True)
+        .distinct()
+    )
     return {
         tipo.pk for tipo in tipos
-        if tipo.nome_movimentacao not in NOMES_TRANSVERSAIS
+        if tipo.pk in ja_praticados
+        and tipo.nome_movimentacao not in NOMES_TRANSVERSAIS
         and _janela_aberta(resolver_vigente(processo, tipo, grupo_processo))
     }
 
