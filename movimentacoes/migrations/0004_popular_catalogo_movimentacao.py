@@ -31,7 +31,7 @@ TIPOS_LEGADOS_REAPROVEITADOS = {
 
 # cada linha: (nome, papéis autorizados, pré-condições "ou", efeito sobre status, efeitos colaterais)
 CATALOGO = [
-    ("Protocolo da Petição Inicial", ("APA", "MP"), (), "Protocolado", ()),
+    ("Protocolo da Petição Inicial", (), (), "Protocolado", ()),  # sem papel — protocolo é livre (mapa, Ponto 2, revisão 11/09/2026)
     ("Autuação e Distribuição", ("SC",), ("Protocolo da Petição Inicial",), "Autuado", ()),
     ("Custas Recolhidas", ("SC",), ("Autuação e Distribuição",), None, ()),
     ("Custas Não Recolhidas", ("SC",), ("Autuação e Distribuição",), None, ()),
