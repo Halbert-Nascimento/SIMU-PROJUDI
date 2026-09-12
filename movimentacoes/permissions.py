@@ -5,11 +5,8 @@ from django.db.models import Q
 from processos.models import GrupoProcesso, PoloProcessual
 from usuarios.models import Usuario
 
+from .catalogo import NOME_CONTESTACAO, NOME_MP_DEVE_INTERVIR_SIM, NOME_PROTOCOLO
 from .models import TipoMovimentacao
-
-NOME_PROTOCOLO = "Protocolo da Petição Inicial"
-NOME_CONTESTACAO = "Contestação"
-NOME_MP_DEVE_INTERVIR_SIM = "MP Deve Intervir — Sim"
 
 
 def grupo_processo_do_usuario(user, processo):

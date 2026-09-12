@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from movimentacoes.catalogo import NOMES_TRANSVERSAIS
 from movimentacoes.models import TipoMovimentacao
-from movimentacoes.services import NOMES_TRANSVERSAIS, resolver_movimentacao_origem, tipos_com_janela_aberta
+from movimentacoes.services import resolver_movimentacao_origem, tipos_com_janela_aberta
 
 from processos.tests.fixtures import CenarioMovimentacoesTestCase
 

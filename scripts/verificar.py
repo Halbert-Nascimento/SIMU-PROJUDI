@@ -31,7 +31,7 @@ from html.parser import HTMLParser
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-APPS = ["acesso", "avaliacoes", "base", "ciclos", "processos", "usuarios"]
+APPS = ["acesso", "avaliacoes", "base", "ciclos", "movimentacoes", "processos", "usuarios"]
 # peca processual, nao interface: Times 12pt e o formato correto do documento
 FORA_DE_ESCOPO = ("templates/static/modelos/",)
 SNAPSHOT = RAIZ / ".verificacao-snapshot.json"

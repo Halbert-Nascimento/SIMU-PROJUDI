@@ -1,12 +1,7 @@
 from __future__ import annotations
 
+from .catalogo import NOMES_TRANSVERSAIS
 from .models import MovimentacaoProcessual
-
-NOMES_TRANSVERSAIS = {
-    "Cancelamento / Tornar Sem Efeito",
-    "Desentranhamento",
-    "Juntada de Documentos",
-}
 
 
 def resolver_antecedente_logico(processo, tipo_movimentacao):
