@@ -1,5 +1,6 @@
 {% extends 'base/base.html' %}
 {% load processos_ui %}
+{% load movimentacoes_ui %}
 {% load static %}
 {% load ui %}
 
@@ -496,6 +497,11 @@
                     <td>
                         <div class="sub">{{ mov.nome }}</div>
                         <div class="sub-evt mt-0.5">{{ mov.descricao }}</div>
+                        {% if mov.efeitos_colaterais %}
+                        <div class="mt-1 flex flex-wrap gap-1">
+                            {% badges_efeito_colateral mov.efeitos_colaterais %}
+                        </div>
+                        {% endif %}
                     </td>
                     <td class="data-col">{{ mov.data|date:"d/m/Y H:i:s" }}</td>
                     <td class="user-col">{{ mov.autor_nome|upper }}</td>

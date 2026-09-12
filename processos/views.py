@@ -493,7 +493,7 @@ def visualizar_processo(request, numero):
     movimentacoes_qs = list(
         processo.movimentacoes
         .select_related("tipo_movimento", "autor")
-        .prefetch_related("documentos")
+        .prefetch_related("documentos", "tipo_movimento__efeitos_colaterais")
         .order_by("-data_movimento")
     )
 
@@ -521,6 +521,7 @@ def visualizar_processo(request, numero):
             "autor_nome": mov.autor.get_full_name() or mov.autor.username,
             "documentos": list(mov.documentos.all()),
             "tem_feedback": mov.id in feedbacks_existentes,
+            "efeitos_colaterais": [e.categoria for e in mov.tipo_movimento.efeitos_colaterais.all()],
         })
 
     if mov_cadastro:
@@ -533,6 +534,7 @@ def visualizar_processo(request, numero):
             "autor_nome": mov_cadastro.autor.get_full_name() or mov_cadastro.autor.username,
             "documentos": list(mov_cadastro.documentos.all()),
             "tem_feedback": mov_cadastro.id in feedbacks_existentes,
+            "efeitos_colaterais": [e.categoria for e in mov_cadastro.tipo_movimento.efeitos_colaterais.all()],
         })
 
     from avaliacoes.permissions import perfil_pode_avaliar
