@@ -312,6 +312,13 @@ class PoloProcessual(models.Model):
         related_name="polos",
     )
     tipo_polo = models.CharField(max_length=8, choices=TipoPolo.choices)
+    grupo = models.ForeignKey(
+        "ciclos.GrupoTrabalho",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="polos_processuais",
+    )
 
     class Meta:
         db_table = "polo_processual"

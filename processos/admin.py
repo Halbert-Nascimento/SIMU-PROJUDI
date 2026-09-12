@@ -71,7 +71,7 @@ class AudienciaInline(admin.TabularInline):
 class PoloProcessualInline(admin.TabularInline):
     model = PoloProcessual
     extra = 0
-    fields = ("parte", "tipo_polo")
+    fields = ("parte", "tipo_polo", "grupo")
 
 
 class GrupoProcessoInline(admin.TabularInline):
@@ -96,6 +96,7 @@ class AudienciaAdmin(admin.ModelAdmin):
 
 @admin.register(PoloProcessual)
 class PoloProcessualAdmin(admin.ModelAdmin):
-    list_display = ("processo", "parte", "tipo_polo")
+    list_display = ("processo", "parte", "tipo_polo", "grupo")
+    list_select_related = ("parte", "grupo")
     list_filter = ("tipo_polo",)
     search_fields = ("processo__numero", "parte__nome_razao")

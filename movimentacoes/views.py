@@ -13,30 +13,26 @@ from processos.models import ProcessoJudicial
 from processos.permissions import pode_visualizar_processo
 from processos.utils import validar_multiplos_arquivos
 
-from .models import (
-    DocumentoAnexado,
-    MovimentacaoProcessual,
-    TipoMovimentacao,
-)
+from .models import DocumentoAnexado, MovimentacaoProcessual, TipoMovimentacao
+from .permissions import grupo_processo_do_usuario, pode_praticar_movimentacao, tipos_praticaveis
+from .services import registrar_movimentacao, resolver_movimentacao_origem, tipos_com_janela_aberta
 
 
 # ---------------------------------------------------------------------------
 # Helpers internos
 # ---------------------------------------------------------------------------
 
-def _contexto_base(processo):
+def _contexto_base(processo, user):
     """Monta polos e tipos de movimentação para o template."""
     polos = list(processo.polos.all())
-    tipos = (
-        TipoMovimentacao.objects
-        .exclude(nome_movimentacao="Cadastro do Processo")
-        .order_by("nome_movimentacao")
-    )
+    tipos = tipos_praticaveis(user, processo)
+    grupo_processo = grupo_processo_do_usuario(user, processo)
     return {
         "processo": processo,
         "polos_ativo":   [p for p in polos if p.tipo_polo == "Ativo"],
         "polos_passivo": [p for p in polos if p.tipo_polo == "Passivo"],
         "tipos_movimentacao": tipos,
+        "tipos_com_janela_aberta": tipos_com_janela_aberta(processo, grupo_processo, tipos),
     }
 
 
@@ -50,12 +46,14 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
     """
     tipo_id  = request.POST.get("tipo_movimento", "").strip()
     descricao = request.POST.get("descricao_evento", "").strip()
+    confirma_correcao = request.POST.get("corrige_anterior") == "on"
     arquivos_raw = request.FILES.getlist("documentos")
     nomes_docs   = request.POST.getlist("documento_nomes")
 
     erros: list[str] = []
 
-    if not tipo_id:
+    tipo = TipoMovimentacao.objects.filter(pk=tipo_id).first() if tipo_id else None
+    if tipo is None:
         erros.append("Selecione o tipo de movimentação.")
 
     arquivos_validos: list = []
@@ -63,23 +61,34 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
         arquivos_validos, erros_upload = validar_multiplos_arquivos(arquivos_raw, nomes_docs)
         erros.extend(erros_upload)
 
+    grupo_processo = None
+    movimentacao_origem = None
+    if tipo is not None:
+        if not pode_praticar_movimentacao(request.user, processo, tipo):
+            raise PermissionDenied  # a tela já filtra isso — só ocorre com POST forjado
+
+        grupo_processo = grupo_processo_do_usuario(request.user, processo)
+        movimentacao_origem, erro_origem = resolver_movimentacao_origem(
+            processo=processo,
+            tipo_movimentacao=tipo,
+            grupo_processo=grupo_processo,
+            mov_origem_solicitada=mov_origem,
+            confirma_correcao=confirma_correcao,
+        )
+        if erro_origem:
+            erros.append(erro_origem)
+
     if erros:
         return None, erros
 
     with transaction.atomic():
-        antecedente = (
-            processo.movimentacoes
-            .order_by("-data_movimento")
-            .first()
-        )
-
-        mov = MovimentacaoProcessual.objects.create(
+        mov = registrar_movimentacao(
             processo=processo,
             autor=request.user,
-            tipo_movimento_id=tipo_id,
+            tipo_movimentacao=tipo,
             descricao_evento=descricao,
-            antecedente_logico=antecedente,
-            movimentacao_origem=mov_origem,
+            grupo_processo=grupo_processo,
+            movimentacao_origem=movimentacao_origem,
         )
 
         for arquivo, titulo in arquivos_validos:
@@ -121,7 +130,7 @@ def criar_movimentacao(request, numero):
     if not pode_visualizar_processo(request.user, processo):
         raise PermissionDenied
 
-    ctx = _contexto_base(processo)
+    ctx = _contexto_base(processo, request.user)
     ctx["breadcrumbs"] = [
         home_breadcrumb(request.user),
         {"label": f"Processo {processo.numero}", "url": reverse("processos:visualizar_processo", args=[processo.numero])},
@@ -171,7 +180,7 @@ def editar_movimentacao(request, numero, mov_id):
         processo=processo,
     )
 
-    ctx = _contexto_base(processo)
+    ctx = _contexto_base(processo, request.user)
     ctx.update({
         "movimentacao_origem_id": mov_original.pk,
         "edicao_tipo_id":         mov_original.tipo_movimento_id,

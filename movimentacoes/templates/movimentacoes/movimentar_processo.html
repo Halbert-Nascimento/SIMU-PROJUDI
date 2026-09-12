@@ -135,9 +135,20 @@
             </div>
             {# dados dos tipos para o combobox JS #}
             <script id="tipoMovData" type="application/json">
-            [{% for tipo in tipos_movimentacao %}{"id":"{{ tipo.id }}","nome":"{{ tipo.nome_movimentacao|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}]
+            [{% for tipo in tipos_movimentacao %}{"id":"{{ tipo.id }}","nome":"{{ tipo.nome_movimentacao|escapejs }}","janela_aberta":{% if tipo.id in tipos_com_janela_aberta %}true{% else %}false{% endif %}}{% if not forloop.last %},{% endif %}{% endfor %}]
             </script>
         </div>
+
+        {% if not movimentacao_origem_id %}
+        <!-- Correção do envio anterior — só existe pra quem chega pelo combobox de "Movimentar";
+             editar_movimentacao já é, por si só, uma correção explícita (Ponto 4 do mapa). -->
+        <div class="mb-3 hidden" id="corrigeAnteriorWrapper">
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="corrigeAnterior" name="corrige_anterior" class="accent-acao w-3.5 h-3.5">
+                <span class="text-corpo">Isto corrige o envio anterior deste tipo?</span>
+            </label>
+        </div>
+        {% endif %}
 
         <!-- Descrição Movimentação -->
         <div class="mb-3">
@@ -392,6 +403,18 @@
         input.value   = nome;
         input.dataset.selected = id;
         closeDropdown();
+        atualizarCorrigeAnterior(id);
+    }
+
+    // Toggle "isto corrige o envio anterior?" — só aparece quando o tipo escolhido
+    // tem um vigente dentro da janela de correção (Ponto 4 do mapa); nunca um seletor.
+    function atualizarCorrigeAnterior(tipoId) {
+        const wrapper = document.getElementById('corrigeAnteriorWrapper');
+        if (!wrapper) return;
+        const tipo = TIPOS.find(t => t.id === tipoId);
+        const aberta = !!(tipo && tipo.janela_aberta);
+        wrapper.classList.toggle('hidden', !aberta);
+        if (!aberta) document.getElementById('corrigeAnterior').checked = false;
     }
 
     function highlight(dir) {
@@ -408,6 +431,7 @@
         hidden.value = '';
         input.dataset.selected = '';
         openDropdown(input.value);
+        atualizarCorrigeAnterior('');
     });
     input.addEventListener('blur', () => {
         setTimeout(() => {
