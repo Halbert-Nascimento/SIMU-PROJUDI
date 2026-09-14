@@ -271,10 +271,14 @@
                         {% endif %}
 
                         <!-- Movimentar — link funcional -->
+                        {% if pode_movimentar_processo %}
                         <a href="{% url 'processos:movimentar_processo' processo.numero %}"
                            class="opcoes-item movimentar-item">
                             Movimentar
                         </a>
+                        {% else %}
+                        <div class="opcoes-item text-rotulo" title="Seu perfil não movimenta este processo">Movimentar</div>
+                        {% endif %}
 
 
                     </div>
@@ -514,10 +518,12 @@
                         {% endif %}
                     </td>
                     <td class="opc-col">
+                        {% if mov.pode_editar %}
                         <a href="{% url 'processos:editar_movimentacao' processo.numero mov.id %}"
                            title="Editar movimentação">
                             <i class="fa-solid fa-pen icon-action"></i>
                         </a>
+                        {% endif %}
                         {% if pode_avaliar and mov.autor_id != request.user.pk %}
                         <div class="dropdown-opcoes">
                             <button type="button" class="dropdown-btn" onclick="toggleDropdown(this)" data-tip="Opções">

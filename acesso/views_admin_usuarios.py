@@ -1,12 +1,11 @@
 from __future__ import annotations
 
-import datetime
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import Http404
 from django.db.models import Count, Q
+from django.utils import timezone
 
 from base.decorators import exige_permissao
 from base.mensagens import propagar_erros_form
@@ -80,8 +79,31 @@ def usuario_atualizar(request):
 @login_required
 @exige_permissao(pode_gerenciar_usuarios)
 def painel_administrativo(request):
+    """
+    Tela de entrada de Admin, Coordenador e Professor.
+
+    LIMITE CONHECIDO (decisão consciente, não esquecimento): as listagens abaixo
+    — usuários, ciclos e processos dos ciclos em andamento — vêm completas, sem
+    Paginator. O template pagina e pesquisa no navegador (`criarPaginador`,
+    `filtrarUsuarios`, `filtrarCiclos`), o que exige ter todas as linhas no HTML
+    e torna a busca instantânea.
+
+    Os querysets estão certos — `select_related`/`prefetch_related` nos lugares
+    certos, sem N+1 —, mas o custo cresce com o tamanho do resultado, não com o
+    número de queries: `prefetch_related("polos__parte")` carrega os polos e as
+    partes de TODOS os processos ativos a cada requisição. Com o volume atual
+    (dezenas de ciclos) isso é irrelevante; com alguns semestres de uso real a
+    tela começa a demorar.
+
+    Quando esse ponto chegar, o conserto é mover paginação E busca para o
+    servidor: um `Paginator` por listagem, com um parâmetro de página cada
+    (`page_processos`, `page_usuarios`, para que paginar uma não reinicie as
+    outras) e os termos de busca por querystring. Os contadores
+    (`usuarios_pendentes_count`, `total_alunos_vinculados`) devem continuar
+    refletindo o total, não a página corrente.
+    """
     context = {
-        "ano_atual": datetime.date.today().year,
+        "ano_atual": timezone.localtime().year,
     }
 
     if pode_gerenciar_usuarios(request.user) and tipos_que_pode_atribuir(request.user):
