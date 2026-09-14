@@ -37,13 +37,16 @@ class AtualizarUsuarioForm(forms.Form):
         return tipo
     
     def aplicar(self):
+        perfil = self.cleaned_data['tipo_perfil_global']
         self.alvo.is_active = self.cleaned_data['is_active']
-        self.alvo.tipo_perfil_global = self.cleaned_data['tipo_perfil_global']
-        if self.alvo.tipo_perfil_global == Usuario.TipoPerfilGlobal.COORDENADOR:
-            self.alvo.is_coordenador = True
-            self.alvo.is_staff = True # Coordenadores também são staff # NOATA: isso é necessário para acessar o admin, mas pode ser repensado se for criado um painel de administração customizado
-        else:
-            self.alvo.is_coordenador = False
-            self.alvo.is_staff = False
+        self.alvo.tipo_perfil_global = perfil
+        self.alvo.is_coordenador = perfil == Usuario.TipoPerfilGlobal.COORDENADOR
+        # Admin e Coordenador acessam o /admin/ do Django; os demais, não.
+        # AdminSite.has_permission() exige is_staff — inclusive de superusuário —,
+        # então zerar is_staff para o perfil Admin o trancaria fora do painel.
+        self.alvo.is_staff = perfil in (
+            Usuario.TipoPerfilGlobal.ADMIN,
+            Usuario.TipoPerfilGlobal.COORDENADOR,
+        )
         self.alvo.save(update_fields=['is_active', 'tipo_perfil_global', 'is_coordenador', 'is_staff'])
         return self.alvo

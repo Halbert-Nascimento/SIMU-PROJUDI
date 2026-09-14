@@ -26,6 +26,17 @@ class FeedbackProfessor(models.Model):
         verbose_name = "Feedback do Professor"
         verbose_name_plural = "Feedbacks dos Professores"
         ordering = ["-data_feedback"]
+        constraints = [
+            # A view já trata o par (movimentação, professor) como único ao
+            # reaproveitar o feedback existente. Sem a restrição, um duplo envio
+            # do formulário criava dois registros e a nota duplicada entrava duas
+            # vezes no Avg()/Count() de `minhas_notas`.
+            models.UniqueConstraint(
+                fields=["movimentacao", "professor"],
+                name="uniq_feedback_por_mov_e_professor",
+                violation_error_message="Você já avaliou esta movimentação.",
+            ),
+        ]
 
     def __str__(self) -> str:
         return f"Feedback #{self.pk} — {self.movimentacao}"

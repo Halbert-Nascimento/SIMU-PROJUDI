@@ -7,16 +7,18 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.text import slugify
 
 from base.breadcrumbs import home_breadcrumb
 
+from .forms import MovimentacaoForm
 from .models import (
     DocumentoAnexado,
     MovimentacaoProcessual,
     ProcessoJudicial,
     TipoMovimentacao,
 )
-from .permissions import pode_visualizar_processo
+from .permissions import pode_editar_movimentacao, pode_movimentar_processo
 from .utils import validar_multiplos_arquivos
 
 
@@ -48,15 +50,18 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
         mov   — objeto criado (ou None se houve erros)
         erros — lista de strings com mensagens de erro
     """
-    tipo_id  = request.POST.get("tipo_movimento", "").strip()
-    descricao = request.POST.get("descricao_evento", "").strip()
     arquivos_raw = request.FILES.getlist("documentos")
     nomes_docs   = request.POST.getlist("documento_nomes")
 
     erros: list[str] = []
 
-    if not tipo_id:
-        erros.append("Selecione o tipo de movimentação.")
+    # o form é quem verifica que `tipo_movimento` é um id existente: o campo
+    # chega de um <input type="hidden"> preenchido por JS e nada impede um POST
+    # manual com lixo, que sem isto viraria ValueError/IntegrityError → 500
+    form = MovimentacaoForm(request.POST)
+    if not form.is_valid():
+        for erros_do_campo in form.errors.values():
+            erros.extend(erros_do_campo)
 
     arquivos_validos: list = []
     if arquivos_raw:
@@ -73,14 +78,12 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
             .first()
         )
 
-        mov = MovimentacaoProcessual.objects.create(
-            processo=processo,
-            autor=request.user,
-            tipo_movimento_id=tipo_id,
-            descricao_evento=descricao,
-            antecedente_logico=antecedente,
-            movimentacao_origem=mov_origem,
-        )
+        mov = form.save(commit=False)
+        mov.processo = processo
+        mov.autor = request.user
+        mov.antecedente_logico = antecedente
+        mov.movimentacao_origem = mov_origem
+        mov.save()
 
         for arquivo, titulo in arquivos_validos:
             DocumentoAnexado.objects.create(
@@ -92,7 +95,13 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
         editor_html = request.POST.get("editor_html", "").strip()
         editor_nome = request.POST.get("editor_html_nome", "").strip() or "documento_editor"
         if editor_html:
-            conteudo = ContentFile(editor_html.encode("utf-8"), name=f"{editor_nome}.html")
+            # gravado como .txt, nunca .html: o private_storage entrega o arquivo
+            # com o Content-Type adivinhado pela extensão e sem attachment, então
+            # um .html com <script> executaria na origem da aplicação, com a
+            # sessão de quem abrisse a peça. slugify() também fecha o nome de
+            # arquivo, que vem do cliente.
+            nome_arquivo = slugify(editor_nome) or "documento_editor"
+            conteudo = ContentFile(editor_html.encode("utf-8"), name=f"{nome_arquivo}.txt")
             DocumentoAnexado.objects.create(
                 movimentacao=mov,
                 titulo_arquivo=editor_nome,
@@ -118,7 +127,9 @@ def movimentar_processo(request, numero):
         numero=numero,
     )
 
-    if not pode_visualizar_processo(request.user, processo):
+    # movimentar é escrita nos autos: `pode_visualizar_processo` liberaria
+    # qualquer autenticado, porque todo processo sem segredo de justiça é público
+    if not pode_movimentar_processo(request.user, processo):
         raise PermissionDenied
 
     ctx = _contexto_base(processo)
@@ -162,14 +173,16 @@ def editar_movimentacao(request, numero, mov_id):
         numero=numero,
     )
 
-    if not pode_visualizar_processo(request.user, processo):
-        raise PermissionDenied
-
     mov_original = get_object_or_404(
-        MovimentacaoProcessual,
+        MovimentacaoProcessual.objects.select_related("processo__ciclo"),
         pk=mov_id,
         processo=processo,
     )
+
+    # além de poder atuar no processo, quem edita precisa ser o autor da peça
+    # (ou quem mantém os autos): editar grava uma nova versão com autoria
+    if not pode_editar_movimentacao(request.user, mov_original):
+        raise PermissionDenied
 
     ctx = _contexto_base(processo)
     ctx.update({

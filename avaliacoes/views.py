@@ -59,12 +59,18 @@ def avaliar_movimentacao(request, movimentacao_id):
         acao = request.POST.get("acao", "concluir")
 
         if form.is_valid():
-            feedback = form.save(commit=False)
-            feedback.movimentacao = movimentacao
-            feedback.professor = request.user
-            if acao == "devolver":
-                feedback.nota = None
-            feedback.save()
+            # update_or_create em vez de ler-e-gravar: um duplo envio do
+            # formulário (clique duplo, F5, aba duplicada) fazia as duas leituras
+            # voltarem vazias e criava dois feedbacks para o mesmo par
+            # (movimentação, professor), inflando a média em `minhas_notas`.
+            FeedbackProfessor.objects.update_or_create(
+                movimentacao=movimentacao,
+                professor=request.user,
+                defaults={
+                    "comentario": form.cleaned_data["comentario"],
+                    "nota": None if acao == "devolver" else form.cleaned_data.get("nota"),
+                },
+            )
 
             if acao == "devolver":
                 messages.success(request, "Movimentação devolvida para revisão.")

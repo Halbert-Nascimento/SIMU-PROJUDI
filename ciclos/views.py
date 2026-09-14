@@ -303,7 +303,6 @@ def remover_membro(request, ciclo_id, grupo_id, usuario_id):
 
 
 @login_required
-@login_required
 def boas_vindas(request):
     """
     Tela de espera do Aluno aceito que ainda não entrou em nenhum ciclo.
@@ -325,6 +324,7 @@ def boas_vindas(request):
     })
 
 
+@login_required
 def selecionar_ciclo(request):
     """Exibe a tela para o usuário escolher em qual ciclo deseja atuar."""
     ciclos = list(
