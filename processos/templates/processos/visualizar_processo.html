@@ -1,5 +1,6 @@
 {% extends 'base/base.html' %}
 {% load processos_ui %}
+{% load movimentacoes_ui %}
 {% load static %}
 {% load ui %}
 
@@ -467,11 +468,11 @@
 
         <div class="filtros-evento">
             <label><input type="radio" name="evf" checked disabled> TODOS</label>
-            <label><input type="radio" name="evf" disabled> Cadastro do Processo</label>
+            <label><input type="radio" name="evf" disabled> Protocolo da Petição Inicial</label>
             <label><input type="radio" name="evf" disabled> Juntada de Documentos</label>
-            <label><input type="radio" name="evf" disabled> Certidão Expedida</label>
-            <label><input type="radio" name="evf" disabled> Processo Distribuído</label>
-            <label><input type="radio" name="evf" disabled> Petição Enviada</label>
+            <label><input type="radio" name="evf" disabled> Certidão de Trânsito em Julgado</label>
+            <label><input type="radio" name="evf" disabled> Autuação e Distribuição</label>
+            <label><input type="radio" name="evf" disabled> Réplica do Autor</label>
             <div class="lock-area ml-auto">
                 <input type="checkbox" id="bloqChk" disabled>
                 <label for="bloqChk" style="font-weight:normal;">Bloquear/Desbloquear</label>
@@ -496,6 +497,11 @@
                     <td>
                         <div class="sub">{{ mov.nome }}</div>
                         <div class="sub-evt mt-0.5">{{ mov.descricao }}</div>
+                        {% if mov.efeitos_colaterais %}
+                        <div class="mt-1 flex flex-wrap gap-1">
+                            {% badges_efeito_colateral mov.efeitos_colaterais %}
+                        </div>
+                        {% endif %}
                     </td>
                     <td class="data-col">{{ mov.data|date:"d/m/Y H:i:s" }}</td>
                     <td class="user-col">{{ mov.autor_nome|upper }}</td>
