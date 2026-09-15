@@ -7,7 +7,15 @@
  * O vocabulário antigo do TJGO foi removido por completo:
  * de propósito — qualquer resquício deixa de pintar e aparece na revisão.
  */
-tailwind.config = {
+tailwind.config = (function () {
+
+/* Acessibilidade: A+/A- do cabeçalho não reescrevem classe nenhuma — só mudam
+   `--escala-fonte` no <html> (ver static/js/acessibilidade.js). Por isso todo
+   tamanho do guia sai daqui embrulhado em calc(): um valor só reescala a
+   interface inteira, e o número do guia continua legível no fonte. */
+const escalavel = (tamanho) => 'calc(' + tamanho + ' * var(--escala-fonte, 1))';
+
+return {
     theme: {
         extend: {
             colors: {
@@ -41,18 +49,30 @@ tailwind.config = {
 
             fontFamily: {
                 sans: ['Barlow', 'Helvetica', 'Arial', 'sans-serif'],
-                mono: ['IBM Plex Mono', 'ui-monospace', 'Consolas', 'monospace'],
+                mono: ['Lato', 'Helvetica', 'Arial', 'sans-serif'],
             },
 
             /* Escala tipográfica do guia (seção 03) */
             fontSize: {
-                'micro':  ['10px',   { letterSpacing: '.1em' }],  // menor tamanho que o guia admite
-                'meta':   ['10.5px', { lineHeight: '1.5' }],
-                'apoio':  ['11px',   { lineHeight: '1.6' }],
-                'dado':   ['11.5px', { lineHeight: '1.6' }],
-                'corpo':  ['12px',   { lineHeight: '1.6' }],
-                'h1':     ['26px',   { lineHeight: '1.15', letterSpacing: '-0.01em' }],
-                'kpi':    ['28px',   { lineHeight: '1' }],
+                'micro':  [escalavel('10px'),   { letterSpacing: '.1em' }],  // menor tamanho que o guia admite
+                'meta':   [escalavel('10.5px'), { lineHeight: '1.5' }],
+                'apoio':  [escalavel('11px'),   { lineHeight: '1.6' }],
+                'dado':   [escalavel('11.5px'), { lineHeight: '1.6' }],
+                'corpo':  [escalavel('12px'),   { lineHeight: '1.6' }],
+                'h1':     [escalavel('26px'),   { lineHeight: '1.15', letterSpacing: '-0.01em' }],
+                'kpi':    [escalavel('28px'),   { lineHeight: '1' }],
+
+                /* Fora do guia — mas escritos em telas que existem, e o
+                   verificar.py continua avisando sobre eles. Reescritos aqui
+                   com os mesmos valores do Tailwind só para que o A+/A- não
+                   deixe um punhado de rótulos parados enquanto o resto cresce. */
+                'xs':   [escalavel('0.75rem'),  { lineHeight: '1rem' }],
+                'sm':   [escalavel('0.875rem'), { lineHeight: '1.25rem' }],
+                'base': [escalavel('1rem'),     { lineHeight: '1.5rem' }],
+                'lg':   [escalavel('1.125rem'), { lineHeight: '1.75rem' }],
+                'xl':   [escalavel('1.25rem'),  { lineHeight: '1.75rem' }],
+                '2xl':  [escalavel('1.5rem'),   { lineHeight: '2rem' }],
+                '3xl':  [escalavel('1.875rem'), { lineHeight: '2.25rem' }],
             },
 
             maxWidth: {
@@ -96,3 +116,5 @@ tailwind.config = {
         },
     }
 }
+
+})();
