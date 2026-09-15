@@ -1,6 +1,5 @@
-from django.urls import path
+from django.urls import path  # noqa: F401  (mantido para as rotas futuras do app)
 
-urlpatterns = [
-    path(),
-]
-    
+app_name = "usuarios"
+
+urlpatterns: list = []

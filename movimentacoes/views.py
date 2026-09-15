@@ -7,6 +7,7 @@ from django.core.files.base import ContentFile
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.text import slugify
 
 from base.breadcrumbs import home_breadcrumb
 from processos.models import ProcessoJudicial
@@ -57,7 +58,14 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
 
     erros: list[str] = []
 
-    tipo = TipoMovimentacao.objects.filter(pk=tipo_id).first() if tipo_id else None
+    # `tipo_movimento` chega de um <input type="hidden"> preenchido por JS e nada
+    # impede um POST manual com lixo. Sem o isdigit(), um valor não numérico faz
+    # o filter(pk=...) estourar ValueError → 500, com a peça recém-escrita perdida.
+    tipo = (
+        TipoMovimentacao.objects.filter(pk=tipo_id).first()
+        if tipo_id.isdigit()
+        else None
+    )
     if tipo is None:
         erros.append("Selecione o tipo de movimentação.")
 
@@ -106,7 +114,13 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
         editor_html = request.POST.get("editor_html", "").strip()
         editor_nome = request.POST.get("editor_html_nome", "").strip() or "documento_editor"
         if editor_html:
-            conteudo = ContentFile(editor_html.encode("utf-8"), name=f"{editor_nome}.html")
+            # gravado como .txt, nunca .html: o private_storage entrega o arquivo
+            # com o Content-Type adivinhado pela extensão, então um .html com
+            # <script> executaria na origem da aplicação, com a sessão de quem
+            # abrisse a peça. slugify() também fecha o nome de arquivo, que vem
+            # do cliente. Par da defesa em base/private_servers.py.
+            nome_arquivo = slugify(editor_nome) or "documento_editor"
+            conteudo = ContentFile(editor_html.encode("utf-8"), name=f"{nome_arquivo}.txt")
             DocumentoAnexado.objects.create(
                 movimentacao=mov,
                 titulo_arquivo=editor_nome,
