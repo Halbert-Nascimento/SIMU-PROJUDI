@@ -18,6 +18,7 @@ from .models import DocumentoAnexado, MovimentacaoProcessual, TipoMovimentacao
 from .permissions import (
     grupo_processo_do_usuario,
     pode_editar_movimentacao,
+    pode_movimentar_processo,
     pode_praticar_movimentacao,
     tipos_praticaveis,
 )
@@ -146,7 +147,10 @@ def criar_movimentacao(request, numero):
         numero=numero,
     )
 
-    if not pode_visualizar_processo(request.user, processo):
+    # ver os autos não basta para escrever neles: sem nenhum tipo praticável a
+    # tela não teria o que oferecer, e o formulário vazio só faria o usuário
+    # redigir uma peça que nenhum POST aceitaria.
+    if not pode_movimentar_processo(request.user, processo):
         raise PermissionDenied
 
     ctx = _contexto_base(processo, request.user)

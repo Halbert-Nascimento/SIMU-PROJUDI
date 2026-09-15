@@ -60,9 +60,8 @@ INSTALLED_APPS = [
     'notificacoes',
     'processos',
     'avaliacoes',
-    # Reservados e ainda vazios: a movimentação vive hoje em `processos`
-    # (MovimentacaoProcessual, views_movimentacao.py) e a audiência em
-    # `processos.Audiencia`. Ficam registrados para a migração futura — remover
+    # `agendamentos` ainda está vazio: a audiência vive hoje em
+    # `processos.Audiencia`. Fica registrado para a migração futura — remover
     # daqui se a decisão mudar.
     'agendamentos',
     'movimentacoes',

@@ -26,11 +26,11 @@ from ciclos.models import GrupoTrabalho
 from .forms import ProcessoJudicialForm
 from .permissions import (
     pode_editar_processo,
-    pode_movimentar_processo,
     pode_visualizar_processo,
 )
 from .utils import validar_multiplos_arquivos
 from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
+from movimentacoes.permissions import grupo_processo_do_usuario, pode_movimentar_processo
 from movimentacoes.services import registrar_movimentacao
 
 from .models import (
@@ -576,7 +576,6 @@ def visualizar_processo(request, numero):
     # registro corrige, nunca outro grupo vinculado ao processo. O grupo do
     # usuário é resolvido uma vez fora do laço — aquela função consulta o banco
     # e chamá-la por linha seria um N+1.
-    from movimentacoes.permissions import grupo_processo_do_usuario
     grupo_processo_usuario = grupo_processo_do_usuario(request.user, processo)
     for item in movimentacoes:
         item["pode_editar"] = (
