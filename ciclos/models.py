@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db import models
+from django.db.models.functions import Lower
 
 
 class StatusCiclo(models.Model):
@@ -64,6 +65,17 @@ class CicloSimulacao(models.Model):
         db_table = "ciclo_simulacao"
         verbose_name = "Ciclo de Simulação"
         verbose_name_plural = "Ciclos de Simulação"
+        constraints = [
+            # O clean_nome_edicao do form roda entre um SELECT e um INSERT que
+            # não estão na mesma transação: duas submissões simultâneas passavam
+            # as duas. O índice funcional sobre Lower() reproduz a semântica
+            # __iexact que o form usa e fecha a corrida no banco.
+            models.UniqueConstraint(
+                Lower("nome_edicao"),
+                name="uniq_ciclo_nome_edicao_ci",
+                violation_error_message="Já existe um ciclo com esse nome.",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.nome_edicao} — {self.semestre}º/{self.ano}"
@@ -108,6 +120,14 @@ class GrupoTrabalho(models.Model):
         db_table = "grupo_trabalho"
         verbose_name = "Grupo de Trabalho"
         verbose_name_plural = "Grupos de Trabalho"
+        constraints = [
+            models.UniqueConstraint(
+                "ciclo",
+                Lower("nome"),
+                name="uniq_grupo_nome_por_ciclo_ci",
+                violation_error_message="Já existe um grupo com esse nome neste ciclo.",
+            ),
+        ]
 
     def __str__(self):
         return f"{self.nome} ({self.cargo_simulacao})"

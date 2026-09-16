@@ -1,19 +1,18 @@
 from __future__ import annotations
 
-import datetime
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
 from django.http import Http404
 from django.db.models import Count, Q
+from django.utils import timezone
 
 from base.decorators import exige_permissao
 from base.mensagens import propagar_erros_form
 
 from usuarios.models import Usuario
 
-from ciclos.models import CicloSimulacao, StatusCiclo
+from ciclos.models import CicloSimulacao, ParticipanteCiclo, StatusCiclo
 from processos.models import ProcessoJudicial
 from ciclos.permissions import (
     pode_criar_ciclo,
@@ -80,8 +79,31 @@ def usuario_atualizar(request):
 @login_required
 @exige_permissao(pode_gerenciar_usuarios)
 def painel_administrativo(request):
+    """
+    Tela de entrada de Admin, Coordenador e Professor.
+
+    LIMITE CONHECIDO (decisão consciente, não esquecimento): as listagens abaixo
+    — usuários, ciclos e processos dos ciclos em andamento — vêm completas, sem
+    Paginator. O template pagina e pesquisa no navegador (`criarPaginador`,
+    `filtrarUsuarios`, `filtrarCiclos`), o que exige ter todas as linhas no HTML
+    e torna a busca instantânea.
+
+    Os querysets estão certos — `select_related`/`prefetch_related` nos lugares
+    certos, sem N+1 —, mas o custo cresce com o tamanho do resultado, não com o
+    número de queries: `prefetch_related("polos__parte")` carrega os polos e as
+    partes de TODOS os processos ativos a cada requisição. Com o volume atual
+    (dezenas de ciclos) isso é irrelevante; com alguns semestres de uso real a
+    tela começa a demorar.
+
+    Quando esse ponto chegar, o conserto é mover paginação E busca para o
+    servidor: um `Paginator` por listagem, com um parâmetro de página cada
+    (`page_processos`, `page_usuarios`, para que paginar uma não reinicie as
+    outras) e os termos de busca por querystring. Os contadores
+    (`usuarios_pendentes_count`, `total_alunos_vinculados`) devem continuar
+    refletindo o total, não a página corrente.
+    """
     context = {
-        "ano_atual": datetime.date.today().year,
+        "ano_atual": timezone.localtime().year,
     }
 
     if pode_gerenciar_usuarios(request.user) and tipos_que_pode_atribuir(request.user):
@@ -108,16 +130,22 @@ def painel_administrativo(request):
                 .order_by("-data_criacao")
             )
         else:
+            # O vínculo de participante entra por subconsulta, não por filtro no
+            # M2M: um join em `participantes` multiplicaria as linhas de `grupos`
+            # e num_grupos passaria a contar grupos × participantes.
+            ciclos_participados = ParticipanteCiclo.objects.filter(
+                usuario=request.user
+            ).values("ciclo")
+
             context["ciclos"] = (
                 CicloSimulacao.objects
                 .select_related("status")
                 .annotate(num_grupos=Count("grupos"))
                 .filter(
-                    Q(coordenador=request.user) | Q(participantes=request.user),
+                    Q(coordenador=request.user) | Q(pk__in=ciclos_participados),
                     status__nome_status__in=["em andamento", "finalizado"],
                 )
                 .order_by("-data_criacao")
-                .distinct()
             )
 
     if "ciclos" in context:
