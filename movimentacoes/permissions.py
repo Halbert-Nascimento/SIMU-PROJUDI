@@ -104,3 +104,20 @@ def tipos_praticaveis(user, processo):
     if cargo.cod == "APP" and not _grupo_ocupa_polo_passivo(processo, grupo_processo.grupo):
         tipos = tipos.exclude(nome_movimentacao=NOME_CONTESTACAO)
     return tipos.order_by("nome_movimentacao")
+
+
+def pode_movimentar_processo(user, processo) -> bool:
+    """
+    Há algum ato que este usuário possa praticar neste processo agora?
+
+    É a pergunta que a tela do processo faz para decidir se oferece o link
+    "Movimentar" e a que a tela de registro faz na entrada. Responder por
+    perfil global (Admin/Coordenador sempre, Professor no ciclo que coordena)
+    era a regra do mundo anterior ao app `movimentacoes` e levava justamente
+    esses perfis a um formulário sem nenhum tipo selecionável: quem movimenta é
+    o papel processual do grupo, não a autoridade sobre o ciclo.
+
+    Delegar a `tipos_praticaveis` mantém uma fonte única de verdade — o link só
+    aparece quando o combobox teria o que mostrar.
+    """
+    return tipos_praticaveis(user, processo).exists()
