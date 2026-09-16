@@ -6,7 +6,7 @@ fieldset {
     background: #fff;
 }
 fieldset legend {
-    font-size: 11px;
+    font-size: calc(11px * var(--escala-fonte, 1));
     font-weight: 700;
     letter-spacing: .12em;
     text-transform: uppercase;

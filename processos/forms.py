@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from django import forms
 
-from .models import Comarca, ProcessoJudicial, VaraServentia
+from .models import (
+    Comarca,
+    ProcessoJudicial,
+    VaraServentia,
+)
 
 
 class ProcessoJudicialForm(forms.ModelForm):

@@ -8,8 +8,6 @@ from usuarios.models import Usuario
 
 from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho
 
-_ANO_ATUAL = datetime.date.today().year
-
 SEMESTRE_CHOICES = [
     ("", "Selecione..."),
     (1, "1º Semestre"),
@@ -74,9 +72,12 @@ class CicloSimulacaoForm(forms.ModelForm):
 
     def clean_ano(self):
         ano = self.cleaned_data["ano"]
-        if ano < _ANO_ATUAL -1 or ano > _ANO_ATUAL + 5:
+        # calculado na validação, não no import do módulo: um worker de produção
+        # vive mais que o ano e congelaria a janela no ano do deploy
+        ano_atual = datetime.date.today().year
+        if ano < ano_atual - 1 or ano > ano_atual + 5:
             raise forms.ValidationError(
-                f"Ano inválido. Informe um valor entre {_ANO_ATUAL - 1} e {_ANO_ATUAL + 5}."
+                f"Ano inválido. Informe um valor entre {ano_atual - 1} e {ano_atual + 5}."
             )
         return ano
 

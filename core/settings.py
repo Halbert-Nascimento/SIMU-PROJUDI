@@ -28,11 +28,17 @@ environ.Env.read_env(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env("SECRET_KEY", default='django-insecure-dev-only')
+# Sem default de propósito: com um, a ausência da variável no servidor faria a
+# aplicação subir silenciosamente com uma chave pública conhecida, e as
+# assinaturas de sessão e de token CSRF passariam a ser forjáveis. Faltar a
+# variável tem que quebrar o start.
+SECRET_KEY = env("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env.bool("DEBUG", default=False)
 
+# Com DEBUG=False e esta lista vazia o Django recusa toda requisição: preencher
+# ALLOWED_HOSTS no .env do servidor é parte do deploy, não um detalhe opcional.
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
@@ -49,13 +55,16 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'usuarios',
     'acesso',
-    'agendamentos',
     'base',
     'ciclos',
     'notificacoes',
-    'movimentacoes',
     'processos',
     'avaliacoes',
+    # `agendamentos` ainda está vazio: a audiência vive hoje em
+    # `processos.Audiencia`. Fica registrado para a migração futura — remover
+    # daqui se a decisão mudar.
+    'agendamentos',
+    'movimentacoes',
     'private_storage',
 ]
 
@@ -69,6 +78,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'acesso.middleware.SessionActivityMiddleware',
     'ciclos.middleware.CicloAtivoMiddleware',
+    # depende de `ciclos_ativos_usuario`, populado pelo middleware acima
+    'ciclos.middleware.AlunoSemCicloMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -127,10 +138,28 @@ LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após
 LOGIN_URL = 'acesso:login'
 LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
 
-# desconfigurações de segurança (ajustar para produção)
-# SESSION_COOKIE_SECURE = True    # cookie sessionid só via HTTPS
-# SESSION_COOKIE_HTTPONLY = True  # bloqueia acesso via document.cookie (XSS)
-# CSRF_COOKIE_SECURE = True       # csrftoken só via HTTPS
+# ─── Segurança ────────────────────────────────────────────────────────────────
+# Padrão do Django, repetido aqui porque é a defesa contra roubo de sessão por XSS
+SESSION_COOKIE_HTTPONLY = True
+
+# Endurecimentos que só fazem sentido sob HTTPS. Derivados de DEBUG para que
+# subir com DEBUG=False já traga o conjunto completo, sem depender de lembrar de
+# ligar cada um no .env.
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True    # cookie sessionid só via HTTPS
+    CSRF_COOKIE_SECURE = True       # csrftoken só via HTTPS
+    SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
+    # HSTS é a configuração mais perigosa de ligar às cegas: o navegador memoriza
+    # a exigência de HTTPS pelo prazo informado e reverter exige esperar o prazo
+    # (ou servir max-age=0). Comece pequeno e só aumente depois de confirmar que
+    # todo o domínio serve HTTPS — 31536000 (1 ano) é o valor de regime.
+    SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=3600)
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True)
+    SECURE_HSTS_PRELOAD = env.bool("SECURE_HSTS_PRELOAD", default=False)
+    # Só quando a aplicação estiver atrás de um proxy/load balancer que termina
+    # o TLS; ligar isto sem proxy permite forjar o cabeçalho e fingir HTTPS.
+    if env.bool("BEHIND_TLS_PROXY", default=False):
+        SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Configurações de sessão
 # Tempo de inatividade em segundos antes de expirar (lido do .env, padrão 900 s = 15 min)
@@ -173,8 +202,15 @@ MEDIA_URL = '/media/'
 
 # Mídia PROTEGIDA (documentos processuais)
 PRIVATE_STORAGE_ROOT = os.path.join(BASE_DIR, 'arquivos_privados')
-PRIVATE_STORAGE_AUTH_FUNCTION = 'private_storage.permissions.allow_authenticated'
-PRIVATE_STORAGE_SERVER = env('PRIVATE_STORAGE_SERVER', default='django')   # dev; em produção substituir por 'nginx' com X-Accel-Redirect
+# Não é `allow_authenticated`: aquela função só pergunta se há sessão, e como o
+# caminho do anexo é previsível (processos/{numero_cnj}/{arquivo}) isso entregava
+# qualquer documento a qualquer usuário logado — inclusive de processo em segredo
+# de justiça. A função abaixo aplica ao arquivo a mesma regra da tela do processo.
+PRIVATE_STORAGE_AUTH_FUNCTION = 'processos.private_auth.pode_baixar_documento'
+# Serve inline só tipos inertes e força download no resto (vide base/private_servers.py).
+# Em produção atrás de nginx, trocar por 'nginx' com X-Accel-Redirect — e então o
+# Content-Disposition precisa ser reposto na configuração do nginx.
+PRIVATE_STORAGE_SERVER = env('PRIVATE_STORAGE_SERVER', default='base.private_servers.DocumentoProcessualServer')
 # PRIVATE_STORAGE_INTERNAL_URL = '/arquivos_privados/' # necessário para nginx, mas não para django; ajustar conforme o servidor de arquivos privados
 
 # ─── Upload de Arquivos ───────────────────────────────────────────────────────

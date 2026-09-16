@@ -21,7 +21,7 @@
     }
     .filtros label {
         display: block;
-        font-size: 10px;
+        font-size: calc(10px * var(--escala-fonte, 1));
         font-weight: 600;
         letter-spacing: .1em;
         text-transform: uppercase;
@@ -32,7 +32,7 @@
         border: 1px solid #d3d7de;
         border-radius: 2px;
         padding: 8px 9px;
-        font-size: 12px;
+        font-size: calc(12px * var(--escala-fonte, 1));
         background: #fff;
         color: #23262e;
     }
@@ -77,10 +77,14 @@
         width: 34px; height: 34px; border-radius: 50%;
         background: #1f4f9c; color: #fff;
         display: flex; align-items: center; justify-content: center;
-        font-weight: 600; font-size: 12px; flex-shrink: 0;
+        font-weight: 600; font-size: calc(12px * var(--escala-fonte, 1)); flex-shrink: 0;
     }
-    .grp-card .check { color: #d3d7de; font-size: 16px; }
+    .grp-card .check { color: #d3d7de; font-size: calc(16px * var(--escala-fonte, 1)); }
     .grp-card.selected .check { color: #1f4f9c; }
+    /* dois seletores de classe para vencer o display:inline-flex de .pill,
+       que o `hidden` do Tailwind só venceria por ordem de carga */
+    .grp-card .grp-vinculo { flex-shrink: 0; }
+    .grp-card .grp-vinculo.oculto { display: none; }
 </style>
 {% endblock %}
 
@@ -274,10 +278,11 @@
                 {% for g in grupos_ciclo %}
                 <div class="grp-card" data-grupo-id="{{ g.id }}">
                     <div class="grp-avatar">{{ g.nome|truncatechars:1 }}</div>
-                    <div class="flex-1">
+                    <div class="flex-1 min-w-0">
                         <div class="text-dado font-semibold text-texto">{{ g.nome }}</div>
                         <div class="text-meta text-rotulo">{{ g.cargo_simulacao.nome }}</div>
                     </div>
+                    <span class="pill ok grp-vinculo oculto"></span>
                     <i class="fa-solid fa-circle check"></i>
                 </div>
                 {% endfor %}
@@ -303,9 +308,12 @@
 <!-- Toast -->
 {% include 'base/components/_toast.html' %}
 
+{{ grupos_vinculados_por_processo|json_script:"grupos-vinculados" }}
+
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const csrfToken = "{{ csrf_token }}";
+    const gruposVinculados = JSON.parse(document.getElementById("grupos-vinculados").textContent);
     const modal = document.getElementById("grpModal");
     const selAllChk = document.getElementById("selAll");
     const selCountEl = document.getElementById("selCount");
@@ -339,8 +347,41 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("modalProcClass").textContent = subtitulo;
         selectedGrupoIds.clear();
         removeMode = false;
+        renderGrpVinculos();
         renderGrpSelection();
         modal.classList.add("open");
+    }
+
+    // Quantos dos processos abertos no modal já têm este grupo vinculado
+    function contarVinculos(grupoId) {
+        return modalProcessos.filter(function (processoId) {
+            const ids = gruposVinculados[String(processoId)] || [];
+            return ids.indexOf(Number(grupoId)) !== -1;
+        }).length;
+    }
+
+    function renderGrpVinculos() {
+        const total = modalProcessos.length;
+        document.querySelectorAll("#grpList .grp-card").forEach(card => {
+            const selo = card.querySelector(".grp-vinculo");
+            if (!selo) return;
+
+            const vinculados = contarVinculos(card.dataset.grupoId);
+            if (vinculados === 0) {
+                selo.classList.add("oculto");
+                return;
+            }
+            if (total === 1) {
+                selo.textContent = "Já vinculado";
+            } else if (vinculados === total) {
+                selo.textContent = "Em todos os " + total;
+            } else {
+                selo.textContent = "Em " + vinculados + " de " + total;
+            }
+            selo.classList.toggle("gray", vinculados < total);
+            selo.classList.toggle("ok", vinculados === total);
+            selo.classList.remove("oculto");
+        });
     }
 
     function closeModal() {
@@ -392,7 +433,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("bulkAssign").addEventListener("click", function () {
         const ids = getSelectedIds();
         if (ids.length === 0) {
-            showToast("Selecione ao menos um processo.", true);
+            showToast("Selecione ao menos um processo.", "atencao");
             return;
         }
         openModal(ids, `${ids.length} processo(s) selecionado(s)`, "Atribuição em lote");
@@ -406,7 +447,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("modalConfirm").addEventListener("click", function () {
         const grupoIds = removeMode ? [] : [...selectedGrupoIds].map(Number);
         if (!removeMode && grupoIds.length === 0) {
-            showToast("Selecione ao menos um grupo.", true);
+            showToast("Selecione ao menos um grupo.", "atencao");
             return;
         }
         fetch("{% url 'processos:atribuir_grupo_processos' %}", {
@@ -423,7 +464,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .then(r => r.json().then(data => ({ ok: r.ok, data })))
         .then(({ ok, data }) => {
             if (!ok) {
-                showToast(data.erro || "Erro ao atribuir grupo.", true);
+                showToast(data.erro || "Erro ao atribuir grupo.", "erro");
                 return;
             }
             showToast(
@@ -431,14 +472,26 @@ document.addEventListener("DOMContentLoaded", function () {
                     ? "Atribuições removidas com sucesso!"
                     : modalProcessos.length === 1
                         ? `${grupoIds.length} grupo(s) atribuído(s) com sucesso!`
-                        : `Atribuição em lote concluída! (${data.atualizados} processos)`
+                        : `Atribuição em lote concluída! (${data.atualizados} processos)`,
+                "sucesso"
             );
+            // espelha o que o servidor acabou de gravar: sem isso o selo de
+            // vínculo continuaria mostrando o estado anterior ao reabrir o modal
+            modalProcessos.forEach(function (processoId) {
+                const chave = String(processoId);
+                if (removeMode) {
+                    gruposVinculados[chave] = [];
+                    return;
+                }
+                const atuais = gruposVinculados[chave] || [];
+                gruposVinculados[chave] = [...new Set([...atuais, ...grupoIds])];
+            });
             closeModal();
             selAllChk.checked = false;
             document.querySelectorAll(".rowChk").forEach(c => c.checked = false);
             updateSelCount();
         })
-        .catch(() => showToast("Erro de conexão.", true));
+        .catch(() => showToast("Erro de conexão.", "erro"));
     });
 
     // --- Toast ---
