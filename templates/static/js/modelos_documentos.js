@@ -36,13 +36,13 @@ function carregarModelo() {
     const slug = sel.value;
 
     if (!slug) {
-        showToast('Selecione um modelo antes de carregar', true);
+        showToast('Selecione um modelo antes de carregar', 'atencao');
         return;
     }
 
     const ed = tinymce.get('tinymce-editor');
     if (!ed) {
-        showToast('Editor ainda carregando, aguarde...', true);
+        showToast('Editor ainda carregando, aguarde...', 'atencao');
         return;
     }
 
@@ -57,9 +57,9 @@ function carregarModelo() {
             ed.setContent(html);
             const label = sel.selectedOptions[0].text;
             document.getElementById('editorFileName').value = slug;
-            showToast('Modelo carregado — edite os campos em destaque');
+            showToast('Modelo carregado — edite os campos em destaque', 'info');
         })
         .catch(function (err) {
-            showToast('Erro ao carregar modelo: ' + err.message, true);
+            showToast('Erro ao carregar modelo: ' + err.message, 'erro');
         });
 }

@@ -23,7 +23,7 @@
         display: flex; align-items: center; gap: 14px;
         padding: 14px 16px; margin-bottom: 14px; border: 1px solid;
     }
-    .nota-destaque .valor { font-size: 28px; font-weight: 700; line-height: 1; }
+    .nota-destaque .valor { font-size: calc(28px * var(--escala-fonte, 1)); font-weight: 700; line-height: 1; }
     .nota-destaque.ok   { background: #eaf4ec; border-color: #bee0c2; }
     .nota-destaque.ok   .valor { color: #2e7d32; }
     .nota-destaque.warn { background: #fff5e4; border-color: #f1d59c; }
@@ -38,11 +38,11 @@
         background: #f7faff;
         border: 1px solid #c9d5ea; border-left: 3px solid #1f4f9c;
         padding: 10px 14px; display: flex; align-items: center; gap: 10px;
-        margin-bottom: 12px; font-size: 12px;
+        margin-bottom: 12px; font-size: calc(12px * var(--escala-fonte, 1));
     }
     .prof-comment {
         background: #eaf4ec; border-left: 3px solid #2e7d32;
-        padding: 10px 12px; font-size: 12px; line-height: 1.55;
+        padding: 10px 12px; font-size: calc(12px * var(--escala-fonte, 1)); line-height: 1.55;
         color: #23262e; font-style: italic;
     }
 </style>

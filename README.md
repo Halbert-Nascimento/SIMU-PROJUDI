@@ -223,7 +223,7 @@ O projeto segue o **Guia de Design da Faculdade IESGO** (versão 1.0), em
 - Navy IESGO (#0a083d) — cabeçalho, títulos e botão primário
 - Azul de ação (#1f4f9c) — links, aba ativa e foco de campo
 - Vermelho institucional (#d30000) — só fio de assinatura, nunca botão ou link
-- Barlow (interface) + IBM Plex Mono (dado codificado), base 12px
+- Barlow (interface) + Lato (dado codificado), base 12px
 - Cantos retos, sem sombra fora de modal; hierarquia por borda de 1px e faixa de 3px
 
 O acompanhamento da reformulação está em `../NOVO-DESIGN.md`.
