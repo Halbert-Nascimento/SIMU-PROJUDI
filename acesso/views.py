@@ -51,7 +51,7 @@ def login_view(request):
         if request.user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO:
             return redirect("processos:pagina_aluno")
 
-        return redirect("base:redirecionamento_teste_sucesso")
+        return redirect("acesso:login")
 
     return render(request, "acesso/login.html", {"form": form})
 
@@ -95,9 +95,12 @@ def cadastrar(request):
     if request.method == "POST":
         form = CadastroPublicoForm(request.POST)
         if form.is_valid():
-            user = form.save()
-            login(request, user)
-            return redirect("base:redirecionamento_teste_sucesso")
+            form.save()
+            messages.success(
+                request,
+                "Cadastro realizado com sucesso! Aguarde a aprovação de um responsável para acessar o sistema.",
+            )
+            return redirect("acesso:login")
     else:
         form = CadastroPublicoForm()
 
