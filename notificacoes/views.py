@@ -2,14 +2,16 @@ from __future__ import annotations
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.http import JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
+from django.template.loader import render_to_string
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from base.breadcrumbs import home_breadcrumb
 
-from .models import NOTIFICACOES_RECENTES_LIMIT, Notificacao
+from .models import Notificacao
+from .services import notificacoes_recentes_de
 
 
 @login_required
@@ -32,19 +34,22 @@ def listar_notificacoes(request):
 
 
 @login_required
-def contagem_notificacoes(request):
-    total_nao_lidas = Notificacao.objects.filter(destinatario=request.user, lida=False).count()
-    return JsonResponse({"nao_lidas": total_nao_lidas})
+@require_POST
+def recentes_notificacoes(request):
+    """
+    Conteúdo do dropdown do sino: busca com o `lida` atual (pro destaque) e só
+    então marca como lidas. Sem `request=` no render_to_string — é fragmento
+    isolado, não precisa dos context processors globais (evita 2 queries à toa).
+    """
+    notificacoes = list(notificacoes_recentes_de(request.user))
+    ids_pendentes = [n.pk for n in notificacoes if not n.lida]
+    if ids_pendentes:
+        Notificacao.objects.filter(pk__in=ids_pendentes).update(lida=True, data_leitura=timezone.now())
+    html = render_to_string("notificacoes/dropdown_conteudo.html", {"notificacoes_recentes": notificacoes})
+    return HttpResponse(html)
 
 
 @login_required
-@require_POST
-def marcar_recentes_como_lidas(request):
-    ids_recentes_pendentes = list(
-        Notificacao.objects.filter(destinatario=request.user, lida=False)
-        .order_by("-data_criacao")
-        .values_list("pk", flat=True)[:NOTIFICACOES_RECENTES_LIMIT]
-    )
-    if ids_recentes_pendentes:
-        Notificacao.objects.filter(pk__in=ids_recentes_pendentes).update(lida=True, data_leitura=timezone.now())
-    return JsonResponse({"sucesso": True})
+def contagem_notificacoes(request):
+    total_nao_lidas = Notificacao.objects.filter(destinatario=request.user, lida=False).count()
+    return JsonResponse({"nao_lidas": total_nao_lidas})

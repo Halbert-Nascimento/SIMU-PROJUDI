@@ -90,7 +90,7 @@ class AlunoSemCicloMiddleware:
         "acesso:manter_sessao",
         "notificacoes:listar",
         "notificacoes:contagem",
-        "notificacoes:marcar_recentes_lidas",
+        "notificacoes:recentes",
     })
 
     def __init__(self, get_response):
