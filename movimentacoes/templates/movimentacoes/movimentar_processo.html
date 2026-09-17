@@ -235,6 +235,10 @@
                     <textarea id="tinymce-editor"></textarea>
 
                     <!-- Botões editor -->
+                    <!-- Assinar (secundário) vem antes de Incluir na Movimentação (primário) —
+                         foge da regra "primário sempre à esquerda" do guia (seção 04) de propósito:
+                         aqui a ordem é sequência de fluxo, não hierarquia visual — assinar é
+                         pré-requisito pra incluir o documento corretamente na movimentação. -->
                     <div class="flex flex-wrap justify-center gap-2 mt-3">
                         <button type="button" id="btnAssinar"
                                 class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
