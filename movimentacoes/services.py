@@ -1,5 +1,9 @@
 from __future__ import annotations
 
+from django.db import transaction
+
+from notificacoes.services import notificar_movimentacao_registrada
+
 from .catalogo import NOMES_TRANSVERSAIS
 from .models import MovimentacaoProcessual
 
@@ -32,6 +36,8 @@ def registrar_movimentacao(*, processo, autor, tipo_movimentacao, descricao_even
         processo.status_atual = tipo_movimentacao.efeito_status
         processo.save(update_fields=["status_atual"])
     processar_efeitos_colaterais(mov)
+    # Só depois do commit — uma falha ao notificar não pode reverter a movimentação em si.
+    transaction.on_commit(lambda: notificar_movimentacao_registrada(mov))
     return mov
 
 

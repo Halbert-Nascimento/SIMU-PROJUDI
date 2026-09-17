@@ -32,6 +32,7 @@ from .utils import validar_multiplos_arquivos
 from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
 from movimentacoes.permissions import grupo_processo_do_usuario, pode_movimentar_processo
 from movimentacoes.services import registrar_movimentacao
+from notificacoes.services import notificar_grupo_vinculado_processo
 
 from .models import (
     ClasseProcessual,
@@ -667,10 +668,20 @@ def atribuir_grupo_processos(request):
                     ciclo=grupo_usuario.ciclo,
                 ).select_related("cargo_simulacao")
             )
+            # snapshot de quem já estava vinculado, pra só notificar vínculo de verdade novo
+            vinculos_existentes = set(
+                GrupoProcesso.objects.filter(processo__in=processos, grupo__in=grupos)
+                .values_list("processo_id", "grupo_id")
+            )
             tipo_autuacao = None
             for processo in processos:
                 protocolado = processo.status_atual.nome_status == "Protocolado"
+                grupos_novos = [g for g in grupos if (processo.pk, g.pk) not in vinculos_existentes]
                 processo.grupos.add(*grupos)
+                for grupo_novo in grupos_novos:
+                    transaction.on_commit(
+                        lambda p=processo, g=grupo_novo: notificar_grupo_vinculado_processo(p, g, ator=request.user)
+                    )
 
                 # Polo é atribuído automaticamente pelo cargo do grupo (APA→Ativo, APP→Passivo);
                 # MP/JZ/SC seguem só vinculados ao processo via GrupoProcesso, sem ocupar polo aqui.
