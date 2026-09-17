@@ -778,9 +778,16 @@ function exportarDoc() {
 <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>
 <w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
 <style>
-body{font-family:"Times New Roman",serif;font-size:12pt;line-height:2;margin:2cm;color:#000;}
+/* @page é o que o Word usa pra margem de página — "margin" no body vira
+   recuo somado à margem padrão do Word (~2,5cm), dobrando o espaço em branco. */
+@page WordSection1 { size: 21cm 29.7cm; margin: 2cm; mso-page-orientation: portrait; }
+div.WordSection1 { page: WordSection1; }
+/* Word não herda CSS do body como o navegador — repete em cada elemento de bloco.
+   line-height sem unidade também não é confiável no Word; usa % + mso-line-height-rule. */
+body,p,li,td,th,h1,h2,h3,h4,h5,h6{font-family:"Times New Roman",serif;font-size:12pt;line-height:200%;mso-line-height-rule:exactly;color:#000;}
+body{margin:0;background:#fff;}
 p{text-align:justify;margin:0 0 6px 0;}
-</style></head><body>${html}</body></html>`;
+</style></head><body><div class="WordSection1">${html}</div></body></html>`;
     const blob = new Blob(['﻿', conteudo], { type: 'application/msword' });
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
