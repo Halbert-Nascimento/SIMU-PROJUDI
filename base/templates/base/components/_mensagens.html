@@ -5,8 +5,26 @@ Mensagens do django.contrib.messages nos trios de estado do guia (seção 02).
     {% include 'base/components/_mensagens.html' with tag="movimentacao" %}
 
 Com `tag`, só as mensagens que carregam aquele extra_tag são exibidas.
+
+Com `as_toast=True`, as mensagens saem como toast (showToast(), em
+static/js/toast.js) em vez do bloco fixo na página. Use só em telas onde a
+mensagem chega sempre por redirect (confirmação de ação já concluída) — não
+em telas que reexibem um formulário com erro no mesmo request, onde o aviso
+precisa continuar visível enquanto o usuário corrige os campos.
 {% endcomment %}
 {% load ui %}
+{% if as_toast %}
+{% if messages %}
+{% mensagens_toast_dados as toast_dados %}
+{{ toast_dados|json_script:"mensagens-toast-dados" }}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var dados = JSON.parse(document.getElementById('mensagens-toast-dados').textContent);
+    dados.forEach(function (mensagem) { showToast(mensagem.texto, mensagem.tipo); });
+});
+</script>
+{% endif %}
+{% else %}
 {% if messages %}
 <div class="mb-4 flex flex-col gap-2">
     {% for message in messages %}
@@ -22,4 +40,5 @@ Com `tag`, só as mensagens que carregam aquele extra_tag são exibidas.
     {% endif %}
     {% endfor %}
 </div>
+{% endif %}
 {% endif %}
