@@ -60,7 +60,7 @@
     .tox-tinymce { border-radius: 0 !important; border-color: #e2e5ea !important; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
-<script>const STATIC_URL = "{% static '' %}";</script>
+<script>const STATIC_URL = "{% get_static_prefix %}";</script>
 <script src="{% static 'js/modelos_documentos.js' %}"></script>
 {% endblock %}
 
