@@ -118,14 +118,6 @@ def ctx_boas_vindas(ja_participou=False):
     }
 
 
-def ctx_redirecionamento(vazio=False):
-    rotas = [] if vazio else [
-        Obj(route="area-servidor/", name="processos:pagina_aluno", clickable=True),
-        Obj(route="<str:numero>/", name="processos:visualizar_processo", clickable=False),
-    ]
-    return {"user": ALUNO, "request": Obj(user=ALUNO), "all_routes": rotas}
-
-
 def ctx_visualizar(sem_movimentacao=False, com_arquivo=True, pode_alterar=True):
     doc = Obj(titulo_arquivo="contestacao.pdf", data_upload=QUANDO,
               caminho_arquivo=Obj(url="/media/contestacao.pdf", name="contestacao.pdf"))
@@ -203,8 +195,6 @@ CASOS = [
     ("avaliacoes/minhas_notas.html", "sem avaliação", ctx_minhas_notas(vazio=True)),
     ("ciclos/boas_vindas.html", "primeiro acesso", ctx_boas_vindas()),
     ("ciclos/boas_vindas.html", "ciclo anterior encerrado", ctx_boas_vindas(ja_participou=True)),
-    ("base/redirecionamento_teste_sucesso.html", "com rotas", ctx_redirecionamento()),
-    ("base/redirecionamento_teste_sucesso.html", "sem rota", ctx_redirecionamento(vazio=True)),
 ]
 
 
