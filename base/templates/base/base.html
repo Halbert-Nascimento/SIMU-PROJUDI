@@ -115,42 +115,44 @@
                                 class="{% if not notificacoes_nao_lidas_count %}hidden{% endif %} absolute -top-1.5 -right-2 bg-marca text-white text-[calc(9px*var(--escala-fonte,1))] font-bold w-4 h-4 rounded-full flex items-center justify-center leading-none">{{ notificacoes_nao_lidas_count }}</span>
                         </button>
                         <div id="notif-menu" class="hidden absolute top-full right-0 mt-2 bg-white text-texto border border-contorno w-80 z-cabecalho py-1 max-h-96 overflow-y-auto">
-                            {% for n in notificacoes_recentes %}
-                            <a href="{{ n.link_url }}" class="block px-4 py-2 text-apoio hover:bg-linha-hover border-b border-divisor {% if not n.lida %}font-bold bg-linha-hover{% endif %}">
-                                {{ n.mensagem }}
-                                <div class="text-meta text-rotulo mt-0.5 font-normal">{{ n.data_criacao|timesince }} atrás</div>
-                            </a>
-                            {% empty %}
-                            <div class="px-4 py-3 text-apoio text-rotulo">Nenhuma notificação.</div>
-                            {% endfor %}
+                            <div id="notif-menu-conteudo">
+                                {% include 'notificacoes/dropdown_conteudo.html' %}
+                            </div>
                             <a href="{% url 'notificacoes:listar' %}" class="block px-4 py-2 text-apoio text-center text-acao font-bold hover:bg-linha-hover">Ver todas</a>
                         </div>
                     </div>
                     <script>
                         const notifDropdown = (function () {
-                            const menu  = document.getElementById('notif-menu');
-                            const badge = document.getElementById('notif-badge');
-                            const wrap  = document.getElementById('notif-switcher');
+                            const menu     = document.getElementById('notif-menu');
+                            const conteudo = document.getElementById('notif-menu-conteudo');
+                            const badge    = document.getElementById('notif-badge');
+                            const wrap     = document.getElementById('notif-switcher');
 
                             function getCookie(name) {
                                 const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
                                 return match ? decodeURIComponent(match.pop()) : '';
                             }
 
-                            function marcarRecentesComoLidas() {
-                                fetch("{% url 'notificacoes:marcar_recentes_lidas' %}", {
+                            function atualizarConteudo() {
+                                return fetch("{% url 'notificacoes:recentes' %}", {
                                     method: 'POST',
                                     headers: { 'X-CSRFToken': getCookie('csrftoken') },
-                                }).then(function () {
-                                    badge.classList.add('hidden');
-                                    badge.textContent = '0';
-                                });
+                                })
+                                    // Sessão expirada redireciona (HTML) e erro 4xx/5xx não pode virar dropdown.
+                                    .then(function (r) { return (r.redirected || !r.ok) ? null : r.text(); })
+                                    .then(function (html) {
+                                        if (html === null) return;
+                                        conteudo.innerHTML = html;
+                                        badge.classList.add('hidden');
+                                        badge.textContent = '0';
+                                    })
+                                    .catch(function () {});
                             }
 
                             function toggle() {
                                 const abrindo = menu.classList.contains('hidden');
                                 menu.classList.toggle('hidden');
-                                if (abrindo) marcarRecentesComoLidas();
+                                if (abrindo) atualizarConteudo();
                             }
 
                             // Esta consulta nao conta como atividade (ver
