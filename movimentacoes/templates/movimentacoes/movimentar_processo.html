@@ -236,15 +236,15 @@
 
                     <!-- Botões editor -->
                     <div class="flex flex-wrap justify-center gap-2 mt-3">
+                        <button type="button" id="btnAssinar"
+                                class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
+                                onclick="assinarTexto()" title="Carimba o documento com seu nome e a data">
+                            <i class="fa-solid fa-signature"></i> Assinar
+                        </button>
                         <button type="button"
                                 class="{% classe_botao 'primario' padding=True %} flex items-center gap-1.5"
                                 onclick="incluirNaMovimentacao()" title="Adiciona este documento à lista de anexos da movimentação">
                             <i class="fa-solid fa-paperclip"></i> Incluir na Movimentação
-                        </button>
-                        <button type="button"
-                                class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
-                                onclick="assinarTexto()">
-                            <i class="fa-solid fa-signature"></i> Assinar
                         </button>
                         <button type="button"
                                 class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
@@ -466,6 +466,39 @@
 let pendingFiles = [];
 let savedFiles   = [];   // { id, desc, name, file: File }
 let fid = 0;
+
+// ── Assinatura (carimbo) ───────────────────────────────
+const USUARIO_NOME = "{{ user.get_full_name|default:user.username|escapejs }}";
+let documentoAssinado = false;
+
+function escapeHtml(texto) {
+    const d = document.createElement('div');
+    d.textContent = texto;
+    return d.innerHTML;
+}
+
+function formatarDataHora(d) {
+    const p = n => String(n).padStart(2, '0');
+    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+// Reflete `documentoAssinado` no botão — cor decidida em Python (CLASSES_BOTAO),
+// o JS só troca qual variante está em uso.
+function atualizarBotaoAssinar() {
+    const btn = document.getElementById('btnAssinar');
+    if (!btn) return;
+    btn.disabled = documentoAssinado;
+    btn.className = (documentoAssinado
+        ? "{% classe_botao 'desabilitado' padding=True %}"
+        : "{% classe_botao 'secundario' padding=True %}") + " flex items-center gap-1.5";
+}
+
+// Chamado sempre que o conteúdo do editor é substituído (modelo, rascunho,
+// limpar) — um carimbo só vale para o documento em que foi aposto.
+function resetAssinatura() {
+    documentoAssinado = false;
+    atualizarBotaoAssinar();
+}
 
 // ── Tabs ──────────────────────────────────────────────
 document.querySelectorAll('.tab').forEach(t => {
@@ -709,6 +742,7 @@ document.getElementById('rascunhoInput').addEventListener('change', function () 
         if (!ed) { showToast('Editor ainda carregando, aguarde...', 'atencao'); return; }
         ed.setContent(e.target.result);
         document.getElementById('editorFileName').value = file.name.replace(/\.html$/i, '');
+        resetAssinatura();
         showToast('Rascunho carregado — continue a edição', 'info');
     };
     reader.readAsText(file, 'UTF-8');
@@ -720,11 +754,30 @@ function limparEditor() {
     if (ed) ed.setContent('');
     document.getElementById('editorFileName').value = '';
     document.getElementById('modeloSelect').value = '';
+    resetAssinatura();
 }
 
 function assinarTexto() {
     if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
+    if (documentoAssinado) {
+        showToast('Documento já assinado — limpe o editor ou carregue outro modelo/rascunho para assinar de novo', 'atencao');
+        return;
+    }
+    const ed = getEditor();
+    const carimbo = `
+<div class="carimbo-assinatura" style="margin-top:28px;display:inline-block;border:1px solid #000;padding:6px 12px;font-family:'Times New Roman',Times,serif;font-size:10pt;line-height:1.5;">
+<strong>ASSINADO ELETRONICAMENTE</strong><br>
+${escapeHtml(USUARIO_NOME)} &mdash; ${formatarDataHora(new Date())}
+</div>`;
+    ed.setContent(ed.getContent() + carimbo);
+    documentoAssinado = true;
+    atualizarBotaoAssinar();
     showToast('Documento assinado com sucesso', 'sucesso');
+
+    // O carimbo vai pro fim do texto — sem isto ele fica fora da área visível
+    // do editor e o toast é a única pista de que algo mudou.
+    const carimboEl = ed.dom.select('.carimbo-assinatura')[0];
+    if (carimboEl) carimboEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function salvarRascunho() {

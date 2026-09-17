@@ -57,6 +57,7 @@ function carregarModelo() {
             ed.setContent(html);
             const label = sel.selectedOptions[0].text;
             document.getElementById('editorFileName').value = slug;
+            if (typeof resetAssinatura === 'function') resetAssinatura();
             showToast('Modelo carregado — edite os campos em destaque', 'info');
         })
         .catch(function (err) {
