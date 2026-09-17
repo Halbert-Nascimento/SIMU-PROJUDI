@@ -14,7 +14,11 @@ from base.navegacao import home_do_usuario
 from base.decorators import exige_permissao
 from base.mensagens import propagar_erros_form
 
-from notificacoes.services import notificar_mudanca_status_ciclo
+from notificacoes.services import (
+    notificar_coordenador_atribuido,
+    notificar_mudanca_status_ciclo,
+    notificar_participante_adicionado,
+)
 
 from usuarios.models import Usuario
 
@@ -67,6 +71,7 @@ def editar_ciclo(request, ciclo_id):
     # Capturado ANTES do form: form.is_valid() já reatribui ciclo.status em
     # memória (construct_instance), então capturar depois sempre daria igual.
     status_anterior = ciclo.status
+    coordenador_anterior_id = ciclo.coordenador_id
 
     if request.method == "POST":
         form = CicloSimulacaoForm(request.POST, instance=ciclo, ator=request.user)
@@ -79,6 +84,11 @@ def editar_ciclo(request, ciclo_id):
                 ciclo=ciclo_salvo,
                 status_anterior=status_anterior,
                 status_novo=ciclo_salvo.status,
+                ator=request.user,
+            )
+            notificar_coordenador_atribuido(
+                ciclo=ciclo_salvo,
+                coordenador_anterior_id=coordenador_anterior_id,
                 ator=request.user,
             )
             messages.success(request, f'Ciclo "{ciclo_salvo.nome_edicao}" atualizado com sucesso.')
@@ -262,6 +272,7 @@ def adicionar_membro(request, ciclo_id, grupo_id):
     with transaction.atomic():
         grupo.membros.add(usuario)
         ciclo.participantes.add(usuario)  # sincroniza participação no ciclo
+        transaction.on_commit(lambda: notificar_participante_adicionado(ciclo=ciclo, usuario=usuario))
 
     return JsonResponse({
         "sucesso": True,
