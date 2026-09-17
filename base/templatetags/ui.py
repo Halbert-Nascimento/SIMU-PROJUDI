@@ -153,3 +153,28 @@ def icone_mensagem(tags: str) -> str:
     if "warning" in tags:
         return mark_safe("fa-triangle-exclamation")
     return mark_safe("fa-circle-info")
+
+
+_MAPA_TIPO_TOAST = {
+    "success": "sucesso",
+    "error": "erro",
+    "warning": "atencao",
+    "info": "info",
+    "debug": "info",
+}
+
+
+@register.simple_tag(takes_context=True)
+def mensagens_toast_dados(context) -> list[dict[str, str]]:
+    """
+    Serializa as mensagens do django.contrib.messages para showToast(), em
+    static/js/toast.js. Usado por `_mensagens.html` quando incluído com
+    `as_toast=True` — o resultado passa por `|json_script:"..."`, que escapa
+    o texto da mensagem para uso seguro dentro de um <script>.
+    """
+    dados = []
+    for message in context.get("messages") or []:
+        nivel_tags = (message.tags or "").split()
+        tipo = next((_MAPA_TIPO_TOAST[t] for t in nivel_tags if t in _MAPA_TIPO_TOAST), "info")
+        dados.append({"texto": str(message), "tipo": tipo})
+    return dados
