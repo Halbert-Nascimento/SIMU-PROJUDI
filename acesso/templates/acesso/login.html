@@ -7,7 +7,7 @@
     <!-- Container Principal -->
     <main class="max-w-conteudo mx-auto px-7 py-5">
 
-        {% include 'base/components/_mensagens.html' %}
+        {% include 'base/components/_mensagens.html' with as_toast=True %}
 
         <!-- Guia seção 08: colunas em frações, nunca percentuais mistos. -->
         <div class="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-[14px] items-start">
