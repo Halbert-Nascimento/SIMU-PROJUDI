@@ -165,16 +165,24 @@ _MAPA_TIPO_TOAST = {
 
 
 @register.simple_tag(takes_context=True)
-def mensagens_toast_dados(context) -> list[dict[str, str]]:
+def mensagens_toast_dados(context, tag: str = "") -> list[dict[str, str]]:
     """
     Serializa as mensagens do django.contrib.messages para showToast(), em
     static/js/toast.js. Usado por `_mensagens.html` quando incluído com
     `as_toast=True` — o resultado passa por `|json_script:"..."`, que escapa
     o texto da mensagem para uso seguro dentro de um <script>.
+
+    Com `tag`, mantém só as mensagens que carregam aquele extra_tag, com a
+    mesma regra do bloco fixo de `_mensagens.html`.
     """
     dados = []
     for message in context.get("messages") or []:
-        nivel_tags = (message.tags or "").split()
-        tipo = next((_MAPA_TIPO_TOAST[t] for t in nivel_tags if t in _MAPA_TIPO_TOAST), "info")
+        tags = message.tags or ""
+        if tag and tag not in tags:
+            continue
+        tipo = next(
+            (_MAPA_TIPO_TOAST[t] for t in tags.split() if t in _MAPA_TIPO_TOAST),
+            "info",
+        )
         dados.append({"texto": str(message), "tipo": tipo})
     return dados
