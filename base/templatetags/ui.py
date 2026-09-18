@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from django import template
 from django.template.loader import render_to_string
-from django.urls import reverse
 from django.utils.safestring import mark_safe
 
 from base.navegacao import home_do_usuario
@@ -141,15 +140,6 @@ def nav_secundaria(context, ativo="", voltar_url="", voltar_label=""):
         "voltar_url": voltar_url,
         "voltar_label": voltar_label,
     }
-
-
-@register.simple_tag(takes_context=True)
-def url_logo(context) -> str:
-    """Destino da logo do cabeçalho: a tela inicial do perfil se logado, o login se não."""
-    user = context.get("user")
-    if user is not None and user.is_authenticated:
-        return home_do_usuario(user)[1]
-    return reverse("base:home")
 
 
 @register.simple_tag
