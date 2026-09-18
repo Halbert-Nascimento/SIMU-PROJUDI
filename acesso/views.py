@@ -9,6 +9,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from base.navegacao import home_do_usuario
 from usuarios.forms import CadastroPublicoForm
 from usuarios.models import Usuario
 
@@ -21,6 +22,11 @@ logger = logging.getLogger(__name__)
 
 
 def login_view(request):
+    # base:home também aponta para cá (logo do cabeçalho): quem já entrou vai
+    # para a própria tela inicial em vez de rever o formulário de login
+    if request.user.is_authenticated:
+        return redirect(home_do_usuario(request.user)[1])
+
     form = LoginForm(request, data=request.POST or None)
     if request.method == "POST" and not form.is_valid():
         logger.warning(
