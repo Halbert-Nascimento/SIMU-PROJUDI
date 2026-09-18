@@ -15,7 +15,7 @@ precisa continuar visível enquanto o usuário corrige os campos.
 {% load ui %}
 {% if as_toast %}
 {% if messages %}
-{% mensagens_toast_dados as toast_dados %}
+{% mensagens_toast_dados tag as toast_dados %}
 {{ toast_dados|json_script:"mensagens-toast-dados" }}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
