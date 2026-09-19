@@ -657,3 +657,58 @@ regenerado de novo pelo editor local do usuário no formato auto-TOC quebrado (m
 Rodada 7) — restaurado outra vez. Isso já aconteceu 2x nesta sessão; recomendo fortemente
 desativar a extensão de auto-TOC do editor para este arquivo específico, ou pelo menos configurá-la
 para não rodar automaticamente ao salvar.
+
+## Rodada 10: correções explícitas do usuário (linguagem de manual, não de relatório técnico)
+
+Lista de correções pedidas pelo usuário, todas aplicadas:
+
+1. Professor > "3. Como Avaliar uma Movimentação": removida a frase "esse fluxo ainda não foi
+   testado em detalhe" do botão "Devolver para Revisão" → substituída por nota
+   "(Seção em elaboração)".
+2. Removida a nota sobre o contador "Avaliações Pendentes" do Resumo do Semestre do Professor →
+   "(Seção em elaboração — parte em desenvolvimento)".
+3. Removida por completo a nota sobre "Desmarcar Ativo não cria status Inativo separado" (é um bug
+   do sistema, não deve ser documentado como comportamento esperado).
+4. Removida a referência à função interna `tipos_que_pode_atribuir()` da nota sobre bloqueio de
+   cadastro pelo Professor — reescrita sem expor nomes de função/classe do código.
+5. Nota final do capítulo do Professor (sobre Distribuir Novo Processo/Agendar Audiência/Relatório
+   de Notas) substituída por "(Seção em elaboração — em desenvolvimento do código)".
+6. Aluno > "3. Menu Processos": adicionado print (`img_36_aluno_menu_processos_dropdown.png`);
+   removida também a menção a "confirmado por leitura de código" do item "Consultar Todos".
+7. Aluno > "4. Menu Audiências": reescrita por completo, removendo toda menção a links quebrados,
+   arquivos de código ou internals do backend → "(Seção em elaboração — funcionalidade em
+   desenvolvimento)".
+8. "5. Minhas Notas" e "6. Notificações": adicionadas âncoras `<a name>` no padrão do resto do
+   documento (estavam sem âncora própria, causando o índice quebrado — ver item 10 abaixo).
+9. "7. Como Cadastrar um Processo": adicionado um print por passo (Passo 1: dados,
+   `img_37_cadastro_passo1_dados.png`; Passo 2: documentos, `img_38_cadastro_passo2_documentos.png`;
+   Passo 3: resumo, `img_39_cadastro_passo3_resumo.png`).
+   **Achado importante**: testado ao vivo e confirmado que o Passo 2 (Documentos) do Cadastro de
+   Processo **não tem** a aba "Modelos, Editor On-line" — só um upload de arquivo simples. Essa aba
+   só existe no fluxo de Movimentar Processo (seção 10/11). Não foi documentada no Passo 2 porque
+   não existe ali; reportado ao usuário em vez de presumir que fosse uma omissão do manual.
+10. Índice: estava novamente no formato auto-TOC quebrado do editor local (3ª ocorrência do mesmo
+    problema das Rodadas 7 e 9) — todo o bloco "## Índice" foi reconstruído manualmente com as
+    âncoras corretas (`<a name="...">`) e validado por script (32 âncoras definidas = 32
+    referenciadas, 0 faltando; 39 imagens referenciadas, 0 faltando).
+11. Nota "Opções Processo" (Aluno > Detalhe do Processo): removida a comparação/comentário sobre
+    inconsistência visual de "Marcar Audiência" → apenas descreve o menu e sinaliza
+    "(Seção em elaboração)" para a ação ainda não implementada.
+12. Nota sobre tipos de movimentação (Aluno > 9.): removido o trecho "ainda não confirmado; ver
+    capítulos desses perfis quando forem escritos".
+13. Todas as ocorrências de "ainda não testada em detalhe" (e variações) trocadas por
+    "(Seção em elaboração)", incluindo uma instância adicional encontrada na seção 10 (aba
+    "Navegação de Arquivo") que o usuário não citou explicitamente mas seguia o mesmo padrão.
+14. Travessões ("—") removidos em todo o documento (71 ocorrências), substituídos por dois-pontos,
+    vírgula, ponto e vírgula ou parênteses conforme o sentido de cada frase. Mantida apenas 1
+    ocorrência legítima: a citação literal do caractere "—" que a própria interface do sistema
+    mostra como placeholder (seção "Minhas Notas").
+
+Nenhuma alteração foi feita além do que foi pedido explicitamente. Uma lista separada de possíveis
+melhorias adicionais (mesmo padrão de linguagem de verificação/teste, ex.: "Testado com um Aluno
+do grupo..." na seção 9, "nesta rodada de testes" na seção de Notificações do Sistema) foi
+levantada e reportada ao usuário para aprovação prévia, sem aplicar nada.
+
+**Atualização Rodada 10**: usuário revisou e aprovou remover o framing de teste também nos dois
+trechos extras identificados (seção 9 do Aluno e "Notificações do Sistema") — ambos ajustados para
+manter só o fato observado, sem "testado com..."/"nesta rodada de testes".
