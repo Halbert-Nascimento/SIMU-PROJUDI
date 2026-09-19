@@ -82,6 +82,53 @@ class LoginViewUsuarioLogadoTests(TestCase):
                 self.assertEqual(resposta.status_code, 200)
                 self.assertTemplateUsed(resposta, "ciclos/boas_vindas.html")
 
+    def test_pendente_ativo_ve_o_formulario_em_vez_de_ser_redirecionado(self):
+        # is_active=False é o normal para Pendente; ativo só por edição direta
+        pendente = _criar_usuario("pendente-ativo", Usuario.TipoPerfilGlobal.PENDENTE)
+        self.client.force_login(pendente)
+
+        for rota in ("base:home", "acesso:login"):
+            with self.subTest(rota=rota):
+                resposta = self.client.get(reverse(rota))
+                self.assertEqual(resposta.status_code, 200)
+                self.assertTemplateUsed(resposta, "acesso/login.html")
+
+    def test_perfil_inesperado_ve_o_formulario_em_vez_de_ser_redirecionado(self):
+        usuario = _criar_usuario("perfil-invalido", "PerfilQueNaoExiste")
+        self.client.force_login(usuario)
+
+        resposta = self.client.get(reverse("acesso:login"))
+        self.assertEqual(resposta.status_code, 200)
+        self.assertTemplateUsed(resposta, "acesso/login.html")
+
+    def test_post_de_login_com_sessao_ativa_troca_de_conta(self):
+        # o redirect vale só para GET: submeter o formulário continua autenticando
+        outro = _criar_usuario("outro-gestor", Usuario.TipoPerfilGlobal.ADMIN)
+        self.client.force_login(self.professor)
+
+        resposta = self.client.post(
+            reverse("acesso:login"),
+            {"username": outro.username, "password": "s3nha-teste"},
+        )
+
+        self.assertRedirects(
+            resposta,
+            reverse("acesso:painel_administrativo"),
+            fetch_redirect_response=False,
+        )
+        self.assertEqual(int(self.client.session["_auth_user_id"]), outro.pk)
+
+    def test_anonimo_autentica_pelo_formulario(self):
+        resposta = self.client.post(
+            reverse("acesso:login"),
+            {"username": self.professor.username, "password": "s3nha-teste"},
+        )
+        self.assertRedirects(
+            resposta,
+            reverse("acesso:painel_administrativo"),
+            fetch_redirect_response=False,
+        )
+
     def test_logout_continua_levando_ao_login(self):
         self.client.force_login(self.professor)
         resposta = self.client.post(reverse("acesso:logout"), follow=True)
