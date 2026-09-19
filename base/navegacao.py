@@ -3,6 +3,22 @@ from __future__ import annotations
 from django.urls import reverse
 
 from acesso.permissions import pode_gerenciar_usuarios
+from usuarios.models import Usuario
+
+
+def tem_tela_inicial(user) -> bool:
+    """
+    Perfil que `home_do_usuario` sabe atender: quem gerencia usuários e o Aluno.
+
+    Pendente, ou um valor de perfil inesperado, cairia em `pagina_aluno` só por
+    exclusão e acabaria numa tela que o recusa — não há destino para eles.
+    """
+    if user is None or not user.is_authenticated:
+        return False
+    return (
+        pode_gerenciar_usuarios(user)
+        or user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO
+    )
 
 
 def home_do_usuario(user) -> tuple[str, str]:
