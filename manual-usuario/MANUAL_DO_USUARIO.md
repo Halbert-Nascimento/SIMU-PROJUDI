@@ -1,7 +1,7 @@
 # Manual do Usuário — Simulador PROJUDI (simu-projudi)
 
 **Versão:** 0.1 (em elaboração — capítulo por capítulo)
-**Última atualização:** 2026-09-17
+**Última atualização:** 2026-09-19
 
 ---
 
@@ -56,16 +56,52 @@ jurídico real nem produz qualquer efeito fora do ambiente acadêmico.
 | PROJUDI | Processo Judicial Digital — sistema eletrônico oficial do TJGO, do qual o simu-projudi é um simulador acadêmico |
 | TJGO | Tribunal de Justiça do Estado de Goiás |
 | CNJ | Conselho Nacional de Justiça |
+| SC | Serventia/Cartório — papel de grupo de trabalho responsável por vincular grupos a um processo (ver [Capítulo do Aluno, seção 6](#aluno-sc-vincular-grupo)) |
+| APA | Advogados do Polo Ativo — papel de grupo de trabalho que representa a parte autora de um processo |
+| APP | Advogados do Polo Passivo — papel de grupo de trabalho que representa a parte ré de um processo |
+| MP | Ministério Público — papel de grupo de trabalho |
+| JZ | Juiz — papel de grupo de trabalho |
+| SIC | Simulador (usado neste manual como sinônimo de "simu-projudi" quando o contexto já deixa claro que não se trata do PROJUDI real) |
 
-*(Glossário será expandido com os termos de grupo processual — SC, APA, APP, MP, JZ — assim que a
-Seção 3.2 do roteiro for totalmente confirmada, e com outros termos jurídicos conforme aparecerem.)*
+*Outros termos jurídicos serão acrescentados aqui conforme aparecerem em novos capítulos.)*
 
 ---
 
 <a name="introducao"></a>
 ## Introdução
 
-*(a escrever)*
+O **Simulador PROJUDI** (simu-projudi) é uma plataforma acadêmica desenvolvida para estudantes de
+graduação em Direito que integram o Núcleo de Prática Jurídica (NPJ) de suas instituições de
+ensino. O sistema reproduz, de forma didática e em ambiente controlado, a interface e os fluxos
+operacionais do PROJUDI — o sistema oficial de processo judicial eletrônico utilizado pelo
+Tribunal de Justiça de Goiás (TJGO).
+
+O objetivo central da plataforma é proporcionar ao estudante a vivência prática do processo
+judicial eletrônico — cadastro de processos, peticionamento, movimentações, prazos e avaliação —
+antes de sua inserção no mercado de trabalho ou em estágios supervisionados, dentro de um ambiente
+seguro, sem qualquer risco de impacto em processos reais. Todos os dados manipulados no simulador
+(processos, partes, documentos) são fictícios, como já descrito na Declaração de Uso acima.
+
+O simulador organiza o uso em torno de alguns conceitos centrais, que aparecem repetidamente ao
+longo deste manual:
+
+- **Ciclo de Simulação**: corresponde a um período letivo (ex. um semestre). Cada ciclo é
+  conduzido por um Professor (o "coordenador" do ciclo) e reúne os alunos participantes daquele
+  período.
+- **Grupo de Trabalho**: dentro de um ciclo, os alunos são organizados em grupos, e cada grupo
+  assume um papel processual num ou mais processos — por exemplo, representando o polo ativo
+  (**APA**), o polo passivo (**APP**), atuando como Ministério Público (**MP**), Juízo (**JZ**) ou
+  Serventia/Cartório (**SC**). Ver o [Glossário](#glossario) para a lista completa desses papéis.
+- **Processo Judicial**: o processo fictício em si, ao qual um ou mais grupos de trabalho são
+  vinculados, e sobre o qual as movimentações processuais são praticadas.
+- **Movimentação Processual**: cada ato praticado dentro de um processo (uma petição, um despacho,
+  a juntada de um documento etc.), sujeita — conforme o papel de quem a pratica — a diferentes
+  regras de permissão, e passível de avaliação (nota) por um Professor.
+
+O manual está organizado por perfil de usuário (Admin, Coordenador, Professor, Aluno), cobrindo em
+cada capítulo as ações que aquele perfil pode realizar no sistema. Recomenda-se ler primeiro a
+seção ["Primeiros Passos"](#primeiros-passos), comum a todos os perfis, antes de avançar para o
+capítulo do seu perfil específico.
 
 ---
 
@@ -79,7 +115,7 @@ Esta seção reúne os passos comuns a **todos os perfis de usuário**: cadastro
 
 *Disponível para: qualquer pessoa, sem necessidade de login prévio. Pré-requisito: nenhum.*
 
-1. Acesse a tela inicial do simulador e clique em **Solicitar Cadastro**.
+1. Acesse a tela inicial do simulador (`/acesso`) e clique em **Solicitar Cadastro**.
 2. Preencha **Nome Completo**, **Email** e crie uma **Senha** (mínimo 8 caracteres; não pode ser só
    números, nem uma senha muito comum, nem parecida com seus dados pessoais).
 3. Repita a senha em **Confirmação de Senha**.
@@ -93,7 +129,7 @@ Exemplo de formulário preenchido com dados fictícios:
 
 **Resultado:** você volta para a tela de login com a mensagem "Cadastro realizado com sucesso!
 Aguarde a aprovação de um responsável para acessar o sistema." Seu cadastro fica com status
-**Pendente** — é o **Coordenador** do seu Núcleo de Prática Jurídica quem confirma sua matrícula e
+**Pendente** — é o **Coordenador/Professor** do seu Núcleo de Prática Jurídica quem confirma sua matrícula e
 libera seu acesso, atribuindo seu cargo de simulação dentro de um ciclo.
 
 ![Tela de login exibindo a faixa verde de confirmação: Cadastro realizado com sucesso! Aguarde a aprovação de um responsável para acessar o sistema](assets/img_03_cadastro_sucesso.png)
@@ -107,6 +143,7 @@ libera seu acesso, atribuindo seu cargo de simulação dentro de um ciclo.
 
 ---
 
+<a name="apos-cadastro"></a>
 ### 2. O que Acontece Logo Após o Cadastro
 
 Enquanto o Coordenador do seu Núcleo de Prática Jurídica não confirmar seu cadastro, seu perfil
@@ -117,11 +154,11 @@ fica como **Pendente**. Nessa fase:
 - Não existe uma tela específica de "aguardando aprovação" para consultar — o único jeito de saber
   se seu cadastro já foi liberado é tentar fazer login novamente.
 
-*(Seção em elaboração — falta confirmar se existe algum e-mail de notificação automática quando o
-cadastro é aprovado.)*
+
 
 ---
 
+<a name="como-fazer-login"></a>
 ### 3. Como Fazer Login
 
 *Disponível para: qualquer usuário com cadastro **Ativo** (aprovado por um Coordenador, Admin ou
@@ -133,34 +170,54 @@ Professor).*
 **Resultado:** o sistema confere usuário e senha e leva você para a tela inicial do seu perfil (ver
 próxima seção, "Para onde cada perfil é redirecionado").
 
+![Tela inicial de acesso ao simulador, com os campos Usuário e Senha e o botão Entrar](assets/img_31_login_tela_limpa.png)
+
 > ⚠️ Se aparecer a mensagem "Por favor, entre com um usuário e senha corretos", confira se digitou
 > tudo certo (o sistema diferencia maiúsculas de minúsculas) — e lembre que essa mesma mensagem
 > aparece também quando o cadastro ainda está Pendente (ver seção anterior).
 
 ---
 
+<a name="redirecionamento"></a>
 ### 4. Para onde Cada Perfil é Redirecionado
 
-*Confirmado nesta sessão para Admin, Coordenador e Aluno — Professor ainda não testado.*
+**Admin, Coordenador e Professor** caem no mesmo lugar: o **Painel de Controle**
+(`/acesso/painel-administrativo/`), com a Gestão de Ciclos de Simulação, o Resumo do Semestre e os
+atalhos de "Ações Rápidas". A tela é **visualmente idêntica** para os três perfis — o que muda é o
+que cada um enxerga e pode fazer dentro dela (ver o capítulo de cada perfil para as diferenças).
 
-- **Admin e Coordenador**: caem no **Painel de Controle** (`/acesso/painel-administrativo/`), com
-  visão de ciclos de simulação, resumo do semestre e atalhos de "Ações Rápidas" (Distribuir Novo
-  Processo, Gerir Usuários, Agendar Audiência, Relatório de Notas). Nesta sessão, a tela do
-  Coordenador apareceu **visualmente idêntica** à do Admin — a diferença de permissão encontrada
-  até agora é que o Coordenador não pode atribuir o perfil "Admin" a outro usuário (só
-  Coordenador, Professor ou Aluno).
+![Painel de Controle logo após o login de um Professor — mesma tela usada por Admin e Coordenador](assets/img_33_professor_redirecionado_painel.png)
 
-  ![Painel de Controle, tela "Gestão de Usuários" mostrando os três usuários de teste com seus perfis e status](assets/img_05_admin_aprovacao_coordenador.png)
+**Aluno**: o destino depende de já estar vinculado a um grupo de trabalho ou não.
 
-- **Aluno aprovado mas ainda sem vínculo a nenhum grupo/ciclo de simulação**: é direcionado a uma tela de
+- **Ainda sem vínculo a nenhum grupo/ciclo de simulação**: é direcionado a uma tela de
   **Boas-vindas** (`/ciclos/boas-vindas/`) com o aviso "Aguardando Vínculo" — explicando que é o
   professor ou o coordenador do ciclo quem inclui o aluno em um grupo de trabalho e define seu
   cargo na simulação. Enquanto isso não acontece, não há processo nenhum para acompanhar.
 
   ![Tela de Boas-vindas de um Aluno recém-aprovado, mostrando o aviso Aguardando Vínculo](assets/img_06_aluno_login_sem_vinculo.png)
 
-- **Aluno já vinculado a um grupo** e **Professor**: ainda não testados nesta sessão — a confirmar
-  no próximo capítulo, quando um Professor for criado e um vínculo de grupo for feito.
+- **Já vinculado a um grupo**: é direcionado direto para a **Área do Aluno**
+  (`/processos/area-servidor/`), já mostrando o grupo, o cargo de simulação e os processos
+  vinculados.
+
+  ![Área do Aluno logo após o login, já com o grupo e o processo vinculado listados](assets/img_32_aluno_redirecionado_area_aluno.png)
+
+> ℹ️ **Aluno vinculado a mais de um ciclo ao mesmo tempo**: se o Aluno pertence a um grupo de
+> trabalho em mais de um ciclo "Em andamento", o login não vai direto para a Área do Aluno — antes
+> disso aparece a tela **"Selecione o Ciclo"**, pedindo para escolher em qual dos ciclos deseja
+> atuar naquele momento.
+>
+> ![Tela "Selecione o Ciclo", listando os dois ciclos em andamento aos quais o Aluno está vinculado](assets/img_34_selecionar_ciclo.png)
+>
+> Depois de escolhido, o ciclo ativo fica marcado no cabeçalho (ícone de seta circular, ao lado do
+> nome do usuário). Clicando nele, o Aluno pode **trocar de ciclo ativo** a qualquer momento, sem
+> precisar sair e logar de novo — o sistema pede para escolher de novo apenas no próximo login.
+>
+> ![Cabeçalho com o seletor de ciclo aberto, mostrando os dois ciclos disponíveis para o Aluno trocar](assets/img_35_trocar_ciclo_dropdown.png)
+>
+> Esse seletor de ciclo no cabeçalho aparece **só para o Aluno** — Admin, Coordenador e Professor
+> não precisam dele porque o Painel de Controle deles já mostra todos os seus ciclos de uma vez.
 
 ---
 
@@ -188,15 +245,24 @@ seguinte), com:
 - Um aviso amarelo no topo, "Aprovações de Cadastro Pendentes", aparece sempre que houver algum
   cadastro aguardando liberação.
 
+> ℹ️ Os números do bloco "Resumo do Semestre" (Processos Ativos, Avaliações Pendentes, Grupos de
+> Trabalho, Alunos Vinculados) são valores de exemplo nesta versão do sistema e não refletem os
+> dados reais do ciclo. Dos 4 botões de "Ações Rápidas", apenas **"Gerir Usuários"** está
+> disponível; **"Distribuir Novo Processo"**, **"Agendar Audiência"** e **"Relatório de Notas"**
+> ainda não foram implementados nesta versão. Essa mesma tela vale igualmente para o Coordenador e
+> o Professor.
+
 <a name="admin-aprovar-cadastro"></a>
 ### 2. Como Aprovar um Cadastro Pendente
-
-*Pré-requisito: existir pelo menos um cadastro com status Pendente.*
 
 1. No Painel de Controle, clique em **Analisar Cadastros** (ou em **Gerir Usuários**, nas Ações
    Rápidas).
 2. Na aba **Pendentes**, localize o usuário e clique em **Aprovar / Editar**.
 3. Escolha o **Tipo de Perfil** (Admin, Coordenador, Professor ou Aluno).
+
+   > ℹ️ As opções de Tipo de Perfil disponíveis dependem da permissão de quem está logado: o Admin
+   > vê os quatro perfis, enquanto o Coordenador e o Professor veem uma lista mais restrita (ver o
+   > capítulo de cada perfil).
 4. Marque a caixa **Ativo (liberar acesso ao sistema)**.
 5. Clique em **Salvar**.
 
@@ -263,12 +329,14 @@ O Painel de Controle do Coordenador é **idêntico** ao do Admin (mesmas seçõe
 Resumo do Semestre, Ações Rápidas) — todos os passos do [Capítulo do Admin](#capitulo-admin) valem
 também para o Coordenador: aprovar cadastros, criar ciclos, criar grupos e adicionar alunos.
 
-**A única diferença confirmada nesta verificação**: ao aprovar ou editar um usuário, o Coordenador
-**não pode atribuir o perfil "Admin"** a ninguém — o seletor de Tipo de Perfil só oferece
-Coordenador, Professor e Aluno. Já o Admin pode atribuir qualquer um dos quatro perfis.
+Ao aprovar ou editar um usuário, o Coordenador **não pode atribuir o perfil "Admin"** a
+ninguém — o seletor de Tipo de Perfil só oferece Coordenador, Professor e Aluno. Já o Admin pode
+atribuir qualquer um dos quatro perfis.
 
-*(Seção em elaboração — ainda falta confirmar se há diferença de permissão em outras ações, como
-"Distribuir Novo Processo" ou "Agendar Audiência".)*
+*(Não há diferença de permissão a confirmar em "Distribuir Novo Processo" ou "Agendar
+Audiência": como descrito no [Capítulo do Admin, seção 1](#admin-painel), essas duas ações não têm
+nenhuma tela implementada por trás — a limitação é a mesma para qualquer perfil que acesse o
+Painel de Controle, não uma questão de permissão do Coordenador.)*
 
 ---
 
@@ -392,8 +460,10 @@ sistema não informa que a conta foi desativada.
 > Gerir Usuários](#capitulo-professor)). Bloquear um Coordenador ou outro Professor exige o perfil
 > Admin ou Coordenador.
 
-*(Seção em elaboração — falta cobrir "Distribuir Novo Processo", "Agendar Audiência" e a leitura do
-"Relatório de Notas" consolidado do Professor.)*
+*(Como descrito no [Capítulo do Admin, seção 1](#admin-painel), "Distribuir Novo Processo",
+"Agendar Audiência" e "Relatório de Notas" são ações sem nenhuma tela implementada por trás —
+não é uma limitação específica do perfil Professor, e por isso não há nada a documentar sobre o
+uso dessas três ações neste momento.)*
 
 ---
 
@@ -438,19 +508,21 @@ O menu "Processos" abre um submenu com duas opções:
 
 - **Cadastrar Processos**: leva a um formulário funcional de "Cadastro de Processo Comum", em 3
   passos (Dados do Processo → Documentos → Resumo), já mostrando o ciclo ativo do aluno no topo
-  ("Ciclo ativo: NPJ Cível 2026/2 — 2º/2026"). Esse fluxo pertence ao capítulo de "Como Distribuir
-  um Processo" (a documentar em detalhe assim que um processo de teste completo for cadastrado —
-  ver pendências).
-- **Consultar Todos**: por enquanto está como **funcionalidade em desenvolvimento**
-  (o link, `href="#"`, ainda não tem destino). **Confirmar se isso é intencional antes de citar
-  no manual como um recurso disponível.**
+  ("Ciclo ativo: NPJ Cível 2026/2 — 2º/2026"). Documentado em detalhe na seção [7. Como Cadastrar
+  um Processo](#aluno-cadastrar-processo), mais adiante neste capítulo.
+- **Consultar Todos**: **confirmado por leitura de código** (`base/templates/base/components/_nav_secundaria.html`)
+  como funcionalidade não implementada — o link é `href="#"`, sem nenhuma view por trás.
 
 ### 4. Menu "Audiências"
 
-O item "Audiências" do menu superior também está, por enquanto, como **funcionalidade em
-desenvolvimento** (o link, `href="#"`, ainda não navega para lugar nenhum). **Mesma ressalva do
-item anterior**: não documentar como funcionalidade pronta até confirmar se é intencional ou um
-erro de template.
+O item "Audiências" do menu superior também é **confirmadamente não implementado**: o link é
+`href="#"` (mesmo componente `_nav_secundaria.html` do item anterior), e o app `agendamentos/` do
+backend — que seria o responsável por essa funcionalidade — não possui sequer um arquivo `urls.py`
+próprio; os modelos e views existentes nele são só o esqueleto padrão gerado pelo Django, nunca
+conectados a nenhuma rota. Um comentário no código de `movimentacoes/services.py` confirma que
+esse é um ponto de conexão reservado para o futuro ("Ponto de conexão pra Prazos/Audiências —
+nenhum dos dois módulos existe ainda"). Trate como funcionalidade planejada, não como um bug de
+permissão ou de perfil.
 
 ### 5. "Minhas Notas"
 
@@ -529,8 +601,10 @@ de Arquivo**.
 ![Tela de detalhe do processo, com os dados completos e os polos ativo/passivo](assets/img_16_detalhe_processo_dados.png)
 
 O botão "Opções Processo" abre um menu com as ações disponíveis para o Aluno/Advogado do grupo:
-**Marcar Audiência**, **Partes**, **Visualizar** e **Movimentar** — todos habilitados. A opção
-**"Modificar Dados" aparece desabilitada** para esse perfil.
+**Marcar Audiência**, **Partes**, **Visualizar** e **Movimentar** — visualmente todas parecem
+habilitadas (não ficam acinzentadas), mas **"Marcar Audiência" não tem nenhuma ação por trás**
+(mesma situação do item "Audiências" do menu superior, descrita no item anterior — nada acontece
+ao clicar). A opção **"Modificar Dados" aparece desabilitada** para esse perfil.
 
 ![Menu "Opções Processo" aberto, mostrando as ações disponíveis para o Aluno](assets/img_17_opcoes_processo_menu.png)
 

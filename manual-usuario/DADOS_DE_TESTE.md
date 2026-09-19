@@ -554,3 +554,106 @@ achado anterior de que são funcionalidades não implementadas.
 - Capítulos de Serventia/Cartório, Ministério Público e Juiz — ainda não escritos.
 - 3 âncoras órfãs pré-existentes no Índice (`apos-cadastro`, `como-fazer-login`,
   `redirecionamento`) — não introduzidas nesta rodada, mas ainda pendentes de correção.
+## Rodada 7: revisão de pendências "para depois" após mudança de pasta
+
+Depois de mover `manual-usuario/` para a raiz do repositório, o usuário pediu para reler o
+documento em busca de trechos deixados "para depois" e nunca atualizados. Achados e correções
+desta rodada (só correções de conteúdo/texto do manual, nenhuma alteração de código):
+
+1. **Glossário**: tinha nota "será expandido... assim que a Seção 3.2 do roteiro for totalmente
+   confirmada". Confirmado via `scripts/seed_pos_migracao.py` (CARGOS = SC/APA/APP/MP/JZ, batendo
+   com o comentário em `ciclos/models.py`) — adicionados os 5 termos ao glossário.
+2. **Introdução**: estava literalmente `*(a escrever)*`. Escrita do zero (objetivo do simulador,
+   conceitos centrais: Ciclo de Simulação, Grupo de Trabalho, Processo, Movimentação).
+3. **"Resumo do Semestre" / "Ações Rápidas"** (Capítulo do Admin, seção 1): documentado o achado já
+   registrado na Rodada 6 sobre os números fixos (45/12/8/20) e os 3 links mortos, com referência
+   cruzada nos capítulos do Coordenador e do Professor em vez de duplicar o texto.
+4. **"Consultar Todos" e menu "Audiências"** (Capítulo do Aluno): removida a ressalva "confirmar se
+   é intencional" — confirmado por código (`base/templates/base/components/_nav_secundaria.html`,
+   ambos `href="#"`) que são definitivamente não implementados, não uma dúvida de permissão.
+5. **"Marcar Audiência"** no menu "Opções Processo": adicionada nota de que, apesar de parecer
+   habilitado visualmente, não tem nenhuma ação por trás (mesma limitação do item acima).
+6. **Referência cruzada stale**: o item "Cadastrar Processos" do menu "Processos" apontava para
+   "documentar em detalhe assim que um processo de teste completo for cadastrado" — mas a seção 7
+   ("Como Cadastrar um Processo") já existe e cobre isso. Corrigido para link direto.
+7. **Índice quebrado**: o editor local do usuário aparentemente regenerou automaticamente o bloco
+   "## Índice" no formato de TOC do GitHub/VS Code (âncoras tipo `#7-como-cadastrar-um-processo`),
+   que não batem com as âncoras reais (`<a name="...">`) usadas no resto do documento — quase todos
+   os links do índice ficaram quebrados. Restaurado para o formato funcional anterior (lista
+   numerada com âncoras manuais).
+8. **3 âncoras órfãs corrigidas**: `apos-cadastro`, `como-fazer-login` e `redirecionamento` (headings
+   "O que Acontece Logo Após o Cadastro", "Como Fazer Login", "Para onde Cada Perfil é
+   Redirecionado") não tinham `<a name>` correspondente — adicionado. Validado por script que **zero**
+   links internos `[...](#...)` do manual ficam sem âncora correspondente agora.
+9. **"Última atualização"** no cabeçalho do manual: atualizada de 2026-09-17 para 2026-09-19.
+
+**Nova pendência encontrada** (apontada pelo usuário): a seção "3. Como Fazer Login" não tem
+nenhuma captura de tela — só texto. Faltando print da tela de login "limpa" (sem erro); as imagens
+existentes (img_04) só cobrem o caso de erro de login. Marcado inline no manual com 🖼️ **Pendente**.
+
+## Pendências atualizadas (rodada 7)
+
+- Capturar screenshot da tela de login limpa (sem erro) para a seção "Como Fazer Login".
+- Testar "Marcar Audiência" (ainda não testado) — já documentado como não implementado, mas não
+  custa reconfirmar quando os capítulos de Juiz/Serventia/MP forem escritos.
+- Testar login como Juiz/Serventia/MP para ver quais tipos de movimentação aparecem e quem usa
+  "Modificar Dados".
+- Botão "Devolver para Revisão" da avaliação — ainda não testado.
+- Capítulos de Serventia/Cartório, Ministério Público e Juiz — ainda não escritos.
+- Confirmar se o editor local do usuário (extensão de VS Code?) vai regenerar o índice de novo
+  automaticamente — se sim, considerar desativar a extensão de auto-TOC para esse arquivo, já que
+  ela usa um formato de âncora incompatível com o resto do documento.
+## Rodada 8: correções pontuais pedidas pelo usuário + testes de redirecionamento
+
+Correções de estilo/tom pedidas pelo usuário (manual deve soar como manual, não como relatório de
+QA — sem "confirmado por leitura de código", "confirmado nesta verificação" etc.):
+
+1. **"Como Fazer Login"**: adicionado print da tela de login limpa (`img_31_login_tela_limpa.png`).
+2. **"Para onde Cada Perfil é Redirecionado"**: reescrita. Agrupei Admin/Coordenador/Professor (
+   mesmo destino, Painel de Controle) e separei o Aluno (dois casos: sem vínculo / já vinculado).
+   Testes feitos nesta rodada para fechar a lacuna:
+   - Login como **Mariana** (Aluno já vinculado ao grupo "Albuquerque & Associados") → redireciona
+     direto para `/processos/area-servidor/` (Área do Aluno), já com o processo vinculado listado.
+     Print: `img_32_aluno_redirecionado_area_aluno.png`.
+   - Login como **Camila** (Professor) → redireciona para `/acesso/painel-administrativo/`, tela
+     **visualmente idêntica** à do Admin/Coordenador. Print: `img_33_professor_redirecionado_painel.png`.
+3. **Admin > "Painel de Controle"**: removida a menção a "confirmado por leitura de código" —
+   mantido só o fato (números fixos, 3 dos 4 atalhos não implementados), em tom de manual.
+4. **Admin > "Como Aprovar um Cadastro Pendente"**: removido o "Pré-requisito"; adicionada
+   observação de que as opções de Tipo de Perfil mostradas dependem da permissão de quem está
+   logado (Admin vê 4 opções, Coordenador/Professor veem menos).
+5. **Capítulo do Coordenador**: removida a menção "única diferença confirmada nesta verificação" —
+   mantida só a diferença em si (não pode atribuir perfil Admin), em tom de manual.
+
+Novas imagens desta rodada: `img_31_login_tela_limpa.png`, `img_32_aluno_redirecionado_area_aluno.png`,
+`img_33_professor_redirecionado_painel.png`.
+
+Validação: script conferindo `<a name>` vs. links internos e existência de todas as imagens
+referenciadas — zero âncoras e zero imagens faltando.
+## Rodada 9: aluno vinculado a mais de um ciclo (multi-ciclo)
+
+Pergunta do usuário: quando o Aluno está vinculado a mais de um ciclo, ele escolhe em qual entra
+primeiro? E como troca de ciclo depois? Resposta obtida por leitura de código
+(`ciclos/middleware.py::CicloAtivoMiddleware`, `ciclos/views.py::selecionar_ciclo`/`ativar_ciclo`,
+`ciclos/permissions.py::pode_trocar_ciclo_ativo`) e confirmada com teste ao vivo:
+
+- Criado um segundo ciclo, **"NPJ Penal 2026/2"** (1º semestre/2026), coordenado pela Camila.
+- Criado o grupo **"Duarte & Advogados Criminalistas"** (Advogados Polo Ativo) nesse ciclo, e
+  adicionada a Mariana (que já estava no grupo "Albuquerque & Associados" do ciclo "NPJ Cível
+  2026/2").
+- Login da Mariana com os 2 ciclos ativos → **tela "Selecione o Ciclo"** (`/ciclos/selecionar/`),
+  listando os dois, cada um levando à Área do Aluno normalmente depois de escolhido.
+- Depois de escolhido, aparece um seletor no cabeçalho (ícone de seta circular, ao lado do nome do
+  usuário) que permite **trocar de ciclo ativo** a qualquer momento sem logout — confirmado que
+  esse seletor só aparece pro Aluno (`pode_trocar_ciclo_ativo`: Admin/Coordenador/Professor não
+  usam, porque o Painel deles já mostra todos os ciclos de uma vez).
+- Com exatamente 1 ciclo ativo, a escolha é automática/transparente (não aparece a tela de seleção).
+
+Conteúdo já incorporado à seção "4. Para onde Cada Perfil é Redirecionado" do manual, com prints
+novos: `img_34_selecionar_ciclo.png`, `img_35_trocar_ciclo_dropdown.png`.
+
+**Nota**: ao reler o arquivo para validar, o índice do `MANUAL_DO_USUARIO.md` tinha sido
+regenerado de novo pelo editor local do usuário no formato auto-TOC quebrado (mesmo problema da
+Rodada 7) — restaurado outra vez. Isso já aconteceu 2x nesta sessão; recomendo fortemente
+desativar a extensão de auto-TOC do editor para este arquivo específico, ou pelo menos configurá-la
+para não rodar automaticamente ao salvar.
