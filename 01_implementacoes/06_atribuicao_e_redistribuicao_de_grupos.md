@@ -578,6 +578,24 @@ lista, e refazer o `snapshot` para virar a nova linha de base.
 `render_smoke.py` ganha os casos da tela nova — posições ocupadas, todas pendentes, papel
 indisponível, e o passo 2 com as três naturezas.
 
+#### Resultado real, medido na etapa 5
+
+```text
+[novo ] processos/templates/processos/atribuir_grupos.html
+[TEXTO] pagina_aluno.html: sumiu ['Atribuir', 'grupo', 'aos', 'selecionados', '0',
+        'selecionados', 'Processo', '—', '—', 'Selecione', 'os', 'grupos',
+        'responsáveis', 'Remover']   (a lista é truncada em 14 itens pelo relator)
+[ID   ] pagina_aluno.html: sumiu ['', 'bulkAssign', 'grpList', 'grpModal',
+        'modalCancel', 'modalClose', 'modalConfirm', 'modalProcClass',
+        'modalProcNum', 'selAll', 'selCount', '{{ g.id }}']
+[texto] visualizar_processo.html: entrou ['Atribuir', 'Grupos']
+diff: 2 perda(s)
+```
+
+São os dez ids previstos mais dois artefatos do próprio verificador: o `_args_de_tags`
+procura `id=` em qualquer lugar da linha, então casa também com `data-grupo-id=""` e
+`data-grupo-id="{{ g.id }}"` dos cartões do modal. Nenhuma perda além do fluxo antigo.
+
 **O navegador não é opcional:** hover, a lista de grupos que abre, o resumo e o contraste dos
 três blocos precisam ser conferidos à mão. O CLAUDE.md registra que o botão "Ver Autos"
 passou por todas as verificações automáticas sendo ilegível.

@@ -35,6 +35,7 @@ from .services import (
     aplicar_alteracoes,
     descrever_alteracoes,
     estado_posicoes_do_processo,
+    ha_o_que_aplicar,
     nome_do_evento,
 )
 from .utils import validar_multiplos_arquivos
@@ -243,17 +244,10 @@ def pagina_aluno(request):
     serventia = ""
     cargo = ""
     is_serventia = False
-    grupos_ciclo = []
     if grupo:
         serventia = grupo.nome
         cargo = grupo.cargo_simulacao.nome
-        if grupo.cargo_simulacao.cod == "SC":
-            is_serventia = True
-            grupos_ciclo = list(
-                grupo.ciclo.grupos
-                .select_related("cargo_simulacao")
-                .order_by("nome")
-            )
+        is_serventia = grupo.cargo_simulacao.cod == "SC"
 
     if is_serventia:
         processos = (
@@ -261,7 +255,7 @@ def pagina_aluno(request):
                 ciclo=grupo.ciclo,
             )
             .select_related("classe", "status_atual", "vara", "vara__comarca")
-            .prefetch_related("polos__parte", "grupos")
+            .prefetch_related("polos__parte")
         )
     else:
         processos = (
@@ -292,15 +286,6 @@ def pagina_aluno(request):
     paginator = Paginator(processos, 10)
     page_obj = paginator.get_page(request.GET.get("page", 1))
 
-    # O modal de atribuição marca por aqui quais grupos o processo já tem.
-    # Só a página corrente entra: a seleção em lote não alcança outras páginas.
-    grupos_vinculados_por_processo = {}
-    if is_serventia:
-        grupos_vinculados_por_processo = {
-            str(processo.pk): [g.pk for g in processo.grupos.all()]
-            for processo in page_obj
-        }
-
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     ip = x_forwarded_for.split(",")[0].strip() if x_forwarded_for else request.META.get("REMOTE_ADDR", "")
 
@@ -330,8 +315,6 @@ def pagina_aluno(request):
             "filtro_classe": filtro_classe,
             "filtro_situacao": filtro_situacao,
             "is_serventia": is_serventia,
-            "grupos_ciclo": grupos_ciclo,
-            "grupos_vinculados_por_processo": grupos_vinculados_por_processo,
         },
     )
 
@@ -388,7 +371,7 @@ def atribuir_grupos_processo(request, numero):
     if request.method == "POST":
         form = AtribuicaoGruposForm(request.POST, estados=estados)
         if form.is_valid():
-            if form.plano.vazio:
+            if not ha_o_que_aplicar(processo, form.plano):
                 messages.info(request, "Nenhuma alteração a aplicar.", extra_tags="grupos")
             elif request.POST.get("acao") == "confirmar":
                 aplicar_alteracoes(processo, form.desejado, ator=request.user)
