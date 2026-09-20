@@ -2,7 +2,16 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from django.db import transaction
+
 from ciclos.models import GrupoTrabalho
+from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
+from movimentacoes.models import TipoMovimentacao
+from movimentacoes.services import registrar_movimentacao
+from notificacoes.services import (
+    notificar_grupo_desvinculado_processo,
+    notificar_grupo_vinculado_processo,
+)
 
 from .models import GrupoProcesso, PoloProcessual
 
@@ -94,6 +103,7 @@ class Plano:
     vinculos_a_criar: tuple[GrupoTrabalho, ...]
     vinculos_a_remover: tuple[GrupoTrabalho, ...]
     donos_de_polo: dict[str, GrupoTrabalho | None]
+    ocupantes: tuple[GrupoTrabalho, ...]
 
     @property
     def vazio(self) -> bool:
@@ -196,6 +206,10 @@ def planejar_alteracoes(estados, desejado) -> Plano:
             for posicao in POSICOES
             if posicao.tipo_polo
         },
+        ocupantes=tuple(
+            grupo for grupo in (final[posicao.chave] for posicao in POSICOES)
+            if grupo is not None
+        ),
     )
 
 
@@ -298,3 +312,84 @@ def descrever_alteracoes(plano) -> str:
                 f'para {rotulo}.'
             )
     return " ".join(partes)
+
+
+def aplicar_alteracoes(processo, desejado, *, ator):
+    """
+    Grava o estado desejado das posições e registra o evento nos autos.
+
+    Devolve `(plano, movimentacao)`. Plano vazio não escreve nada e não registra evento —
+    confirmar sem mudar nada não deve poluir os autos. O estado é lido dentro da transação,
+    então o que vai para a descrição é o que foi realmente gravado.
+    """
+    with transaction.atomic():
+        estados = estado_posicoes_do_processo(processo)
+        plano = planejar_alteracoes(estados, desejado)
+        if plano.vazio:
+            return plano, None
+
+        if plano.vinculos_a_remover:
+            pks = [grupo.pk for grupo in plano.vinculos_a_remover]
+            # o polo sai antes do vínculo: quem deixa a posição perde tudo o que tinha no
+            # processo, inclusive onde representava parte
+            PoloProcessual.objects.filter(processo=processo, grupo_id__in=pks).update(grupo=None)
+            GrupoProcesso.objects.filter(processo=processo, grupo_id__in=pks).delete()
+
+        if plano.vinculos_a_criar:
+            GrupoProcesso.objects.bulk_create([
+                GrupoProcesso(processo=processo, grupo=grupo)
+                for grupo in plano.vinculos_a_criar
+            ])
+
+        # o dono de cada polo é reescrito mesmo quando não mudou: é o que regulariza o polo
+        # nulo do grupo que protocolou, cujo vínculo nasceu antes da distribuição
+        for tipo_polo, dono in plano.donos_de_polo.items():
+            PoloProcessual.objects.filter(processo=processo, tipo_polo=tipo_polo).update(grupo=dono)
+
+        movimentacao = _registrar_evento(processo, plano, ator=ator)
+
+        # `grupo=grupo` no default: sem isso todas as lambdas veriam o último grupo do laço
+        for grupo in plano.vinculos_a_criar:
+            transaction.on_commit(
+                lambda p=processo, g=grupo: notificar_grupo_vinculado_processo(p, g, ator=ator)
+            )
+        for grupo in plano.vinculos_a_remover:
+            transaction.on_commit(
+                lambda p=processo, g=grupo: notificar_grupo_desvinculado_processo(p, g, ator=ator)
+            )
+
+    return plano, movimentacao
+
+
+def _registrar_evento(processo, plano, *, ator):
+    """
+    Primeira distribuição de processo protocolado é a autuação, que muda o status; daí em
+    diante é redistribuição. Protocolado que termina sem nenhuma posição ocupada não autua —
+    seria "Autuado" sem ninguém atuando —, mas ainda registra a redistribuição, senão a
+    remoção não deixaria rastro nos autos.
+    """
+    autuando = processo.status_atual.nome_status == "Protocolado" and bool(plano.ocupantes)
+    tipo = TipoMovimentacao.objects.select_related("efeito_status").get(
+        nome_movimentacao=NOME_AUTUACAO if autuando else NOME_REDISTRIBUICAO,
+    )
+
+    # o evento é ato do cartório: ancora no vínculo da serventia de quem confirmou, como a
+    # autuação já fazia, e é esse vínculo que permite corrigi-lo depois
+    grupo_serventia = (
+        ator.grupos_trabalho
+        .filter(ciclo_id=processo.ciclo_id, cargo_simulacao__cod="SC")
+        .first()
+    )
+    grupo_processo = None
+    if grupo_serventia is not None:
+        grupo_processo, _ = GrupoProcesso.objects.get_or_create(
+            processo=processo, grupo=grupo_serventia,
+        )
+
+    return registrar_movimentacao(
+        processo=processo,
+        autor=ator,
+        tipo_movimentacao=tipo,
+        descricao_evento=descrever_alteracoes(plano),
+        grupo_processo=grupo_processo,
+    )
