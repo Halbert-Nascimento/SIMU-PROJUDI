@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+from unittest import mock
+
 from django.contrib.auth.models import AnonymousUser
 
 from ciclos.models import CicloSimulacao, GrupoTrabalho
+from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
+from notificacoes.models import Notificacao, TipoNotificacao
 from processos.models import GrupoProcesso, PoloProcessual
 from processos.permissions import pode_atribuir_grupos
 from processos.services import (
     EstadoInvalidoError,
     Natureza,
+    aplicar_alteracoes,
     descrever_alteracoes,
     estado_posicoes_do_processo,
     planejar_alteracoes,
@@ -283,6 +288,235 @@ class DescricaoDasAlteracoesTests(CenarioMovimentacoesTestCase):
         plano = planejar_alteracoes(estado_posicoes_do_processo(processo), {})
 
         self.assertEqual(descrever_alteracoes(plano), "")
+
+
+class AplicacaoDeAlteracoesTests(CenarioMovimentacoesTestCase):
+    """Escrita no banco e registro do evento nos autos."""
+
+    def dono_do_polo(self, processo, tipo_polo):
+        """O grupo dono das linhas daquele polo — e falha se as linhas divergirem entre si."""
+        donos = set(
+            PoloProcessual.objects
+            .filter(processo=processo, tipo_polo=tipo_polo)
+            .values_list("grupo_id", flat=True)
+        )
+        self.assertEqual(len(donos), 1, f"linhas do polo {tipo_polo} com donos divergentes")
+        (grupo_id,) = donos
+        return GrupoTrabalho.objects.get(pk=grupo_id) if grupo_id else None
+
+    def vinculos(self, processo):
+        return set(GrupoProcesso.objects.filter(processo=processo).values_list("pk", flat=True))
+
+    def grupo_novo(self, cod, nome):
+        return GrupoTrabalho.objects.create(
+            ciclo=self.ciclo, cargo_simulacao=self.cargos[cod], nome=nome,
+        )
+
+    def test_atribuir_cria_vinculo_da_o_polo_e_autua(self):
+        processo = self.criar_processo_protocolado()  # APA protocolou, polos ainda sem grupo
+
+        plano, movimentacao = aplicar_alteracoes(
+            processo, {"polo_passivo": self.grupos["APP"]}, ator=self.usuarios["SC"],
+        )
+        processo.refresh_from_db()
+
+        self.assertTrue(
+            GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["APP"]).exists()
+        )
+        self.assertEqual(self.dono_do_polo(processo, "Passivo"), self.grupos["APP"])
+        # regularização: o polo ativo do protocolante era nulo e passa a ser dele
+        self.assertEqual(self.dono_do_polo(processo, "Ativo"), self.grupos["APA"])
+        self.assertEqual(processo.status_atual.nome_status, "Autuado")
+        self.assertEqual(movimentacao.tipo_movimento.nome_movimentacao, NOME_AUTUACAO)
+        self.assertFalse(plano.vazio)
+
+    def test_substituir_troca_vinculo_e_polo(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA"])
+        apa_novo = self.grupo_novo("APA", "Grupo APA dois")
+
+        _, movimentacao = aplicar_alteracoes(
+            processo, {"polo_ativo": apa_novo}, ator=self.usuarios["SC"],
+        )
+        processo.refresh_from_db()
+
+        self.assertFalse(
+            GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["APA"]).exists()
+        )
+        self.assertTrue(GrupoProcesso.objects.filter(processo=processo, grupo=apa_novo).exists())
+        self.assertEqual(self.dono_do_polo(processo, "Ativo"), apa_novo)
+        self.assertEqual(movimentacao.tipo_movimento.nome_movimentacao, NOME_REDISTRIBUICAO)
+        self.assertEqual(processo.status_atual.nome_status, "Autuado")
+
+    def test_remover_apaga_vinculo_e_solta_o_polo(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP"])
+
+        aplicar_alteracoes(processo, {"polo_passivo": None}, ator=self.usuarios["SC"])
+
+        self.assertFalse(
+            GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["APP"]).exists()
+        )
+        self.assertIsNone(self.dono_do_polo(processo, "Passivo"))
+        self.assertEqual(self.dono_do_polo(processo, "Ativo"), self.grupos["APA"])
+
+    def test_mp_que_troca_de_posicao_preserva_a_ancora_do_vinculo(self):
+        """
+        O MP que passa de interveniente a titular continua no processo: o vínculo é o mesmo,
+        só o polo muda. Apagar e recriar faria as movimentações dele perderem a âncora e a
+        janela de correção fechar para sempre.
+        """
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "MP"])
+        vinculo_mp = GrupoProcesso.objects.get(processo=processo, grupo=self.grupos["MP"])
+        movimentacao_do_mp = self.registrar(
+            processo, "Juntada de Documentos", self.usuarios["MP"], grupo_processo=vinculo_mp,
+        )
+
+        aplicar_alteracoes(
+            processo,
+            {"polo_ativo": self.grupos["MP"], "ministerio_publico": None},
+            ator=self.usuarios["SC"],
+        )
+
+        movimentacao_do_mp.refresh_from_db()
+        self.assertEqual(movimentacao_do_mp.grupo_processo_id, vinculo_mp.pk)
+        self.assertEqual(self.dono_do_polo(processo, "Ativo"), self.grupos["MP"])
+        self.assertFalse(
+            GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["APA"]).exists()
+        )
+
+    def test_plano_vazio_nao_grava_nem_registra(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP"])
+        vinculos_antes = self.vinculos(processo)
+        movimentacoes_antes = processo.movimentacoes.count()
+
+        plano, movimentacao = aplicar_alteracoes(processo, {}, ator=self.usuarios["SC"])
+
+        self.assertTrue(plano.vazio)
+        self.assertIsNone(movimentacao)
+        self.assertEqual(self.vinculos(processo), vinculos_antes)
+        self.assertEqual(processo.movimentacoes.count(), movimentacoes_antes)
+
+    def test_protocolado_sem_ocupante_ao_final_nao_autua_mas_registra(self):
+        processo = self.criar_processo_protocolado()
+
+        plano, movimentacao = aplicar_alteracoes(
+            processo, {"polo_ativo": None}, ator=self.usuarios["SC"],
+        )
+        processo.refresh_from_db()
+
+        self.assertEqual(plano.ocupantes, ())
+        self.assertEqual(processo.status_atual.nome_status, "Protocolado")
+        self.assertEqual(movimentacao.tipo_movimento.nome_movimentacao, NOME_REDISTRIBUICAO)
+
+    def test_notifica_quem_entra_e_quem_sai(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA"])
+        apa_novo = self.grupo_novo("APA", "Grupo APA dois")
+        aluno_novo = Usuario.objects.create_user(
+            username="aluno.apa2", email="aluno.apa2@teste.local", password="s3nha-teste",
+            tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+        )
+        apa_novo.membros.add(aluno_novo)
+        Notificacao.objects.all().delete()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            aplicar_alteracoes(processo, {"polo_ativo": apa_novo}, ator=self.usuarios["SC"])
+
+        self.assertEqual(
+            set(Notificacao.objects
+                .filter(tipo=TipoNotificacao.GRUPO_VINCULADO_PROCESSO)
+                .values_list("destinatario_id", flat=True)),
+            {aluno_novo.pk},
+        )
+        self.assertEqual(
+            set(Notificacao.objects
+                .filter(tipo=TipoNotificacao.GRUPO_DESVINCULADO_PROCESSO)
+                .values_list("destinatario_id", flat=True)),
+            {self.usuarios["APA"].pk},
+        )
+
+    def test_grupo_que_so_troca_de_posicao_nao_e_notificado_de_vinculo(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "MP"])
+        Notificacao.objects.all().delete()
+
+        with self.captureOnCommitCallbacks(execute=True):
+            aplicar_alteracoes(
+                processo,
+                {"polo_ativo": self.grupos["MP"], "ministerio_publico": None},
+                ator=self.usuarios["SC"],
+            )
+
+        vinculados = set(Notificacao.objects
+                         .filter(tipo=TipoNotificacao.GRUPO_VINCULADO_PROCESSO)
+                         .values_list("destinatario_id", flat=True))
+        desvinculados = set(Notificacao.objects
+                            .filter(tipo=TipoNotificacao.GRUPO_DESVINCULADO_PROCESSO)
+                            .values_list("destinatario_id", flat=True))
+
+        self.assertNotIn(self.usuarios["MP"].pk, vinculados)
+        self.assertNotIn(self.usuarios["MP"].pk, desvinculados)
+        self.assertIn(self.usuarios["APA"].pk, desvinculados)
+
+    def test_evento_ancorado_no_vinculo_da_serventia(self):
+        processo = self.criar_processo_protocolado()
+
+        _, movimentacao = aplicar_alteracoes(
+            processo, {"juiz": self.grupos["JZ"]}, ator=self.usuarios["SC"],
+        )
+
+        self.assertEqual(movimentacao.grupo_processo.grupo, self.grupos["SC"])
+        self.assertEqual(movimentacao.autor, self.usuarios["SC"])
+
+    def test_estado_invalido_nao_grava_nada(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP"])
+        app_extra = self.grupo_novo("APP", "Grupo APP fora")
+        GrupoProcesso.objects.create(processo=processo, grupo=app_extra)
+        vinculos_antes = self.vinculos(processo)
+        movimentacoes_antes = processo.movimentacoes.count()
+
+        with self.assertRaises(EstadoInvalidoError):
+            aplicar_alteracoes(processo, {"juiz": self.grupos["JZ"]}, ator=self.usuarios["SC"])
+
+        self.assertEqual(self.vinculos(processo), vinculos_antes)
+        self.assertEqual(processo.movimentacoes.count(), movimentacoes_antes)
+
+    def test_falha_ao_registrar_o_evento_desfaz_os_vinculos_e_os_polos(self):
+        """
+        Sem a transação, o processo ficaria com o vínculo já apagado e nenhum evento nos autos
+        explicando a saída do grupo — estado que ninguém consegue reconstituir depois.
+        """
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP"])
+        vinculos_antes = self.vinculos(processo)
+
+        with mock.patch(
+            "processos.services.registrar_movimentacao", side_effect=RuntimeError("boom"),
+        ):
+            with self.assertRaises(RuntimeError):
+                aplicar_alteracoes(
+                    processo, {"polo_passivo": None}, ator=self.usuarios["SC"],
+                )
+
+        self.assertEqual(self.vinculos(processo), vinculos_antes)
+        self.assertEqual(self.dono_do_polo(processo, "Passivo"), self.grupos["APP"])
+
+    def test_descricao_do_evento_e_a_do_plano(self):
+        processo = self.criar_processo_protocolado()
+
+        plano, movimentacao = aplicar_alteracoes(
+            processo,
+            {"polo_passivo": self.grupos["APP"], "juiz": self.grupos["JZ"]},
+            ator=self.usuarios["SC"],
+        )
+
+        self.assertEqual(movimentacao.descricao_evento, descrever_alteracoes(plano))
+        self.assertIn('Polo passivo: "Grupo APP" atribuído.', movimentacao.descricao_evento)
+        self.assertIn('Juiz: "Grupo JZ" atribuído.', movimentacao.descricao_evento)
 
 
 class PodeAtribuirGruposTests(CenarioMovimentacoesTestCase):
