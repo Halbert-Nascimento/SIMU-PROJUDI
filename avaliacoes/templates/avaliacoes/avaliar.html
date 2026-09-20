@@ -1,6 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% load ui %}
+{% load avaliacoes_ui %}
 
 {% block title %}Avaliação — {{ processo.numero }} — Simulador Projudi{% endblock %}
 
@@ -27,17 +28,6 @@
         color: #1f4f9c; cursor: pointer; font-size: calc(13px * var(--escala-fonte, 1));
     }
     .file-row .acts i:hover { color: #0a083d; }
-
-    /* Campo de nota — campo de formulário do guia (seção 05) com o número na
-       escala de KPI: raio 2px, borda de 1px, foco só por borda, sem halo. */
-    .grade-input {
-        width: 92px; font-size: calc(28px * var(--escala-fonte, 1)); font-weight: 700; line-height: 1;
-        text-align: center; border: 1px solid #d3d7de;
-        border-radius: 2px; padding: 8px 9px;
-        color: #0a083d; outline: none; background: #fff;
-    }
-    .grade-input:focus { border-color: #1f4f9c; }
-    .grade-suffix { color: #6b7280; font-size: calc(11.5px * var(--escala-fonte, 1)); font-weight: 600; }
 </style>
 {% endblock %}
 
@@ -192,9 +182,9 @@
                         <span class="font-bold">{{ feedback_origem.professor.get_full_name|default:feedback_origem.professor.username }}</span>
                     </div>
                     {% if feedback_origem.nota is not None %}
-                    <div>
-                        <span class="text-texto-neutro">Nota:</span>
-                        <span class="font-mono font-semibold">{{ feedback_origem.nota }}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-texto-neutro">Avaliação:</span>
+                        {% estrelas feedback_origem.nota|em_estrelas %}
                     </div>
                     {% else %}
                     <div>
@@ -221,17 +211,11 @@
             <div class="panel-inner green">
                 <div class="flex gap-4 items-stretch">
                     <div class="flex flex-col items-center justify-center text-center shrink-0">
-                        <div class="field-label mb-1 whitespace-nowrap">Nota (0 a 10)</div>
-                        <div class="flex items-baseline gap-2 justify-center">
-                            <input type="number" name="nota" id="gradeInput"
-                                   min="0" max="10" step="0.01"
-                                   value="{% if form.nota.value is not None %}{{ form.nota.value }}{% endif %}"
-                                   class="grade-input font-mono"
-                                   placeholder="—" />
-                            <span class="grade-suffix font-mono">/ 10,00</span>
-                        </div>
-                        {% if form.nota.errors %}
-                        <div class="text-validacao text-meta font-semibold mt-1">{{ form.nota.errors.0 }}</div>
+                        <div class="field-label mb-1 whitespace-nowrap">Avaliação (1 a 5 estrelas)</div>
+                        {% estrelas_campo nome="estrelas" valor=form.estrelas.value %}
+                        <div class="text-meta text-rotulo mt-1">Sem estrelas = sem nota</div>
+                        {% if form.estrelas.errors %}
+                        <div class="text-validacao text-meta font-semibold mt-1">{{ form.estrelas.errors.0 }}</div>
                         {% endif %}
                     </div>
                     <div class="flex-1 min-w-0">
@@ -276,7 +260,7 @@
                     <th>Data</th>
                     <th>Movimentação</th>
                     <th>Processo</th>
-                    <th class="text-center">Nota</th>
+                    <th class="text-center">Avaliação</th>
                 </tr>
             </thead>
             <tbody>
@@ -285,9 +269,9 @@
                     <td>{{ fb.data_feedback|date:"d/m/Y" }}</td>
                     <td>{{ fb.movimentacao.tipo_movimento.nome_movimentacao }}</td>
                     <td class="font-mono">{{ fb.movimentacao.processo.numero }}</td>
-                    <td class="text-center font-mono font-semibold">
+                    <td class="text-center">
                         {% if fb.nota is not None %}
-                            {{ fb.nota }}
+                            {% estrelas fb.nota|em_estrelas %}
                         {% else %}
                             <span class="pill warn">Devolvida</span>
                         {% endif %}
@@ -298,7 +282,7 @@
         </table>
         {% if media_notas is not None %}
         <div class="text-right mt-2 text-apoio">
-            Média atual do(a) aluno(a) no ciclo: <strong class="text-acao font-mono text-dado">{{ media_notas|floatformat:2 }}</strong>
+            Média atual do(a) aluno(a) no ciclo: <strong class="text-acao font-mono text-dado">{{ media_notas|floatformat:1 }} de 5 estrelas</strong>
         </div>
         {% endif %}
     </div>
@@ -319,7 +303,7 @@
                     <strong>{{ autor.get_full_name|default:autor.username }}</strong>
                 </div>
                 <div class="flex justify-between">
-                    <span class="text-texto-neutro">Nota:</span>
+                    <span class="text-texto-neutro">Avaliação:</span>
                     <strong class="text-acao font-mono text-dado" id="cnfNota">—</strong>
                 </div>
             </div>
@@ -346,8 +330,10 @@ function openConfirm() {
         showToast('Preencha o comentário antes de concluir.', 'atencao');
         return;
     }
-    var v = parseFloat(document.getElementById('gradeInput').value);
-    var notaText = isNaN(v) ? 'Sem nota' : v.toFixed(2).replace('.', ',');
+    var marcada = document.querySelector('input[name="estrelas"]:checked');
+    var notaText = marcada
+        ? marcada.value + (marcada.value === '1' ? ' estrela' : ' estrelas')
+        : 'Sem nota';
     document.getElementById('cnfNota').textContent = notaText;
     document.getElementById('confirmModal').classList.add('open');
 }

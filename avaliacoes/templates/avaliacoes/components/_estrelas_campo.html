@@ -1,0 +1,12 @@
+{% comment %}
+Renderizado pela tag {% templatetag openblock %} estrelas_campo {% templatetag closeblock %}.
+Cinco rádios reais, do maior para o menor; `.estrelas-campo` inverte a linha e o
+preenchimento sai do CSS. A estrela em si é o ::before do rótulo (componentes.css).
+{% endcomment %}
+<fieldset class="estrelas-campo">
+    <legend class="sr-only">Avaliação de 1 a {{ maximo }} estrelas</legend>
+    {% for opcao in opcoes %}
+    <input type="radio" name="{{ nome }}" id="{{ opcao.id }}" value="{{ opcao.valor }}" class="sr-only"{% if opcao.marcada %} checked{% endif %}>
+    <label for="{{ opcao.id }}" title="{{ opcao.valor }} estrela{{ opcao.valor|pluralize }}"><span class="sr-only">{{ opcao.valor }} estrela{{ opcao.valor|pluralize }}</span></label>
+    {% endfor %}
+</fieldset>
