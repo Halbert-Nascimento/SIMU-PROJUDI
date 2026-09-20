@@ -210,3 +210,59 @@ a ser do MP, fora do conjunto distribuído, e as duas metades passaram a medir.
 
 **Verificar quando:** sempre. É o caso concreto do que o CLAUDE.md quer dizer com "verde não é
 prova" — o teste estava verde enquanto media a ausência de qualquer coisa.
+
+---
+
+## 9. `verificar.py check` nunca fecha em zero, e por uma sombra só
+
+Origem diferente da dos oito itens acima: apareceu ao rodar a bateria de verificação
+durante a correção dos achados da revisão do PR #15, não na análise da etapa 1.
+
+O `check` termina com `check: 1 problema(s)` e sai com código 1 em qualquer execução, na
+`develop` e em qualquer branch que saia dela. O problema é sempre o mesmo:
+
+```
+raio e sombra
+  [SOMBR] templates/static/css/componentes.css: box-shadow: 0 12px 30px -12px rgba(10, 8, 61, .5)
+```
+
+É o `.toast`. A lista `SOMBRAS_OK` do verificador conhece exatamente duas sombras — a do
+modal (`rgba(10, 8, 61, .45)`) e o halo de validação (`rgba(192, 57, 43, .12)`) — e o toast
+usa uma terceira, com alfa `.5` e geometria própria. O verificador não está errado sobre o
+fato; ele está reportando que existe no CSS uma sombra que o guia não autorizou.
+
+Vale separar do resto da saída: os 24 `[aviso]` de escala de fonte **não** entram nessa
+conta. Avisos não somam problema e não mudam o código de saída — só a sombra soma.
+
+**Evidência:** `templates/static/css/componentes.css:204` (o `.toast`), contra
+`scripts/verificar.py:47-49` (a lista `SOMBRAS_OK`). Introduzida em `71804b6`
+*"feat: novo design de toast"* (11/09/2026), antes desta linha de trabalho — nenhum commit
+de atribuição e redistribuição de grupos tocou nesse arquivo.
+
+**Classificação:** dívida estrutural — de ferramenta, não de tela.
+
+**É defeito hoje?** Não como pixel: o toast renderiza bem, a sombra é discreta e coerente com
+a do modal. O defeito é no instrumento. Um `check` que nunca fecha em zero ensina quem o roda
+a ler "1 problema(s)" como estado normal, e o próximo `border-radius: 3px` de verdade vai sair
+na mesma seção da saída, com a mesma cara, e passar batido. O valor do verificador é poder
+confiar que zero significa zero — enquanto o piso for 1, ele não tem esse valor. Foi
+exatamente o raciocínio que esta correção precisou fazer para descartar o item como
+pré-existente, e é o raciocínio que a próxima vai ter que refazer do zero.
+
+**A decisão pende do guia, que está fora do repositório** (`design/Guia de Design
+SIMU-PROJUDI.dc.html` — o diretório `design/` não existe aqui). Duas saídas, e elas se
+excluem:
+
+| Se o guia | Então |
+|---|---|
+| especifica sombra para o toast (seção 07 é onde o modal mora) | a sombra é legítima e falta uma terceira entrada em `SOMBRAS_OK` |
+| só admite sombra em modal, como diz o resumo do CLAUDE.md | a sombra do toast sai do CSS, e o flutuante se resolve por borda como o resto do sistema |
+
+O que **não** é saída: relaxar o casamento do verificador ou passar a sombra por um caminho
+que ele não lê. Isso apaga o aviso sem resolver a pergunta, e a próxima sombra fora do guia
+entra sem ninguém ver.
+
+**Verificar quando:** na próxima vez que alguém abrir o guia por outro motivo — é uma
+consulta de trinta segundos à seção 07, e ela fecha o item nos dois sentidos. Até lá, quem
+rodar `check` deve tratar `1 problema(s)` como o piso conhecido e conferir se a linha é
+**esta**; qualquer outra linha, ou qualquer contagem acima de 1, é regressão nova.
