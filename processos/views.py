@@ -42,12 +42,10 @@ from .utils import validar_multiplos_arquivos
 from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
 from movimentacoes.permissions import grupo_processo_do_usuario, pode_movimentar_processo
 from movimentacoes.services import registrar_movimentacao
-from notificacoes.services import notificar_grupo_vinculado_processo
 
 from .models import (
     ClasseProcessual,
     Comarca,
-    GrupoProcesso,
     ParteFicticia,
     PoloProcessual,
     ProcessoJudicial,
@@ -700,104 +698,3 @@ def visualizar_processo(request, numero):
             ],
         },
     )
-
-
-@login_required
-@require_POST
-def atribuir_grupo_processos(request):
-    try:
-        dados = json.loads(request.body)
-    except json.JSONDecodeError:
-        return JsonResponse({"erro": "JSON inválido."}, status=400)
-
-    processo_ids = dados.get("processo_ids", [])
-    grupo_ids = dados.get("grupo_ids", [])
-
-    if not processo_ids:
-        return JsonResponse({"erro": "Nenhum processo selecionado."}, status=400)
-
-    ciclo = request.ciclo_ativo
-    if not ciclo:
-        return JsonResponse({"erro": "Nenhum ciclo ativo selecionado."}, status=400)
-
-    grupo_usuario = (
-        request.user.grupos_trabalho
-        .filter(ciclo=ciclo, cargo_simulacao__cod="SC")
-        .first()
-    )
-    if not grupo_usuario:
-        return JsonResponse({"erro": "Permissão negada."}, status=403)
-
-    # materializa a lista: sem isso o queryset é reavaliado a cada uso e o
-    # len() final custa mais um SELECT. select_related("status_atual") alimenta
-    # a checagem de "Protocolado" do laço sem uma query por processo.
-    processos = list(
-        ProcessoJudicial.objects.filter(
-            pk__in=processo_ids,
-            ciclo=grupo_usuario.ciclo,
-        ).select_related("status_atual")
-    )
-
-    # atomic(): em autocommit uma falha no meio do laço deixaria parte dos
-    # processos alterada e parte não, com o cliente recebendo só um erro genérico
-    with transaction.atomic():
-        if grupo_ids:
-            grupos = list(
-                GrupoTrabalho.objects.filter(
-                    pk__in=grupo_ids,
-                    ciclo=grupo_usuario.ciclo,
-                ).select_related("cargo_simulacao")
-            )
-            # snapshot de quem já estava vinculado, pra só notificar vínculo de verdade novo
-            vinculos_existentes = set(
-                GrupoProcesso.objects.filter(processo__in=processos, grupo__in=grupos)
-                .values_list("processo_id", "grupo_id")
-            )
-            tipo_autuacao = None
-            for processo in processos:
-                protocolado = processo.status_atual.nome_status == "Protocolado"
-                grupos_novos = [g for g in grupos if (processo.pk, g.pk) not in vinculos_existentes]
-                processo.grupos.add(*grupos)
-                for grupo_novo in grupos_novos:
-                    transaction.on_commit(
-                        lambda p=processo, g=grupo_novo: notificar_grupo_vinculado_processo(p, g, ator=request.user)
-                    )
-
-                # Polo é atribuído automaticamente pelo cargo do grupo (APA→Ativo, APP→Passivo);
-                # MP/JZ/SC seguem só vinculados ao processo via GrupoProcesso, sem ocupar polo aqui.
-                for grupo in grupos:
-                    cod = grupo.cargo_simulacao.cod
-                    if cod == "APA":
-                        PoloProcessual.objects.filter(
-                            processo=processo, tipo_polo=PoloProcessual.TipoPolo.ATIVO
-                        ).update(grupo=grupo)
-                    elif cod == "APP":
-                        PoloProcessual.objects.filter(
-                            processo=processo, tipo_polo=PoloProcessual.TipoPolo.PASSIVO
-                        ).update(grupo=grupo)
-
-                # Sem grupo de verdade resolvido (ids inválidos/desatualizados), não autua —
-                # senão o processo vira "Autuado" sem nenhum grupo de fato atribuído a ele.
-                if protocolado and grupos:
-                    if tipo_autuacao is None:
-                        tipo_autuacao = TipoMovimentacao.objects.select_related("efeito_status").get(
-                            nome_movimentacao="Autuação e Distribuição"
-                        )
-                    grupo_processo_sc, _ = GrupoProcesso.objects.get_or_create(
-                        processo=processo, grupo=grupo_usuario
-                    )
-                    registrar_movimentacao(
-                        processo=processo,
-                        autor=request.user,
-                        tipo_movimentacao=tipo_autuacao,
-                        descricao_evento="Grupos atribuídos ao processo.",
-                        grupo_processo=grupo_processo_sc,
-                    )
-        else:
-            # um DELETE no lugar de um clear() por processo, e um UPDATE no lugar
-            # de um filter().update() por processo para soltar os polos
-            GrupoProcesso.objects.filter(processo__in=processos).delete()
-            PoloProcessual.objects.filter(processo__in=processos).update(grupo=None)
-
-    return JsonResponse({"sucesso": True, "atualizados": len(processos)})
-
