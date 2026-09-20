@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.db.models import Avg, Count, Max
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import render_to_string
 from django.urls import reverse
 
 from base.mensagens import propagar_erros_form
@@ -14,6 +15,13 @@ from base.breadcrumbs import home_breadcrumb
 from ciclos.models import GrupoTrabalho
 from movimentacoes.models import MovimentacaoProcessual
 
+from .estrelas import (
+    ESTRELAS_MAX,
+    contexto_estrelas,
+    faixa_da_estrela,
+    media_em_estrelas,
+    nota_para_estrelas,
+)
 from .forms import FeedbackForm
 from .models import FeedbackProfessor
 from .permissions import pode_avaliar_movimentacao, pode_ver_minhas_notas
@@ -117,7 +125,7 @@ def avaliar_movimentacao(request, movimentacao_id):
         .order_by("-data_feedback")
     )
 
-    media_notas = (
+    media_notas = media_em_estrelas(
         historico
         .filter(nota__isnull=False)
         .aggregate(media=Avg("nota"))["media"]
@@ -179,10 +187,25 @@ def minhas_notas(request):
 
     total_avaliadas = stats["total"] or 0
     ultima_avaliacao = feedbacks.first()
+    media_geral = media_em_estrelas(stats["media"])
+    melhor_avaliacao = nota_para_estrelas(stats["melhor"])
+    # Largura da barra de progresso: média sobre o máximo, com teto de 100%
+    media_percentual = (
+        min(100, round(media_geral * 100 / ESTRELAS_MAX))
+        if media_geral is not None else 0
+    )
 
+    # só há sete desenhos possíveis (sem nota e 0–5): renderiza cada um uma vez
+    estrelas_html_por_valor = {}
     feedbacks_data = []
     for fb in feedbacks:
         mov = fb.movimentacao
+        estrelas = nota_para_estrelas(fb.nota)
+        if estrelas not in estrelas_html_por_valor:
+            estrelas_html_por_valor[estrelas] = render_to_string(
+                "avaliacoes/components/_estrelas.html",
+                contexto_estrelas(estrelas, herda_cor=True),
+            )
         docs = [
             {
                 "titulo": d.titulo_arquivo,
@@ -201,7 +224,10 @@ def minhas_notas(request):
                 (fb.professor.first_name[:1] + fb.professor.last_name[:1]).upper()
                 or fb.professor.username[:2].upper()
             ),
-            "nota": float(fb.nota) if fb.nota is not None else None,
+            "estrelas": estrelas,
+            # o desenho das estrelas sai do mesmo template da tag, não do JS
+            "estrelas_html": estrelas_html_por_valor[estrelas],
+            "faixa": faixa_da_estrela(estrelas),
             "comentario": fb.comentario,
             "documentos": docs,
         })
@@ -214,8 +240,9 @@ def minhas_notas(request):
             "feedbacks_json": feedbacks_data,
             "total_movimentacoes": total_movimentacoes,
             "total_avaliadas": total_avaliadas,
-            "media_geral": stats["media"],
-            "melhor_nota": stats["melhor"],
+            "media_geral": media_geral,
+            "media_percentual": media_percentual,
+            "melhor_avaliacao": melhor_avaliacao,
             "ultima_avaliacao": ultima_avaliacao,
             "breadcrumbs": [
                 home_breadcrumb(request.user),

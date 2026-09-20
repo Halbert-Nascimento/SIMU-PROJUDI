@@ -66,7 +66,7 @@ def campo_form(valor=None, erros=()):
     return Obj(value=lambda: valor, errors=list(erros), id_for_label="id_campo")
 
 
-def feedback(nota=8.5):
+def feedback(nota=8.0):
     return Obj(nota=nota, data_feedback=QUANDO, professor=PROFESSOR,
                comentario="Boa fundamentação.", movimentacao=movimentacao())
 
@@ -79,32 +79,43 @@ def ctx_avaliar(com_erros=False, com_historico=True):
         "processo": Obj(numero=NUMERO, classe=Obj(nome="Procedimento Comum Cível")),
         "ciclo": "2026.2 — Prática Jurídica", "autor": ALUNO,
         "grupo_autor": Obj(nome="Grupo 1", cargo_simulacao=Obj(nome="Advogado do Polo Ativo")),
-        "form": Obj(nota=campo_form(8.5, ["Informe um valor entre 0 e 10."] if com_erros else []),
+        "form": Obj(estrelas=campo_form(4, ["Escolha de 1 a 5 estrelas."] if com_erros else []),
                     comentario=campo_form("", ["Este campo é obrigatório."] if com_erros else [])),
         "feedback_existente": feedback(),
         "mov_origem": movimentacao(com_documentos=False),
         "feedback_origem": feedback(None),
         "historico": hist,
-        "media_notas": 8.25 if com_historico else None,
+        "media_notas": 4.1 if com_historico else None,
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
                         {"label": f"Processo {NUMERO}", "url": "/p/"},
                         {"label": "Avaliar Movimentação", "url": None}],
     }
 
 
+def avaliacao_json(estrelas, faixa):
+    # o mesmo template que a view usa para o desenho das estrelas
+    from avaliacoes.estrelas import contexto_estrelas
+    return {"id": 1, "data": "26/08/2026", "mov": "Juntada",
+            "mov_texto": "…", "proc": NUMERO, "prof": "Ana Ribeiro",
+            "prof_iniciais": "AR", "estrelas": estrelas, "faixa": faixa,
+            "estrelas_html": render_to_string(
+                "avaliacoes/components/_estrelas.html",
+                contexto_estrelas(estrelas, herda_cor=True)),
+            "comentario": "Boa peça.", "documentos": []}
+
+
 def ctx_minhas_notas(vazio=False):
-    fbs = [] if vazio else [feedback(9.2), feedback(None), feedback(5.5)]
+    fbs = [] if vazio else [feedback(10.0), feedback(None), feedback(6.0)]
     return {
         "user": ALUNO, "request": Obj(user=ALUNO),
         "feedbacks": fbs,
-        "feedbacks_json": [{"id": 1, "data": "26/08/2026", "mov": "Juntada",
-                            "mov_texto": "…", "proc": NUMERO, "prof": "Ana Ribeiro",
-                            "prof_iniciais": "AR", "nota": 9.2,
-                            "comentario": "Boa peça.", "documentos": []}],
+        "feedbacks_json": [avaliacao_json(5, "ok"), avaliacao_json(None, "gray"),
+                           avaliacao_json(3, "warn")],
         "total_movimentacoes": 0 if vazio else 7,
         "total_avaliadas": 0 if vazio else 3,
-        "media_geral": None if vazio else 7.9,
-        "melhor_nota": None if vazio else 9.2,
+        "media_geral": None if vazio else 3.9,
+        "media_percentual": 0 if vazio else 78,
+        "melhor_avaliacao": None if vazio else 5,
         "ultima_avaliacao": None if vazio else feedback(),
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
                         {"label": "Minhas Notas", "url": None}],
