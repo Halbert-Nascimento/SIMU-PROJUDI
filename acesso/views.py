@@ -9,6 +9,7 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from base.navegacao import home_do_usuario, tem_tela_inicial
 from usuarios.forms import CadastroPublicoForm
 from usuarios.models import Usuario
 
@@ -21,6 +22,14 @@ logger = logging.getLogger(__name__)
 
 
 def login_view(request):
+    # base:home também aponta para cá (logo do cabeçalho): quem já entrou vai
+    # para a própria tela inicial em vez de rever o formulário de login.
+    # Só em GET: o POST segue para o formulário, então trocar de conta sem
+    # sair antes continua funcionando. Perfil sem tela inicial (Pendente) vê o
+    # formulário como antes, em vez de cair numa tela que o recusa.
+    if request.method == "GET" and tem_tela_inicial(request.user):
+        return redirect(home_do_usuario(request.user)[1])
+
     form = LoginForm(request, data=request.POST or None)
     if request.method == "POST" and not form.is_valid():
         logger.warning(
