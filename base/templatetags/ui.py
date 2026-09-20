@@ -114,11 +114,19 @@ def campo(content, label, erros=None, ajuda="", para=""):
 # ---------------------------------------------------------------------------
 
 @register.inclusion_tag("base/components/_nav_secundaria.html", takes_context=True)
-def nav_secundaria(context, ativo="", voltar_url="", voltar_label=""):
+def nav_secundaria(
+    context, ativo="", apenas_inicio=False, voltar_url="", voltar_label=""
+):
     """
     Barra de navegação abaixo do cabeçalho. Os itens dependem do perfil, e
     `ativo` marca a aba corrente com o sublinhado do guia — aceita
     "inicio", "processos", "audiencias" ou "notas".
+
+    `apenas_inicio=True` reduz a barra à "Página Inicial", para qualquer perfil:
+    é o que as telas do processo usam, onde a navegação é a do próprio processo.
+
+    Se uma tela de processo informar `voltar_url`, administradores, coordenadores
+    e professores recebem o atalho para voltar à página principal daquele processo.
     """
     # mesmo usuário que base.html enxerga: o do context processor de auth
     user = context.get("user")
@@ -129,6 +137,17 @@ def nav_secundaria(context, ativo="", voltar_url="", voltar_label=""):
         and user.is_authenticated
         and user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO
     )
+    pode_voltar_ao_processo = bool(
+        voltar_url
+        and user
+        and user.is_authenticated
+        and user.tipo_perfil_global
+        in (
+            Usuario.TipoPerfilGlobal.ADMIN,
+            Usuario.TipoPerfilGlobal.COORDENADOR,
+            Usuario.TipoPerfilGlobal.PROFESSOR,
+        )
+    )
     # "Página Inicial" leva cada perfil à sua tela de entrada: quem administra
     # cai no painel, e não na área do servidor.
     _, home_url = home_do_usuario(user)
@@ -137,6 +156,8 @@ def nav_secundaria(context, ativo="", voltar_url="", voltar_label=""):
         "user": user,
         "ativo": ativo,
         "home_url": home_url,
+        "apenas_inicio": apenas_inicio,
+        "pode_voltar_ao_processo": pode_voltar_ao_processo,
         "voltar_url": voltar_url,
         "voltar_label": voltar_label,
     }

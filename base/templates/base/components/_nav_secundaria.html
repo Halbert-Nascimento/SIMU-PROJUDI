@@ -3,6 +3,7 @@ Renderizado pela tag {% templatetag openblock %} nav_secundaria {% templatetag c
 
 Guia seção 07: barra branca com borda, aba ativa sublinhada em 2px.
 Fica logo abaixo do cabeçalho de 60px, em z 30.
+Com `apenas_inicio`, só a "Página Inicial" é renderizada (telas do processo).
 O contador de sessão é o #session-debug-timer, alimentado pelo sessionTimer
 de base/base.html — não é um valor fixo.
 {% endcomment %}
@@ -15,6 +16,7 @@ de base/base.html — não é um valor fixo.
                 Página Inicial
             </a>
 
+            {% if not apenas_inicio %}
             <div class="relative group flex items-stretch">
                 <span class="px-3.5 py-[13px] -mb-px text-apoio uppercase tracking-[.06em] border-b-2 cursor-pointer transition-colors flex items-center
                              {% if ativo == 'processos' %}font-bold text-navy border-acao{% else %}font-semibold text-rotulo border-transparent hover:text-navy hover:bg-tabela-topo{% endif %}">
@@ -39,11 +41,12 @@ de base/base.html — não é um valor fixo.
                 Minhas Notas
             </a>
             {% endif %}
+            {% endif %}
 
-            {% if voltar_url %}
+            {% if pode_voltar_ao_processo %}
             <a href="{{ voltar_url }}"
                class="px-3.5 py-[13px] text-apoio uppercase tracking-[.06em] font-semibold text-acao border-b-2 border-transparent hover:bg-tabela-topo transition-colors">
-                {{ voltar_label|default:"Voltar" }}
+                {{ voltar_label|default:"Voltar ao Processo" }}
             </a>
             {% endif %}
         </div>

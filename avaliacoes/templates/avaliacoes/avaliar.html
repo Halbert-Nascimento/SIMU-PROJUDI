@@ -43,7 +43,7 @@
 
 {% block content %}
 {% url 'processos:visualizar_processo' processo.numero as url_processo %}
-{% nav_secundaria voltar_url=url_processo voltar_label="Voltar ao Processo" %}
+{% nav_secundaria apenas_inicio=True voltar_url=url_processo %}
 
 <main class="max-w-conteudo mx-auto px-7 py-5">
 
