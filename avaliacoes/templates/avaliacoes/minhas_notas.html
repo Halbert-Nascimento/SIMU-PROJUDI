@@ -1,6 +1,7 @@
 {% extends 'base/base.html' %}
 {% load static %}
 {% load ui %}
+{% load avaliacoes_ui %}
 
 {% block title %}Minhas Notas — Simulador Projudi{% endblock %}
 
@@ -13,9 +14,10 @@
     .progress-bg { width: 100%; height: 8px; background: #f1f2f4; overflow: hidden; }
     .progress-fill { height: 100%; background: #1f4f9c; transition: width .4s ease; }
 
-    /* Etiqueta de nota: é a .pill do guia; aqui só a largura mínima, para a
-       coluna não mudar de tamanho a cada linha. */
-    .nota-badge { min-width: 46px; justify-content: center; }
+    /* Etiqueta de avaliação: é a .pill do guia, com as cinco estrelas dentro
+       (cor herdada do estado); aqui só a largura mínima, para a coluna não mudar
+       de tamanho entre "★★★★★" e "—". */
+    .nota-badge { min-width: 96px; justify-content: center; }
 
     /* Destaque da nota no modal — trio de estado do guia (seção 02). A banda é
        decidida pelo mesmo getNotaClass() da etiqueta da tabela. */
@@ -70,20 +72,20 @@
 
         <!-- Cards de resumo -->
         <div class="grid grid-cols-3 gap-[14px] mt-3">
-            {% include 'base/components/_card_kpi.html' with rotulo="Média Geral" numero=media_geral|floatformat:2|default:"—" apoio="das avaliações com nota" only %}
+            {% include 'base/components/_card_kpi.html' with rotulo="Média Geral" numero=media_geral|floatformat:1|default:"—" apoio="de 5 estrelas, nas avaliações com nota" only %}
             <!-- direto na classe: o apoio interpola um contador, e o include recebe texto pronto -->
             <div class="card-kpi">
                 <span class="rotulo">Avaliadas</span>
                 <span class="numero">{{ total_avaliadas }}</span>
                 <span class="apoio">de {{ total_movimentacoes }} movimentações</span>
             </div>
-            {% include 'base/components/_card_kpi.html' with rotulo="Melhor Nota" numero=melhor_nota|floatformat:1|default:"—" apoio="nota mais alta recebida" only %}
+            {% include 'base/components/_card_kpi.html' with rotulo="Melhor Avaliação" numero=melhor_avaliacao|default_if_none:"—" apoio="estrelas na avaliação mais alta" only %}
         </div>
 
         {% if media_geral is not None %}
         <div class="mt-3">
             <div class="progress-bg">
-                <div class="progress-fill" style="width: {{ media_geral|floatformat:0 }}0%;"></div>
+                <div class="progress-fill" style="width: {{ media_percentual }}%;"></div>
             </div>
         </div>
         {% endif %}
@@ -99,7 +101,7 @@
             <em>"{{ ultima_avaliacao.movimentacao.tipo_movimento.nome_movimentacao }}"</em>
             — {{ ultima_avaliacao.data_feedback|date:"d/m/Y" }}
             {% if ultima_avaliacao.nota is not None %}
-            · Nota: <strong class="font-mono">{{ ultima_avaliacao.nota|floatformat:1 }}</strong>
+            · Avaliação: {% estrelas ultima_avaliacao.nota|em_estrelas %}
             {% endif %}
         </div>
     </div>
@@ -136,7 +138,7 @@
                     <th style="width:90px;">Data</th>
                     <th>Movimentação</th>
                     <th style="width:160px;">Professor</th>
-                    <th style="width:70px;" class="text-center">Nota</th>
+                    <th style="width:120px;" class="text-center">Avaliação</th>
                     <th class="col-acoes">Ações</th>
                 </tr>
             </thead>
@@ -176,13 +178,8 @@ function escapeHtml(s) {
     return div.innerHTML;
 }
 
-// As faixas são os quatro trios de estado do guia (seção 02): não há um quinto.
-function getNotaClass(n) {
-    if (n === null) return 'gray';
-    if (n >= 7.5) return 'ok';
-    if (n >= 6) return 'warn';
-    return 'erro';
-}
+// A faixa (um dos quatro trios de estado do guia, seção 02) e o desenho das
+// estrelas vêm prontos do servidor em cada avaliação: o JS não decide cor nem forma.
 
 function parseDate(d) {
     var parts = d.split('/');
@@ -191,15 +188,15 @@ function parseDate(d) {
 
 function getFiltered() {
     var arr = avaliacoes.filter(function(a) {
-        if (currentFilter === 'avaliadas' && a.nota === null) return false;
-        if (currentFilter === 'sem_nota' && a.nota !== null) return false;
+        if (currentFilter === 'avaliadas' && a.estrelas === null) return false;
+        if (currentFilter === 'sem_nota' && a.estrelas !== null) return false;
         return true;
     });
     arr.sort(function(a, b) {
         switch (currentSort) {
             case 'data-asc': return parseDate(a.data) - parseDate(b.data);
-            case 'nota-desc': return (b.nota === null ? -1 : b.nota) - (a.nota === null ? -1 : a.nota);
-            case 'nota-asc': return (a.nota === null ? 99 : a.nota) - (b.nota === null ? 99 : b.nota);
+            case 'nota-desc': return (b.estrelas === null ? -1 : b.estrelas) - (a.estrelas === null ? -1 : a.estrelas);
+            case 'nota-asc': return (a.estrelas === null ? 99 : a.estrelas) - (b.estrelas === null ? 99 : b.estrelas);
             default: return parseDate(b.data) - parseDate(a.data);
         }
     });
@@ -230,14 +227,13 @@ function mudarPaginaAvaliacoes(acao) {
 function renderAval() {
     var body = document.getElementById('avalBody');
     body.innerHTML = getFiltered().map(function(a) {
-        var notaTxt = a.nota === null ? '—' : a.nota.toFixed(1).replace('.', ',');
         var realIdx = avaliacoes.indexOf(a);
         return '<tr class="aval-row" onclick="openAval(' + realIdx + ')">' +
             '<td class="font-mono">' + escapeHtml(a.data) + '</td>' +
             '<td><div class="celula-dupla"><span class="principal">' + escapeHtml(a.mov) + '</span>' +
             '<span class="secundario font-mono">' + escapeHtml(a.proc) + '</span></div></td>' +
             '<td>' + escapeHtml(a.prof) + '</td>' +
-            '<td class="text-center"><span class="pill nota-badge ' + getNotaClass(a.nota) + '">' + notaTxt + '</span></td>' +
+            '<td class="text-center"><span class="pill nota-badge ' + a.faixa + '">' + a.estrelas_html + '</span></td>' +
             '<td class="col-acoes"><i class="fa-solid fa-eye text-acao cursor-pointer" data-tip="Ver detalhes" onclick="event.stopPropagation(); openAval(' + realIdx + ')"></i></td>' +
             '</tr>';
     }).join('');
@@ -264,7 +260,7 @@ if (seletorOrdem) {
 // Modal
 function openAval(idx) {
     var a = avaliacoes[idx];
-    var banda = getNotaClass(a.nota);
+    var banda = a.faixa;
 
     var docsHtml = '';
     if (a.documentos && a.documentos.length > 0) {
@@ -285,9 +281,9 @@ function openAval(idx) {
     // Cabeçalho com nota
     html += '<div class="nota-destaque ' + banda + '">';
     html += '<div class="text-center pr-4 border-r border-campo-borda">';
-    html += '<div class="field-label">Nota</div>';
-    html += '<div class="valor font-mono">' + (a.nota === null ? '—' : a.nota.toFixed(1).replace('.', ',')) + '</div>';
-    html += '<div class="text-meta text-rotulo mt-1">/ 10,00</div>';
+    html += '<div class="field-label">Avaliação</div>';
+    html += '<div class="valor font-mono">' + (a.estrelas === null ? '—' : a.estrelas) + '</div>';
+    html += '<div class="text-meta text-rotulo mt-1">' + (a.estrelas === null ? 'sem nota' : 'de 5 estrelas') + '</div>';
     html += '</div>';
     html += '<div class="flex-1">';
     html += '<div class="font-semibold text-acao text-dado">' + escapeHtml(a.mov) + '</div>';
