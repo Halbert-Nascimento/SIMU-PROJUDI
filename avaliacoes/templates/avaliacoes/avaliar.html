@@ -213,7 +213,10 @@
                     <div class="flex flex-col items-center justify-center text-center shrink-0">
                         <div class="field-label mb-1 whitespace-nowrap">Avaliação (1 a 5 estrelas)</div>
                         {% estrelas_campo nome="estrelas" valor=form.estrelas.value %}
-                        <div class="text-meta text-rotulo mt-1">Sem estrelas = sem nota</div>
+                        <div class="text-meta text-rotulo mt-1">
+                            Sem estrelas = sem nota ·
+                            <button type="button" class="btn-limpar-estrelas text-acao font-semibold cursor-pointer" onclick="limparEstrelas()">Limpar</button>
+                        </div>
                         {% if form.estrelas.errors %}
                         <div class="text-validacao text-meta font-semibold mt-1">{{ form.estrelas.errors.0 }}</div>
                         {% endif %}
@@ -336,6 +339,12 @@ function openConfirm() {
         : 'Sem nota';
     document.getElementById('cnfNota').textContent = notaText;
     document.getElementById('confirmModal').classList.add('open');
+}
+
+function limparEstrelas() {
+    document.querySelectorAll('input[name="estrelas"]').forEach(function(r) {
+        r.checked = false;
+    });
 }
 
 function closeConfirm() {
