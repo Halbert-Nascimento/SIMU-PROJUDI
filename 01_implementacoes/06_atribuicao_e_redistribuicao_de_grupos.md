@@ -645,6 +645,24 @@ passou por todas as verificações automáticas sendo ilegível.
 
 Branch: `feat/redistribuicao-grupos-processo`.
 
+### Estado em 20/09/2026
+
+As seis etapas estão entregues, com 143 testes verdes, `check` no mesmo único problema
+preexistente (uma `box-shadow` em `componentes.css`), `diff` sem perda além do fluxo antigo
+e `render_smoke` verde. O snapshot foi refeito depois da etapa 6 e é a nova linha de base.
+
+Duas coisas mudaram de etapa em relação ao plano original, e ficam registradas aqui:
+
+- **A poda da lista migrou da etapa 6 para a 5.** Remover a coluna de checkbox sem remover o
+  JavaScript deixaria `document.getElementById("bulkAssign").addEventListener` estourando em
+  `null`, e manter o botão de lote vivo permitiria criar exatamente os conflitos de papel que
+  a feature existe para impedir. As duas coisas saem juntas ou não saem.
+- **A etapa 6 ficou só com a remoção do endpoint e o trabalho de dados** — a view antiga, a
+  rota, a constraint e a migração de limpeza.
+
+**Falta a conferência no navegador**, que o CLAUDE.md não trata como opcional e que nenhuma
+verificação automática substitui.
+
 A divisão segue **mudança paralela**: o caminho novo nasce inteiro ao lado do antigo, a
 chave vira num commit pequeno, e só então o antigo é removido. Nenhuma etapa deixa o
 sistema meio-ligado.
