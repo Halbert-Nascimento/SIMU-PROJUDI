@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import html
+import re
 from unittest import mock
 
 from django.contrib.auth.models import AnonymousUser
@@ -634,6 +636,25 @@ class TelaDeAtribuicaoTests(CenarioMovimentacoesTestCase):
             client.post(self.url(processo), dados),
             reverse("processos:visualizar_processo", args=[processo.numero]),
         )
+
+    def test_voltar_e_ajustar_preserva_o_next_inteiro(self):
+        """O `next` viaja como valor de query string: sem urlencode, o `&` o trunca."""
+        processo = self.criar_processo_protocolado()
+        client = self.cliente_logado(self.usuarios["SC"])
+        lista = reverse("processos:pagina_aluno") + "?numero=&classe=&situacao=1&page=2"
+
+        dados = self.payload(processo, polo_passivo=str(self.grupos["APP"].pk))
+        dados.update({"acao": "revisar", "next": lista})
+        resumo = client.post(self.url(processo), dados)
+
+        href = re.search(
+            r'<a href="([^"]+)"[^>]*>Voltar e ajustar</a>', resumo.content.decode()
+        )
+        self.assertIsNotNone(href, "o link de voltar sumiu do passo 2")
+        # o navegador desfaz o escape de HTML antes de pedir a URL
+        volta = client.get(html.unescape(href.group(1)))
+
+        self.assertEqual(volta.context["proximo"], lista)
 
     def test_estado_mudou_recusa_e_reabre_a_tela(self):
         processo = self.criar_processo_protocolado()

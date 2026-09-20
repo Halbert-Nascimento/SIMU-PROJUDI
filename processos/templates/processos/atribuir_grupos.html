@@ -137,7 +137,7 @@
             <button type="submit" name="acao" value="confirmar" class="{% classe_botao 'primario' padding=True %}">
                 <i class="fa-solid fa-check mr-1.5"></i> Confirmar
             </button>
-            <a href="{% url 'processos:atribuir_grupos' processo.numero %}{% if proximo %}?next={{ proximo }}{% endif %}"
+            <a href="{% url 'processos:atribuir_grupos' processo.numero %}{% if proximo %}?next={{ proximo|urlencode }}{% endif %}"
                class="{% classe_botao 'secundario' padding=True %} inline-flex items-center">Voltar e ajustar</a>
         </div>
 
