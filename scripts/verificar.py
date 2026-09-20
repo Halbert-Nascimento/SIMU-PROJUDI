@@ -53,7 +53,7 @@ TAGS_VAZIAS = {"area", "base", "br", "col", "embed", "hr", "img", "input",
 
 # argumentos de tag Django que carregam texto visivel ou id — sem le-los, toda
 # adocao de componente aparece como perda de conteudo
-ARGS_TEXTO = ("titulo", "label", "ajuda", "voltar_label", "mensagem", "apoio",
+ARGS_TEXTO = ("titulo", "label", "ajuda", "mensagem", "apoio",
               "rotulo", "meta")
 ARGS_ID = ("id", "fechar_id", "container_id", "info_id", "paginas_id",
            "btn_prefixo")
