@@ -7,18 +7,13 @@
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
 <style>
     /* Marcador de passo — mesma geometria de etiqueta da tela de movimentação. */
     .step-badge {
         background: #0a083d; color: #fff; padding: 3px 9px;
         font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 700; letter-spacing: .07em;
         text-transform: uppercase; display: inline-block;
-    }
-
-    /* Rótulo do papel: mesma tipografia de rótulo de campo do guia (seção 03). */
-    .posicao-rotulo {
-        display: block; font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 600;
-        letter-spacing: .1em; text-transform: uppercase; color: #6b7280;
     }
 
     /* Linha de posição — a separação vem do divisor, como nas tabelas; a última não tem.
@@ -37,12 +32,6 @@
     .opcao-grupo { display: flex; align-items: center; gap: 8px; padding: 5px 10px; }
     .opcao-grupo:hover { background: #f7faff; }
 
-    .bloco-resumo { border: 1px solid #e2e5ea; background: #fff; }
-    .bloco-resumo > h2 {
-        background: #f7f8fa; border-bottom: 1px solid #e2e5ea; padding: 8px 14px;
-        font-size: calc(11px * var(--escala-fonte, 1)); font-weight: 700;
-        letter-spacing: .06em; text-transform: uppercase; color: #23262e;
-    }
 </style>
 {% endblock %}
 
@@ -87,67 +76,61 @@
         <input type="hidden" name="{{ nome }}" value="{{ valor }}">
         {% endfor %}
 
-        <div class="bloco-resumo mb-4">
-            <h2>Alterações a aplicar</h2>
-            <div class="p-0">
-                {% for alteracao in plano.alteracoes %}
-                <div class="flex items-start gap-3 px-[16px] py-[11px] border-b border-divisor last:border-b-0">
-                    <span class="pill {% pill_natureza alteracao.natureza %} shrink-0">{% rotulo_natureza alteracao.natureza %}</span>
-                    <div class="min-w-0">
-                        <span class="posicao-rotulo">{{ alteracao.posicao.rotulo }}</span>
-                        <div class="text-dado mt-1">
-                            {% if alteracao.natureza == 'substituicao' %}
-                                <span class="text-texto-neutro">{{ alteracao.grupo_anterior.nome }}</span>
-                                <span class="mx-1 text-rotulo">&rarr;</span>
-                                <span class="font-semibold text-texto">{{ alteracao.grupo_novo.nome }}</span>
-                            {% elif alteracao.natureza == 'mudanca_de_posicao' %}
-                                <span class="font-semibold text-texto">{{ alteracao.grupo_novo.nome }}</span>
-                                <span class="text-rotulo">deixa {{ alteracao.posicao_origem.rotulo }} e assume esta posição</span>
-                            {% elif alteracao.natureza == 'remocao' %}
-                                <span class="text-texto-neutro">{{ alteracao.grupo_anterior.nome }}</span>
-                                <span class="text-rotulo">deixa o processo</span>
-                            {% else %}
-                                <span class="font-semibold text-texto">{{ alteracao.grupo_novo.nome }}</span>
-                            {% endif %}
-                        </div>
+        <div class="section-title">ALTERAÇÕES A APLICAR</div>
+        <div class="panel mb-4">
+            {% for alteracao in plano.alteracoes %}
+            <div class="flex items-start gap-3 py-[11px] first:pt-0 last:pb-0 border-b border-divisor last:border-b-0">
+                <span class="pill {% pill_natureza alteracao.natureza %} shrink-0">{% rotulo_natureza alteracao.natureza %}</span>
+                <div class="min-w-0">
+                    <span class="field-label">{{ alteracao.posicao.rotulo }}</span>
+                    <div class="text-dado mt-1">
+                        {% if alteracao.natureza == 'substituicao' %}
+                            <span class="text-texto-neutro">{{ alteracao.grupo_anterior.nome }}</span>
+                            <span class="mx-1 text-rotulo">&rarr;</span>
+                            <span class="font-semibold text-texto">{{ alteracao.grupo_novo.nome }}</span>
+                        {% elif alteracao.natureza == 'mudanca_de_posicao' %}
+                            <span class="font-semibold text-texto">{{ alteracao.grupo_novo.nome }}</span>
+                            <span class="text-rotulo">deixa {{ alteracao.posicao_origem.rotulo }} e assume esta posição</span>
+                        {% elif alteracao.natureza == 'remocao' %}
+                            <span class="text-texto-neutro">{{ alteracao.grupo_anterior.nome }}</span>
+                            <span class="text-rotulo">deixa o processo</span>
+                        {% else %}
+                            <span class="font-semibold text-texto">{{ alteracao.grupo_novo.nome }}</span>
+                        {% endif %}
                     </div>
                 </div>
-                {% empty %}
-                <div class="px-[16px] py-[11px] text-corpo text-texto-neutro">
-                    Nenhuma troca de grupo. Confirmar autua o processo e dá o polo ao grupo que
-                    peticionou.
-                </div>
-                {% endfor %}
             </div>
+            {% empty %}
+            <div class="text-corpo text-texto-neutro">
+                Nenhuma troca de grupo. Confirmar autua o processo e dá o polo ao grupo que
+                peticionou.
+            </div>
+            {% endfor %}
         </div>
 
-        <div class="bloco-resumo mb-4">
-            <h2>Consequências</h2>
-            <div class="px-[16px] py-[11px] text-corpo">
-                <div class="flex gap-2">
-                    <span class="w-40 text-texto-neutro shrink-0">Polo ativo</span>
-                    <span class="font-semibold">{{ plano.donos_de_polo.Ativo.nome|default:"sem grupo" }}</span>
-                </div>
-                <div class="flex gap-2 mt-1">
-                    <span class="w-40 text-texto-neutro shrink-0">Polo passivo</span>
-                    <span class="font-semibold">{{ plano.donos_de_polo.Passivo.nome|default:"sem grupo" }}</span>
-                </div>
-                {% if plano.vinculos_a_remover %}
-                <p class="mt-2 text-meta text-atencao-txt">
-                    {% for grupo in plano.vinculos_a_remover %}{{ grupo.nome }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                    deixa de poder corrigir as movimentações que registrou neste processo, e isso
-                    não volta se o grupo for vinculado outra vez.
-                </p>
-                {% endif %}
+        <div class="section-title">CONSEQUÊNCIAS</div>
+        <div class="panel mb-4 text-corpo">
+            <div class="flex gap-2">
+                <span class="w-40 text-texto-neutro shrink-0">Polo ativo</span>
+                <span class="font-semibold">{{ plano.donos_de_polo.Ativo.nome|default:"sem grupo" }}</span>
             </div>
+            <div class="flex gap-2 mt-1">
+                <span class="w-40 text-texto-neutro shrink-0">Polo passivo</span>
+                <span class="font-semibold">{{ plano.donos_de_polo.Passivo.nome|default:"sem grupo" }}</span>
+            </div>
+            {% if plano.vinculos_a_remover %}
+            <p class="mt-2 text-meta text-atencao-txt">
+                {% for grupo in plano.vinculos_a_remover %}{{ grupo.nome }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                deixa de poder corrigir as movimentações que registrou neste processo, e isso
+                não volta se o grupo for vinculado outra vez.
+            </p>
+            {% endif %}
         </div>
 
-        <div class="bloco-resumo mb-4">
-            <h2>Registro nos autos</h2>
-            <div class="px-[16px] py-[11px]">
-                <div class="text-dado font-semibold text-texto">{{ nome_evento }}</div>
-                <p class="text-corpo text-texto-neutro mt-1">{{ descricao_evento }}</p>
-            </div>
+        <div class="section-title">REGISTRO NOS AUTOS</div>
+        <div class="panel mb-4">
+            <div class="text-dado font-semibold text-texto">{{ nome_evento }}</div>
+            <p class="text-corpo text-texto-neutro mt-1">{{ descricao_evento }}</p>
         </div>
 
         <div class="flex items-center gap-2">
@@ -168,7 +151,7 @@
             <div class="posicao-linha" data-chave="{{ estado.posicao.chave }}" data-atual="{% if estado.grupo %}{{ estado.grupo.nome }}{% endif %}">
                 <div class="flex items-start justify-between gap-3 py-3">
                     <div class="min-w-0">
-                        <span class="posicao-rotulo">{{ estado.posicao.rotulo }}</span>
+                        <span class="field-label">{{ estado.posicao.rotulo }}</span>
                         <div class="posicao-estado mt-1 text-dado">
                             {% if estado.em_conflito %}
                                 <span class="pill erro">{{ estado.grupos_vinculados|length }} grupos vinculados — escolha qual fica</span>
