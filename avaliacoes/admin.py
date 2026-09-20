@@ -6,7 +6,9 @@ from .models import FeedbackProfessor
 
 @admin.register(FeedbackProfessor)
 class FeedbackProfessorAdmin(admin.ModelAdmin):
-    list_display = ["id", "professor", "movimentacao", "estrelas", "pontos", "data_feedback"]
+    list_display = [
+        "id", "professor", "movimentacao", "estrelas", "pontos", "data_feedback",
+    ]
     list_filter = ["data_feedback", "nota"]
     search_fields = [
         "professor__username",

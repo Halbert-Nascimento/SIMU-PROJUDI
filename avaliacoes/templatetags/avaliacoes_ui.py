@@ -14,7 +14,7 @@ register = template.Library()
 
 @register.filter
 def em_estrelas(nota):
-    """Nota gravada (escala 0–10) em estrelas inteiras: `{{ fb.nota|em_estrelas }}`."""
+    """Nota gravada (0–10) em estrelas inteiras: `{{ fb.nota|em_estrelas }}`."""
     return nota_para_estrelas(nota)
 
 
