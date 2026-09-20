@@ -23,10 +23,19 @@ from base.mensagens import propagar_erros_form
 
 from ciclos.models import GrupoTrabalho
 
-from .forms import ProcessoJudicialForm
+from django.utils.http import url_has_allowed_host_and_scheme
+
+from .forms import AtribuicaoGruposForm, ProcessoJudicialForm
 from .permissions import (
+    pode_atribuir_grupos,
     pode_editar_processo,
     pode_visualizar_processo,
+)
+from .services import (
+    aplicar_alteracoes,
+    descrever_alteracoes,
+    estado_posicoes_do_processo,
+    nome_do_evento,
 )
 from .utils import validar_multiplos_arquivos
 from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
@@ -327,6 +336,93 @@ def pagina_aluno(request):
     )
 
 
+def _destino_seguro(request) -> str:
+    """`next` só é honrado se apontar para este site — senão vira redirect aberto."""
+    destino = request.POST.get("next") or request.GET.get("next") or ""
+    if destino and url_has_allowed_host_and_scheme(
+        destino, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
+    ):
+        return destino
+    return ""
+
+
+def _contexto_atribuir_grupos(request, processo, estados, *, proximo):
+    return {
+        "processo": processo,
+        "estados": estados,
+        "proximo": proximo,
+        "polos_ativo": [p for p in processo.polos.all() if p.tipo_polo == "Ativo"],
+        "polos_passivo": [p for p in processo.polos.all() if p.tipo_polo == "Passivo"],
+        "breadcrumbs": [
+            home_breadcrumb(request.user),
+            {
+                "label": f"Processo {processo.numero}",
+                "url": reverse("processos:visualizar_processo", args=[processo.numero]),
+            },
+            {"label": "Atribuir Grupos", "url": None},
+        ],
+    }
+
+
+@login_required
+def atribuir_grupos_processo(request, numero):
+    """
+    Distribuição e redistribuição de grupos, em dois passos: as posições e o resumo.
+
+    O estado das escolhas mora no formulário, não em JavaScript — `acao=revisar` re-renderiza
+    a mesma página no passo 2 sem gravar nada, e só `acao=confirmar` escreve.
+    """
+    processo = get_object_or_404(
+        ProcessoJudicial.objects
+        .select_related("ciclo", "status_atual", "classe", "tipo_processo", "vara", "vara__comarca")
+        .prefetch_related("polos__parte"),
+        numero=numero,
+    )
+    if not pode_atribuir_grupos(request.user, processo):
+        raise PermissionDenied
+
+    estados = estado_posicoes_do_processo(processo)
+    proximo = _destino_seguro(request)
+    contexto = _contexto_atribuir_grupos(request, processo, estados, proximo=proximo)
+
+    if request.method == "POST":
+        form = AtribuicaoGruposForm(request.POST, estados=estados)
+        if form.is_valid():
+            if form.plano.vazio:
+                messages.info(request, "Nenhuma alteração a aplicar.", extra_tags="grupos")
+            elif request.POST.get("acao") == "confirmar":
+                aplicar_alteracoes(processo, form.desejado, ator=request.user)
+                messages.success(
+                    request,
+                    f'Grupos do processo "{processo.numero}" atualizados.',
+                    extra_tags="grupos",
+                )
+                return redirect(
+                    proximo or reverse("processos:visualizar_processo", args=[processo.numero])
+                )
+            else:
+                contexto.update({
+                    "passo": 2,
+                    "plano": form.plano,
+                    "descricao_evento": descrever_alteracoes(form.plano),
+                    "nome_evento": nome_do_evento(processo, form.plano),
+                    "escolhas": {
+                        nome: valor for nome, valor in request.POST.items()
+                        if nome.startswith(("posicao_", "atual_"))
+                    },
+                })
+                return render(request, "processos/atribuir_grupos.html", contexto)
+        else:
+            propagar_erros_form(request, form, extra_tags="grupos")
+            # o estado do banco mudou: as escolhas da tela não valem mais, e reabrir em GET é
+            # o que mostra o processo como ele está agora
+            if form.estado_mudou:
+                return redirect(request.get_full_path())
+
+    contexto["passo"] = 1
+    return render(request, "processos/atribuir_grupos.html", contexto)
+
+
 @login_required
 def varas_por_comarca(request, comarca_id):
     varas = VaraServentia.objects.filter(comarca_id=comarca_id).values("id", "nome")
@@ -612,6 +708,7 @@ def visualizar_processo(request, numero):
             ],
             "grupo_serventia": grupo_serventia,
             "grupos_vinculados": grupos_vinculados,
+            "pode_atribuir_grupos": pode_atribuir_grupos(request.user, processo),
             "movimentacoes": movimentacoes,
             "pode_avaliar": pode_avaliar,
             "breadcrumbs": [

@@ -3,6 +3,7 @@ from __future__ import annotations
 from unittest import mock
 
 from django.contrib.auth.models import AnonymousUser
+from django.urls import reverse
 
 from ciclos.models import CicloSimulacao, GrupoTrabalho
 from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
@@ -222,6 +223,20 @@ class PlanejamentoDeAlteracoesTests(CenarioMovimentacoesTestCase):
                 planejar_alteracoes(estados, {
                     "polo_ativo": self.grupos["MP"], "ministerio_publico": self.grupos["MP"],
                 })
+
+    def test_grupo_de_papel_que_a_posicao_nao_aceita_e_recusado(self):
+        """
+        A guarda vive no serviço, não só no form: com o ChoiceField desativado num experimento,
+        um grupo Juiz entrou no polo passivo sem nada reclamar.
+        """
+        processo = self.criar_processo_protocolado()
+        estados = self.estados(processo)
+
+        with self.assertRaises(EstadoInvalidoError):
+            planejar_alteracoes(estados, {"polo_passivo": self.grupos["JZ"]})
+
+        with self.assertRaises(EstadoInvalidoError):
+            planejar_alteracoes(estados, {"juiz": self.grupos["APA"]})
 
     def test_posicao_em_conflito_exige_resolucao_explicita(self):
         processo = self.criar_processo_protocolado()
@@ -517,6 +532,178 @@ class AplicacaoDeAlteracoesTests(CenarioMovimentacoesTestCase):
         self.assertEqual(movimentacao.descricao_evento, descrever_alteracoes(plano))
         self.assertIn('Polo passivo: "Grupo APP" atribuído.', movimentacao.descricao_evento)
         self.assertIn('Juiz: "Grupo JZ" atribuído.', movimentacao.descricao_evento)
+
+
+class TelaDeAtribuicaoTests(CenarioMovimentacoesTestCase):
+    """A tela em si: dois passos, trava de concorrência e POST forjado."""
+
+    def url(self, processo, **params):
+        url = reverse("processos:atribuir_grupos", args=[processo.numero])
+        if params:
+            url += "?" + "&".join(f"{chave}={valor}" for chave, valor in params.items())
+        return url
+
+    def payload(self, processo, **escolhas):
+        """Base "manter" em tudo, com o retrato de estado que a tela teria enviado."""
+        dados = {}
+        for estado in estado_posicoes_do_processo(processo):
+            chave = estado.posicao.chave
+            dados[f"atual_{chave}"] = estado.impressao
+            if chave in escolhas:
+                dados[f"posicao_{chave}"] = escolhas[chave]
+            elif not estado.em_conflito:
+                dados[f"posicao_{chave}"] = "manter"
+        return dados
+
+    def test_get_renderiza_as_quatro_posicoes(self):
+        processo = self.criar_processo_protocolado()
+        client = self.cliente_logado(self.usuarios["SC"])
+
+        resp = client.get(self.url(processo))
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context["passo"], 1)
+        self.assertEqual(
+            [estado.posicao.chave for estado in resp.context["estados"]],
+            ["polo_ativo", "polo_passivo", "ministerio_publico", "juiz"],
+        )
+        self.assertContains(resp, "Polo ativo")
+
+    def test_quem_nao_e_serventia_recebe_403(self):
+        processo = self.criar_processo_protocolado()
+        for cod in ("APA", "APP", "MP", "JZ"):
+            with self.subTest(cargo=cod):
+                client = self.cliente_logado(self.usuarios[cod])
+                self.assertEqual(client.get(self.url(processo)).status_code, 403)
+
+    def test_revisar_mostra_o_resumo_sem_gravar(self):
+        processo = self.criar_processo_protocolado()
+        client = self.cliente_logado(self.usuarios["SC"])
+        dados = self.payload(processo, polo_passivo=str(self.grupos["APP"].pk))
+        dados["acao"] = "revisar"
+
+        resp = client.post(self.url(processo), dados)
+        processo.refresh_from_db()
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp.context["passo"], 2)
+        self.assertEqual(len(resp.context["plano"].alteracoes), 1)
+        self.assertEqual(resp.context["nome_evento"], NOME_AUTUACAO)
+        self.assertFalse(
+            GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["APP"]).exists()
+        )
+        self.assertEqual(processo.status_atual.nome_status, "Protocolado")
+
+    def test_confirmar_grava_e_volta_para_o_processo(self):
+        processo = self.criar_processo_protocolado()
+        client = self.cliente_logado(self.usuarios["SC"])
+        dados = self.payload(processo, polo_passivo=str(self.grupos["APP"].pk))
+        dados["acao"] = "confirmar"
+
+        resp = client.post(self.url(processo), dados)
+        processo.refresh_from_db()
+
+        self.assertRedirects(
+            resp, reverse("processos:visualizar_processo", args=[processo.numero]),
+        )
+        self.assertTrue(
+            GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["APP"]).exists()
+        )
+        self.assertEqual(processo.status_atual.nome_status, "Autuado")
+
+    def test_next_do_site_e_honrado_e_o_externo_ignorado(self):
+        processo = self.criar_processo_protocolado()
+        client = self.cliente_logado(self.usuarios["SC"])
+        lista = reverse("processos:pagina_aluno")
+
+        dados = self.payload(processo, juiz=str(self.grupos["JZ"].pk))
+        dados.update({"acao": "confirmar", "next": lista})
+        self.assertRedirects(client.post(self.url(processo), dados), lista)
+
+        dados = self.payload(processo, polo_passivo=str(self.grupos["APP"].pk))
+        dados.update({"acao": "confirmar", "next": "https://exemplo.invalido/roubo"})
+        self.assertRedirects(
+            client.post(self.url(processo), dados),
+            reverse("processos:visualizar_processo", args=[processo.numero]),
+        )
+
+    def test_estado_mudou_recusa_e_reabre_a_tela(self):
+        processo = self.criar_processo_protocolado()
+        client = self.cliente_logado(self.usuarios["SC"])
+        dados = self.payload(processo, polo_passivo=str(self.grupos["APP"].pk))
+        dados["acao"] = "confirmar"
+        # outro serventuário mexeu no processo depois de a tela ter sido montada
+        GrupoProcesso.objects.create(processo=processo, grupo=self.grupos["JZ"])
+
+        resp = client.post(self.url(processo), dados)
+
+        self.assertRedirects(resp, self.url(processo))
+        self.assertFalse(
+            GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["APP"]).exists()
+        )
+
+    def test_conflito_sem_resolucao_e_recusado(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP"])
+        app_extra = GrupoTrabalho.objects.create(
+            ciclo=self.ciclo, cargo_simulacao=self.cargos["APP"], nome="Grupo APP fora",
+        )
+        GrupoProcesso.objects.create(processo=processo, grupo=app_extra)
+        client = self.cliente_logado(self.usuarios["SC"])
+        dados = self.payload(processo)  # nada escolhido para a posição em conflito
+        dados["acao"] = "confirmar"
+
+        resp = client.post(self.url(processo), dados)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(
+            GrupoProcesso.objects.filter(processo=processo, grupo=app_extra).exists()
+        )
+
+    def test_post_forjado_com_grupo_de_outro_papel_e_recusado(self):
+        processo = self.criar_processo_protocolado()
+        client = self.cliente_logado(self.usuarios["SC"])
+        dados = self.payload(processo, polo_passivo=str(self.grupos["JZ"].pk))
+        dados["acao"] = "confirmar"
+
+        resp = client.post(self.url(processo), dados)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(
+            GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["JZ"]).exists()
+        )
+
+    def test_post_forjado_com_mesmo_papel_em_duas_posicoes_e_recusado(self):
+        processo = self.criar_processo_protocolado()
+        mp_extra = GrupoTrabalho.objects.create(
+            ciclo=self.ciclo, cargo_simulacao=self.cargos["MP"], nome="Grupo MP dois",
+        )
+        client = self.cliente_logado(self.usuarios["SC"])
+        dados = self.payload(
+            processo,
+            polo_ativo=str(self.grupos["MP"].pk),
+            ministerio_publico=str(mp_extra.pk),
+        )
+        dados["acao"] = "confirmar"
+
+        resp = client.post(self.url(processo), dados)
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertFalse(
+            GrupoProcesso.objects.filter(processo=processo, grupo=mp_extra).exists()
+        )
+
+    def test_dropdown_do_processo_oferece_a_tela_so_para_a_serventia(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP"])
+        url_processo = reverse("processos:visualizar_processo", args=[processo.numero])
+
+        resp_sc = self.cliente_logado(self.usuarios["SC"]).get(url_processo)
+        resp_apa = self.cliente_logado(self.usuarios["APA"]).get(url_processo)
+
+        # a asserção é no link, não no rótulo: o texto também aparece em comentário do HTML
+        self.assertContains(resp_sc, self.url(processo))
+        self.assertNotContains(resp_apa, self.url(processo))
 
 
 class PodeAtribuirGruposTests(CenarioMovimentacoesTestCase):

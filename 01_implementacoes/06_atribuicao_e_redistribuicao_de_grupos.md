@@ -190,6 +190,28 @@ autuação já faz. Remover todos os grupos de um processo autuado **não** devo
 para "Protocolado" — status é fase processual, não função de vínculo. Confirmação que deixe
 o processo sem nenhum grupo não autua, guarda que a view já tem.
 
+#### Refinamento na etapa 3 (20/09/2026)
+
+A regra acima fica valendo, com duas precisões que só apareceram ao escrever a aplicação. A
+tabela original é a do caso comum; estas duas linhas fecham as bordas.
+
+**1. Protocolado que termina sem ocupante registra Redistribuição.** "Não autua" deixava
+implícito que nada seria registrado, e isso abria um buraco: remover o grupo que protocolou
+deixaria o processo sem ninguém e **sem rastro algum nos autos**. A regra completa passa a
+ser:
+
+| Situação | Evento |
+|---|---|
+| Protocolado **e** alguma posição ocupada ao final | Autuação e Distribuição (status → Autuado) |
+| Protocolado **sem** nenhuma posição ocupada ao final | Redistribuição (status permanece Protocolado) |
+| já autuado | Redistribuição |
+| nenhuma mudança | nenhum evento |
+
+**2. O dono de cada polo é reescrito mesmo quando não mudou.** Parece redundante e não é: é
+o que regulariza o polo nulo do grupo que protocolou (§2.3 e achado 2 do documento 07).
+Atribuir o polo passivo a um processo recém-protocolado também faz o polo ativo passar a
+pertencer a quem peticionou, e é isso que a confirmação da distribuição significa.
+
 ### 2.7 "Redistribuição" é um tipo transversal sem papéis autorizados
 
 Entra no catálogo por migração de dados, na lista `TRANSVERSAIS`, com papéis `()`, sem
