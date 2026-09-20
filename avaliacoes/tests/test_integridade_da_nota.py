@@ -5,8 +5,10 @@ from unittest import mock
 
 from django.core.exceptions import ValidationError
 from django.template.loader import render_to_string
+from django.test import SimpleTestCase
 from django.urls import reverse
 
+from ..estrelas import media_em_estrelas
 from ..models import FeedbackProfessor
 from .cenario import CenarioAvaliacao
 
@@ -68,6 +70,14 @@ class PreservaNotaGravadaTests(CenarioAvaliacao):
         self.assertEqual(resposta.status_code, 302)
         self.assertEqual(self.nota_gravada(mov), Decimal("10.00"))
 
+    def test_post_sem_estrelas_nao_apaga_nota_fora_da_faixa(self):
+        mov = self.avaliar(Decimal("15.00"))
+        resposta = self.cliente(self.prof).post(
+            self.url(mov), {"comentario": "x", "acao": "concluir"},
+        )
+        self.assertEqual(resposta.status_code, 302)
+        self.assertEqual(self.nota_gravada(mov), Decimal("15.00"))
+
     def test_tela_oferece_o_botao_limpar(self):
         html = self.cliente(self.prof).get(self.url(self.nova_movimentacao())).content.decode()
         self.assertIn('onclick="limparEstrelas()"', html)
@@ -100,6 +110,34 @@ class FaixaDaNotaTests(CenarioAvaliacao):
         )
         resposta = self.cliente(self.aluno).get(reverse("avaliacoes:minhas_notas"))
         self.assertEqual(resposta.context["media_percentual"], 100)
+
+
+    def test_media_tem_teto_de_cinco_estrelas_nas_duas_telas(self):
+        for nota in ("12.00", "15.00"):
+            FeedbackProfessor.objects.create(
+                movimentacao=self.nova_movimentacao(), professor=self.prof,
+                comentario="x", nota=Decimal(nota),
+            )
+        minhas_notas = self.cliente(self.aluno).get(reverse("avaliacoes:minhas_notas"))
+        self.assertEqual(minhas_notas.context["media_geral"], 5.0)
+        avaliar = self.cliente(self.prof).get(
+            reverse("avaliacoes:avaliar", args=[self.nova_movimentacao().pk]),
+        )
+        self.assertEqual(avaliar.context["media_notas"], 5.0)
+        self.assertIn("5,0 de 5 estrelas", avaliar.content.decode())
+
+
+class MediaEmEstrelasTests(SimpleTestCase):
+
+    def test_media_fica_entre_zero_e_cinco(self):
+        self.assertEqual(media_em_estrelas(Decimal("12")), 5.0)
+        self.assertEqual(media_em_estrelas(Decimal("99.99")), 5.0)
+        self.assertEqual(media_em_estrelas(Decimal("-1")), 0.0)
+
+    def test_media_dentro_da_faixa_nao_muda(self):
+        self.assertEqual(media_em_estrelas(Decimal("7.8")), 3.9)
+        self.assertEqual(media_em_estrelas(Decimal("10")), 5.0)
+        self.assertIsNone(media_em_estrelas(None))
 
 
 class RenderizacaoDasEstrelasTests(CenarioAvaliacao):

@@ -45,10 +45,11 @@ def nota_para_estrelas(nota) -> int | None:
 
 
 def media_em_estrelas(media) -> float | None:
-    """Média das notas gravadas em estrelas, com uma casa (3,9, por exemplo)."""
+    """Média em estrelas, com uma casa e limitada a 0–5 (3,9, por exemplo)."""
     if media is None:
         return None
-    return round(float(media) / PONTOS_POR_ESTRELA, 1)
+    estrelas = round(float(media) / PONTOS_POR_ESTRELA, 1)
+    return max(0.0, min(float(ESTRELAS_MAX), estrelas))
 
 
 def faixa_da_estrela(estrelas: int | None) -> str:

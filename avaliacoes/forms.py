@@ -54,20 +54,19 @@ class FeedbackForm(forms.ModelForm):
                 )
         nota = self._nota_a_gravar(cleaned_data.get("estrelas"))
         cleaned_data["nota"] = nota
-        # `nota` não é campo do form: sem isto o model validaria a nota antiga
-        self.instance.nota = nota
+        # o model valida instance.nota: fora da faixa, só o POST sem estrelas a traz
+        self.instance.nota = nota if nota is None or nota_valida(nota) else None
         return cleaned_data
 
     def _nota_a_gravar(self, estrelas):
         atual = self.instance.nota
-        if atual is not None and not nota_valida(atual):
-            atual = None
         # sem a chave (página antiga, cliente sem navegador) a nota não é apagada
         if self.add_prefix("estrelas") not in self.data:
             return atual
         if estrelas is None:
             return None
         # estrela inalterada mantém a nota antiga: 7,35 não vira 8,00 ao reabrir
-        if atual is not None and nota_para_estrelas(atual) == estrelas:
+        mantem = atual is not None and nota_valida(atual)
+        if mantem and nota_para_estrelas(atual) == estrelas:
             return atual
         return estrelas_para_nota(estrelas)
