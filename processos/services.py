@@ -355,7 +355,7 @@ def aplicar_alteracoes(processo, desejado, *, ator):
     with transaction.atomic():
         estados = estado_posicoes_do_processo(processo)
         plano = planejar_alteracoes(estados, desejado)
-        if plano.vazio:
+        if not ha_o_que_aplicar(processo, plano):
             return plano, None
 
         if plano.vinculos_a_remover:
@@ -389,6 +389,17 @@ def aplicar_alteracoes(processo, desejado, *, ator):
             )
 
     return plano, movimentacao
+
+
+def ha_o_que_aplicar(processo, plano) -> bool:
+    """
+    Plano vazio ainda tem o que aplicar quando o processo espera autuação.
+
+    Processo protocolado tem o grupo que peticionou vinculado sem polo: confirmar sem trocar
+    ninguém é o que lhe dá o polo e leva o processo a "Autuado". Barrar por "nada mudou"
+    deixaria o processo preso em Protocolado sem nenhuma forma de autuá-lo.
+    """
+    return not plano.vazio or nome_do_evento(processo, plano) == NOME_AUTUACAO
 
 
 def nome_do_evento(processo, plano) -> str:
@@ -426,6 +437,10 @@ def _registrar_evento(processo, plano, *, ator):
         processo=processo,
         autor=ator,
         tipo_movimentacao=tipo,
-        descricao_evento=descrever_alteracoes(plano),
+        # autuação confirmada sem troca de ninguém tem plano vazio, e um evento sem descrição
+        # nos autos não diz nada a quem for ler depois
+        descricao_evento=(
+            descrever_alteracoes(plano) or "Distribuição confirmada sem alteração de grupos."
+        ),
         grupo_processo=grupo_processo,
     )

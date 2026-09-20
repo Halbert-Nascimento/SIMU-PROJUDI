@@ -414,6 +414,23 @@ class AplicacaoDeAlteracoesTests(CenarioMovimentacoesTestCase):
         self.assertEqual(self.vinculos(processo), vinculos_antes)
         self.assertEqual(processo.movimentacoes.count(), movimentacoes_antes)
 
+    def test_confirmar_sem_alteracao_em_protocolado_autua_e_da_o_polo(self):
+        """
+        O fluxo antigo autuava mesmo recebendo um grupo já vinculado. Barrar por "nada mudou"
+        deixaria o processo preso em Protocolado, com o grupo que peticionou sem polo e sem
+        nenhuma forma de autuá-lo pela tela.
+        """
+        processo = self.criar_processo_protocolado()  # APA protocolou, polos ainda sem grupo
+
+        plano, movimentacao = aplicar_alteracoes(processo, {}, ator=self.usuarios["SC"])
+        processo.refresh_from_db()
+
+        self.assertTrue(plano.vazio)
+        self.assertEqual(processo.status_atual.nome_status, "Autuado")
+        self.assertEqual(movimentacao.tipo_movimento.nome_movimentacao, NOME_AUTUACAO)
+        self.assertEqual(self.dono_do_polo(processo, "Ativo"), self.grupos["APA"])
+        self.assertIn("sem alteração de grupos", movimentacao.descricao_evento)
+
     def test_protocolado_sem_ocupante_ao_final_nao_autua_mas_registra(self):
         processo = self.criar_processo_protocolado()
 
@@ -544,16 +561,7 @@ class TelaDeAtribuicaoTests(CenarioMovimentacoesTestCase):
         return url
 
     def payload(self, processo, **escolhas):
-        """Base "manter" em tudo, com o retrato de estado que a tela teria enviado."""
-        dados = {}
-        for estado in estado_posicoes_do_processo(processo):
-            chave = estado.posicao.chave
-            dados[f"atual_{chave}"] = estado.impressao
-            if chave in escolhas:
-                dados[f"posicao_{chave}"] = escolhas[chave]
-            elif not estado.em_conflito:
-                dados[f"posicao_{chave}"] = "manter"
-        return dados
+        return self.payload_atribuicao(processo, **escolhas)
 
     def test_get_renderiza_as_quatro_posicoes(self):
         processo = self.criar_processo_protocolado()
