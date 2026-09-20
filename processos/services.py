@@ -87,6 +87,17 @@ class EstadoPosicao:
         vinculados = {grupo.pk for grupo in self.grupos_vinculados}
         return tuple(grupo for grupo in self.grupos_disponiveis if grupo.pk not in vinculados)
 
+    @property
+    def impressao(self) -> str:
+        """
+        Retrato do que a tela viu nesta posição, para a trava de concorrência.
+
+        Vai num campo oculto e volta no POST: se não bater com o banco na hora de validar,
+        alguém mexeu no processo enquanto a tela estava aberta.
+        """
+        pks = sorted(grupo.pk for grupo in self.grupos_vinculados)
+        return ",".join(str(pk) for pk in pks)
+
 
 @dataclass(frozen=True)
 class Alteracao:
@@ -190,6 +201,7 @@ def planejar_alteracoes(estados, desejado) -> Plano:
         else:
             final[chave] = estado.grupo
 
+    _garantir_cargo_aceito(final)
     _garantir_um_grupo_por_papel(final)
 
     alteracoes = _alteracoes(estados, final)
@@ -211,6 +223,24 @@ def planejar_alteracoes(estados, desejado) -> Plano:
             if grupo is not None
         ),
     )
+
+
+def _garantir_cargo_aceito(final) -> None:
+    """
+    A posição só recebe grupo de um papel que ela declara aceitar.
+
+    O formulário já limita as opções da tela, mas o serviço não pode depender disso: com o
+    `ChoiceField` desativado num experimento, um grupo Juiz entrou no polo passivo sem nada
+    reclamar. Quem chamar o planejamento por outro caminho encontra a regra aqui.
+    """
+    for chave, grupo in final.items():
+        if grupo is None:
+            continue
+        posicao = POSICOES_POR_CHAVE[chave]
+        if grupo.cargo_simulacao.cod not in posicao.cargos:
+            raise EstadoInvalidoError(
+                f'"{posicao.rotulo}" não aceita grupo de {grupo.cargo_simulacao.nome}.'
+            )
 
 
 def _garantir_um_grupo_por_papel(final) -> None:
@@ -361,16 +391,22 @@ def aplicar_alteracoes(processo, desejado, *, ator):
     return plano, movimentacao
 
 
-def _registrar_evento(processo, plano, *, ator):
+def nome_do_evento(processo, plano) -> str:
     """
     Primeira distribuição de processo protocolado é a autuação, que muda o status; daí em
     diante é redistribuição. Protocolado que termina sem nenhuma posição ocupada não autua —
     seria "Autuado" sem ninguém atuando —, mas ainda registra a redistribuição, senão a
     remoção não deixaria rastro nos autos.
+
+    A tela mostra esse nome no resumo antes de gravar, então a regra vive aqui e não na view.
     """
     autuando = processo.status_atual.nome_status == "Protocolado" and bool(plano.ocupantes)
+    return NOME_AUTUACAO if autuando else NOME_REDISTRIBUICAO
+
+
+def _registrar_evento(processo, plano, *, ator):
     tipo = TipoMovimentacao.objects.select_related("efeito_status").get(
-        nome_movimentacao=NOME_AUTUACAO if autuando else NOME_REDISTRIBUICAO,
+        nome_movimentacao=nome_do_evento(processo, plano),
     )
 
     # o evento é ato do cartório: ancora no vínculo da serventia de quem confirmou, como a

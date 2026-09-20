@@ -1,0 +1,288 @@
+{% extends 'base/base.html' %}
+{% load ui %}
+{% load processos_ui %}
+{% load static %}
+
+{% block title %}Atribuir Grupos — Simulador Projudi{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<style>
+    /* Marcador de passo — mesma geometria de etiqueta da tela de movimentação. */
+    .step-badge {
+        background: #0a083d; color: #fff; padding: 3px 9px;
+        font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 700; letter-spacing: .07em;
+        text-transform: uppercase; display: inline-block;
+    }
+
+    /* Rótulo do papel: mesma tipografia de rótulo de campo do guia (seção 03). */
+    .posicao-rotulo {
+        display: block; font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 600;
+        letter-spacing: .1em; text-transform: uppercase; color: #6b7280;
+    }
+
+    /* Linha de posição — a separação vem do divisor, como nas tabelas; a última não tem.
+       A borda esquerda nasce transparente para que acender a faixa não desloque a linha. */
+    .posicao-linha {
+        border-bottom: 1px solid #eef0f3;
+        border-left: 3px solid transparent;
+        padding-left: 6px;
+    }
+    .posicao-linha:last-of-type { border-bottom: 0; }
+
+    /* Faixa de 3px marca a linha alterada: é o recurso do guia para item selecionado, e
+       precisa ser borda — box-shadow aqui é justamente o que o verificador barra. */
+    .posicao-linha.alterada { border-left-color: #1f4f9c; }
+
+    .opcao-grupo { display: flex; align-items: center; gap: 8px; padding: 5px 10px; }
+    .opcao-grupo:hover { background: #f7faff; }
+
+    .bloco-resumo { border: 1px solid #e2e5ea; background: #fff; }
+    .bloco-resumo > h2 {
+        background: #f7f8fa; border-bottom: 1px solid #e2e5ea; padding: 8px 14px;
+        font-size: calc(11px * var(--escala-fonte, 1)); font-weight: 700;
+        letter-spacing: .06em; text-transform: uppercase; color: #23262e;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% nav_secundaria ativo='processos' voltar_url=proximo voltar_label="Voltar à lista" %}
+
+<main class="max-w-conteudo mx-auto px-7 py-5">
+
+    {% include 'base/components/_breadcrumbs.html' %}
+
+    <h1 class="text-navy text-h1 font-bold mb-[14px]">&raquo; Atribuir Grupos ao Processo</h1>
+
+    {% include 'base/components/_mensagens.html' with tag="grupos" %}
+
+    <!-- Identificação do processo -->
+    <div class="bg-card-topo border border-contorno p-3 mb-4 text-corpo">
+        <div class="flex items-center justify-between gap-3 flex-wrap">
+            <div class="flex items-center gap-2">
+                <i class="fa-solid fa-folder-open text-acao"></i>
+                <span class="font-mono font-bold text-acao text-dado">{{ processo.numero }}</span>
+                <span class="text-rotulo">— {{ processo.vara.nome }} / {{ processo.vara.comarca.nome }}</span>
+            </div>
+            {% pill_status_processo processo.status_atual %}
+        </div>
+        <div class="text-apoio text-rotulo mt-1">
+            <span class="font-medium text-texto">{{ processo.classe.nome }}</span>
+            &nbsp;•&nbsp;
+            {% for polo in polos_ativo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+            <span class="mx-1">×</span>
+            {% for polo in polos_passivo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% empty %}—{% endfor %}
+        </div>
+    </div>
+
+    <form method="post" id="formGrupos">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{{ proximo }}">
+
+        {% if passo == 2 %}
+        <span class="step-badge mb-3">Passo 2 — Confirmação</span>
+
+        {% for nome, valor in escolhas.items %}
+        <input type="hidden" name="{{ nome }}" value="{{ valor }}">
+        {% endfor %}
+
+        <div class="bloco-resumo mb-4">
+            <h2>Alterações a aplicar</h2>
+            <div class="p-0">
+                {% for alteracao in plano.alteracoes %}
+                <div class="flex items-start gap-3 px-[16px] py-[11px] border-b border-divisor last:border-b-0">
+                    <span class="pill {% pill_natureza alteracao.natureza %} shrink-0">{% rotulo_natureza alteracao.natureza %}</span>
+                    <div class="min-w-0">
+                        <span class="posicao-rotulo">{{ alteracao.posicao.rotulo }}</span>
+                        <div class="text-dado mt-1">
+                            {% if alteracao.natureza == 'substituicao' %}
+                                <span class="text-texto-neutro">{{ alteracao.grupo_anterior.nome }}</span>
+                                <span class="mx-1 text-rotulo">&rarr;</span>
+                                <span class="font-semibold text-texto">{{ alteracao.grupo_novo.nome }}</span>
+                            {% elif alteracao.natureza == 'mudanca_de_posicao' %}
+                                <span class="font-semibold text-texto">{{ alteracao.grupo_novo.nome }}</span>
+                                <span class="text-rotulo">deixa {{ alteracao.posicao_origem.rotulo }} e assume esta posição</span>
+                            {% elif alteracao.natureza == 'remocao' %}
+                                <span class="text-texto-neutro">{{ alteracao.grupo_anterior.nome }}</span>
+                                <span class="text-rotulo">deixa o processo</span>
+                            {% else %}
+                                <span class="font-semibold text-texto">{{ alteracao.grupo_novo.nome }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="bloco-resumo mb-4">
+            <h2>Consequências</h2>
+            <div class="px-[16px] py-[11px] text-corpo">
+                <div class="flex gap-2">
+                    <span class="w-40 text-texto-neutro shrink-0">Polo ativo</span>
+                    <span class="font-semibold">{{ plano.donos_de_polo.Ativo.nome|default:"sem grupo" }}</span>
+                </div>
+                <div class="flex gap-2 mt-1">
+                    <span class="w-40 text-texto-neutro shrink-0">Polo passivo</span>
+                    <span class="font-semibold">{{ plano.donos_de_polo.Passivo.nome|default:"sem grupo" }}</span>
+                </div>
+                {% if plano.vinculos_a_remover %}
+                <p class="mt-2 text-meta text-atencao-txt">
+                    {% for grupo in plano.vinculos_a_remover %}{{ grupo.nome }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                    deixa de poder corrigir as movimentações que registrou neste processo, e isso
+                    não volta se o grupo for vinculado outra vez.
+                </p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="bloco-resumo mb-4">
+            <h2>Registro nos autos</h2>
+            <div class="px-[16px] py-[11px]">
+                <div class="text-dado font-semibold text-texto">{{ nome_evento }}</div>
+                <p class="text-corpo text-texto-neutro mt-1">{{ descricao_evento }}</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <button type="submit" name="acao" value="confirmar" class="{% classe_botao 'primario' padding=True %}">
+                <i class="fa-solid fa-check mr-1.5"></i> Confirmar
+            </button>
+            <a href="{% url 'processos:atribuir_grupos' processo.numero %}{% if proximo %}?next={{ proximo }}{% endif %}"
+               class="{% classe_botao 'secundario' padding=True %} inline-flex items-center">Voltar e ajustar</a>
+        </div>
+
+        {% else %}
+        <span class="step-badge mb-3">Passo 1 — Posições</span>
+
+        <fieldset class="p-5 mb-4 mt-3">
+            <legend>POSIÇÕES NO PROCESSO</legend>
+
+            {% for estado in estados %}
+            <div class="posicao-linha" data-chave="{{ estado.posicao.chave }}" data-atual="{% if estado.grupo %}{{ estado.grupo.nome }}{% endif %}">
+                <div class="flex items-start justify-between gap-3 py-3">
+                    <div class="min-w-0">
+                        <span class="posicao-rotulo">{{ estado.posicao.rotulo }}</span>
+                        <div class="posicao-estado mt-1 text-dado">
+                            {% if estado.em_conflito %}
+                                <span class="pill erro">{{ estado.grupos_vinculados|length }} grupos vinculados — escolha qual fica</span>
+                            {% elif estado.grupo %}
+                                <span class="font-semibold text-texto">{{ estado.grupo.nome }}</span>
+                            {% elif estado.indisponivel %}
+                                <span class="pill gray">Nenhum grupo deste papel no ciclo</span>
+                            {% else %}
+                                <span class="pill warn">Pendente</span>
+                            {% endif %}
+                        </div>
+                        <div class="posicao-efeito mt-1 text-meta text-acao" hidden></div>
+                    </div>
+
+                    <div class="flex items-center gap-2 shrink-0">
+                        {% if not estado.indisponivel %}
+                        <button type="button" class="btn-escolher {% classe_botao 'linha' padding=True %}">
+                            {% if estado.grupos_vinculados %}Substituir{% else %}Atribuir{% endif %}
+                        </button>
+                        {% if estado.grupos_vinculados %}
+                        <button type="button" class="btn-remover-posicao {% classe_botao 'linha' padding=True %}">Remover</button>
+                        {% endif %}
+                        <button type="button" class="btn-desfazer {% classe_botao 'linha' padding=True %}" hidden>Desfazer</button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="posicao-opcoes pb-3" hidden>
+                    {% if estado.em_conflito %}
+                    {% for grupo in estado.grupos_vinculados %}
+                    <label class="opcao-grupo text-dado">
+                        <input type="radio" name="posicao_{{ estado.posicao.chave }}" value="{{ grupo.pk }}" data-nome="{{ grupo.nome }}">
+                        <span>{{ grupo.nome }} <span class="text-rotulo">(este fica)</span></span>
+                    </label>
+                    {% endfor %}
+                    {% endif %}
+                    {% for grupo in estado.opcoes %}
+                    <label class="opcao-grupo text-dado">
+                        <input type="radio" name="posicao_{{ estado.posicao.chave }}" value="{{ grupo.pk }}" data-nome="{{ grupo.nome }}">
+                        <span>{{ grupo.nome }}</span>
+                    </label>
+                    {% empty %}
+                    {% if not estado.em_conflito %}
+                    <p class="text-meta text-rotulo px-[10px]">Nenhum outro grupo deste papel no ciclo.</p>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+
+                {% if not estado.em_conflito %}
+                <input type="radio" name="posicao_{{ estado.posicao.chave }}" value="manter" class="escolha-manter" checked hidden>
+                {% endif %}
+                <input type="radio" name="posicao_{{ estado.posicao.chave }}" value="remover" class="escolha-remover" hidden>
+                <input type="hidden" name="atual_{{ estado.posicao.chave }}" value="{{ estado.impressao }}">
+            </div>
+            {% endfor %}
+        </fieldset>
+
+        <div class="flex items-center gap-2">
+            <button type="submit" name="acao" value="revisar" class="{% classe_botao 'primario' padding=True %}">
+                <i class="fa-solid fa-list-check mr-1.5"></i> Revisar alterações
+            </button>
+            <a href="{% if proximo %}{{ proximo }}{% else %}{% url 'processos:visualizar_processo' processo.numero %}{% endif %}"
+               class="{% classe_botao 'secundario' padding=True %} inline-flex items-center">Cancelar</a>
+        </div>
+        {% endif %}
+    </form>
+
+</main>
+
+<script>
+// Só visibilidade e marcação: o estado das escolhas mora nos radios do formulário, que são
+// o que o POST carrega. Nada de cor decidida aqui.
+document.querySelectorAll(".posicao-linha").forEach(function (linha) {
+    const escolher = linha.querySelector(".btn-escolher");
+    if (!escolher) return;
+
+    const opcoes = linha.querySelector(".posicao-opcoes");
+    const efeito = linha.querySelector(".posicao-efeito");
+    const desfazer = linha.querySelector(".btn-desfazer");
+    const remover = linha.querySelector(".btn-remover-posicao");
+    const manter = linha.querySelector(".escolha-manter");
+    const marcarRemocao = linha.querySelector(".escolha-remover");
+    const atual = linha.dataset.atual || "";
+
+    function mostrarEfeito(texto) {
+        efeito.textContent = texto;
+        efeito.hidden = !texto;
+        desfazer.hidden = !texto;
+        linha.classList.toggle("alterada", Boolean(texto));
+    }
+
+    escolher.addEventListener("click", function () {
+        opcoes.hidden = !opcoes.hidden;
+    });
+
+    if (remover) {
+        remover.addEventListener("click", function () {
+            marcarRemocao.checked = true;
+            opcoes.hidden = true;
+            mostrarEfeito(atual ? atual + " → sem grupo" : "sem grupo");
+        });
+    }
+
+    desfazer.addEventListener("click", function () {
+        opcoes.querySelectorAll("input[type=radio]").forEach(function (radio) {
+            radio.checked = false;
+        });
+        marcarRemocao.checked = false;
+        if (manter) manter.checked = true;
+        opcoes.hidden = true;
+        mostrarEfeito("");
+    });
+
+    opcoes.querySelectorAll("input[type=radio]").forEach(function (radio) {
+        radio.addEventListener("change", function () {
+            opcoes.hidden = true;
+            mostrarEfeito(atual ? atual + " → " + radio.dataset.nome : radio.dataset.nome);
+        });
+    });
+});
+</script>
+{% endblock %}
