@@ -136,6 +136,12 @@ principal dele, sem nenhuma mensagem explicando por quê.
 Com o campo da tela sendo "Polo passivo", escolher um grupo ali vincula e dá o polo no mesmo
 ato: não existe caminho que crie um sem o outro, e os dois deixam de poder divergir.
 
+Há, porém, um estado anterior em que eles legitimamente não coincidem: entre o protocolo e a
+autuação, o grupo que peticionou está vinculado **sem** polo, o que
+`test_polo_processual_sem_grupo_apos_protocolo` assegura de propósito. Confirmar a
+distribuição é o que regulariza esse estado — ver achado 2 de
+`07_achados_tecnicos_e_verificacoes_pendentes.md`.
+
 ### 2.4 Um grupo por papel validado no backend, em três camadas
 
 Não é a forma da tela que garante a regra; a tela só a torna natural.
@@ -634,6 +640,10 @@ que consultam `NOMES_TRANSVERSAIS` nunca recebem esse tipo. A migração de dado
 `pode_atribuir_grupos()` em `processos/permissions.py` e o `processos/services.py` novo só
 com o que lê e planeja: estado das quatro posições, planejamento das mudanças, descrição do
 evento, e detecção de papel com mais de um grupo. Funções puras, chamadas por ninguém.
+
+A leitura das posições parte do **vínculo** (`GrupoProcesso`), nunca do polo: processo ainda
+"Protocolado" tem o grupo que peticionou vinculado sem polo, e ler pelo polo o faria
+desaparecer da tela. Ver achado 2 de `07_achados_tecnicos_e_verificacoes_pendentes.md`.
 
 **Verificação:** `test processos`.
 **Commit:** `feat(processos): ler estado das posições do processo e planejar alterações de grupo`
