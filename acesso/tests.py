@@ -1,7 +1,23 @@
 from django.test import TestCase
 from django.urls import reverse
 
-from ciclos.models import CicloSimulacao, ParticipanteCiclo, StatusCiclo
+from avaliacoes.models import FeedbackProfessor
+from ciclos.models import (
+    CargoSimulacao,
+    CicloSimulacao,
+    GrupoTrabalho,
+    ParticipanteCiclo,
+    StatusCiclo,
+)
+from movimentacoes.models import MovimentacaoProcessual, TipoMovimentacao
+from processos.models import (
+    ClasseProcessual,
+    Comarca,
+    ProcessoJudicial,
+    StatusProcessoJudicial,
+    TipoProcesso,
+    VaraServentia,
+)
 from usuarios.models import Usuario
 
 
@@ -12,6 +28,135 @@ def _criar_usuario(username, perfil):
         password="s3nha-teste",
         tipo_perfil_global=perfil,
     )
+
+
+class PainelAdministrativoResumoTests(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = _criar_usuario("admin.resumo", Usuario.TipoPerfilGlobal.ADMIN)
+        cls.professor = _criar_usuario(
+            "prof.resumo", Usuario.TipoPerfilGlobal.PROFESSOR
+        )
+        cls.professor_participante = _criar_usuario(
+            "prof.participante", Usuario.TipoPerfilGlobal.PROFESSOR
+        )
+        cls.aluno_atual = _criar_usuario(
+            "aluno.atual", Usuario.TipoPerfilGlobal.ALUNO
+        )
+        cls.aluno_encerrado = _criar_usuario(
+            "aluno.encerrado", Usuario.TipoPerfilGlobal.ALUNO
+        )
+
+        status_andamento = StatusCiclo.objects.create(nome_status="Em andamento")
+        status_finalizado = StatusCiclo.objects.create(nome_status="Finalizado")
+        cls.ciclo_atual = CicloSimulacao.objects.create(
+            nome_edicao="Ciclo atual",
+            coordenador=cls.professor,
+            semestre=2,
+            ano=2026,
+            status=status_andamento,
+        )
+        ciclo_encerrado = CicloSimulacao.objects.create(
+            nome_edicao="Ciclo encerrado",
+            coordenador=cls.professor,
+            semestre=1,
+            ano=2026,
+            status=status_finalizado,
+        )
+        cls.ciclo_atual.participantes.add(
+            cls.aluno_atual, cls.professor_participante
+        )
+        ciclo_encerrado.participantes.add(cls.aluno_encerrado)
+
+        cargo = CargoSimulacao.objects.create(nome="Serventia", cod="RESUMO")
+        GrupoTrabalho.objects.create(
+            ciclo=cls.ciclo_atual, cargo_simulacao=cargo, nome="Grupo atual"
+        )
+        GrupoTrabalho.objects.create(
+            ciclo=ciclo_encerrado, cargo_simulacao=cargo, nome="Grupo encerrado"
+        )
+
+        comarca = Comarca.objects.create(nome="Comarca Resumo")
+        vara = VaraServentia.objects.create(nome="Vara Resumo", comarca=comarca)
+        tipo_processo = TipoProcesso.objects.create(nome="Conhecimento")
+        classe = ClasseProcessual.objects.create(nome="Classe Resumo")
+        status_processo = StatusProcessoJudicial.objects.create(nome_status="Autuado")
+        tipo_movimentacao = TipoMovimentacao.objects.create(
+            nome_movimentacao="Movimentação Resumo"
+        )
+
+        processo_pendente = cls._criar_processo(
+            "0000001-00.2026.8.09.0001", cls.ciclo_atual, vara, tipo_processo,
+            classe, status_processo,
+        )
+        processo_avaliado = cls._criar_processo(
+            "0000002-00.2026.8.09.0001", cls.ciclo_atual, vara, tipo_processo,
+            classe, status_processo,
+        )
+        processo_encerrado = cls._criar_processo(
+            "0000003-00.2026.8.09.0001", ciclo_encerrado, vara, tipo_processo,
+            classe, status_processo,
+        )
+
+        MovimentacaoProcessual.objects.create(
+            processo=processo_pendente,
+            autor=cls.aluno_atual,
+            tipo_movimento=tipo_movimentacao,
+            descricao_evento="Movimentação pendente",
+        )
+        movimentacao_avaliada = MovimentacaoProcessual.objects.create(
+            processo=processo_avaliado,
+            autor=cls.aluno_atual,
+            tipo_movimento=tipo_movimentacao,
+            descricao_evento="Movimentação avaliada",
+        )
+        MovimentacaoProcessual.objects.create(
+            processo=processo_encerrado,
+            autor=cls.aluno_encerrado,
+            tipo_movimento=tipo_movimentacao,
+            descricao_evento="Movimentação do ciclo encerrado",
+        )
+        FeedbackProfessor.objects.create(
+            movimentacao=movimentacao_avaliada,
+            professor=cls.professor,
+            comentario="Avaliada",
+            nota=8,
+        )
+
+    @staticmethod
+    def _criar_processo(numero, ciclo, vara, tipo_processo, classe, status):
+        return ProcessoJudicial.objects.create(
+            numero=numero,
+            ciclo=ciclo,
+            vara=vara,
+            tipo_processo=tipo_processo,
+            classe=classe,
+            status_atual=status,
+        )
+
+    def test_resumo_usa_apenas_dados_dos_ciclos_em_andamento(self):
+        self.client.force_login(self.admin)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.context["processos_ativos_count"], 2)
+        self.assertEqual(resposta.context["avaliacoes_pendentes_count"], 1)
+        self.assertEqual(resposta.context["grupos_trabalho_count"], 1)
+        self.assertEqual(resposta.context["total_alunos_vinculados"], 1)
+
+    def test_professor_participante_recebe_o_resumo_do_ciclo_vinculado(self):
+        self.client.force_login(self.professor_participante)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "Resumo dos ciclos ativos")
+        self.assertEqual(resposta.context["processos_ativos_count"], 2)
+        self.assertEqual(resposta.context["avaliacoes_pendentes_count"], 1)
+        self.assertEqual(resposta.context["grupos_trabalho_count"], 1)
+        self.assertEqual(resposta.context["total_alunos_vinculados"], 1)
+        self.assertFalse(resposta.context["processos_professor"].exists())
 
 
 class LoginViewUsuarioLogadoTests(TestCase):
