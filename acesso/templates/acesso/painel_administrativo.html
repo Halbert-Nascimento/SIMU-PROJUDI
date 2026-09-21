@@ -530,19 +530,19 @@
 
                 <h2 class="section-title !mt-0">
 
-                    Resumo do Semestre (Atual)
+                    Resumo dos ciclos ativos
 
                 </h2>
 
                 <div class="grid grid-cols-2 gap-[14px] mb-[14px] mt-[14px]">
 
-                    {% include 'base/components/_card_kpi.html' with rotulo="Processos Ativos" numero=45 only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Processos Ativos" numero=processos_ativos_count only %}
 
-                    {% include 'base/components/_card_kpi.html' with rotulo="Avaliações Pendentes" numero=12 variante="alerta" only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Avaliações Pendentes" numero=avaliacoes_pendentes_count variante="alerta" only %}
 
-                    {% include 'base/components/_card_kpi.html' with rotulo="Grupos de Trabalho" numero=8 only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Grupos de Trabalho" numero=grupos_trabalho_count only %}
 
-                    {% include 'base/components/_card_kpi.html' with rotulo="Alunos Vinculados" numero=20 only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Alunos Vinculados" numero=total_alunos_vinculados only %}
 
                 </div>
 
