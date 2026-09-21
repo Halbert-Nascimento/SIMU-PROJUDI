@@ -110,10 +110,17 @@ class CenarioMovimentacoesTestCase(TestCase):
     def autuar_processo(self, processo, cods_grupos, *, sc_user=None):
         """Bate na view processos:atribuir_grupo_processos de verdade (não reimplementa a lógica aqui)."""
         client = self.cliente_logado(sc_user or self.usuarios["SC"])
-        grupo_ids = [self.grupos[cod].pk for cod in cods_grupos]
+        # cods_grupos vazio expressa "remover tudo", como o card "Remover atribuição" do modal
+        if cods_grupos:
+            corpo = {
+                "processo_ids": [processo.pk],
+                "grupo_ids_adicionar": [self.grupos[cod].pk for cod in cods_grupos],
+            }
+        else:
+            corpo = {"processo_ids": [processo.pk], "remover_tudo": True}
         resp = client.post(
             reverse("processos:atribuir_grupo_processos"),
-            data=json.dumps({"processo_ids": [processo.pk], "grupo_ids": grupo_ids}),
+            data=json.dumps(corpo),
             content_type="application/json",
         )
         processo.refresh_from_db()
