@@ -34,9 +34,10 @@ def aplicar_grupos(processo, *, grupos_adicionar, grupos_remover, ator, grupo_se
     Aplica num processo as trocas de grupo pedidas pelo serventuário.
 
     `grupos_adicionar` são vinculados, substituindo quem já ocupa o mesmo papel (cargo) —
-    nunca fica mais de um grupo por papel. `grupos_remover` são desvinculados. Os dois
-    argumentos precisam vir com `cargo_simulacao` pré-carregado (select_related), porque a
-    resolução do papel roda por grupo já vinculado, sem query nova.
+    nunca fica mais de um grupo por papel, exceto SC, que aceita vários (ciclo pode ter mais
+    de um grupo de cartório). `grupos_remover` são desvinculados. Os dois argumentos precisam
+    vir com `cargo_simulacao` pré-carregado (select_related), porque a resolução do papel
+    roda por grupo já vinculado, sem query nova.
 
     Ajusta o polo de quem entra e de quem sai, registra um único evento nos autos —
     "Autuação e Distribuição" na primeira distribuição de um processo Protocolado,
@@ -63,14 +64,17 @@ def aplicar_grupos(processo, *, grupos_adicionar, grupos_remover, ator, grupo_se
             if grupo.pk in vinculos:
                 continue  # já vinculado — o polo pode não estar, é regularizado abaixo
             cod = grupo.cargo_simulacao.cod
-            ocupante = next(
-                (v for v in vinculos.values() if v.grupo.cargo_simulacao.cod == cod),
-                None,
-            )
-            if ocupante is not None:
-                del vinculos[ocupante.grupo_id]
-                ocupante.delete()
-                sairam.append(ocupante.grupo)
+            # SC fica fora da regra de "um grupo por papel": ciclo com dois grupos de
+            # cartório é legítimo, e os dois precisam do vínculo pra movimentar o processo.
+            if cod != "SC":
+                ocupante = next(
+                    (v for v in vinculos.values() if v.grupo.cargo_simulacao.cod == cod),
+                    None,
+                )
+                if ocupante is not None:
+                    del vinculos[ocupante.grupo_id]
+                    ocupante.delete()
+                    sairam.append(ocupante.grupo)
             vinculos[grupo.pk] = GrupoProcesso.objects.create(processo=processo, grupo=grupo)
             entraram.append(grupo)
 
