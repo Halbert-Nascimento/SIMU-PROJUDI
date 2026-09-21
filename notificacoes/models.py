@@ -8,6 +8,7 @@ class TipoNotificacao(models.TextChoices):
     CICLO_STATUS_ALTERADO = "ciclo_status_alterado", "Mudança de status do ciclo"
     MOVIMENTACAO_REGISTRADA = "movimentacao_registrada", "Nova movimentação processual"
     GRUPO_VINCULADO_PROCESSO = "grupo_vinculado_processo", "Grupo vinculado a um processo"
+    GRUPO_DESVINCULADO_PROCESSO = "grupo_desvinculado_processo", "Grupo desvinculado de um processo"
     CICLO_COORDENADOR_ATRIBUIDO = "ciclo_coordenador_atribuido", "Coordenador designado"
     CICLO_PARTICIPANTE_ADICIONADO = "ciclo_participante_adicionado", "Adicionado a um ciclo"
 

@@ -14,7 +14,11 @@ class CenarioCicloTestCase(TestCase):
 
     @classmethod
     def setUpTestData(cls):
-        cls.cargo = CargoSimulacao.objects.create(nome="Advogados Polo Ativo", cod="APA")
+        # get_or_create porque a migração de catálogo (movimentacoes.0004) já semeia os
+        # cinco cargos: com create(), `cod` unique estoura IntegrityError no setUpClass.
+        cls.cargo, _ = CargoSimulacao.objects.get_or_create(
+            cod="APA", defaults={"nome": "Advogados Polo Ativo"},
+        )
         cls.status_andamento, _ = StatusCiclo.objects.get_or_create(nome_status="Em andamento")
 
         cls.professor_original = Usuario.objects.create_user(
