@@ -51,3 +51,24 @@ def pill_status_processo(status):
         "processos/components/_pill_status.html",
         {"status": status, "cores": _cores(status)},
     ))
+
+
+# Natureza da alteração no resumo da atribuição de grupos. Não existe quinto trio no guia,
+# então mudança de posição divide a cor com substituição — as duas são troca, não perda.
+NATUREZAS = {
+    "atribuicao": ("ok", "Atribuição"),
+    "substituicao": ("warn", "Substituição"),
+    "mudanca_de_posicao": ("warn", "Mudança de posição"),
+    "remocao": ("erro", "Remoção"),
+}
+
+
+@register.simple_tag
+def pill_natureza(natureza):
+    """Classe de estado da natureza da alteração — a cor é decidida aqui, não no template."""
+    return NATUREZAS.get(natureza, ("gray", ""))[0]
+
+
+@register.simple_tag
+def rotulo_natureza(natureza):
+    return NATUREZAS.get(natureza, ("gray", natureza))[1]

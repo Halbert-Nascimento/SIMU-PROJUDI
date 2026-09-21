@@ -1,7 +1,8 @@
 from __future__ import annotations
 
+from movimentacoes.catalogo import NOME_REDISTRIBUICAO
 from movimentacoes.models import MovimentacaoProcessual
-from movimentacoes.permissions import pode_praticar_movimentacao
+from movimentacoes.permissions import pode_praticar_movimentacao, tipos_praticaveis
 from processos.models import PoloProcessual
 
 from processos.tests.fixtures import CenarioMovimentacoesTestCase
@@ -111,3 +112,28 @@ class CatalogoTiposTests(CenarioMovimentacoesTestCase):
         self.registrar(processo, "Contestação", self.usuarios["APP"], grupo_processo=gp_app)
         self.registrar(processo, "Réplica do Autor", self.usuarios["APP"], grupo_processo=gp_app)
         self.assertTrue(pode_praticar_movimentacao(self.usuarios["JZ"], processo, self.tipo("MP Deve Intervir — Sim")))
+
+
+class TipoRedistribuicaoTests(CenarioMovimentacoesTestCase):
+    """
+    "Redistribuição" está no catálogo mas fora do alcance do formulário de movimentar:
+    quem a registra é a tela de atribuição de grupos.
+    """
+
+    def test_sem_papel_precondicao_status_ou_efeito_colateral(self):
+        tipo = self.tipo(NOME_REDISTRIBUICAO)
+        self.assertFalse(tipo.papeis_autorizados.exists())
+        self.assertFalse(tipo.precondicoes.exists())
+        self.assertFalse(tipo.efeitos_colaterais.exists())
+        self.assertIsNone(tipo.efeito_status)
+
+    def test_nenhum_papel_a_pratica_pelo_formulario(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP", "MP", "JZ"])
+        tipo = self.tipo(NOME_REDISTRIBUICAO)
+
+        for cod in ("SC", "APA", "APP", "MP", "JZ"):
+            with self.subTest(cargo=cod):
+                usuario = self.usuarios[cod]
+                self.assertFalse(pode_praticar_movimentacao(usuario, processo, tipo))
+                self.assertNotIn(tipo.pk, tipos_praticaveis(usuario, processo).values_list("pk", flat=True))
