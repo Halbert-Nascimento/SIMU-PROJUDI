@@ -67,12 +67,16 @@
     }
     .grp-card:hover { background: #f7faff; border-color: #1f4f9c; }
     .grp-card.selected { background: #f7faff; border-color: #1f4f9c; }
+    .grp-card.marcado-remover { background: #fdeeee; border-color: #f3cfcf; }
     /* selecao marcada pela faixa de 3px do guia (secao 01), nao por sombra —
-       o mesmo indicador que o .grupo-item de gerenciar_grupos usa */
-    .grp-card.selected::before {
+       o mesmo indicador que o .grupo-item de gerenciar_grupos usa. Remoção
+       pendente usa a mesma faixa, em vermelho, pra reaproveitar um único
+       mecanismo visual de "isto vai mudar" nos dois estados. */
+    .grp-card.selected::before, .grp-card.marcado-remover::before {
         content: ''; position: absolute; left: 0; top: 0; bottom: 0;
         width: 3px; background: #1f4f9c;
     }
+    .grp-card.marcado-remover::before { background: #b33a3a; }
     .grp-avatar {
         width: 34px; height: 34px; border-radius: 50%;
         background: #1f4f9c; color: #fff;
@@ -81,10 +85,28 @@
     }
     .grp-card .check { color: #d3d7de; font-size: calc(16px * var(--escala-fonte, 1)); }
     .grp-card.selected .check { color: #1f4f9c; }
+    .grp-card.marcado-remover .check { color: #b33a3a; }
     /* dois seletores de classe para vencer o display:inline-flex de .pill,
        que o `hidden` do Tailwind só venceria por ordem de carga */
     .grp-card .grp-vinculo { flex-shrink: 0; }
     .grp-card .grp-vinculo.oculto { display: none; }
+    /* Lixeira por card: só aparece em grupo já vinculado (Etapa 2 do desenho
+       de correção do modal). Ícone dimensionado por valor fixo é aceito pelo
+       guia — a escala de texto não cobre ícone. */
+    .grp-card .grp-remover {
+        flex-shrink: 0; border: none; background: transparent; cursor: pointer;
+        padding: 4px; color: #9aa1ad; font-size: calc(13px * var(--escala-fonte, 1));
+    }
+    .grp-card .grp-remover:hover { color: #b33a3a; }
+    .grp-card .grp-remover.oculto { display: none; }
+    /* Painel de confirmação substitui a lista de cards no corpo do modal —
+       mesmo mecanismo pra troca de papel, remoção de um grupo e remoção
+       total, em vez de três diálogos diferentes. */
+    #grpSelecao.oculto, #grpConfirmacao.oculto { display: none; }
+    /* .modal-acoes do componente (componentes.css) empurra tudo pra direita;
+       só este modal separa o destrutivo à esquerda do par cancelar/confirmar,
+       então o ajuste fica aqui, não no componente compartilhado. */
+    #grpModal .modal-acoes { justify-content: space-between; }
 </style>
 {% endblock %}
 
@@ -272,36 +294,45 @@
                 <div id="modalProcClass" class="text-apoio text-rotulo">—</div>
             </div>
 
-            <div class="text-micro font-semibold uppercase text-rotulo mb-2.5">Selecione os grupos responsáveis</div>
-
-            <div class="space-y-2 max-h-[280px] overflow-y-auto pr-1" id="grpList">
-                {% for g in grupos_ciclo %}
-                <div class="grp-card" data-grupo-id="{{ g.id }}">
-                    <div class="grp-avatar">{{ g.nome|truncatechars:1 }}</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-dado font-semibold text-texto">{{ g.nome }}</div>
-                        <div class="text-meta text-rotulo">{{ g.cargo_simulacao.nome }}</div>
+            <div id="grpSelecao">
+                <div class="text-micro font-semibold uppercase text-rotulo mb-2.5">Selecione os grupos responsáveis</div>
+                <div class="space-y-2 max-h-[280px] overflow-y-auto pr-1" id="grpList">
+                    {% for g in grupos_ciclo %}
+                    <div class="grp-card" data-grupo-id="{{ g.id }}" data-cargo="{{ g.cargo_simulacao.cod }}">
+                        <div class="grp-avatar">{{ g.nome|truncatechars:1 }}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-dado font-semibold text-texto">{{ g.nome }}</div>
+                            <div class="text-meta text-rotulo">{{ g.cargo_simulacao.nome }}</div>
+                        </div>
+                        <span class="pill ok grp-vinculo oculto"></span>
+                        <button type="button" class="grp-remover oculto" title="Remover {{ g.nome }} do processo">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <i class="fa-solid fa-circle check"></i>
                     </div>
-                    <span class="pill ok grp-vinculo oculto"></span>
-                    <i class="fa-solid fa-circle check"></i>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-                <div class="grp-card" data-grupo-id="">
-                    <div class="grp-avatar" style="background:#6b7280;"><i class="fa-solid fa-ban"></i></div>
-                    <div class="flex-1">
-                        <div class="text-dado font-semibold text-texto">Remover atribuição</div>
-                        <div class="text-meta text-rotulo">Processo ficará sem grupo definido</div>
-                    </div>
-                    <i class="fa-solid fa-circle check"></i>
+            </div>
+
+            <div id="grpConfirmacao" class="oculto">
+                <div class="text-corpo mb-4" id="grpConfirmacaoTexto"></div>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" class="{% classe_botao 'primario' padding=True %}" id="grpConfirmacaoSim">Sim</button>
+                    <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="grpConfirmacaoNao">Não</button>
                 </div>
             </div>
         </div>
 
         <div class="modal-acoes">
-            <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="modalCancel">Cancelar</button>
-            <button type="button" class="{% classe_botao 'primario' padding=True %}" id="modalConfirm">
-                <i class="fa-solid fa-check mr-1.5"></i> Confirmar Atribuição
+            <button type="button" class="{% classe_botao 'destrutivo' padding=True %}" id="modalRemoverTudo">
+                <i class="fa-solid fa-trash-can mr-1.5"></i> Remover atribuição
             </button>
+            <div class="flex gap-2">
+                <button type="button" class="{% classe_botao 'primario' padding=True %}" id="modalConfirm">
+                    <i class="fa-solid fa-check mr-1.5"></i> Confirmar Atribuição
+                </button>
+                <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="modalCancel">Cancelar</button>
+            </div>
         </div>
     {% endmodal %}
 
@@ -317,9 +348,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const modal = document.getElementById("grpModal");
     const selAllChk = document.getElementById("selAll");
     const selCountEl = document.getElementById("selCount");
+    const grpSelecao = document.getElementById("grpSelecao");
+    const grpConfirmacao = document.getElementById("grpConfirmacao");
+    const grpConfirmacaoTexto = document.getElementById("grpConfirmacaoTexto");
     let modalProcessos = [];
     let selectedGrupoIds = new Set();
-    let removeMode = false;
+    let grupoIdsRemover = new Set();
+    let confirmacaoPendente = null;
 
     // --- Checkbox select all ---
     selAllChk.addEventListener("change", function () {
@@ -346,10 +381,15 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("modalProcNum").textContent = titulo;
         document.getElementById("modalProcClass").textContent = subtitulo;
         selectedGrupoIds.clear();
-        removeMode = false;
+        grupoIdsRemover.clear();
+        fecharConfirmacao();
         renderGrpVinculos();
         renderGrpSelection();
         modal.classList.add("open");
+    }
+
+    function closeModal() {
+        modal.classList.remove("open");
     }
 
     // Quantos dos processos abertos no modal já têm este grupo vinculado
@@ -360,13 +400,34 @@ document.addEventListener("DOMContentLoaded", function () {
         }).length;
     }
 
+    function cardInfo(id) {
+        const card = document.querySelector('#grpList .grp-card[data-grupo-id="' + id + '"]');
+        return {
+            nome: card.querySelector(".text-dado").textContent.trim(),
+            cargoNome: card.querySelector(".text-meta").textContent.trim(),
+            cargo: card.dataset.cargo,
+        };
+    }
+
+    // Id do grupo (!= idExcluir) que já ocupa o mesmo papel de `cargo` no processo, ou null
+    function grupoDoPapelJaVinculado(processoId, cargo, idExcluir) {
+        const ids = gruposVinculados[String(processoId)] || [];
+        for (let i = 0; i < ids.length; i++) {
+            const gid = String(ids[i]);
+            if (gid === idExcluir) continue;
+            const card = document.querySelector('#grpList .grp-card[data-grupo-id="' + gid + '"]');
+            if (card && card.dataset.cargo === cargo) return gid;
+        }
+        return null;
+    }
+
     function renderGrpVinculos() {
         const total = modalProcessos.length;
         document.querySelectorAll("#grpList .grp-card").forEach(card => {
             const selo = card.querySelector(".grp-vinculo");
-            if (!selo) return;
-
+            const lixeira = card.querySelector(".grp-remover");
             const vinculados = contarVinculos(card.dataset.grupoId);
+            lixeira.classList.toggle("oculto", vinculados === 0);
             if (vinculados === 0) {
                 selo.classList.add("oculto");
                 return;
@@ -384,40 +445,114 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    function closeModal() {
-        modal.classList.remove("open");
-    }
-
     function renderGrpSelection() {
         document.querySelectorAll("#grpList .grp-card").forEach(card => {
             const id = card.dataset.grupoId;
-            let isSelected;
-            if (id === "") {
-                isSelected = removeMode;
-            } else {
-                isSelected = selectedGrupoIds.has(id);
-            }
-            card.classList.toggle("selected", isSelected);
+            const selecionado = selectedGrupoIds.has(id);
+            const remover = grupoIdsRemover.has(id);
+            card.classList.toggle("selected", selecionado);
+            card.classList.toggle("marcado-remover", remover);
             const icon = card.querySelector(".check");
-            icon.className = `fa-solid ${isSelected ? "fa-circle-check" : "fa-circle"} check`;
+            let iconeClasse = "fa-circle";
+            if (remover) iconeClasse = "fa-circle-xmark";
+            else if (selecionado) iconeClasse = "fa-circle-check";
+            icon.className = `fa-solid ${iconeClasse} check`;
         });
     }
 
+    // --- Confirmação compartilhada: troca de papel, remoção de um grupo e
+    // remoção total passam todas por aqui, em vez de três diálogos diferentes ---
+    function abrirConfirmacao(opcoes) {
+        grpConfirmacaoTexto.textContent = opcoes.texto;
+        confirmacaoPendente = opcoes.aoConfirmar;
+        grpSelecao.classList.add("oculto");
+        grpConfirmacao.classList.remove("oculto");
+    }
+
+    function fecharConfirmacao() {
+        confirmacaoPendente = null;
+        grpConfirmacao.classList.add("oculto");
+        grpSelecao.classList.remove("oculto");
+    }
+
+    document.getElementById("grpConfirmacaoSim").addEventListener("click", function () {
+        const acao = confirmacaoPendente;
+        fecharConfirmacao();
+        if (acao) acao();
+    });
+    document.getElementById("grpConfirmacaoNao").addEventListener("click", fecharConfirmacao);
+
+    // Clique no corpo do card: seleciona pra adicionar. Se o papel já está
+    // ocupado por outro grupo em algum processo aberto, pede confirmação —
+    // só marca a seleção se o serventuário confirmar a troca.
     document.querySelectorAll("#grpList .grp-card").forEach(card => {
         card.addEventListener("click", function () {
             const id = this.dataset.grupoId;
-            if (id === "") {
-                removeMode = !removeMode;
-                if (removeMode) selectedGrupoIds.clear();
-            } else {
-                removeMode = false;
-                if (selectedGrupoIds.has(id)) {
-                    selectedGrupoIds.delete(id);
-                } else {
-                    selectedGrupoIds.add(id);
-                }
+            const cargo = this.dataset.cargo;
+
+            if (selectedGrupoIds.has(id)) {
+                selectedGrupoIds.delete(id);
+                renderGrpSelection();
+                return;
             }
-            renderGrpSelection();
+
+            const processosComConflito = modalProcessos.filter(function (pid) {
+                return grupoDoPapelJaVinculado(pid, cargo, id) !== null;
+            });
+
+            if (processosComConflito.length === 0) {
+                selectedGrupoIds.add(id);
+                renderGrpSelection();
+                return;
+            }
+
+            const novo = cardInfo(id);
+            let texto;
+            if (modalProcessos.length === 1) {
+                const ocupante = cardInfo(grupoDoPapelJaVinculado(modalProcessos[0], cargo, id));
+                texto = `O grupo "${ocupante.nome}" (${ocupante.cargoNome}) já está vinculado a este processo. Substituir por "${novo.nome}"?`;
+            } else {
+                texto = `${processosComConflito.length} de ${modalProcessos.length} processo(s) já têm um grupo diferente vinculado a esse papel. Substituir em todos?`;
+            }
+
+            abrirConfirmacao({
+                texto: texto,
+                aoConfirmar: function () {
+                    selectedGrupoIds.add(id);
+                    renderGrpSelection();
+                },
+            });
+        });
+    });
+
+    // Lixeira: marca um grupo específico pra remoção, sem afetar os demais —
+    // reversível clicando de novo, antes de "Confirmar Atribuição" gravar.
+    document.querySelectorAll(".grp-remover").forEach(btn => {
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const card = this.closest(".grp-card");
+            const id = card.dataset.grupoId;
+
+            if (grupoIdsRemover.has(id)) {
+                grupoIdsRemover.delete(id);
+                renderGrpSelection();
+                return;
+            }
+
+            const info = cardInfo(id);
+            const vinculados = contarVinculos(id);
+            const texto = vinculados === 1
+                ? `Remover o grupo "${info.nome}" deste processo?`
+                : `Remover o grupo "${info.nome}" de ${vinculados} processo(s)?`;
+
+            abrirConfirmacao({
+                texto: texto,
+                aoConfirmar: function () {
+                    grupoIdsRemover.add(id);
+                    selectedGrupoIds.delete(id);
+                    renderGrpSelection();
+                },
+            });
         });
     });
 
@@ -443,58 +578,94 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("modalClose").addEventListener("click", closeModal);
     document.getElementById("modalCancel").addEventListener("click", closeModal);
 
-    // Confirmar atribuição
-    document.getElementById("modalConfirm").addEventListener("click", function () {
-        const grupoIds = removeMode ? [] : [...selectedGrupoIds].map(Number);
-        if (!removeMode && grupoIds.length === 0) {
-            showToast("Selecione ao menos um grupo.", "atencao");
-            return;
-        }
+    // POST compartilhado por "Confirmar Atribuição" e "Remover atribuição"
+    function enviar(corpo, { mensagemSucesso, gruposAdicionar = [], gruposRemover = [], removerTudo = false }) {
         fetch("{% url 'processos:atribuir_grupo_processos' %}", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": csrfToken,
             },
-            body: JSON.stringify({
-                processo_ids: modalProcessos,
-                grupo_ids: grupoIds,
-            }),
+            body: JSON.stringify(corpo),
         })
         .then(r => r.json().then(data => ({ ok: r.ok, data })))
         .then(({ ok, data }) => {
             if (!ok) {
-                showToast(data.erro || "Erro ao atribuir grupo.", "erro");
+                showToast(data.erro || "Erro ao atualizar grupos.", "erro");
                 return;
             }
-            showToast(
-                removeMode
-                    ? "Atribuições removidas com sucesso!"
-                    : modalProcessos.length === 1
-                        ? `${grupoIds.length} grupo(s) atribuído(s) com sucesso!`
-                        : `Atribuição em lote concluída! (${data.atualizados} processos)`,
-                "sucesso"
-            );
-            // espelha o que o servidor acabou de gravar: sem isso o selo de
-            // vínculo continuaria mostrando o estado anterior ao reabrir o modal
+            showToast(typeof mensagemSucesso === "function" ? mensagemSucesso(data) : mensagemSucesso, "sucesso");
+
+            // espelha o que o servidor gravou: sem isso o selo de vínculo
+            // continuaria mostrando o estado anterior ao reabrir o modal.
+            // Filtrar por cargo reproduz exatamente a troca que o serviço faz —
+            // não é aproximação, é a mesma regra (um grupo por papel).
             modalProcessos.forEach(function (processoId) {
                 const chave = String(processoId);
-                if (removeMode) {
+                if (removerTudo) {
                     gruposVinculados[chave] = [];
                     return;
                 }
-                const atuais = gruposVinculados[chave] || [];
-                gruposVinculados[chave] = [...new Set([...atuais, ...grupoIds])];
+                let atuais = gruposVinculados[chave] || [];
+                if (gruposRemover.length) {
+                    atuais = atuais.filter(gid => gruposRemover.indexOf(gid) === -1);
+                }
+                gruposAdicionar.forEach(function (gid) {
+                    const cargo = cardInfo(String(gid)).cargo;
+                    atuais = atuais.filter(function (existenteId) {
+                        if (existenteId === gid) return true;
+                        const existenteCard = document.querySelector('#grpList .grp-card[data-grupo-id="' + existenteId + '"]');
+                        return !existenteCard || existenteCard.dataset.cargo !== cargo;
+                    });
+                });
+                gruposVinculados[chave] = [...new Set([...atuais, ...gruposAdicionar])];
             });
+
             closeModal();
             selAllChk.checked = false;
             document.querySelectorAll(".rowChk").forEach(c => c.checked = false);
             updateSelCount();
         })
         .catch(() => showToast("Erro de conexão.", "erro"));
+    }
+
+    // Remover atribuição (rodapé): ação isolada, própria confirmação, executa
+    // na hora — não fica pendente esperando "Confirmar Atribuição".
+    document.getElementById("modalRemoverTudo").addEventListener("click", function () {
+        const texto = modalProcessos.length === 1
+            ? "Remover todos os grupos vinculados a este processo?"
+            : `Remover todos os grupos vinculados aos ${modalProcessos.length} processos selecionados?`;
+        abrirConfirmacao({
+            texto: texto,
+            aoConfirmar: function () {
+                enviar(
+                    { processo_ids: modalProcessos, remover_tudo: true },
+                    { removerTudo: true, mensagemSucesso: "Atribuições removidas com sucesso!" }
+                );
+            },
+        });
     });
 
-    // --- Toast ---
+    // Confirmar Atribuição: grava de uma vez tudo que ficou marcado nos
+    // cards — adições (com troca já confirmada) e remoções pela lixeira.
+    document.getElementById("modalConfirm").addEventListener("click", function () {
+        const adicionar = [...selectedGrupoIds].map(Number);
+        const remover = [...grupoIdsRemover].map(Number);
+        if (adicionar.length === 0 && remover.length === 0) {
+            showToast("Selecione ao menos uma alteração.", "atencao");
+            return;
+        }
+        enviar(
+            { processo_ids: modalProcessos, grupo_ids_adicionar: adicionar, grupo_ids_remover: remover },
+            {
+                gruposAdicionar: adicionar,
+                gruposRemover: remover,
+                mensagemSucesso: data => modalProcessos.length === 1
+                    ? "Alterações aplicadas com sucesso!"
+                    : `Alteração em lote concluída! (${data.atualizados} processo(s))`,
+            }
+        );
+    });
 });
 </script>
 {% endif %}
