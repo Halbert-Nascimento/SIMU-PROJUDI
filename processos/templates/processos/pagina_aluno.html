@@ -331,7 +331,7 @@
 
         <div class="modal-acoes" id="grpAcoes">
             <button type="button" class="{% classe_botao 'destrutivo' padding=True %}" id="modalRemoverTudo">
-                <i class="fa-solid fa-trash-can mr-1.5"></i> Remover atribuição
+                <i class="fa-solid fa-trash-can mr-1.5"></i> Desvincular Grupos
             </button>
             <div class="flex gap-2">
                 <button type="button" class="{% classe_botao 'primario' padding=True %}" id="modalConfirm">
@@ -486,7 +486,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // --- Confirmação compartilhada: troca de papel, remoção de um grupo e
     // remoção total passam todas por aqui, em vez de três diálogos diferentes.
-    // O rodapé (Remover atribuição/Cancelar/Confirmar) some enquanto isso —
+    // O rodapé (Desvincular Grupos/Cancelar/Confirmar) some enquanto isso —
     // clicar neles no meio de uma confirmação pendente levaria a erro. ---
     function abrirConfirmacao(opcoes) {
         grpConfirmacaoTexto.textContent = opcoes.texto;
@@ -616,7 +616,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("modalClose").addEventListener("click", closeModal);
     document.getElementById("modalCancel").addEventListener("click", closeModal);
 
-    // POST compartilhado por "Confirmar Atribuição" e "Remover atribuição"
+    // POST compartilhado por "Confirmar Atribuição" e "Desvincular Grupos"
     function enviar(corpo, { mensagemSucesso, gruposAdicionar = [], gruposRemover = [], removerTudo = false }) {
         fetch("{% url 'processos:atribuir_grupo_processos' %}", {
             method: "POST",
@@ -667,7 +667,7 @@ document.addEventListener("DOMContentLoaded", function () {
         .catch(() => showToast("Erro de conexão.", "erro"));
     }
 
-    // Remover atribuição (rodapé): ação isolada, própria confirmação, executa
+    // Desvincular Grupos (rodapé): ação isolada, própria confirmação, executa
     // na hora — não fica pendente esperando "Confirmar Atribuição".
     document.getElementById("modalRemoverTudo").addEventListener("click", function () {
         const texto = modalProcessos.length === 1
