@@ -12,7 +12,8 @@ from base.mensagens import propagar_erros_form
 
 from usuarios.models import Usuario
 
-from ciclos.models import CicloSimulacao, ParticipanteCiclo, StatusCiclo
+from ciclos.models import CicloSimulacao, GrupoTrabalho, ParticipanteCiclo, StatusCiclo
+from movimentacoes.models import MovimentacaoProcessual
 from processos.models import ProcessoJudicial
 from ciclos.permissions import (
     pode_criar_ciclo,
@@ -167,32 +168,64 @@ def painel_administrativo(request):
     if pode_ver_todos_ciclos(request.user):
         ciclos_ativos_professor = list(
             CicloSimulacao.objects
-            .filter(status__nome_status="em andamento")
+            .filter(status__nome_status__iexact="em andamento")
             .select_related("status")
             .order_by("-data_criacao")
         )
     else:
         ciclos_ativos_professor = list(
             CicloSimulacao.objects
-            .filter(coordenador=request.user, status__nome_status="em andamento")
+            .filter(
+                coordenador=request.user,
+                status__nome_status__iexact="em andamento",
+            )
             .select_related("status")
             .order_by("-data_criacao")
         )
     context["ciclos_ativos_professor"] = ciclos_ativos_professor
-    context["processos_professor"] = (
+    processos_ativos = (
         ProcessoJudicial.objects
         .filter(ciclo__in=ciclos_ativos_professor)
+    )
+    context["processos_professor"] = (
+        processos_ativos
         .select_related("ciclo", "status_atual", "classe")
         .prefetch_related("polos__parte")
         .order_by("ciclo__nome_edicao", "-data_autuacao")
     )
 
+    # O resumo inclui todos os ciclos em andamento ao alcance do usuário. Para
+    # Professor, isso inclui também os ciclos de que participa; a tabela de
+    # processos continua restrita aos ciclos coordenados por ele, evitando
+    # expor links a autos sigilosos de ciclos de terceiros.
+    ciclos_ativos_resumo = ciclos_ativos_professor
+    if not pode_ver_todos_ciclos(request.user):
+        ciclos_ativos_resumo = list(
+            CicloSimulacao.objects
+            .filter(
+                Q(coordenador=request.user) | Q(participantes=request.user),
+                status__nome_status__iexact="em andamento",
+            )
+            .distinct()
+        )
+
+    context["processos_ativos_count"] = ProcessoJudicial.objects.filter(
+        ciclo__in=ciclos_ativos_resumo
+    ).count()
+    context["avaliacoes_pendentes_count"] = (
+        MovimentacaoProcessual.objects
+        .filter(processo__ciclo__in=ciclos_ativos_resumo, feedbacks__isnull=True)
+        .count()
+    )
+    context["grupos_trabalho_count"] = GrupoTrabalho.objects.filter(
+        ciclo__in=ciclos_ativos_resumo
+    ).count()
     context["total_alunos_vinculados"] = (
         Usuario.objects
         .filter(
             is_active=True,
             tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
-            ciclos_participados__status__nome_status__in=["em andamento"],
+            ciclos_participados__in=ciclos_ativos_resumo,
         )
         .distinct()
         .count()
