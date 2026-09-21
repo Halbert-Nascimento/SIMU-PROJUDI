@@ -69,6 +69,11 @@ class AtribuicaoGruposForm(forms.Form):
 
     MANTER = "manter"
     REMOVER = "remover"
+    # o serviço relê o estado e pode recusar a mesma coisa um nível abaixo; o texto é um só
+    MENSAGEM_ESTADO_MUDOU = (
+        "O processo mudou enquanto esta tela estava aberta. Confira o estado atual "
+        "e refaça as alterações."
+    )
 
     def __init__(self, *args, estados, **kwargs):
         super().__init__(*args, **kwargs)
@@ -117,10 +122,7 @@ class AtribuicaoGruposForm(forms.Form):
 
             if (dados.get(f"atual_{chave}") or "").strip() != estado.impressao:
                 self.estado_mudou = True
-                raise forms.ValidationError(
-                    "O processo mudou enquanto esta tela estava aberta. Confira o estado atual "
-                    "e refaça as alterações."
-                )
+                raise forms.ValidationError(self.MENSAGEM_ESTADO_MUDOU)
 
             if escolha == self.MANTER:
                 continue
