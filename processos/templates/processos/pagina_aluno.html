@@ -56,35 +56,6 @@
         justify-content: center;
     }
 
-    /* Cartão de grupo dentro do modal de atribuição */
-    .grp-card {
-        position: relative;
-        border: 1px solid #e2e5ea;
-        padding: 11px 12px;
-        display: flex; align-items: center; gap: 11px;
-        cursor: pointer; background: #fff;
-        transition: background-color .12s ease, border-color .12s ease;
-    }
-    .grp-card:hover { background: #f7faff; border-color: #1f4f9c; }
-    .grp-card.selected { background: #f7faff; border-color: #1f4f9c; }
-    /* selecao marcada pela faixa de 3px do guia (secao 01), nao por sombra —
-       o mesmo indicador que o .grupo-item de gerenciar_grupos usa */
-    .grp-card.selected::before {
-        content: ''; position: absolute; left: 0; top: 0; bottom: 0;
-        width: 3px; background: #1f4f9c;
-    }
-    .grp-avatar {
-        width: 34px; height: 34px; border-radius: 50%;
-        background: #1f4f9c; color: #fff;
-        display: flex; align-items: center; justify-content: center;
-        font-weight: 600; font-size: calc(12px * var(--escala-fonte, 1)); flex-shrink: 0;
-    }
-    .grp-card .check { color: #d3d7de; font-size: calc(16px * var(--escala-fonte, 1)); }
-    .grp-card.selected .check { color: #1f4f9c; }
-    /* dois seletores de classe para vencer o display:inline-flex de .pill,
-       que o `hidden` do Tailwind só venceria por ordem de carga */
-    .grp-card .grp-vinculo { flex-shrink: 0; }
-    .grp-card .grp-vinculo.oculto { display: none; }
 </style>
 {% endblock %}
 
@@ -94,6 +65,8 @@
 
 <!-- Main Content -->
 <main class="max-w-conteudo mx-auto px-7 py-5">
+
+    {% include 'base/components/_mensagens.html' with tag="grupos" %}
 
     <!-- Cabecalho -->
     <div class="mb-5 pb-4 border-b border-contorno flex items-end gap-4">
@@ -166,7 +139,6 @@
         <table class="tbl-projudi">
             <thead>
                 <tr>
-                    {% if is_serventia %}<th style="width:30px;"><input type="checkbox" id="selAll"></th>{% endif %}
                     <th>Nº Processo</th>
                     <th>Partes</th>
                     <th>Última Movimentação</th>
@@ -177,7 +149,6 @@
             <tbody>
                 {% for processo in page_obj %}
                 <tr data-id="{{ processo.id }}">
-                    {% if is_serventia %}<td><input type="checkbox" class="rowChk" value="{{ processo.id }}"></td>{% endif %}
                     <td class="font-mono text-dado"><a href="{% url 'processos:visualizar_processo' processo.numero %}">{{ processo.numero }}</a></td>
                     <td class="text-dado">{{ processo.partes_resumo }}</td>
                     <td class="text-apoio text-rotulo">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
@@ -186,15 +157,16 @@
                     </td>
                     {% if is_serventia %}
                     <td class="text-center">
-                        <button type="button" class="text-acao hover:text-navy btn-atribuir-row" data-id="{{ processo.id }}" data-num="{{ processo.numero }}" data-classe="{{ processo.classe.nome }}" title="Atribuir grupo">
+                        <a href="{% url 'processos:atribuir_grupos' processo.numero %}?next={{ request.get_full_path|urlencode }}"
+                           class="text-acao hover:text-navy" title="Atribuir grupos ao processo">
                             <i class="fa-solid fa-users-gear"></i>
-                        </button>
+                        </a>
                     </td>
                     {% endif %}
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="{% if is_serventia %}6{% else %}4{% endif %}" class="text-center italic py-6 text-rotulo">
+                    <td colspan="{% if is_serventia %}5{% else %}4{% endif %}" class="text-center italic py-6 text-rotulo">
                         Nenhum processo vinculado ao seu usuário.
                     </td>
                 </tr>
@@ -203,39 +175,7 @@
         </table>
     </div>
 
-    <!-- Ações em lote (serventia) -->
-    {% if is_serventia and page_obj %}
-    <div class="flex items-center justify-between mt-4 text-corpo">
-        <div class="flex items-center gap-2">
-            <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="bulkAssign">
-                <i class="fa-solid fa-users-gear mr-1"></i> Atribuir grupo aos selecionados
-            </button>
-            <span id="selCount" class="text-rotulo">0 selecionados</span>
-        </div>
-
-        <!-- Paginação -->
-        {% if page_obj.paginator.num_pages > 1 %}
-        <div class="flex items-center gap-1">
-            {% if page_obj.has_previous %}
-            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-left"></i></a>
-            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-left"></i></a>
-            {% endif %}
-            {% for num in page_obj.paginator.page_range %}
-                {% if num == page_obj.number %}
-                <span class="px-3 py-1.5 bg-navy text-white border border-navy font-bold text-meta">{{ num }}</span>
-                {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-3 py-1.5 inline-flex items-center">{{ num }}</a>
-                {% endif %}
-            {% endfor %}
-            {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-right"></i></a>
-            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-right"></i></a>
-            {% endif %}
-        </div>
-        {% endif %}
-    </div>
-    {% else %}
-    <!-- Paginação (sem serventia) -->
+    <!-- Paginação -->
     {% if page_obj.paginator.num_pages > 1 %}
     <div class="flex items-center justify-end mt-4 text-corpo">
         <div class="flex items-center gap-1">
@@ -257,245 +197,7 @@
         </div>
     </div>
     {% endif %}
-    {% endif %}
 
 </main>
 
-{% if is_serventia %}
-<!-- Modal: Atribuir Grupo -->
-{% modal id="grpModal" titulo="Atribuir Grupo ao Processo" icone="fa-users-gear" fechar_id="modalClose" %}
-
-        <div class="p-5">
-            <div class="mb-4 text-corpo">
-                <div class="text-rotulo uppercase text-micro font-semibold">Processo</div>
-                <div id="modalProcNum" class="font-mono font-medium text-acao text-dado mt-1">—</div>
-                <div id="modalProcClass" class="text-apoio text-rotulo">—</div>
-            </div>
-
-            <div class="text-micro font-semibold uppercase text-rotulo mb-2.5">Selecione os grupos responsáveis</div>
-
-            <div class="space-y-2 max-h-[280px] overflow-y-auto pr-1" id="grpList">
-                {% for g in grupos_ciclo %}
-                <div class="grp-card" data-grupo-id="{{ g.id }}">
-                    <div class="grp-avatar">{{ g.nome|truncatechars:1 }}</div>
-                    <div class="flex-1 min-w-0">
-                        <div class="text-dado font-semibold text-texto">{{ g.nome }}</div>
-                        <div class="text-meta text-rotulo">{{ g.cargo_simulacao.nome }}</div>
-                    </div>
-                    <span class="pill ok grp-vinculo oculto"></span>
-                    <i class="fa-solid fa-circle check"></i>
-                </div>
-                {% endfor %}
-                <div class="grp-card" data-grupo-id="">
-                    <div class="grp-avatar" style="background:#6b7280;"><i class="fa-solid fa-ban"></i></div>
-                    <div class="flex-1">
-                        <div class="text-dado font-semibold text-texto">Remover atribuição</div>
-                        <div class="text-meta text-rotulo">Processo ficará sem grupo definido</div>
-                    </div>
-                    <i class="fa-solid fa-circle check"></i>
-                </div>
-            </div>
-        </div>
-
-        <div class="modal-acoes">
-            <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="modalCancel">Cancelar</button>
-            <button type="button" class="{% classe_botao 'primario' padding=True %}" id="modalConfirm">
-                <i class="fa-solid fa-check mr-1.5"></i> Confirmar Atribuição
-            </button>
-        </div>
-    {% endmodal %}
-
-<!-- Toast -->
-{% include 'base/components/_toast.html' %}
-
-{{ grupos_vinculados_por_processo|json_script:"grupos-vinculados" }}
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const csrfToken = "{{ csrf_token }}";
-    const gruposVinculados = JSON.parse(document.getElementById("grupos-vinculados").textContent);
-    const modal = document.getElementById("grpModal");
-    const selAllChk = document.getElementById("selAll");
-    const selCountEl = document.getElementById("selCount");
-    let modalProcessos = [];
-    let selectedGrupoIds = new Set();
-    let removeMode = false;
-
-    // --- Checkbox select all ---
-    selAllChk.addEventListener("change", function () {
-        document.querySelectorAll(".rowChk").forEach(c => c.checked = this.checked);
-        updateSelCount();
-    });
-
-    document.querySelectorAll(".rowChk").forEach(c => {
-        c.addEventListener("change", updateSelCount);
-    });
-
-    function getSelectedIds() {
-        return [...document.querySelectorAll(".rowChk:checked")].map(c => parseInt(c.value));
-    }
-
-    function updateSelCount() {
-        const n = getSelectedIds().length;
-        selCountEl.textContent = `${n} selecionado${n !== 1 ? "s" : ""}`;
-    }
-
-    // --- Modal ---
-    function openModal(processoIds, titulo, subtitulo) {
-        modalProcessos = processoIds;
-        document.getElementById("modalProcNum").textContent = titulo;
-        document.getElementById("modalProcClass").textContent = subtitulo;
-        selectedGrupoIds.clear();
-        removeMode = false;
-        renderGrpVinculos();
-        renderGrpSelection();
-        modal.classList.add("open");
-    }
-
-    // Quantos dos processos abertos no modal já têm este grupo vinculado
-    function contarVinculos(grupoId) {
-        return modalProcessos.filter(function (processoId) {
-            const ids = gruposVinculados[String(processoId)] || [];
-            return ids.indexOf(Number(grupoId)) !== -1;
-        }).length;
-    }
-
-    function renderGrpVinculos() {
-        const total = modalProcessos.length;
-        document.querySelectorAll("#grpList .grp-card").forEach(card => {
-            const selo = card.querySelector(".grp-vinculo");
-            if (!selo) return;
-
-            const vinculados = contarVinculos(card.dataset.grupoId);
-            if (vinculados === 0) {
-                selo.classList.add("oculto");
-                return;
-            }
-            if (total === 1) {
-                selo.textContent = "Já vinculado";
-            } else if (vinculados === total) {
-                selo.textContent = "Em todos os " + total;
-            } else {
-                selo.textContent = "Em " + vinculados + " de " + total;
-            }
-            selo.classList.toggle("gray", vinculados < total);
-            selo.classList.toggle("ok", vinculados === total);
-            selo.classList.remove("oculto");
-        });
-    }
-
-    function closeModal() {
-        modal.classList.remove("open");
-    }
-
-    function renderGrpSelection() {
-        document.querySelectorAll("#grpList .grp-card").forEach(card => {
-            const id = card.dataset.grupoId;
-            let isSelected;
-            if (id === "") {
-                isSelected = removeMode;
-            } else {
-                isSelected = selectedGrupoIds.has(id);
-            }
-            card.classList.toggle("selected", isSelected);
-            const icon = card.querySelector(".check");
-            icon.className = `fa-solid ${isSelected ? "fa-circle-check" : "fa-circle"} check`;
-        });
-    }
-
-    document.querySelectorAll("#grpList .grp-card").forEach(card => {
-        card.addEventListener("click", function () {
-            const id = this.dataset.grupoId;
-            if (id === "") {
-                removeMode = !removeMode;
-                if (removeMode) selectedGrupoIds.clear();
-            } else {
-                removeMode = false;
-                if (selectedGrupoIds.has(id)) {
-                    selectedGrupoIds.delete(id);
-                } else {
-                    selectedGrupoIds.add(id);
-                }
-            }
-            renderGrpSelection();
-        });
-    });
-
-    // Botão atribuir por linha
-    document.querySelectorAll(".btn-atribuir-row").forEach(btn => {
-        btn.addEventListener("click", function () {
-            const id = parseInt(this.dataset.id);
-            openModal([id], this.dataset.num, this.dataset.classe);
-        });
-    });
-
-    // Botão atribuir em lote
-    document.getElementById("bulkAssign").addEventListener("click", function () {
-        const ids = getSelectedIds();
-        if (ids.length === 0) {
-            showToast("Selecione ao menos um processo.", "atencao");
-            return;
-        }
-        openModal(ids, `${ids.length} processo(s) selecionado(s)`, "Atribuição em lote");
-    });
-
-    // Fechar modal
-    document.getElementById("modalClose").addEventListener("click", closeModal);
-    document.getElementById("modalCancel").addEventListener("click", closeModal);
-
-    // Confirmar atribuição
-    document.getElementById("modalConfirm").addEventListener("click", function () {
-        const grupoIds = removeMode ? [] : [...selectedGrupoIds].map(Number);
-        if (!removeMode && grupoIds.length === 0) {
-            showToast("Selecione ao menos um grupo.", "atencao");
-            return;
-        }
-        fetch("{% url 'processos:atribuir_grupo_processos' %}", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken,
-            },
-            body: JSON.stringify({
-                processo_ids: modalProcessos,
-                grupo_ids: grupoIds,
-            }),
-        })
-        .then(r => r.json().then(data => ({ ok: r.ok, data })))
-        .then(({ ok, data }) => {
-            if (!ok) {
-                showToast(data.erro || "Erro ao atribuir grupo.", "erro");
-                return;
-            }
-            showToast(
-                removeMode
-                    ? "Atribuições removidas com sucesso!"
-                    : modalProcessos.length === 1
-                        ? `${grupoIds.length} grupo(s) atribuído(s) com sucesso!`
-                        : `Atribuição em lote concluída! (${data.atualizados} processos)`,
-                "sucesso"
-            );
-            // espelha o que o servidor acabou de gravar: sem isso o selo de
-            // vínculo continuaria mostrando o estado anterior ao reabrir o modal
-            modalProcessos.forEach(function (processoId) {
-                const chave = String(processoId);
-                if (removeMode) {
-                    gruposVinculados[chave] = [];
-                    return;
-                }
-                const atuais = gruposVinculados[chave] || [];
-                gruposVinculados[chave] = [...new Set([...atuais, ...grupoIds])];
-            });
-            closeModal();
-            selAllChk.checked = false;
-            document.querySelectorAll(".rowChk").forEach(c => c.checked = false);
-            updateSelCount();
-        })
-        .catch(() => showToast("Erro de conexão.", "erro"));
-    });
-
-    // --- Toast ---
-});
-</script>
-{% endif %}
 {% endblock %}

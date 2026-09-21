@@ -191,6 +191,98 @@ def ctx_login(com_erros=False, expirada=False):
     }
 
 
+def grupo_fake(nome, pk=1):
+    return Obj(pk=pk, nome=nome)
+
+
+def estado_posicao(chave, rotulo, ocupante=None, opcoes=(), conflito=(), indisponivel=False):
+    vinculados = list(conflito) or ([ocupante] if ocupante else [])
+    return Obj(
+        posicao=Obj(chave=chave, rotulo=rotulo),
+        grupo=None if conflito else ocupante,
+        grupos_vinculados=vinculados,
+        opcoes=list(opcoes),
+        em_conflito=bool(conflito),
+        indisponivel=indisponivel,
+        pendente=not vinculados,
+        impressao=",".join(str(g.pk) for g in vinculados),
+    )
+
+
+def processo_fake(status="Autuado"):
+    return Obj(
+        numero=NUMERO,
+        vara=Obj(nome="1ª Vara Cível", comarca=Obj(nome="Goiânia")),
+        classe=Obj(nome="Procedimento Comum Cível"),
+        status_atual=Obj(nome_status=status),
+    )
+
+
+def ctx_atribuir_grupos(passo=1, variante="ocupadas"):
+    alfa, beta = grupo_fake("Grupo Alfa", 1), grupo_fake("Grupo Beta", 2)
+    app1, mp1, mp2 = grupo_fake("Grupo APP", 3), grupo_fake("Grupo MP 1", 4), grupo_fake("Grupo MP 2", 5)
+    jz1 = grupo_fake("Grupo JZ 1", 6)
+
+    if variante == "pendentes":
+        estados = [
+            estado_posicao("polo_ativo", "Polo ativo", opcoes=[alfa, beta, mp1]),
+            estado_posicao("polo_passivo", "Polo passivo", opcoes=[app1]),
+            estado_posicao("ministerio_publico", "Ministério Público (interveniente)", opcoes=[mp1]),
+            estado_posicao("juiz", "Juiz", indisponivel=True),
+        ]
+    elif variante == "conflito":
+        estados = [
+            estado_posicao("polo_ativo", "Polo ativo", ocupante=alfa, opcoes=[beta]),
+            estado_posicao("polo_passivo", "Polo passivo", conflito=[app1, grupo_fake("Grupo APP fora", 7)]),
+            estado_posicao("ministerio_publico", "Ministério Público (interveniente)", opcoes=[mp1, mp2]),
+            estado_posicao("juiz", "Juiz", ocupante=jz1),
+        ]
+    else:
+        estados = [
+            estado_posicao("polo_ativo", "Polo ativo", ocupante=alfa, opcoes=[beta, mp1]),
+            estado_posicao("polo_passivo", "Polo passivo", ocupante=app1, opcoes=[]),
+            estado_posicao("ministerio_publico", "Ministério Público (interveniente)", ocupante=mp1, opcoes=[mp2]),
+            estado_posicao("juiz", "Juiz", ocupante=jz1),
+        ]
+
+    contexto = {
+        "user": ALUNO, "request": Obj(user=ALUNO),
+        "processo": processo_fake("Protocolado" if variante == "pendentes" else "Autuado"),
+        "estados": estados,
+        "proximo": "/processos/area-servidor/",
+        "polos_ativo": [Obj(parte=Obj(nome_razao="João da Silva"))],
+        "polos_passivo": [Obj(parte=Obj(nome_razao="Empresa Ré Ltda."))],
+        "passo": passo,
+        "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
+                        {"label": f"Processo {NUMERO}", "url": "/p/"},
+                        {"label": "Atribuir Grupos", "url": None}],
+    }
+    if passo == 2:
+        posicao_ativo = Obj(chave="polo_ativo", rotulo="Polo ativo")
+        posicao_mp = Obj(chave="ministerio_publico", rotulo="Ministério Público (interveniente)")
+        contexto.update({
+            "plano": Obj(
+                alteracoes=[
+                    Obj(natureza="substituicao", posicao=posicao_ativo,
+                        grupo_anterior=alfa, grupo_novo=beta, posicao_origem=None),
+                    Obj(natureza="atribuicao", posicao=Obj(chave="polo_passivo", rotulo="Polo passivo"),
+                        grupo_anterior=None, grupo_novo=app1, posicao_origem=None),
+                    Obj(natureza="mudanca_de_posicao", posicao=posicao_ativo,
+                        grupo_anterior=None, grupo_novo=mp1, posicao_origem=posicao_mp),
+                    Obj(natureza="remocao", posicao=Obj(chave="juiz", rotulo="Juiz"),
+                        grupo_anterior=jz1, grupo_novo=None, posicao_origem=None),
+                ],
+                donos_de_polo={"Ativo": beta, "Passivo": app1},
+                vinculos_a_remover=[alfa, jz1],
+            ),
+            "descricao_evento": 'Polo ativo: "Grupo Alfa" substituído por "Grupo Beta". '
+                                'Juiz: "Grupo JZ 1" removido.',
+            "nome_evento": "Redistribuição",
+            "escolhas": {"posicao_polo_ativo": "2", "atual_polo_ativo": "1"},
+        })
+    return contexto
+
+
 CASOS = [
     ("acesso/login.html", "form limpo", ctx_login()),
     ("acesso/login.html", "credenciais inválidas", ctx_login(com_erros=True)),
@@ -206,6 +298,13 @@ CASOS = [
     ("avaliacoes/minhas_notas.html", "sem avaliação", ctx_minhas_notas(vazio=True)),
     ("ciclos/boas_vindas.html", "primeiro acesso", ctx_boas_vindas()),
     ("ciclos/boas_vindas.html", "ciclo anterior encerrado", ctx_boas_vindas(ja_participou=True)),
+    ("processos/atribuir_grupos.html", "posições ocupadas", ctx_atribuir_grupos()),
+    ("processos/atribuir_grupos.html", "pendentes e papel indisponível",
+     ctx_atribuir_grupos(variante="pendentes")),
+    ("processos/atribuir_grupos.html", "posição em conflito",
+     ctx_atribuir_grupos(variante="conflito")),
+    ("processos/atribuir_grupos.html", "resumo com as quatro naturezas",
+     ctx_atribuir_grupos(passo=2)),
 ]
 
 

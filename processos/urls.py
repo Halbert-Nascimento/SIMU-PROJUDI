@@ -2,7 +2,7 @@ from django.urls import path
 
 from .views import (
     alterar_parte,
-    atribuir_grupo_processos,
+    atribuir_grupos_processo,
     buscar_partes,
     cadastrar_processo,
     criar_parte,
@@ -21,11 +21,11 @@ urlpatterns = [
     # Mais específicas antes de <str:numero>/
     path("<str:numero>/partes/alterar/", alterar_parte, name="alterar_parte"),
     path("<str:numero>/dados/", modificar_dados_processo, name="modificar_dados_processo"),
+    path("<str:numero>/grupos/", atribuir_grupos_processo, name="atribuir_grupos"),
 
     path("<str:numero>/", visualizar_processo, name="visualizar_processo"),
 
     path("api/varas/<int:comarca_id>/", varas_por_comarca, name="varas_por_comarca"),
     path("api/partes/buscar/", buscar_partes, name="buscar_partes"),
     path("api/partes/criar/", criar_parte, name="criar_parte"),
-    path("api/atribuir-grupo/", atribuir_grupo_processos, name="atribuir_grupo_processos"),
 ]
