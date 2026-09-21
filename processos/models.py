@@ -255,16 +255,6 @@ class GrupoProcesso(models.Model):
 
     class Meta:
         db_table = "grupo_processo"
-        constraints = [
-            # A identidade do vínculo sustenta a tela de atribuição inteira: é ela que diz
-            # quem ocupa cada posição e é ela que ancora as movimentações do grupo. Duas
-            # requisições simultâneas conseguiam inserir o par duplicado.
-            models.UniqueConstraint(
-                fields=["processo", "grupo"],
-                name="uniq_grupo_por_processo",
-                violation_error_message="Este grupo já está vinculado ao processo.",
-            ),
-        ]
 
 
 # ---------------------------------------------------------------------------
