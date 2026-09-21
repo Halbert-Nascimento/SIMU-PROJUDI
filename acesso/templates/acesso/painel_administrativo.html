@@ -558,11 +558,11 @@
 
                     <div class="grid grid-cols-2 gap-[14px] mt-[14px]">
 
-                        <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
+                        <a href="{% url 'avaliacoes:relatorio_notas' %}" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
 
-                            <i class="fa-solid fa-file-circle-plus text-2xl text-navy mb-2"></i>
+                            <i class="fa-solid fa-clipboard-check text-2xl text-navy mb-2"></i>
 
-                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Distribuir<br>Novo Processo</span>
+                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Relatório de<br>Notas</span>
 
                         </a>
 
@@ -576,19 +576,11 @@
 
                         </button>
 
-                        <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
+                        <a href="{% url 'avaliacoes:avaliacoes_pendentes' %}" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
 
-                            <i class="fa-solid fa-calendar-days text-2xl text-navy mb-2"></i>
+                            <i class="fa-solid fa-list-check text-2xl text-navy mb-2"></i>
 
-                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Agendar<br>Audiência</span>
-
-                        </a>
-
-                        <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
-
-                            <i class="fa-solid fa-clipboard-check text-2xl text-navy mb-2"></i>
-
-                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Relatório de<br>Notas</span>
+                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Avaliações<br>Pendentes</span>
 
                         </a>
 
