@@ -82,6 +82,21 @@ class RelatorioNotasTests(CenarioRelatorios):
         self.assertEqual(linha["media"], 4.0)
         self.assertEqual(linha["faixa"], "ok")
 
+    def test_faixa_da_linha_concorda_com_a_media_exibida(self):
+        casos = {"7.00": ("3.5", "warn"), "8.00": ("4.0", "ok"), "5.00": ("2.5", "erro")}
+        for nota, (media, faixa) in casos.items():
+            with self.subTest(nota=nota):
+                movimentacao = self.nova_movimentacao()
+                feedback = self.avaliar(movimentacao, nota)
+
+                [linha] = notas_por_aluno(CicloSimulacao.objects.filter(pk=self.ciclo.pk))
+                # limpa antes de comparar: uma asserção que falha não pode contaminar o caso seguinte
+                feedback.delete()
+                movimentacao.delete()
+
+                self.assertEqual(str(linha["media"]), media)
+                self.assertEqual(linha["faixa"], faixa)
+
     def test_duas_avaliacoes_da_mesma_movimentacao_contam_uma_vez(self):
         movimentacao = self.nova_movimentacao()
         self.avaliar(movimentacao, "10.00")
