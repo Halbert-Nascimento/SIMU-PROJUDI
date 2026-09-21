@@ -119,6 +119,11 @@ def painel_administrativo(request):
         context["tipos_opcoes"] = tipos_opcoes
         context["usuarios_pendentes_count"] = usuarios.filter(is_active=False).count()
 
+    # Os nomes gravados são capitalizados ("Em andamento"); __in seria sensível a caixa fora do MySQL
+    status_em_andamento_ou_finalizado = Q(
+        status__nome_status__iexact="em andamento"
+    ) | Q(status__nome_status__iexact="finalizado")
+
     if pode_criar_ciclo(request.user):
         context["status_ciclo_opcoes"] = StatusCiclo.objects.all()
 
@@ -127,7 +132,7 @@ def painel_administrativo(request):
                 CicloSimulacao.objects
                 .select_related("status")
                 .annotate(num_grupos=Count("grupos"))
-                .filter(status__nome_status__in=["em andamento", "finalizado"])
+                .filter(status_em_andamento_ou_finalizado)
                 .order_by("-data_criacao")
             )
         else:
@@ -144,7 +149,7 @@ def painel_administrativo(request):
                 .annotate(num_grupos=Count("grupos"))
                 .filter(
                     Q(coordenador=request.user) | Q(pk__in=ciclos_participados),
-                    status__nome_status__in=["em andamento", "finalizado"],
+                    status_em_andamento_ou_finalizado,
                 )
                 .order_by("-data_criacao")
             )
@@ -161,7 +166,7 @@ def painel_administrativo(request):
             CicloSimulacao.objects
             .select_related("status", "coordenador")
             .annotate(num_grupos=Count("grupos"))
-            .filter(status__nome_status="arquivado")
+            .filter(status__nome_status__iexact="arquivado")
             .order_by("-data_criacao")
         )
 
@@ -194,20 +199,12 @@ def painel_administrativo(request):
         .order_by("ciclo__nome_edicao", "-data_autuacao")
     )
 
-    # O resumo inclui todos os ciclos em andamento ao alcance do usuário. Para
-    # Professor, isso inclui também os ciclos de que participa; a tabela de
-    # processos continua restrita aos ciclos coordenados por ele, evitando
-    # expor links a autos sigilosos de ciclos de terceiros.
-    ciclos_ativos_resumo = ciclos_ativos_professor
-    if not pode_ver_todos_ciclos(request.user):
-        ciclos_ativos_resumo = list(
-            CicloSimulacao.objects
-            .filter(
-                Q(coordenador=request.user) | Q(participantes=request.user),
-                status__nome_status__iexact="em andamento",
-            )
-            .distinct()
-        )
+    # Resumo do Professor inclui ciclos de que participa; a tabela de processos fica só nos que coordena
+    ciclos_ativos_resumo = (
+        ciclos_ativos_professor
+        if pode_ver_todos_ciclos(request.user)
+        else request.ciclos_ativos_usuario
+    )
 
     context["processos_ativos_count"] = ProcessoJudicial.objects.filter(
         ciclo__in=ciclos_ativos_resumo
