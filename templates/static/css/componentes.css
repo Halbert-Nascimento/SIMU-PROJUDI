@@ -307,3 +307,17 @@
 .estrelas-campo:hover label:hover ~ label::before { font-weight: 900; }
 /* Foco só por borda, como os campos do guia. */
 .estrelas-campo input:focus-visible + label { border-color: #1f4f9c; }
+
+/* ── Barra de filtro ───────────────────────────────────────────────────────
+   Guia seção 05: gap 12px, alinhada ao fim, ações à direita. O botão (~33,75px) é
+   mais baixo que o campo (37,2px) e os dois números vêm do guia: quem cede é o
+   botão, e a altura do campo fica escrita em calc(). */
+.barra-filtro {
+    background: #fbfbfc; border: 1px solid #e2e5ea; padding: 14px 16px;
+    display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+}
+.barra-filtro .acoes { margin-left: auto; display: flex; gap: 8px; }
+.barra-filtro .acoes > * {
+    min-height: calc(8px + 8px + (12px * 1.6) + 2px);
+    display: inline-flex; align-items: center; justify-content: center;
+}

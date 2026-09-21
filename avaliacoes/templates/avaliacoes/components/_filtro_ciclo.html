@@ -1,0 +1,24 @@
+{% comment %}
+Filtro de ciclo por querystring, comum ao relatório de notas e às avaliações pendentes.
+
+    {% include 'avaliacoes/components/_filtro_ciclo.html' with form=form_filtro %}
+
+As opções são as do queryset do form: já vêm no recorte do perfil.
+{% endcomment %}
+{% load ui %}
+<form method="get" class="barra-filtro mb-[14px]">
+    <div class="w-full max-w-[320px]">
+        {% campo label="Ciclo" para=form.ciclo.id_for_label erros=form.ciclo.errors %}
+        <select name="ciclo" id="{{ form.ciclo.id_for_label }}" class="{% classe_campo %}">
+            <option value="">Todos os ciclos</option>
+            {% for ciclo in form.fields.ciclo.queryset %}
+            <option value="{{ ciclo.pk }}"{% if form.ciclo.value|stringformat:"s" == ciclo.pk|stringformat:"s" %} selected{% endif %}>{{ ciclo }}</option>
+            {% endfor %}
+        </select>
+        {% endcampo %}
+    </div>
+    <div class="acoes">
+        <button type="submit" class="{% classe_botao 'primario' padding=True %}">Filtrar</button>
+        <a href="{{ request.path }}" class="{% classe_botao 'secundario' padding=True %}">Limpar</a>
+    </div>
+</form>

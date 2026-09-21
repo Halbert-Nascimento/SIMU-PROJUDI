@@ -122,6 +122,54 @@ def ctx_minhas_notas(vazio=False):
     }
 
 
+class _Ciclo:
+    pk = 7
+
+    def __str__(self):
+        return "2026.2 — Prática Jurídica"
+
+
+def _filtro_ciclo(com_erro=False):
+    ciclo = Obj(id_for_label="id_ciclo", value=lambda: "7",
+                errors=["Ciclo inválido para o seu perfil."] if com_erro else [])
+    return Obj(ciclo=ciclo, fields=Obj(ciclo=Obj(queryset=[_Ciclo()])))
+
+
+def ctx_relatorio_notas(variante="com_notas"):
+    vazio = variante == "vazio"
+    linhas = [] if vazio else [
+        {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
+         "total_movimentacoes": 7, "total_avaliadas": 3, "media": 3.9, "faixa": "warn"},
+        {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
+         "total_movimentacoes": 0, "total_avaliadas": 0, "media": None, "faixa": "gray"},
+    ]
+    return {
+        "user": PROFESSOR, "request": Obj(user=PROFESSOR, path="/avaliacoes/relatorio-notas/"),
+        "form_filtro": _filtro_ciclo(com_erro=variante == "filtro_invalido"),
+        "linhas": linhas, "total_alunos": 0 if vazio else 1,
+        "total_avaliadas": 0 if vazio else 3, "total_movimentacoes": 0 if vazio else 7,
+        "media_geral": None if vazio else 3.9,
+        "breadcrumbs": [{"label": "Painel Administrativo", "url": "/"},
+                        {"label": "Relatório de Notas", "url": None}],
+    }
+
+
+def ctx_avaliacoes_pendentes(vazio=False):
+    pendentes = [] if vazio else [
+        Obj(pk=1, tipo_movimento=Obj(nome_movimentacao="Juntada de contestação"),
+            autor=ALUNO, data_movimento=QUANDO,
+            processo=Obj(numero=NUMERO, ciclo=Obj(nome_edicao="2026.2 — Prática Jurídica"))),
+    ]
+    return {
+        "user": PROFESSOR, "request": Obj(user=PROFESSOR, path="/avaliacoes/pendentes/"),
+        "form_filtro": _filtro_ciclo(),
+        "pendentes": pendentes, "total_alunos_aguardando": len(pendentes),
+        "mais_antiga": None if vazio else QUANDO,
+        "breadcrumbs": [{"label": "Painel Administrativo", "url": "/"},
+                        {"label": "Avaliações Pendentes", "url": None}],
+    }
+
+
 def ctx_boas_vindas(ja_participou=False):
     return {
         "user": ALUNO, "request": Obj(user=ALUNO),
@@ -296,6 +344,11 @@ CASOS = [
     ("avaliacoes/avaliar.html", "sem histórico", ctx_avaliar(com_historico=False)),
     ("avaliacoes/minhas_notas.html", "com avaliações", ctx_minhas_notas()),
     ("avaliacoes/minhas_notas.html", "sem avaliação", ctx_minhas_notas(vazio=True)),
+    ("avaliacoes/relatorio_notas.html", "com notas", ctx_relatorio_notas()),
+    ("avaliacoes/relatorio_notas.html", "sem aluno", ctx_relatorio_notas("vazio")),
+    ("avaliacoes/relatorio_notas.html", "filtro inválido", ctx_relatorio_notas("filtro_invalido")),
+    ("avaliacoes/avaliacoes_pendentes.html", "com pendências", ctx_avaliacoes_pendentes()),
+    ("avaliacoes/avaliacoes_pendentes.html", "sem pendência", ctx_avaliacoes_pendentes(vazio=True)),
     ("ciclos/boas_vindas.html", "primeiro acesso", ctx_boas_vindas()),
     ("ciclos/boas_vindas.html", "ciclo anterior encerrado", ctx_boas_vindas(ja_participou=True)),
     ("processos/atribuir_grupos.html", "posições ocupadas", ctx_atribuir_grupos()),
