@@ -7,7 +7,7 @@ from processos.tests.fixtures import CenarioMovimentacoesTestCase
 
 class NotificacaoGrupoVinculadoProcessoTests(CenarioMovimentacoesTestCase):
     """
-    Notificação disparada em atribuir_grupo_processos() quando um grupo passa a
+    Notificação disparada em aplicar_alteracoes() quando um grupo passa a
     estar vinculado a um processo (distribuição). O disparo real é via
     transaction.on_commit(), então cada chamada testada aqui precisa de
     captureOnCommitCallbacks() para os callbacks rodarem de verdade.

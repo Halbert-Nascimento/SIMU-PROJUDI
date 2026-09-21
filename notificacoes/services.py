@@ -95,7 +95,7 @@ def notificar_grupo_vinculado_processo(processo, grupo, *, ator):
     """
     Notifica os membros do grupo recém-vinculado ao processo (distribuição),
     exceto o ator. Roda depois do commit da distribuição (ver transaction.on_commit
-    em processos.views.atribuir_grupo_processos).
+    em processos.services.aplicar_alteracoes).
     """
     try:
         destinatarios = Usuario.objects.filter(grupos_trabalho=grupo).exclude(pk=ator.pk)
