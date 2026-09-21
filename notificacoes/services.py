@@ -113,6 +113,34 @@ def notificar_grupo_vinculado_processo(processo, grupo, *, ator):
         return []
 
 
+def notificar_grupo_desvinculado_processo(processo, grupo, *, ator):
+    """
+    Notifica os membros do grupo que saiu do processo (remoção ou substituição na
+    redistribuição), exceto o ator.
+
+    O link aponta para a área do servidor, e não para o processo: o grupo acabou de perder
+    o vínculo, e em processo sob segredo de justiça `pode_visualizar_processo` recusaria a
+    tela — os dois templates de notificação envolvem a linha inteira num link, então o
+    aluno cairia num 403.
+    """
+    try:
+        destinatarios = Usuario.objects.filter(grupos_trabalho=grupo).exclude(pk=ator.pk)
+        return _bulk_criar_notificacoes(
+            destinatarios,
+            tipo=TipoNotificacao.GRUPO_DESVINCULADO_PROCESSO,
+            mensagem=(
+                f'Seu grupo foi desvinculado do processo "{processo.numero}", '
+                f'onde atuava como {grupo.cargo_simulacao.nome}.'
+            ),
+            link_url=reverse("processos:pagina_aluno"),
+        )
+    except Exception:
+        logger.exception(
+            "Falha ao notificar grupo_id=%s desvinculado de processo_id=%s", grupo.pk, processo.pk
+        )
+        return []
+
+
 def notificar_coordenador_atribuido(*, ciclo, coordenador_anterior_id, ator):
     """Notifica o novo coordenador quando um Admin/Coordenador o designa via editar_ciclo."""
     if coordenador_anterior_id == ciclo.coordenador_id:
