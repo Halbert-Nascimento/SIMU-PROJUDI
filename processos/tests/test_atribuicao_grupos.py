@@ -5,6 +5,7 @@ import re
 from unittest import mock
 
 from django.contrib.auth.models import AnonymousUser
+from django.contrib.messages import get_messages
 from django.urls import reverse
 
 from ciclos.models import CicloSimulacao, GrupoTrabalho
@@ -12,6 +13,8 @@ from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
 from notificacoes.models import Notificacao, TipoNotificacao
 from processos.models import GrupoProcesso, PoloProcessual
 from processos.permissions import pode_atribuir_grupos
+from processos import services as servicos
+from processos.forms import AtribuicaoGruposForm
 from processos.services import (
     EstadoInvalidoError,
     Natureza,
@@ -669,6 +672,43 @@ class TelaDeAtribuicaoTests(CenarioMovimentacoesTestCase):
         self.assertRedirects(resp, self.url(processo))
         self.assertFalse(
             GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["APP"]).exists()
+        )
+
+    def test_corrida_na_confirmacao_vira_mensagem_e_nao_500(self):
+        """
+        O serviço relê o estado dentro da transação, depois da leitura que validou o form.
+
+        O mock ocupa esse vão: só `processos.services` resolve o nome pela global do módulo,
+        então a view e as fixtures seguem com a própria referência e só a releitura do T3 vê
+        o segundo grupo APP chegar — a corrida que dois serventuários produziriam.
+        """
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP"])
+        app_extra = GrupoTrabalho.objects.create(
+            ciclo=self.ciclo, cargo_simulacao=self.cargos["APP"], nome="Grupo APP fora",
+        )
+        client = self.cliente_logado(self.usuarios["SC"])
+        dados = self.payload(processo, juiz=str(self.grupos["JZ"].pk))
+        dados["acao"] = "confirmar"
+
+        leitura_real = servicos.estado_posicoes_do_processo
+
+        def outro_serventuario_chega_no_vao(*args, **kwargs):
+            GrupoProcesso.objects.get_or_create(processo=processo, grupo=app_extra)
+            return leitura_real(*args, **kwargs)
+
+        with mock.patch.object(
+            servicos, "estado_posicoes_do_processo", outro_serventuario_chega_no_vao
+        ):
+            resp = client.post(self.url(processo), dados)
+
+        self.assertRedirects(resp, self.url(processo))
+        self.assertFalse(
+            GrupoProcesso.objects.filter(processo=processo, grupo=self.grupos["JZ"]).exists()
+        )
+        self.assertIn(
+            AtribuicaoGruposForm.MENSAGEM_ESTADO_MUDOU,
+            [str(m) for m in get_messages(resp.wsgi_request)],
         )
 
     def test_conflito_sem_resolucao_e_recusado(self):

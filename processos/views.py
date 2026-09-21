@@ -32,6 +32,7 @@ from .permissions import (
     pode_visualizar_processo,
 )
 from .services import (
+    EstadoInvalidoError,
     aplicar_alteracoes,
     descrever_alteracoes,
     estado_posicoes_do_processo,
@@ -372,7 +373,17 @@ def atribuir_grupos_processo(request, numero):
             if not ha_o_que_aplicar(processo, form.plano):
                 messages.info(request, "Nenhuma alteração a aplicar.", extra_tags="grupos")
             elif request.POST.get("acao") == "confirmar":
-                aplicar_alteracoes(processo, form.desejado, ator=request.user)
+                try:
+                    aplicar_alteracoes(processo, form.desejado, ator=request.user)
+                except EstadoInvalidoError:
+                    # o serviço relê dentro da transação: entre aquela leitura e a que
+                    # validou o form cabe outro serventuário no mesmo processo
+                    messages.error(
+                        request,
+                        AtribuicaoGruposForm.MENSAGEM_ESTADO_MUDOU,
+                        extra_tags="grupos",
+                    )
+                    return redirect(request.get_full_path())
                 messages.success(
                     request,
                     f'Grupos do processo "{processo.numero}" atualizados.',
