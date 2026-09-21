@@ -68,6 +68,12 @@
     .grp-card:hover { background: #f7faff; border-color: #1f4f9c; }
     .grp-card.selected { background: #f7faff; border-color: #1f4f9c; }
     .grp-card.marcado-remover { background: #fdeeee; border-color: #f3cfcf; }
+    /* Totalmente vinculado: o corpo não é mais um alvo de clique válido — só
+       a lixeira desvincula — então o hover de seleção não se aplica aqui.
+       :not(.marcado-remover) preserva o hover vermelho de quem já foi marcado
+       pra sair, que é o card também vinculado. */
+    .grp-card.vinculado:not(.marcado-remover) { cursor: default; }
+    .grp-card.vinculado:not(.marcado-remover):hover { background: #fff; border-color: #e2e5ea; }
     /* selecao marcada pela faixa de 3px do guia (secao 01), nao por sombra —
        o mesmo indicador que o .grupo-item de gerenciar_grupos usa. Remoção
        pendente usa a mesma faixa, em vermelho, pra reaproveitar um único
@@ -102,7 +108,7 @@
     /* Painel de confirmação substitui a lista de cards no corpo do modal —
        mesmo mecanismo pra troca de papel, remoção de um grupo e remoção
        total, em vez de três diálogos diferentes. */
-    #grpSelecao.oculto, #grpConfirmacao.oculto { display: none; }
+    #grpSelecao.oculto, #grpConfirmacao.oculto, #grpAcoes.oculto { display: none; }
     /* .modal-acoes do componente (componentes.css) empurra tudo pra direita;
        só este modal separa o destrutivo à esquerda do par cancelar/confirmar,
        então o ajuste fica aqui, não no componente compartilhado. */
@@ -323,7 +329,7 @@
             </div>
         </div>
 
-        <div class="modal-acoes">
+        <div class="modal-acoes" id="grpAcoes">
             <button type="button" class="{% classe_botao 'destrutivo' padding=True %}" id="modalRemoverTudo">
                 <i class="fa-solid fa-trash-can mr-1.5"></i> Remover atribuição
             </button>
@@ -351,6 +357,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const grpSelecao = document.getElementById("grpSelecao");
     const grpConfirmacao = document.getElementById("grpConfirmacao");
     const grpConfirmacaoTexto = document.getElementById("grpConfirmacaoTexto");
+    const grpAcoes = document.getElementById("grpAcoes");
     let modalProcessos = [];
     let selectedGrupoIds = new Set();
     let grupoIdsRemover = new Set();
@@ -409,12 +416,14 @@ document.addEventListener("DOMContentLoaded", function () {
         };
     }
 
-    // Id do grupo (!= idExcluir) que já ocupa o mesmo papel de `cargo` no processo, ou null
+    // Id do grupo (!= idExcluir) que já ocupa o mesmo papel de `cargo` no processo, ou null.
+    // Grupo já marcado pra sair (lixeira) não conta como ocupante: o usuário já decidiu
+    // desvinculá-lo, então selecionar outro do mesmo papel não é mais uma troca ambígua.
     function grupoDoPapelJaVinculado(processoId, cargo, idExcluir) {
         const ids = gruposVinculados[String(processoId)] || [];
         for (let i = 0; i < ids.length; i++) {
             const gid = String(ids[i]);
-            if (gid === idExcluir) continue;
+            if (gid === idExcluir || grupoIdsRemover.has(gid)) continue;
             const card = document.querySelector('#grpList .grp-card[data-grupo-id="' + gid + '"]');
             if (card && card.dataset.cargo === cargo) return gid;
         }
@@ -423,10 +432,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function renderGrpVinculos() {
         const total = modalProcessos.length;
-        document.querySelectorAll("#grpList .grp-card").forEach(card => {
+        const grpList = document.getElementById("grpList");
+        const infos = [...grpList.querySelectorAll(".grp-card")].map(card => ({
+            card,
+            vinculados: contarVinculos(card.dataset.grupoId),
+        }));
+
+        infos.forEach(({ card, vinculados }) => {
             const selo = card.querySelector(".grp-vinculo");
             const lixeira = card.querySelector(".grp-remover");
-            const vinculados = contarVinculos(card.dataset.grupoId);
+            // totalmente vinculado (a todos os processos abertos): corpo do card para
+            // de responder a clique, só a lixeira desvincula — nada a "adicionar" aqui
+            card.classList.toggle("vinculado", total > 0 && vinculados === total);
             lixeira.classList.toggle("oculto", vinculados === 0);
             if (vinculados === 0) {
                 selo.classList.add("oculto");
@@ -443,6 +460,13 @@ document.addEventListener("DOMContentLoaded", function () {
             selo.classList.toggle("ok", vinculados === total);
             selo.classList.remove("oculto");
         });
+
+        // grupos com algum vínculo sobem pro topo — o serventuário vê primeiro o
+        // que já toca o(s) processo(s) aberto(s), antes dos ainda disponíveis
+        infos
+            .slice()
+            .sort((a, b) => (b.vinculados > 0) - (a.vinculados > 0))
+            .forEach(({ card }) => grpList.appendChild(card));
     }
 
     function renderGrpSelection() {
@@ -461,11 +485,14 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // --- Confirmação compartilhada: troca de papel, remoção de um grupo e
-    // remoção total passam todas por aqui, em vez de três diálogos diferentes ---
+    // remoção total passam todas por aqui, em vez de três diálogos diferentes.
+    // O rodapé (Remover atribuição/Cancelar/Confirmar) some enquanto isso —
+    // clicar neles no meio de uma confirmação pendente levaria a erro. ---
     function abrirConfirmacao(opcoes) {
         grpConfirmacaoTexto.textContent = opcoes.texto;
         confirmacaoPendente = opcoes.aoConfirmar;
         grpSelecao.classList.add("oculto");
+        grpAcoes.classList.add("oculto");
         grpConfirmacao.classList.remove("oculto");
     }
 
@@ -473,6 +500,7 @@ document.addEventListener("DOMContentLoaded", function () {
         confirmacaoPendente = null;
         grpConfirmacao.classList.add("oculto");
         grpSelecao.classList.remove("oculto");
+        grpAcoes.classList.remove("oculto");
     }
 
     document.getElementById("grpConfirmacaoSim").addEventListener("click", function () {
@@ -482,16 +510,26 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     document.getElementById("grpConfirmacaoNao").addEventListener("click", fecharConfirmacao);
 
-    // Clique no corpo do card: seleciona pra adicionar. Se o papel já está
-    // ocupado por outro grupo em algum processo aberto, pede confirmação —
-    // só marca a seleção se o serventuário confirmar a troca.
+    // Clique no corpo do card: seleciona pra adicionar. Grupo já vinculado a
+    // todos os processos abertos não responde ao corpo — só a lixeira desvincula,
+    // não há nada a "adicionar" nele. Se o papel já está ocupado por outro grupo
+    // em algum processo aberto, pede confirmação — só marca a seleção se o
+    // serventuário confirmar a troca. SC não entra nessa checagem: ciclo pode ter
+    // mais de um grupo de cartório, então nunca é conflito de papel.
     document.querySelectorAll("#grpList .grp-card").forEach(card => {
         card.addEventListener("click", function () {
+            if (this.classList.contains("vinculado")) return;
             const id = this.dataset.grupoId;
             const cargo = this.dataset.cargo;
 
             if (selectedGrupoIds.has(id)) {
                 selectedGrupoIds.delete(id);
+                renderGrpSelection();
+                return;
+            }
+
+            if (cargo === "SC") {
+                selectedGrupoIds.add(id);
                 renderGrpSelection();
                 return;
             }
