@@ -255,6 +255,12 @@ class GrupoProcesso(models.Model):
 
     class Meta:
         db_table = "grupo_processo"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["processo", "grupo"],
+                name="processos_grupoprocesso_uniq_processo_grupo",
+            ),
+        ]
 
 
 # ---------------------------------------------------------------------------
