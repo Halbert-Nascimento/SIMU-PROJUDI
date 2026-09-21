@@ -8,6 +8,7 @@ from ..estrelas import (
     contexto_estrelas,
     estrelas_para_nota,
     faixa_da_estrela,
+    faixa_da_media,
     media_em_estrelas,
     nota_para_estrelas,
 )
@@ -72,6 +73,19 @@ class MediaEFaixaTests(SimpleTestCase):
             [faixa_da_estrela(n) for n in (None, 0, 1, 2, 3, 4, 5)],
             ["gray", "erro", "erro", "erro", "warn", "ok", "ok"],
         )
+
+    def test_faixa_da_media_segue_o_numero_exibido(self):
+        self.assertEqual(
+            [faixa_da_media(m) for m in (None, 0.0, 2.9, 3.0, 3.5, 3.9, 4.0, 4.5, 5.0)],
+            ["gray", "erro", "erro", "warn", "warn", "warn", "ok", "ok", "ok"],
+        )
+
+    def test_media_de_sete_pontos_e_tres_e_meia_estrelas_em_atencao(self):
+        media = media_em_estrelas(Decimal("7.00"))
+        self.assertEqual(media, 3.5)
+        self.assertEqual(faixa_da_media(media), "warn")
+        # a estrela inteira arredondada (4, verde) é a que não pode pintar o 3,5
+        self.assertEqual(faixa_da_estrela(nota_para_estrelas(Decimal("7.00"))), "ok")
 
     def test_contexto_das_estrelas(self):
         contexto = contexto_estrelas(3)

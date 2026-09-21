@@ -63,6 +63,13 @@ def faixa_da_estrela(estrelas: int | None) -> str:
     return "erro"
 
 
+def faixa_da_media(media: float | None) -> str:
+    """Trio de uma média já em estrelas: pelo piso, para a cor concordar com o número exibido."""
+    if media is None:
+        return "gray"
+    return faixa_da_estrela(int(media))
+
+
 def contexto_estrelas(estrelas: int | None, *, herda_cor: bool = False) -> dict:
     """Dados de `components/_estrelas.html`, iguais para a tag e para o servidor."""
     return {
