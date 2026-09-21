@@ -3,10 +3,7 @@ from __future__ import annotations
 from django.urls import reverse
 
 from notificacoes.models import Notificacao, TipoNotificacao
-from notificacoes.services import (
-    notificar_grupo_desvinculado_processo,
-    notificar_movimentacao_registrada,
-)
+from notificacoes.services import notificar_movimentacao_registrada
 
 from processos.tests.fixtures import CenarioMovimentacoesTestCase
 
@@ -81,49 +78,3 @@ class RecentesNotificacoesViewTests(CenarioMovimentacoesTestCase):
         notificacao.refresh_from_db()
         self.assertTrue(notificacao.lida)
         self.assertIsNotNone(notificacao.data_leitura)
-
-
-class NotificarGrupoDesvinculadoProcessoTests(CenarioMovimentacoesTestCase):
-    """Teste isolado do serviço — a tela que o chama entra na etapa 4 do plano."""
-
-    def test_notifica_os_membros_do_grupo_que_saiu_menos_o_ator(self):
-        processo = self.criar_processo_protocolado()
-        self.autuar_processo(processo, ["APA", "APP"])
-        Notificacao.objects.all().delete()
-
-        criadas = notificar_grupo_desvinculado_processo(
-            processo, self.grupos["APP"], ator=self.usuarios["SC"],
-        )
-
-        self.assertEqual(len(criadas), 1)
-        notificacao = Notificacao.objects.get(tipo=TipoNotificacao.GRUPO_DESVINCULADO_PROCESSO)
-        self.assertEqual(notificacao.destinatario_id, self.usuarios["APP"].pk)
-        self.assertIn(processo.numero, notificacao.mensagem)
-        self.assertIn(self.cargos["APP"].nome, notificacao.mensagem)
-
-    def test_link_vai_para_a_area_do_servidor_e_nao_para_o_processo(self):
-        """Segredo de justiça: o grupo acabou de perder o vínculo e tomaria 403 no link do processo."""
-        processo = self.criar_processo_protocolado(segredo_justica=True)
-        self.autuar_processo(processo, ["APP"])
-
-        notificar_grupo_desvinculado_processo(
-            processo, self.grupos["APP"], ator=self.usuarios["SC"],
-        )
-
-        notificacao = Notificacao.objects.filter(
-            tipo=TipoNotificacao.GRUPO_DESVINCULADO_PROCESSO,
-        ).first()
-        self.assertEqual(notificacao.link_url, reverse("processos:pagina_aluno"))
-        self.assertNotIn(processo.numero, notificacao.link_url)
-
-    def test_ator_no_proprio_grupo_nao_se_notifica(self):
-        processo = self.criar_processo_protocolado()
-
-        criadas = notificar_grupo_desvinculado_processo(
-            processo, self.grupos["APA"], ator=self.usuarios["APA"],
-        )
-
-        self.assertEqual(list(criadas), [])
-        self.assertFalse(
-            Notificacao.objects.filter(tipo=TipoNotificacao.GRUPO_DESVINCULADO_PROCESSO).exists()
-        )

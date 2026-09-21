@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from django.urls import reverse
 
 from movimentacoes.models import MovimentacaoProcessual
@@ -44,9 +46,8 @@ class ProtocoloAutuacaoTests(CenarioMovimentacoesTestCase):
         processo = self.criar_processo_protocolado()
         resp_apa = self.autuar_processo(processo, ["APA"], sc_user=self.usuarios["APA"])
         self.assertEqual(resp_apa.status_code, 403)
-        # a tela redireciona para o processo depois de confirmar
-        resp_sc = self.autuar_processo(processo, ["APA", "APP"])
-        self.assertEqual(resp_sc.status_code, 302)
+        resp_sc = self.autuar_processo(processo, ["APA"])
+        self.assertEqual(resp_sc.status_code, 200)
 
     def test_status_muda_protocolado_depois_autuado(self):
         processo = self.criar_processo_protocolado()
@@ -72,18 +73,16 @@ class ProtocoloAutuacaoTests(CenarioMovimentacoesTestCase):
         ).count()
         self.assertEqual(count, 1)
 
-    def test_grupo_inexistente_nao_autua_processo(self):
-        """Regressão: pk que não resolve pra nenhum grupo do ciclo não autua o processo."""
+    def test_grupo_ids_invalidos_nao_autua_processo(self):
+        """Regressão: grupo_ids que não resolve pra nenhum GrupoTrabalho real não autua o processo."""
         processo = self.criar_processo_protocolado()
         client = self.cliente_logado(self.usuarios["SC"])
-        dados = self.payload_atribuicao(processo, polo_passivo="999999")
-        dados["acao"] = "confirmar"
-
         resp = client.post(
-            reverse("processos:atribuir_grupos", args=[processo.numero]), dados,
+            reverse("processos:atribuir_grupo_processos"),
+            data=json.dumps({"processo_ids": [processo.pk], "grupo_ids": [999999]}),
+            content_type="application/json",
         )
         processo.refresh_from_db()
-
         self.assertEqual(resp.status_code, 200)
         self.assertEqual(processo.status_atual.nome_status, "Protocolado")
         self.assertFalse(MovimentacaoProcessual.objects.filter(

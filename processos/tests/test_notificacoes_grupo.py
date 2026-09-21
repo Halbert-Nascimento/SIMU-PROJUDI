@@ -7,19 +7,14 @@ from processos.tests.fixtures import CenarioMovimentacoesTestCase
 
 class NotificacaoGrupoVinculadoProcessoTests(CenarioMovimentacoesTestCase):
     """
-    Notificação disparada em aplicar_alteracoes() quando um grupo passa a
+    Notificação disparada em atribuir_grupo_processos() quando um grupo passa a
     estar vinculado a um processo (distribuição). O disparo real é via
     transaction.on_commit(), então cada chamada testada aqui precisa de
     captureOnCommitCallbacks() para os callbacks rodarem de verdade.
-
-    Quem protocola aqui é o MP, nunca um dos grupos distribuídos: o grupo que protocola
-    já entra vinculado ao processo (processos.views.cadastrar_processo) e a distribuição
-    só notifica vínculo novo — com o APA protocolando, distribuir para o APA não
-    notificaria ninguém e o teste mediria o silêncio.
     """
 
     def test_distribuir_notifica_grupos_recebidos_e_nao_o_sc_que_distribuiu(self):
-        processo = self.criar_processo_protocolado(autor=self.usuarios["MP"])
+        processo = self.criar_processo_protocolado()
         with self.captureOnCommitCallbacks(execute=True):
             self.autuar_processo(processo, ["APA", "APP"])
 
@@ -31,7 +26,7 @@ class NotificacaoGrupoVinculadoProcessoTests(CenarioMovimentacoesTestCase):
         self.assertNotIn(self.usuarios["SC"].pk, destinatarios)
 
     def test_redistribuir_os_mesmos_grupos_nao_duplica_notificacao(self):
-        processo = self.criar_processo_protocolado(autor=self.usuarios["MP"])
+        processo = self.criar_processo_protocolado()
         with self.captureOnCommitCallbacks(execute=True):
             self.autuar_processo(processo, ["APA", "APP"])
         primeira_contagem = Notificacao.objects.filter(tipo=TipoNotificacao.GRUPO_VINCULADO_PROCESSO).count()
@@ -45,7 +40,7 @@ class NotificacaoGrupoVinculadoProcessoTests(CenarioMovimentacoesTestCase):
         )
 
     def test_distribuir_grupo_adicional_notifica_so_o_novo(self):
-        processo = self.criar_processo_protocolado(autor=self.usuarios["MP"])
+        processo = self.criar_processo_protocolado()
         with self.captureOnCommitCallbacks(execute=True):
             self.autuar_processo(processo, ["APA"])
         Notificacao.objects.all().delete()
@@ -60,7 +55,7 @@ class NotificacaoGrupoVinculadoProcessoTests(CenarioMovimentacoesTestCase):
         self.assertEqual(destinatarios, {self.usuarios["APP"].pk})
 
     def test_mensagem_e_link_da_notificacao(self):
-        processo = self.criar_processo_protocolado(autor=self.usuarios["MP"])
+        processo = self.criar_processo_protocolado()
         with self.captureOnCommitCallbacks(execute=True):
             self.autuar_processo(processo, ["APA"])
 
