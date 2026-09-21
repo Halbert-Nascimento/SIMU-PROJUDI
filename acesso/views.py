@@ -2,18 +2,20 @@ import logging
 
 from django.conf import settings
 from django.contrib import messages
-from django.contrib.auth import login
+from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth import logout as auth_logout
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
 
+from base.breadcrumbs import home_breadcrumb
 from base.navegacao import home_do_usuario, tem_tela_inicial
 from usuarios.forms import CadastroPublicoForm
 from usuarios.models import Usuario
 
-from .forms import LoginForm
+from .forms import AlterarMinhaSenhaForm, LoginForm
 
 
 logger = logging.getLogger(__name__)
@@ -114,3 +116,33 @@ def cadastrar(request):
         form = CadastroPublicoForm()
 
     return render(request, "acesso/cadastro_usuario.html", {"form": form})
+
+
+@login_required
+def minha_conta(request):
+    """
+    Autoalteração de senha — separada do modal de gestão de usuários porque
+    `usuario_atualizar` bloqueia autoedição, e Aluno/Pendente nem acessam aquela tela.
+    """
+    if request.method == "POST":
+        form = AlterarMinhaSenhaForm(request.user, request.POST)
+        if form.is_valid():
+            form.save()
+            # Sem isto, a próxima requisição derruba a sessão por hash de senha desatualizado.
+            update_session_auth_hash(request, request.user)
+            messages.success(request, "Senha alterada com sucesso.", extra_tags="conta")
+            return redirect("acesso:minha_conta")
+        # Sem propagar_erros_form: minha_conta.html já mostra form.<campo>.errors inline,
+        # e repetir via messages duplicaria cada erro na tela (banner + campo).
+    else:
+        form = AlterarMinhaSenhaForm(request.user)
+
+    # base:home substitui a URL de home_breadcrumb(): para Pendente ela apontaria a uma tela que o recusa.
+    home = home_breadcrumb(request.user)
+    home["url"] = reverse("base:home")
+
+    return render(request, "acesso/minha_conta.html", {
+        "form": form,
+        "breadcrumbs": [home, {"label": "Minha Conta", "url": None}],
+        "home_label": home["label"],
+    })

@@ -912,6 +912,44 @@
 
                 </div>
 
+                <div class="border border-contorno">
+
+                    <div id="edicao-senha-accordion-header" class="accordion-item-closed">
+
+                        <i class="fa-solid fa-caret-right accordion-icon"></i>
+
+                        Alterar Senha
+
+                    </div>
+
+                    <div id="edicao-senha-accordion-content" class="accordion-content hidden px-4 py-[14px] bg-white">
+
+                        <p class="text-apoio text-rotulo mb-3">
+
+                            Deixe ambos os campos em branco se não desejar alterar a senha.
+
+                        </p>
+
+                        <div class="mb-3">
+
+                            <label for="edicao-nova-senha" class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">Nova senha</label>
+
+                            <input type="password" id="edicao-nova-senha" name="nova_senha" class="{% classe_campo %}" autocomplete="new-password">
+
+                        </div>
+
+                        <div>
+
+                            <label for="edicao-confirmacao-senha" class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">Confirmação</label>
+
+                            <input type="password" id="edicao-confirmacao-senha" name="confirmacao_senha" class="{% classe_campo %}" autocomplete="new-password">
+
+                        </div>
+
+                    </div>
+
+                </div>
+
                 <div class="flex gap-2 pt-1">
 
                     <button type="submit" class="flex-1 {% classe_botao 'primario' %} py-2">
@@ -1364,6 +1402,84 @@
 
 
 
+    function fecharAccordionSenhaEdicao() {
+
+        const header = document.getElementById('edicao-senha-accordion-header');
+
+        const content = document.getElementById('edicao-senha-accordion-content');
+
+        if (!header || !content) return;
+
+        content.classList.add('hidden');
+
+        header.classList.remove('accordion-item-aberto');
+
+        header.classList.add('accordion-item-closed');
+
+        const icon = header.querySelector('.accordion-icon');
+
+        icon.classList.remove('fa-caret-down');
+
+        icon.classList.add('fa-caret-right');
+
+    }
+
+
+
+    function limparCamposSenhaEdicao() {
+
+        const novaSenha = document.getElementById('edicao-nova-senha');
+
+        const confirmacaoSenha = document.getElementById('edicao-confirmacao-senha');
+
+        if (novaSenha) novaSenha.value = '';
+
+        if (confirmacaoSenha) confirmacaoSenha.value = '';
+
+        fecharAccordionSenhaEdicao();
+
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const header = document.getElementById('edicao-senha-accordion-header');
+
+        if (!header) return;
+
+        header.addEventListener('click', function () {
+
+            const content = document.getElementById('edicao-senha-accordion-content');
+
+            const fechado = content.classList.contains('hidden');
+
+            if (fechado) {
+
+                content.classList.remove('hidden');
+
+                header.classList.remove('accordion-item-closed');
+
+                header.classList.add('accordion-item-aberto');
+
+                const icon = header.querySelector('.accordion-icon');
+
+                icon.classList.remove('fa-caret-right');
+
+                icon.classList.add('fa-caret-down');
+
+            } else {
+
+                fecharAccordionSenhaEdicao();
+
+            }
+
+        });
+
+    });
+
+
+
     function abrirEdicao(id, username, email, tipo, ativo) {
 
         document.getElementById('edicao-user-id').value = id;
@@ -1375,6 +1491,12 @@
         document.getElementById('edicao-tipo').value = tipo;
 
         document.getElementById('edicao-ativo').checked = ativo;
+
+        // Sempre em branco e recolhido: reabrir para outro usuário (ou para o mesmo)
+
+        // nunca deve carregar uma senha digitada e não confirmada anteriormente.
+
+        limparCamposSenhaEdicao();
 
         const modal = document.getElementById('modal-editar-usuario');
 
@@ -1393,6 +1515,12 @@
         const modal = document.getElementById('modal-editar-usuario');
 
         modal.classList.remove('modal-active');
+
+        // Segunda rede de segurança: cancelar sem salvar também não deve deixar uma
+
+        // senha digitada à espera da próxima abertura.
+
+        limparCamposSenhaEdicao();
 
         setTimeout(() => {
 

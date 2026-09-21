@@ -1,0 +1,63 @@
+{% extends 'base/base.html' %}
+{% load ui %}
+
+{% block title %}Minha Conta{% endblock %}
+
+{% block content %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+
+    {% include 'base/components/_breadcrumbs.html' %}
+
+    <div class="mb-[14px] pb-[14px] border-b border-contorno">
+        <a href="{% url 'base:home' %}"
+           class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
+            <i class="fa-solid fa-arrow-left"></i> Voltar para {{ home_label }}
+        </a>
+        <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+            <i class="fa-solid fa-user-lock"></i> Minha Conta
+        </h1>
+    </div>
+
+    <!-- Sem as_toast: em erro, a view reexibe este template no mesmo request (sem
+         redirect), e o guia de _mensagens.html pede o bloco fixo nesse caso — o toast
+         some sozinho antes do usuário conseguir ler por que a troca falhou. -->
+    {% include 'base/components/_mensagens.html' %}
+
+    <div class="max-w-[400px]">
+        {% card titulo="Alterar minha senha" icone="fa-key" %}
+            <form method="post" action="{% url 'acesso:minha_conta' %}" class="px-4 py-[14px] flex flex-col gap-3">
+                {% csrf_token %}
+
+                {% campo label=form.old_password.label erros=form.old_password.errors para=form.old_password.id_for_label %}
+                    <div class="relative">
+                        <input type="password" name="{{ form.old_password.html_name }}"
+                               id="{{ form.old_password.id_for_label }}"
+                               class="{% classe_campo %}" autocomplete="current-password">
+                    </div>
+                {% endcampo %}
+
+                {% campo label=form.new_password1.label erros=form.new_password1.errors para=form.new_password1.id_for_label %}
+                    <div class="relative">
+                        <input type="password" name="{{ form.new_password1.html_name }}"
+                               id="{{ form.new_password1.id_for_label }}"
+                               class="{% classe_campo %}" autocomplete="new-password">
+                    </div>
+                {% endcampo %}
+
+                {% campo label=form.new_password2.label erros=form.new_password2.errors para=form.new_password2.id_for_label %}
+                    <div class="relative">
+                        <input type="password" name="{{ form.new_password2.html_name }}"
+                               id="{{ form.new_password2.id_for_label }}"
+                               class="{% classe_campo %}" autocomplete="new-password">
+                    </div>
+                {% endcampo %}
+
+                <div class="flex gap-2 mt-1">
+                    <button type="submit" class="{% classe_botao 'primario' padding=True %}">Salvar</button>
+                    <a href="{% url 'base:home' %}" class="{% classe_botao 'secundario' padding=True %}">Voltar</a>
+                </div>
+            </form>
+        {% endcard %}
+    </div>
+</main>
+{% endblock %}
