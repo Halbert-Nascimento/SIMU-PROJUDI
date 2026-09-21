@@ -694,6 +694,8 @@
 
                             <td class="text-right">
 
+                                {% if u.pk in usuarios_editaveis %}
+
                                 <button type="button"
 
                                     class="{% classe_botao 'primario' %} {% padding_botao 'linha' %} whitespace-nowrap"
@@ -703,6 +705,12 @@
                                     Aprovar / Editar
 
                                 </button>
+
+                                {% else %}
+
+                                <span class="text-meta text-rotulo">—</span>
+
+                                {% endif %}
 
                             </td>
 
@@ -810,6 +818,8 @@
 
                             <td class="text-right">
 
+                                {% if u.pk in usuarios_editaveis %}
+
                                 <button type="button"
 
                                     class="text-acao text-[calc(11px*var(--escala-fonte,1))] font-bold hover:underline"
@@ -819,6 +829,12 @@
                                     <i class="fa-solid fa-pen text-[calc(10px*var(--escala-fonte,1))]"></i> editar
 
                                 </button>
+
+                                {% else %}
+
+                                <span class="text-meta text-rotulo">—</span>
+
+                                {% endif %}
 
                             </td>
 

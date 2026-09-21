@@ -43,6 +43,7 @@
                             {% endif %}
                         </td>
                         <td class="col-acoes">
+                            {% if u.pk in usuarios_editaveis %}
                             <button
                                type="button"
                                class="{% classe_botao 'linha' padding=True %} whitespace-nowrap"
@@ -54,6 +55,9 @@
                                data-active="{% if u.is_active %}true{% else %}false{% endif %}">
                                 editar/aprovar
                             </button>
+                            {% else %}
+                            <span class="text-meta text-rotulo">—</span>
+                            {% endif %}
                         </td>
                     </tr>
                 {% empty %}

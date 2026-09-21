@@ -476,6 +476,54 @@ class AtualizarUsuarioFormSenhaTests(TestCase):
         self.assertTrue(self.professor.check_password("Senha-Nova-Forte-1"))
 
 
+class UsuariosEditaveisTests(TestCase):
+    """
+    Regressão: o botão "editar" da tabela de usuários ficava visível em toda linha, mesmo
+    quando pode_alterar_senha() bloqueava a submissão no clean() do form — um Professor via
+    "editar" em outro Professor, Coordenador ou Admin e só descobria a falta de permissão
+    depois de preencher e salvar. usuarios_editaveis (usuario_lista e painel_administrativo,
+    acesso/views_admin_usuarios.py) filtra a exibição pela mesma regra de hierarquia, e
+    exclui também o próprio ator porque usuario_atualizar() já bloqueia autoedição por
+    esta tela.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = _criar_usuario("admin.editaveis", Usuario.TipoPerfilGlobal.ADMIN)
+        cls.coordenador = _criar_usuario("coord.editaveis", Usuario.TipoPerfilGlobal.COORDENADOR)
+        cls.professor = _criar_usuario("prof.editaveis", Usuario.TipoPerfilGlobal.PROFESSOR)
+        cls.outro_professor = _criar_usuario("prof.editaveis.2", Usuario.TipoPerfilGlobal.PROFESSOR)
+        cls.aluno = _criar_usuario("aluno.editaveis", Usuario.TipoPerfilGlobal.ALUNO)
+
+    def test_usuario_lista_esconde_professor_coordenador_e_admin_para_professor(self):
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        editaveis = resposta.context["usuarios_editaveis"]
+        self.assertIn(self.aluno.pk, editaveis)
+        self.assertNotIn(self.outro_professor.pk, editaveis)
+        self.assertNotIn(self.coordenador.pk, editaveis)
+        self.assertNotIn(self.admin.pk, editaveis)
+
+    def test_usuario_lista_exclui_o_proprio_ator_da_edicao(self):
+        self.client.force_login(self.admin)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        self.assertNotIn(self.admin.pk, resposta.context["usuarios_editaveis"])
+
+    def test_painel_administrativo_aplica_a_mesma_regra_de_hierarquia(self):
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        editaveis = resposta.context["usuarios_editaveis"]
+        self.assertIn(self.aluno.pk, editaveis)
+        self.assertNotIn(self.outro_professor.pk, editaveis)
+        self.assertNotIn(self.professor.pk, editaveis)
+
+
 class MinhaContaViewTests(TestCase):
     """Autoalteração de senha — acesso/views.py:minha_conta."""
 

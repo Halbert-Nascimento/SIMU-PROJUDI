@@ -22,7 +22,7 @@ from ciclos.permissions import (
     pode_ver_ciclos_arquivados,
 )
 from .forms_admin_usuarios import AtualizarUsuarioForm
-from .permissions import tipos_que_pode_atribuir, pode_gerenciar_usuarios
+from .permissions import tipos_que_pode_atribuir, pode_gerenciar_usuarios, pode_alterar_senha
 
 
 
@@ -36,6 +36,12 @@ def usuario_lista(request):
         for tipo in Usuario.TipoPerfilGlobal
         if tipo in tipos_permitidos
     ]
+    # Mesma regra do AtualizarUsuarioForm.clean(); autoedição fica de fora porque
+    # usuario_atualizar() bloqueia alterar o próprio usuário por esta tela.
+    usuarios_editaveis = frozenset(
+        u.pk for u in usuarios
+        if u.pk != request.user.pk and pode_alterar_senha(request.user, u)
+    )
 
     return render(
         request,
@@ -43,6 +49,7 @@ def usuario_lista(request):
         {
             "usuarios": usuarios,
             "tipos_opcoes": tipos_opcoes,
+            "usuarios_editaveis": usuarios_editaveis,
         },
     )
 
@@ -118,6 +125,12 @@ def painel_administrativo(request):
         context["usuarios"] = usuarios
         context["tipos_opcoes"] = tipos_opcoes
         context["usuarios_pendentes_count"] = usuarios.filter(is_active=False).count()
+        # Mesma regra do AtualizarUsuarioForm.clean(); autoedição fica de fora porque
+        # usuario_atualizar() bloqueia alterar o próprio usuário por esta tela.
+        context["usuarios_editaveis"] = frozenset(
+            u.pk for u in usuarios
+            if u.pk != request.user.pk and pode_alterar_senha(request.user, u)
+        )
 
     # Os nomes gravados são capitalizados ("Em andamento"); __in seria sensível a caixa fora do MySQL
     status_em_andamento_ou_finalizado = Q(
