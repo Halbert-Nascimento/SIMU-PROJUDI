@@ -23,23 +23,15 @@ from base.mensagens import propagar_erros_form
 
 from ciclos.models import GrupoTrabalho
 
-from django.utils.http import url_has_allowed_host_and_scheme
-
-from .forms import AtribuicaoGruposForm, ProcessoJudicialForm
+from .forms import ProcessoJudicialForm
 from .permissions import (
-    pode_atribuir_grupos,
+    grupo_serventia_do_usuario,
     pode_editar_processo,
     pode_visualizar_processo,
 )
-from .services import (
-    EstadoInvalidoError,
-    aplicar_alteracoes,
-    descrever_alteracoes,
-    estado_posicoes_do_processo,
-    ha_o_que_aplicar,
-    nome_do_evento,
-)
+from .services import aplicar_grupos
 from .utils import validar_multiplos_arquivos
+from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
 from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
 from movimentacoes.permissions import grupo_processo_do_usuario, pode_movimentar_processo
 from movimentacoes.services import registrar_movimentacao
@@ -243,10 +235,17 @@ def pagina_aluno(request):
     serventia = ""
     cargo = ""
     is_serventia = False
+    grupos_ciclo = []
     if grupo:
         serventia = grupo.nome
         cargo = grupo.cargo_simulacao.nome
-        is_serventia = grupo.cargo_simulacao.cod == "SC"
+        if grupo.cargo_simulacao.cod == "SC":
+            is_serventia = True
+            grupos_ciclo = list(
+                grupo.ciclo.grupos
+                .select_related("cargo_simulacao")
+                .order_by("nome")
+            )
 
     if is_serventia:
         processos = (
@@ -254,7 +253,7 @@ def pagina_aluno(request):
                 ciclo=grupo.ciclo,
             )
             .select_related("classe", "status_atual", "vara", "vara__comarca")
-            .prefetch_related("polos__parte")
+            .prefetch_related("polos__parte", "grupos")
         )
     else:
         processos = (
@@ -285,6 +284,15 @@ def pagina_aluno(request):
     paginator = Paginator(processos, 10)
     page_obj = paginator.get_page(request.GET.get("page", 1))
 
+    # O modal de atribuição marca por aqui quais grupos o processo já tem.
+    # Só a página corrente entra: a seleção em lote não alcança outras páginas.
+    grupos_vinculados_por_processo = {}
+    if is_serventia:
+        grupos_vinculados_por_processo = {
+            str(processo.pk): [g.pk for g in processo.grupos.all()]
+            for processo in page_obj
+        }
+
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     ip = x_forwarded_for.split(",")[0].strip() if x_forwarded_for else request.META.get("REMOTE_ADDR", "")
 
@@ -314,105 +322,10 @@ def pagina_aluno(request):
             "filtro_classe": filtro_classe,
             "filtro_situacao": filtro_situacao,
             "is_serventia": is_serventia,
+            "grupos_ciclo": grupos_ciclo,
+            "grupos_vinculados_por_processo": grupos_vinculados_por_processo,
         },
     )
-
-
-def _destino_seguro(request) -> str:
-    """`next` só é honrado se apontar para este site — senão vira redirect aberto."""
-    destino = request.POST.get("next") or request.GET.get("next") or ""
-    if destino and url_has_allowed_host_and_scheme(
-        destino, allowed_hosts={request.get_host()}, require_https=request.is_secure(),
-    ):
-        return destino
-    return ""
-
-
-def _contexto_atribuir_grupos(request, processo, estados, *, proximo):
-    return {
-        "processo": processo,
-        "estados": estados,
-        "proximo": proximo,
-        "polos_ativo": [p for p in processo.polos.all() if p.tipo_polo == "Ativo"],
-        "polos_passivo": [p for p in processo.polos.all() if p.tipo_polo == "Passivo"],
-        "breadcrumbs": [
-            home_breadcrumb(request.user),
-            {
-                "label": f"Processo {processo.numero}",
-                "url": reverse("processos:visualizar_processo", args=[processo.numero]),
-            },
-            {"label": "Atribuir Grupos", "url": None},
-        ],
-    }
-
-
-@login_required
-def atribuir_grupos_processo(request, numero):
-    """
-    Distribuição e redistribuição de grupos, em dois passos: as posições e o resumo.
-
-    O estado das escolhas mora no formulário, não em JavaScript — `acao=revisar` re-renderiza
-    a mesma página no passo 2 sem gravar nada, e só `acao=confirmar` escreve.
-    """
-    processo = get_object_or_404(
-        ProcessoJudicial.objects
-        .select_related("ciclo", "status_atual", "classe", "tipo_processo", "vara", "vara__comarca")
-        .prefetch_related("polos__parte"),
-        numero=numero,
-    )
-    if not pode_atribuir_grupos(request.user, processo):
-        raise PermissionDenied
-
-    estados = estado_posicoes_do_processo(processo)
-    proximo = _destino_seguro(request)
-    contexto = _contexto_atribuir_grupos(request, processo, estados, proximo=proximo)
-
-    if request.method == "POST":
-        form = AtribuicaoGruposForm(request.POST, estados=estados)
-        if form.is_valid():
-            if not ha_o_que_aplicar(processo, form.plano):
-                messages.info(request, "Nenhuma alteração a aplicar.", extra_tags="grupos")
-            elif request.POST.get("acao") == "confirmar":
-                try:
-                    aplicar_alteracoes(processo, form.desejado, ator=request.user)
-                except EstadoInvalidoError:
-                    # o serviço relê dentro da transação: entre aquela leitura e a que
-                    # validou o form cabe outro serventuário no mesmo processo
-                    messages.error(
-                        request,
-                        AtribuicaoGruposForm.MENSAGEM_ESTADO_MUDOU,
-                        extra_tags="grupos",
-                    )
-                    return redirect(request.get_full_path())
-                messages.success(
-                    request,
-                    f'Grupos do processo "{processo.numero}" atualizados.',
-                    extra_tags="grupos",
-                )
-                return redirect(
-                    proximo or reverse("processos:visualizar_processo", args=[processo.numero])
-                )
-            else:
-                contexto.update({
-                    "passo": 2,
-                    "plano": form.plano,
-                    "descricao_evento": descrever_alteracoes(form.plano),
-                    "nome_evento": nome_do_evento(processo, form.plano),
-                    "escolhas": {
-                        nome: valor for nome, valor in request.POST.items()
-                        if nome.startswith(("posicao_", "atual_"))
-                    },
-                })
-                return render(request, "processos/atribuir_grupos.html", contexto)
-        else:
-            propagar_erros_form(request, form, extra_tags="grupos")
-            # o estado do banco mudou: as escolhas da tela não valem mais, e reabrir em GET é
-            # o que mostra o processo como ele está agora
-            if form.estado_mudou:
-                return redirect(request.get_full_path())
-
-    contexto["passo"] = 1
-    return render(request, "processos/atribuir_grupos.html", contexto)
 
 
 @login_required
@@ -700,7 +613,6 @@ def visualizar_processo(request, numero):
             ],
             "grupo_serventia": grupo_serventia,
             "grupos_vinculados": grupos_vinculados,
-            "pode_atribuir_grupos": pode_atribuir_grupos(request.user, processo),
             "movimentacoes": movimentacoes,
             "pode_avaliar": pode_avaliar,
             "breadcrumbs": [
@@ -709,3 +621,89 @@ def visualizar_processo(request, numero):
             ],
         },
     )
+
+
+@login_required
+@require_POST
+def atribuir_grupo_processos(request):
+    try:
+        dados = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"erro": "JSON inválido."}, status=400)
+
+    processo_ids = dados.get("processo_ids", [])
+    grupo_ids_adicionar = dados.get("grupo_ids_adicionar", [])
+    grupo_ids_remover = dados.get("grupo_ids_remover", [])
+    remover_tudo = dados.get("remover_tudo", False)
+
+    if not processo_ids:
+        return JsonResponse({"erro": "Nenhum processo selecionado."}, status=400)
+    if not remover_tudo and not grupo_ids_adicionar and not grupo_ids_remover:
+        return JsonResponse({"erro": "Nenhuma alteração selecionada."}, status=400)
+
+    ciclo = request.ciclo_ativo
+    if not ciclo:
+        return JsonResponse({"erro": "Nenhum ciclo ativo selecionado."}, status=400)
+
+    grupo_serventia = grupo_serventia_do_usuario(request.user, ciclo)
+    if grupo_serventia is None:
+        return JsonResponse({"erro": "Permissão negada."}, status=403)
+
+    # materializa a lista: sem isso o queryset é reavaliado a cada uso e o
+    # len() final custa mais um SELECT. select_related("status_atual") alimenta
+    # a checagem de "Protocolado" que aplicar_grupos faz por processo.
+    processos = list(
+        ProcessoJudicial.objects.filter(
+            pk__in=processo_ids,
+            ciclo=ciclo,
+        ).select_related("status_atual")
+    )
+
+    # pré-busca dos dois tipos possíveis de movimentação: aplicar_grupos() escolhe um deles
+    # por processo, e sem isso o laço abaixo repetiria o mesmo SELECT a cada volta
+    tipos_movimentacao = {
+        t.nome_movimentacao: t
+        for t in TipoMovimentacao.objects.select_related("efeito_status").filter(
+            nome_movimentacao__in=[NOME_AUTUACAO, NOME_REDISTRIBUICAO]
+        )
+    }
+
+    # atomic(): em autocommit uma falha no meio do laço deixaria parte dos
+    # processos alterada e parte não, com o cliente recebendo só um erro genérico
+    with transaction.atomic():
+        if remover_tudo:
+            # cada processo passa por aplicar_grupos(): sem isso o histórico e a notificação
+            # de quem saiu se perdem (grupo_processo das movimentações é SET_NULL)
+            for processo in processos:
+                aplicar_grupos(
+                    processo,
+                    grupos_adicionar=[],
+                    grupos_remover=[],
+                    ator=request.user,
+                    grupo_serventia=grupo_serventia,
+                    remover_todos=True,
+                    tipos_movimentacao=tipos_movimentacao,
+                )
+        else:
+            grupos_adicionar = list(
+                GrupoTrabalho.objects.filter(
+                    pk__in=grupo_ids_adicionar, ciclo=ciclo
+                ).select_related("cargo_simulacao")
+            )
+            grupos_remover = list(
+                GrupoTrabalho.objects.filter(
+                    pk__in=grupo_ids_remover, ciclo=ciclo
+                ).select_related("cargo_simulacao")
+            )
+            for processo in processos:
+                aplicar_grupos(
+                    processo,
+                    grupos_adicionar=grupos_adicionar,
+                    grupos_remover=grupos_remover,
+                    ator=request.user,
+                    grupo_serventia=grupo_serventia,
+                    tipos_movimentacao=tipos_movimentacao,
+                )
+
+    return JsonResponse({"sucesso": True, "atualizados": len(processos)})
+
