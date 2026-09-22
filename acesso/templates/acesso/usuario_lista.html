@@ -43,6 +43,9 @@
                             {% endif %}
                         </td>
                         <td class="col-acoes">
+                            {% if u.pk == request.user.pk %}
+                            <a href="{% url 'acesso:minha_conta' %}" class="text-acao text-meta font-bold hover:underline" title="Edite seus próprios dados pela tela Minha Conta">Use Minha Conta</a>
+                            {% elif u.pk in usuarios_editaveis %}
                             <button
                                type="button"
                                class="{% classe_botao 'linha' padding=True %} whitespace-nowrap"
@@ -54,6 +57,9 @@
                                data-active="{% if u.is_active %}true{% else %}false{% endif %}">
                                 editar/aprovar
                             </button>
+                            {% else %}
+                            <span class="text-meta text-rotulo" title="Sem permissão para editar" aria-label="Sem permissão para editar">—</span>
+                            {% endif %}
                         </td>
                     </tr>
                 {% empty %}

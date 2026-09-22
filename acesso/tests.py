@@ -476,6 +476,126 @@ class AtualizarUsuarioFormSenhaTests(TestCase):
         self.assertTrue(self.professor.check_password("Senha-Nova-Forte-1"))
 
 
+class UsuariosEditaveisTests(TestCase):
+    """
+    Regressão: o botão "editar" da tabela de usuários ficava visível em toda linha, mesmo
+    quando pode_editar_usuario() bloqueava a submissão no clean() do form — um Professor via
+    "editar" em outro Professor, Coordenador ou Admin e só descobria a falta de permissão
+    depois de preencher e salvar. usuarios_editaveis (usuario_lista e painel_administrativo,
+    acesso/views_admin_usuarios.py) filtra a exibição pela mesma regra de hierarquia, e
+    exclui também o próprio ator porque usuario_atualizar() já bloqueia autoedição por
+    esta tela.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = _criar_usuario("admin.editaveis", Usuario.TipoPerfilGlobal.ADMIN)
+        cls.coordenador = _criar_usuario("coord.editaveis", Usuario.TipoPerfilGlobal.COORDENADOR)
+        cls.professor = _criar_usuario("prof.editaveis", Usuario.TipoPerfilGlobal.PROFESSOR)
+        cls.outro_professor = _criar_usuario("prof.editaveis.2", Usuario.TipoPerfilGlobal.PROFESSOR)
+        cls.aluno = _criar_usuario("aluno.editaveis", Usuario.TipoPerfilGlobal.ALUNO)
+        cls.pendente = _criar_usuario("pendente.editaveis", Usuario.TipoPerfilGlobal.PENDENTE)
+        # _criar_usuario() não mexe em is_active (create_user() usa o default True do
+        # AbstractUser); Pendente vira is_active=False só pelo fluxo real de cadastro,
+        # então fixamos aqui para exercitar a aba "Pendentes" do painel.
+        cls.pendente.is_active = False
+        cls.pendente.save(update_fields=["is_active"])
+
+    def test_usuario_lista_esconde_professor_coordenador_e_admin_para_professor(self):
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        editaveis = resposta.context["usuarios_editaveis"]
+        self.assertIn(self.aluno.pk, editaveis)
+        self.assertIn(self.pendente.pk, editaveis)
+        self.assertNotIn(self.outro_professor.pk, editaveis)
+        self.assertNotIn(self.coordenador.pk, editaveis)
+        self.assertNotIn(self.admin.pk, editaveis)
+
+    def test_usuario_lista_coordenador_pode_editar_professor_aluno_e_pendente_mas_nao_admin_ou_outro_coordenador(self):
+        outro_coordenador = _criar_usuario("coord.editaveis.2", Usuario.TipoPerfilGlobal.COORDENADOR)
+        self.client.force_login(self.coordenador)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        editaveis = resposta.context["usuarios_editaveis"]
+        self.assertIn(self.professor.pk, editaveis)
+        self.assertIn(self.aluno.pk, editaveis)
+        self.assertIn(self.pendente.pk, editaveis)
+        self.assertNotIn(outro_coordenador.pk, editaveis)
+        self.assertNotIn(self.admin.pk, editaveis)
+
+    def test_usuario_lista_renderiza_botao_editar_so_para_linha_editavel(self):
+        """Trava o {% if %} de fato: sem ele o botão do professor renderizaria para toda linha."""
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        self.assertContains(resposta, f'data-user-id="{self.aluno.id}"')
+        self.assertContains(resposta, f'data-user-id="{self.pendente.id}"')
+        self.assertNotContains(resposta, f'data-user-id="{self.outro_professor.id}"')
+
+    def test_painel_administrativo_renderiza_botao_editar_na_aba_todos(self):
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        self.assertContains(resposta, f"abrirEdicao('{self.aluno.id}'")
+        self.assertNotContains(resposta, f"abrirEdicao('{self.outro_professor.id}'")
+
+    def test_painel_administrativo_renderiza_botao_editar_para_pendente_nas_duas_abas(self):
+        """
+        self.pendente é is_active=False: aparece na aba "Pendentes" (filtrada por
+        not u.is_active) e de novo na aba "Todos" (sem filtro) — duas ocorrências
+        esperadas, não uma coincidência a ignorar.
+        """
+        self.client.force_login(self.coordenador)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        self.assertContains(resposta, f"abrirEdicao('{self.pendente.id}'", count=2)
+
+    def test_usuario_lista_exclui_o_proprio_ator_da_edicao(self):
+        self.client.force_login(self.admin)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        self.assertNotIn(self.admin.pk, resposta.context["usuarios_editaveis"])
+
+    def test_usuario_lista_mostra_link_para_minha_conta_na_propria_linha(self):
+        """
+        Regressão: a própria linha caía no mesmo {% else %} de "sem permissão", mas o
+        ator PODE editar os próprios dados — só não por esta tela, e sim por Minha Conta.
+        """
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        # A navbar já linka acesso:minha_conta (base/base.html) — o texto "Use Minha
+        # Conta" é o que garante que veio da própria linha da tabela, não do cabeçalho.
+        self.assertContains(resposta, "Use Minha Conta")
+        self.assertNotContains(resposta, f'data-user-id="{self.professor.id}"')
+
+    def test_painel_administrativo_aplica_a_mesma_regra_de_hierarquia(self):
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        editaveis = resposta.context["usuarios_editaveis"]
+        self.assertIn(self.aluno.pk, editaveis)
+        self.assertNotIn(self.outro_professor.pk, editaveis)
+        self.assertNotIn(self.professor.pk, editaveis)
+
+    def test_painel_administrativo_mostra_link_para_minha_conta_na_propria_linha(self):
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        self.assertContains(resposta, "Use Minha Conta")
+        self.assertNotContains(resposta, f"abrirEdicao('{self.professor.id}'")
+
+
 class MinhaContaViewTests(TestCase):
     """Autoalteração de senha — acesso/views.py:minha_conta."""
 
