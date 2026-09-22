@@ -39,15 +39,6 @@ def grupo_serventia_do_usuario(user, ciclo):
     return user.grupos_trabalho.filter(ciclo=ciclo, cargo_simulacao__cod="SC").first()
 
 
-def pode_atribuir_grupos(user, processo) -> bool:
-    """
-    Atribuir/redistribuir grupos é exclusivo do cartório — diferente de
-    pode_editar_processo, que também libera Admin/Coordenador/Professor pra
-    manter os autos.
-    """
-    return grupo_serventia_do_usuario(user, processo.ciclo) is not None
-
-
 def pode_visualizar_processo(user, processo) -> bool:
     """
     Processo sem segredo de justiça e já autuado: público, qualquer pessoa acessa sem login.
