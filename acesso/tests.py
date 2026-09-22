@@ -563,6 +563,20 @@ class UsuariosEditaveisTests(TestCase):
 
         self.assertNotIn(self.admin.pk, resposta.context["usuarios_editaveis"])
 
+    def test_usuario_lista_mostra_link_para_minha_conta_na_propria_linha(self):
+        """
+        Regressão: a própria linha caía no mesmo {% else %} de "sem permissão", mas o
+        ator PODE editar os próprios dados — só não por esta tela, e sim por Minha Conta.
+        """
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        # A navbar já linka acesso:minha_conta (base/base.html) — o texto "Use Minha
+        # Conta" é o que garante que veio da própria linha da tabela, não do cabeçalho.
+        self.assertContains(resposta, "Use Minha Conta")
+        self.assertNotContains(resposta, f'data-user-id="{self.professor.id}"')
+
     def test_painel_administrativo_aplica_a_mesma_regra_de_hierarquia(self):
         self.client.force_login(self.professor)
 
@@ -572,6 +586,14 @@ class UsuariosEditaveisTests(TestCase):
         self.assertIn(self.aluno.pk, editaveis)
         self.assertNotIn(self.outro_professor.pk, editaveis)
         self.assertNotIn(self.professor.pk, editaveis)
+
+    def test_painel_administrativo_mostra_link_para_minha_conta_na_propria_linha(self):
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        self.assertContains(resposta, "Use Minha Conta")
+        self.assertNotContains(resposta, f"abrirEdicao('{self.professor.id}'")
 
 
 class MinhaContaViewTests(TestCase):

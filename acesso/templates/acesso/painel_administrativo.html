@@ -694,7 +694,11 @@
 
                             <td class="text-right">
 
-                                {% if u.pk in usuarios_editaveis %}
+                                {% if u.pk == request.user.pk %}
+
+                                <a href="{% url 'acesso:minha_conta' %}" class="text-acao text-meta font-bold hover:underline" title="Edite seus próprios dados pela tela Minha Conta">Use Minha Conta</a>
+
+                                {% elif u.pk in usuarios_editaveis %}
 
                                 <button type="button"
 
@@ -818,7 +822,11 @@
 
                             <td class="text-right">
 
-                                {% if u.pk in usuarios_editaveis %}
+                                {% if u.pk == request.user.pk %}
+
+                                <a href="{% url 'acesso:minha_conta' %}" class="text-acao text-meta font-bold hover:underline" title="Edite seus próprios dados pela tela Minha Conta">Use Minha Conta</a>
+
+                                {% elif u.pk in usuarios_editaveis %}
 
                                 <button type="button"
 
