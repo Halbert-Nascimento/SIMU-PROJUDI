@@ -6,7 +6,7 @@ from django.db import transaction
 
 from usuarios.models import Usuario
 
-from .permissions import pode_alterar_senha, tipos_que_pode_atribuir
+from .permissions import pode_editar_usuario, tipos_que_pode_atribuir
 from .services import redefinir_senha
 
 class AtualizarUsuarioForm(forms.Form):
@@ -46,7 +46,7 @@ class AtualizarUsuarioForm(forms.Form):
         cleaned_data = super().clean()
 
         # Confere o tipo ATUAL do alvo, não só o de destino — sem isso um Coordenador editava um Admin sem perceber.
-        if not pode_alterar_senha(self.ator, self.alvo):
+        if not pode_editar_usuario(self.ator, self.alvo):
             raise forms.ValidationError("Você não tem permissão para alterar dados deste usuário.")
 
         nova_senha = cleaned_data.get('nova_senha')
