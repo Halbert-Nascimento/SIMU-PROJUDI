@@ -1,5 +1,7 @@
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.http import urlencode
 
 from acesso.forms_admin_usuarios import AtualizarUsuarioForm
 from acesso.permissions import pode_editar_usuario
@@ -20,10 +22,25 @@ from processos.models import (
     TipoProcesso,
     VaraServentia,
 )
-from usuarios.models import Usuario
+from usuarios.models import VERSAO_TERMOS_ATUAL, Usuario
 
 
 def _criar_usuario(username, perfil):
+    # aceite dos termos já registrado: estes testes cobrem outras telas, não o
+    # portão de aceite (acesso.middleware.TermosAceitosMiddleware) — sem isso,
+    # todo usuário de teste cairia redirecionado para acesso:aceite_termos_pendente.
+    return Usuario.objects.create_user(
+        username=username,
+        email=f"{username}@teste.local",
+        password="s3nha-teste",
+        tipo_perfil_global=perfil,
+        aceitou_termos_em=timezone.now(),
+        versao_termos_aceita=VERSAO_TERMOS_ATUAL,
+    )
+
+
+def _criar_usuario_pendente_de_aceite(username, perfil):
+    """Usuário sem aceite registrado — para testar o próprio portão de aceite."""
     return Usuario.objects.create_user(
         username=username,
         email=f"{username}@teste.local",
@@ -597,3 +614,147 @@ class PainelAdministrativoModalSenhaTests(TestCase):
         self.assertContains(resposta, 'name="nova_senha"')
         self.assertContains(resposta, 'name="confirmacao_senha"')
         self.assertContains(resposta, 'id="edicao-senha-accordion-header"')
+
+
+class TermosAceitosMiddlewareTests(TestCase):
+    """Cobre acesso.middleware.TermosAceitosMiddleware: quem não aceitou a
+    versão vigente dos Termos cai no portão, exceto nas rotas liberadas."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.pendente = _criar_usuario_pendente_de_aceite(
+            "aluno.pendente.termos", Usuario.TipoPerfilGlobal.ALUNO
+        )
+
+    def test_usuario_sem_aceite_e_redirecionado_para_o_portao(self):
+        self.client.force_login(self.pendente)
+
+        resposta = self.client.get(reverse("acesso:minha_conta"))
+
+        self.assertEqual(resposta.status_code, 302)
+        self.assertTrue(
+            resposta.url.startswith(reverse("acesso:aceite_termos_pendente"))
+        )
+        self.assertIn("next=%2Facesso%2Fminha-conta%2F", resposta.url)
+
+    def test_manter_sessao_nao_e_redirecionado(self):
+        """Ping de atividade em segundo plano não pode cair no portão."""
+        self.client.force_login(self.pendente)
+
+        resposta = self.client.post(reverse("acesso:manter_sessao"))
+
+        self.assertEqual(resposta.status_code, 200)
+
+    def test_contagem_de_notificacoes_nao_e_redirecionada(self):
+        """Regressão: o sino do cabeçalho consulta essa rota a cada 30s
+        mesmo na tela de aceite — sem a liberação, vira um loop de redirect."""
+        self.client.force_login(self.pendente)
+
+        resposta = self.client.get(reverse("notificacoes:contagem"))
+
+        self.assertEqual(resposta.status_code, 200)
+
+    def test_usuario_com_aceite_em_dia_nao_e_redirecionado(self):
+        aceito = _criar_usuario("aluno.aceite.em.dia", Usuario.TipoPerfilGlobal.ALUNO)
+        self.client.force_login(aceito)
+
+        resposta = self.client.get(reverse("acesso:minha_conta"))
+
+        self.assertEqual(resposta.status_code, 200)
+
+    def test_usuario_anonimo_nao_e_afetado_pelo_portao(self):
+        resposta = self.client.get(reverse("acesso:login"))
+
+        self.assertEqual(resposta.status_code, 200)
+
+    def test_aluno_sem_ciclo_e_sem_aceite_alcanca_o_portao_sem_ricochetear(self):
+        """Regressão: antes de acesso:aceite_termos_pendente (e as duas
+        páginas de leitura) serem liberadas em
+        ciclos.middleware.AlunoSemCicloMiddleware.ROTAS_LIBERADAS, um aluno
+        simultaneamente sem ciclo (self.pendente não está vinculado a nenhum
+        CicloSimulacao) e sem aceite ficava preso: TermosAceitosMiddleware
+        mandava para o portão de termos, e o AlunoSemCicloMiddleware mandava
+        de volta para ciclos:boas_vindas, num ricochete sem saída.
+        `assertRedirects` (com o `fetch_redirect_response=True` padrão) segue
+        o redirect e confere que o destino final é 200 — ou seja, que o
+        portão realmente é alcançado, não redirecionado de novo."""
+        self.client.force_login(self.pendente)
+        alvo = reverse("acesso:login")
+        portao = reverse("acesso:aceite_termos_pendente")
+        destino = f"{portao}?{urlencode({'next': alvo})}"
+
+        resposta = self.client.get(alvo)
+
+        self.assertRedirects(resposta, destino)
+
+
+class AceiteTermosPendenteViewTests(TestCase):
+    """Cobre acesso.views.aceite_termos_pendente: a tela do portão em si."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.pendente = _criar_usuario_pendente_de_aceite(
+            "aluno.aceite.view", Usuario.TipoPerfilGlobal.ALUNO
+        )
+
+    def test_anonimo_e_redirecionado_para_login(self):
+        resposta = self.client.get(reverse("acesso:aceite_termos_pendente"))
+
+        self.assertEqual(resposta.status_code, 302)
+        self.assertIn(reverse("acesso:login"), resposta.url)
+
+    def test_get_exibe_o_formulario_de_aceite(self):
+        self.client.force_login(self.pendente)
+
+        resposta = self.client.get(reverse("acesso:aceite_termos_pendente"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, 'name="aceite_termos"')
+
+    def test_post_sem_marcar_checkbox_nao_registra_aceite(self):
+        self.client.force_login(self.pendente)
+
+        resposta = self.client.post(reverse("acesso:aceite_termos_pendente"), {})
+
+        self.assertEqual(resposta.status_code, 200)
+        self.pendente.refresh_from_db()
+        self.assertEqual(self.pendente.versao_termos_aceita, "")
+        self.assertIsNone(self.pendente.aceitou_termos_em)
+
+    def test_post_marcando_checkbox_registra_aceite_e_manda_para_home(self):
+        self.client.force_login(self.pendente)
+
+        resposta = self.client.post(
+            reverse("acesso:aceite_termos_pendente"), {"aceite_termos": "on"}
+        )
+
+        self.assertRedirects(
+            resposta, reverse("base:home"), fetch_redirect_response=False
+        )
+        self.pendente.refresh_from_db()
+        self.assertEqual(self.pendente.versao_termos_aceita, VERSAO_TERMOS_ATUAL)
+        self.assertIsNotNone(self.pendente.aceitou_termos_em)
+
+    def test_post_com_next_seguro_redireciona_para_next(self):
+        self.client.force_login(self.pendente)
+        destino = reverse("acesso:minha_conta")
+
+        resposta = self.client.post(
+            reverse("acesso:aceite_termos_pendente"),
+            {"aceite_termos": "on", "next": destino},
+        )
+
+        self.assertRedirects(resposta, destino, fetch_redirect_response=False)
+
+    def test_post_com_next_externo_e_ignorado(self):
+        """Guarda contra open redirect: `next` para outro host não é seguido."""
+        self.client.force_login(self.pendente)
+
+        resposta = self.client.post(
+            reverse("acesso:aceite_termos_pendente"),
+            {"aceite_termos": "on", "next": "https://evil.example.com/phish"},
+        )
+
+        self.assertRedirects(
+            resposta, reverse("base:home"), fetch_redirect_response=False
+        )

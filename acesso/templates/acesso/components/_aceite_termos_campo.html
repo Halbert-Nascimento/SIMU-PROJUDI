@@ -1,0 +1,19 @@
+<div>
+    <label class="flex items-start gap-2 cursor-pointer">
+        <input type="checkbox" id="id_aceite_termos" name="aceite_termos"
+               {% if form.aceite_termos.value %}checked{% endif %}
+               class="accent-acao w-3.5 h-3.5 mt-0.5">
+        <span class="text-apoio text-texto">
+            Li e aceito os
+            <a href="{% url 'acesso:termos_de_uso' %}" target="_blank" rel="noopener"
+               class="text-acao font-semibold hover:underline">Termos de Uso</a>
+            e a
+            <a href="{% url 'acesso:politica_privacidade' %}" target="_blank" rel="noopener"
+               class="text-acao font-semibold hover:underline">Política de Privacidade</a>
+            do Simulador Projudi. *
+        </span>
+    </label>
+    {% for error in form.aceite_termos.errors %}
+        <p class="text-meta text-validacao font-semibold mt-1">{{ error }}</p>
+    {% endfor %}
+</div>

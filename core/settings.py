@@ -43,6 +43,20 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
+# Dados institucionais citados nos Termos de Uso e na Política de Privacidade.
+# Ficam no .env (não no texto) porque a instituição/mantenedor responsável pode
+# mudar sem que o conteúdo jurídico em si precise ser reescrito. Os "_DEFAULT"
+# ficam nomeados (em vez de só o literal no env()) porque base.checks os usa
+# para avisar, em produção, que ainda não foram preenchidos — duplicar o
+# literal nos dois lugares deixaria o aviso vulnerável a ficar desatualizado.
+NOME_INSTITUICAO_DEFAULT = "[Nome da instituição a definir]"
+EMAIL_CONTATO_DPO_DEFAULT = "contato@simu-projudi.local"
+FORO_COMARCA_DEFAULT = "[Comarca a definir]"
+
+NOME_INSTITUICAO = env("NOME_INSTITUICAO", default=NOME_INSTITUICAO_DEFAULT)
+EMAIL_CONTATO_DPO = env("EMAIL_CONTATO_DPO", default=EMAIL_CONTATO_DPO_DEFAULT)
+FORO_COMARCA = env("FORO_COMARCA", default=FORO_COMARCA_DEFAULT)
+
 
 # Application definition
 
@@ -77,6 +91,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'acesso.middleware.SessionActivityMiddleware',
+    'acesso.middleware.TermosAceitosMiddleware',
     'ciclos.middleware.CicloAtivoMiddleware',
     # depende de `ciclos_ativos_usuario`, populado pelo middleware acima
     'ciclos.middleware.AlunoSemCicloMiddleware',
@@ -97,6 +112,7 @@ TEMPLATES = [
                 'ciclos.context_processors.ciclo_ativo',
                 'notificacoes.context_processors.notificacoes_usuario',
                 'base.context_processors.session_timeout',
+                'base.context_processors.dados_institucionais',
             ],
         },
     },

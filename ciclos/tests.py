@@ -2,11 +2,19 @@ from __future__ import annotations
 
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from notificacoes.models import Notificacao, TipoNotificacao
-from usuarios.models import Usuario
+from usuarios.models import VERSAO_TERMOS_ATUAL, Usuario
 
 from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
+
+# aceite dos termos já registrado: evita que os testes de HTTP caiam no portão
+# acesso.middleware.TermosAceitosMiddleware.
+_ACEITE_TERMOS_TESTE = {
+    "aceitou_termos_em": timezone.now(),
+    "versao_termos_aceita": VERSAO_TERMOS_ATUAL,
+}
 
 
 class CenarioCicloTestCase(TestCase):
@@ -24,18 +32,22 @@ class CenarioCicloTestCase(TestCase):
         cls.professor_original = Usuario.objects.create_user(
             username="prof.original", email="prof.original@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.PROFESSOR,
+            **_ACEITE_TERMOS_TESTE,
         )
         cls.professor_novo = Usuario.objects.create_user(
             username="prof.novo", email="prof.novo@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.PROFESSOR,
+            **_ACEITE_TERMOS_TESTE,
         )
         cls.admin = Usuario.objects.create_user(
             username="admin.teste", email="admin.teste@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.ADMIN,
+            **_ACEITE_TERMOS_TESTE,
         )
         cls.aluno = Usuario.objects.create_user(
             username="aluno.teste", email="aluno.teste@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+            **_ACEITE_TERMOS_TESTE,
         )
 
         cls.ciclo = CicloSimulacao.objects.create(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from django.test import Client, TestCase
+from django.utils import timezone
 
 from ciclos.models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
 from movimentacoes.models import MovimentacaoProcessual, TipoMovimentacao
@@ -13,15 +14,18 @@ from processos.models import (
     TipoProcesso,
     VaraServentia,
 )
-from usuarios.models import Usuario
+from usuarios.models import VERSAO_TERMOS_ATUAL, Usuario
 
 PERFIL = Usuario.TipoPerfilGlobal
 
 
 def criar_usuario(username, perfil):
+    # aceite dos termos já registrado: evita que os testes de HTTP caiam no
+    # portão acesso.middleware.TermosAceitosMiddleware.
     return Usuario.objects.create_user(
         username=username, email=f"{username}@teste.local", password="s3nha-teste",
         tipo_perfil_global=perfil,
+        aceitou_termos_em=timezone.now(), versao_termos_aceita=VERSAO_TERMOS_ATUAL,
     )
 
 

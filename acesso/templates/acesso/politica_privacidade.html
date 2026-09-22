@@ -1,0 +1,172 @@
+{% extends 'base/base.html' %}
+{% load ui %}
+
+{% block title %}Política de Privacidade{% endblock %}
+
+{% block content %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+
+    <div class="mb-[14px] pb-[14px] border-b border-contorno">
+        <a href="{% url voltar_url %}"
+           onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }"
+           class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
+            <i class="fa-solid fa-arrow-left"></i> Voltar
+        </a>
+        <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+            <i class="fa-solid fa-shield-halved"></i> Política de Privacidade
+        </h1>
+        <p class="text-corpo text-texto-neutro mt-1.5">
+            Simulador Universitário Projudi — {{ nome_instituicao }}
+        </p>
+    </div>
+
+    <div class="max-w-[720px]">
+        {% card titulo="POLÍTICA DE PRIVACIDADE" icone="fa-shield-halved" classe_corpo="px-5 py-5 flex flex-col gap-[18px]" %}
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">1. Identificação do controlador</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Esta Política de Privacidade descreve como {{ nome_instituicao }}, na
+                    qualidade de controladora dos dados pessoais tratados pelo Simulador
+                    Universitário Projudi, coleta, usa, armazena e protege os dados pessoais de
+                    seus usuários, em conformidade com a Lei nº 13.709/2018 (Lei Geral de
+                    Proteção de Dados Pessoais — LGPD). Dúvidas e solicitações sobre dados
+                    pessoais podem ser encaminhadas para
+                    <a href="mailto:{{ email_contato_dpo }}" class="text-acao font-semibold hover:underline">{{ email_contato_dpo }}</a>.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">2. Dados pessoais coletados</h2>
+                <p class="text-corpo text-texto mt-1.5">O Simulador coleta e armazena:</p>
+                <ul class="list-disc pl-5 mt-1.5 text-corpo text-texto flex flex-col gap-1">
+                    <li>Nome completo e e-mail, informados no cadastro;</li>
+                    <li>Senha de acesso, armazenada de forma criptografada (hash), sem acesso em texto puro por ninguém, inclusive pela equipe do Simulador;</li>
+                    <li>Perfil de acesso (Administrador, Coordenador, Professor, Aluno ou Pendente);</li>
+                    <li>Horário da última atividade na sessão, usado apenas para controlar a expiração automática por inatividade;</li>
+                    <li>Ciclo de simulação ativo na sessão do usuário;</li>
+                    <li>Endereço IP de acesso, usado apenas para exibir ao próprio usuário a informação do penúltimo login.</li>
+                </ul>
+                <p class="text-corpo text-texto mt-1.5">
+                    O sistema também armazena dados inseridos pelo próprio usuário dentro dos
+                    processos simulados (nome, CPF/CNPJ de partes fictícias, movimentações e
+                    documentos anexados). Esses dados <strong>devem ser sempre fictícios</strong> —
+                    conforme a cláusula 5 dos
+                    <a href="{% url 'acesso:termos_de_uso' %}" target="_blank" rel="noopener" class="text-acao font-semibold hover:underline">Termos de Uso</a>
+                    — e não correspondem a dados pessoais de pessoas reais. O usuário que
+                    inserir dado real de terceiro nesses campos é o único responsável por essa
+                    violação e pelo tratamento indevido dela decorrente.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">3. Finalidade do tratamento</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Os dados pessoais listados são tratados exclusivamente para: autenticação e
+                    controle de acesso por perfil; gestão pedagógica dos ciclos, grupos e
+                    processos simulados; segurança e controle de sessão; e comunicação
+                    institucional relacionada ao uso do Simulador.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">4. Base legal</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O tratamento se fundamenta na execução de políticas educacionais e no
+                    legítimo interesse de {{ nome_instituicao }} em prestar o serviço acadêmico
+                    do Simulador (art. 7º da LGPD), reforçado pelo aceite ativo e informado do
+                    usuário no momento do cadastro e a cada nova versão desta Política.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">5. Compartilhamento de dados</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Os dados são hospedados em servidor contratado de terceiro para fins
+                    exclusivos de infraestrutura técnica. {{ nome_instituicao }} não vende,
+                    aluga nem compartilha dados pessoais com terceiros para fins comerciais ou
+                    publicitários.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">6. Armazenamento e retenção</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Os dados são mantidos enquanto a conta estiver ativa ou pelo prazo
+                    necessário à finalidade acadêmica que motivou sua coleta. Documentos
+                    anexados a movimentações ficam em armazenamento privado, não acessível
+                    publicamente, e só são exibidos a usuários autorizados a visualizar o
+                    processo correspondente.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">7. Segurança da informação</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Entre as medidas de segurança adotadas estão: senha armazenada com hash
+                    criptográfico, expiração automática de sessão por inatividade, controle de
+                    acesso por perfil hierárquico e restrição de visualização de processos
+                    marcados como segredo de justiça a quem efetivamente atua neles.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">8. Direitos do titular</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Nos termos do art. 18 da LGPD, o titular dos dados pode solicitar, a
+                    qualquer momento: confirmação da existência de tratamento; acesso aos
+                    dados; correção de dados incompletos, inexatos ou desatualizados;
+                    anonimização, bloqueio ou eliminação de dados desnecessários ou tratados em
+                    desconformidade com a lei; portabilidade dos dados; informação sobre
+                    entidades com quem os dados foram compartilhados; e revogação do
+                    consentimento, quando aplicável. Essas solicitações podem ser feitas pelo
+                    e-mail
+                    <a href="mailto:{{ email_contato_dpo }}" class="text-acao font-semibold hover:underline">{{ email_contato_dpo }}</a>.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">9. Cookies e sessão</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O Simulador utiliza apenas cookies técnicos, estritamente necessários para
+                    manter a sessão de login. Não são utilizados cookies de rastreamento,
+                    publicidade ou análise de comportamento por terceiros.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">10. Usuários</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O Simulador é destinado a estudantes universitários, professores e
+                    coordenadores, presumidamente maiores de 18 anos, no contexto de curso de
+                    ensino superior. O sistema não é direcionado a crianças nem coleta,
+                    intencionalmente, dados pessoais de menores de idade.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">11. Alterações nesta Política</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Esta Política pode ser atualizada a qualquer momento. Alterações relevantes
+                    geram uma nova versão numerada, seguindo o mesmo mecanismo de reaceite
+                    obrigatório descrito nos
+                    <a href="{% url 'acesso:termos_de_uso' %}" target="_blank" rel="noopener" class="text-acao font-semibold hover:underline">Termos de Uso</a>.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">12. Contato do encarregado (DPO)</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Para exercer os direitos previstos nesta Política ou esclarecer dúvidas
+                    sobre o tratamento de dados pessoais, entre em contato pelo e-mail
+                    <a href="mailto:{{ email_contato_dpo }}" class="text-acao font-semibold hover:underline">{{ email_contato_dpo }}</a>.
+                </p>
+            </section>
+
+            <p class="text-meta text-rotulo mt-[18px] pt-[14px] border-t border-divisor">
+                Versão {{ versao_termos_atual }} — vigente desde {{ data_vigencia_termos }}.
+            </p>
+        {% endcard %}
+    </div>
+</main>
+{% endblock %}
