@@ -21,7 +21,7 @@
     <!-- Sem as_toast: em erro, a view reexibe este template no mesmo request (sem
          redirect), e o guia de _mensagens.html pede o bloco fixo nesse caso — o toast
          some sozinho antes do usuário conseguir ler por que a troca falhou. -->
-    {% include 'base/components/_mensagens.html' %}
+    {% include 'base/components/_mensagens.html' with tag="conta" %}
 
     <div class="max-w-[400px]">
         {% card titulo="Alterar minha senha" icone="fa-key" %}

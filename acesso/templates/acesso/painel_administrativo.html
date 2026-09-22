@@ -950,7 +950,9 @@
 
                             <label for="edicao-nova-senha" class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">Nova senha</label>
 
-                            <input type="password" id="edicao-nova-senha" name="nova_senha" class="{% classe_campo %}" autocomplete="new-password">
+                            <div class="relative">
+                                <input type="password" id="edicao-nova-senha" name="nova_senha" class="{% classe_campo %}" autocomplete="new-password">
+                            </div>
 
                         </div>
 
@@ -958,7 +960,9 @@
 
                             <label for="edicao-confirmacao-senha" class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">Confirmação</label>
 
-                            <input type="password" id="edicao-confirmacao-senha" name="confirmacao_senha" class="{% classe_campo %}" autocomplete="new-password">
+                            <div class="relative">
+                                <input type="password" id="edicao-confirmacao-senha" name="confirmacao_senha" class="{% classe_campo %}" autocomplete="new-password">
+                            </div>
 
                         </div>
 
@@ -1442,15 +1446,37 @@
 
 
 
+    function limparCampoSenhaEdicao(input) {
+
+        if (!input) return;
+
+        input.value = '';
+
+        // Volta ao type="password": sem isto, o olho clicado antes deixaria a próxima
+
+        // senha digitada (de outro usuário) visível em texto puro por padrão.
+
+        input.type = 'password';
+
+        const icone = input.parentElement.querySelector('i');
+
+        if (icone) {
+
+            icone.className = 'fa-solid fa-eye';
+
+            icone.style.color = '#6b7280';
+
+        }
+
+    }
+
+
+
     function limparCamposSenhaEdicao() {
 
-        const novaSenha = document.getElementById('edicao-nova-senha');
+        limparCampoSenhaEdicao(document.getElementById('edicao-nova-senha'));
 
-        const confirmacaoSenha = document.getElementById('edicao-confirmacao-senha');
-
-        if (novaSenha) novaSenha.value = '';
-
-        if (confirmacaoSenha) confirmacaoSenha.value = '';
+        limparCampoSenhaEdicao(document.getElementById('edicao-confirmacao-senha'));
 
         fecharAccordionSenhaEdicao();
 
