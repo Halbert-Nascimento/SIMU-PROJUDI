@@ -88,6 +88,8 @@ class AlunoSemCicloMiddleware:
         "ciclos:boas_vindas",
         "acesso:logout",
         "acesso:manter_sessao",
+        # Trocar a própria senha não pode depender de já estar posto num ciclo.
+        "acesso:minha_conta",
         "notificacoes:listar",
         "notificacoes:contagem",
         "notificacoes:recentes",
