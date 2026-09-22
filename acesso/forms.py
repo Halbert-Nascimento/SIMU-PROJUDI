@@ -15,15 +15,11 @@ class AlterarMinhaSenhaForm(PasswordChangeForm):
     """
 
     def save(self, commit=True):
-        # Passa por alterar_minha_senha (log + validação) em vez do set_password padrão.
+        # Passa por alterar_minha_senha (log de auditoria) em vez do set_password padrão.
         if not commit:
             raise NotImplementedError(
                 "AlterarMinhaSenhaForm.save() sempre persiste via alterar_minha_senha; "
                 "commit=False não é suportado."
             )
-        alterar_minha_senha(
-            usuario=self.user,
-            senha_atual=self.cleaned_data["old_password"],
-            nova_senha=self.cleaned_data["new_password1"],
-        )
+        alterar_minha_senha(usuario=self.user, nova_senha=self.cleaned_data["new_password1"])
         return self.user

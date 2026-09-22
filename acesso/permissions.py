@@ -47,17 +47,19 @@ def tipos_que_pode_atribuir(ator: Usuario) -> set[str]:
     return set()
 
 
-def pode_alterar_senha(ator: Usuario, alvo: Usuario) -> bool:
+def pode_editar_usuario(ator: Usuario, alvo: Usuario) -> bool:
     """
-        Quem pode redefinir a senha de quem.
+        Quem pode editar os dados de quem — status ativo, tipo de perfil e senha, tudo sob a
+        mesma hierarquia: são a mesma decisão de autoridade, não regras separadas.
         - Autoalteração (ator == alvo): sempre permitida — é a tela "Minha conta".
         - Admin: qualquer usuário.
         - Coordenador: Professor, Aluno e Pendente (nunca outro Coordenador ou Admin).
         - Professor: Aluno e Pendente (nunca outro Professor, Coordenador ou Admin).
         - Aluno / Pendente: nenhum outro usuário.
 
-        Reaproveitada em AtualizarUsuarioForm.clean() para também corrigir a validação
-        do tipo ATUAL do alvo, que antes só conferia o tipo de destino.
+        Usada como gate do formulário inteiro em AtualizarUsuarioForm.clean() (corrige a
+        validação do tipo ATUAL do alvo, que antes só conferia o tipo de destino) e, dentro
+        dela, por redefinir_senha() para autorizar especificamente a troca de senha.
     """
     if not ator.is_authenticated:
         return False

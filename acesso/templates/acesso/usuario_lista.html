@@ -108,12 +108,16 @@
                         Deixe ambos os campos em branco se não desejar alterar a senha.
                     </p>
                     {% campo label="Nova senha" para="modal-nova-senha" %}
-                        <input type="password" id="modal-nova-senha" name="nova_senha"
-                               class="{% classe_campo %}" autocomplete="new-password">
+                        <div class="relative">
+                            <input type="password" id="modal-nova-senha" name="nova_senha"
+                                   class="{% classe_campo %}" autocomplete="new-password">
+                        </div>
                     {% endcampo %}
                     {% campo label="Confirmação" para="modal-confirmacao-senha" %}
-                        <input type="password" id="modal-confirmacao-senha" name="confirmacao_senha"
-                               class="{% classe_campo %}" autocomplete="new-password">
+                        <div class="relative">
+                            <input type="password" id="modal-confirmacao-senha" name="confirmacao_senha"
+                                   class="{% classe_campo %}" autocomplete="new-password">
+                        </div>
                     {% endcampo %}
                 </div>
             </div>
@@ -158,6 +162,18 @@
             senhaAccordionIcon.classList.add('fa-caret-right');
         }
 
+        function limparCampoSenha(input) {
+            input.value = '';
+            // Volta ao type="password": sem isto, o olho clicado antes deixaria a próxima
+            // senha digitada (de outro usuário) visível em texto puro por padrão.
+            input.type = 'password';
+            const icone = input.parentElement.querySelector('i');
+            if (icone) {
+                icone.className = 'fa-solid fa-eye';
+                icone.style.color = '#6b7280';
+            }
+        }
+
         senhaAccordionHeader.addEventListener('click', function () {
             const fechado = senhaAccordionContent.classList.contains('hidden');
             if (fechado) {
@@ -180,8 +196,8 @@
 
             // Sempre em branco e recolhido: reabrir para outro usuário (ou para o mesmo)
             // nunca deve carregar uma senha digitada e não confirmada anteriormente.
-            novaSenhaInput.value = '';
-            confirmacaoSenhaInput.value = '';
+            limparCampoSenha(novaSenhaInput);
+            limparCampoSenha(confirmacaoSenhaInput);
             fecharAccordionSenha();
 
             // .modal-fundo alterna por `open`, não por `hidden` — ver componentes.css
@@ -192,8 +208,8 @@
             overlay.classList.remove('open');
             // Segunda rede de segurança: cancelar sem salvar também não deve deixar uma
             // senha digitada à espera da próxima abertura.
-            novaSenhaInput.value = '';
-            confirmacaoSenhaInput.value = '';
+            limparCampoSenha(novaSenhaInput);
+            limparCampoSenha(confirmacaoSenhaInput);
             fecharAccordionSenha();
         }
 

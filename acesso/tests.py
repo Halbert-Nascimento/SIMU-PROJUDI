@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from acesso.forms_admin_usuarios import AtualizarUsuarioForm
-from acesso.permissions import pode_alterar_senha
+from acesso.permissions import pode_editar_usuario
 from avaliacoes.models import FeedbackProfessor
 from ciclos.models import (
     CargoSimulacao,
@@ -282,8 +282,8 @@ class LoginViewUsuarioLogadoTests(TestCase):
         self.assertTemplateUsed(resposta, "acesso/login.html")
 
 
-class PodeAlterarSenhaTests(TestCase):
-    """Hierarquia de acesso.permissions.pode_alterar_senha — usada pelo modal de gestão e por acesso/services.py."""
+class PodeEditarUsuarioTests(TestCase):
+    """Hierarquia de acesso.permissions.pode_editar_usuario — usada pelo modal de gestão e por acesso/services.py."""
 
     @classmethod
     def setUpTestData(cls):
@@ -296,38 +296,38 @@ class PodeAlterarSenhaTests(TestCase):
     def test_autoalteracao_sempre_permitida(self):
         for usuario in (self.admin, self.coordenador, self.professor, self.aluno, self.pendente):
             with self.subTest(usuario=usuario.username):
-                self.assertTrue(pode_alterar_senha(usuario, usuario))
+                self.assertTrue(pode_editar_usuario(usuario, usuario))
 
     def test_admin_altera_qualquer_um(self):
         for alvo in (self.coordenador, self.professor, self.aluno, self.pendente):
             with self.subTest(alvo=alvo.username):
-                self.assertTrue(pode_alterar_senha(self.admin, alvo))
+                self.assertTrue(pode_editar_usuario(self.admin, alvo))
 
     def test_coordenador_altera_professor_aluno_e_pendente(self):
         for alvo in (self.professor, self.aluno, self.pendente):
             with self.subTest(alvo=alvo.username):
-                self.assertTrue(pode_alterar_senha(self.coordenador, alvo))
+                self.assertTrue(pode_editar_usuario(self.coordenador, alvo))
 
     def test_coordenador_nao_altera_outro_coordenador_nem_admin(self):
         outro_coordenador = _criar_usuario("coord.senha.2", Usuario.TipoPerfilGlobal.COORDENADOR)
         for alvo in (outro_coordenador, self.admin):
             with self.subTest(alvo=alvo.username):
-                self.assertFalse(pode_alterar_senha(self.coordenador, alvo))
+                self.assertFalse(pode_editar_usuario(self.coordenador, alvo))
 
     def test_professor_altera_aluno_e_pendente(self):
         for alvo in (self.aluno, self.pendente):
             with self.subTest(alvo=alvo.username):
-                self.assertTrue(pode_alterar_senha(self.professor, alvo))
+                self.assertTrue(pode_editar_usuario(self.professor, alvo))
 
     def test_professor_nao_altera_professor_coordenador_nem_admin(self):
         outro_professor = _criar_usuario("prof.senha.2", Usuario.TipoPerfilGlobal.PROFESSOR)
         for alvo in (outro_professor, self.coordenador, self.admin):
             with self.subTest(alvo=alvo.username):
-                self.assertFalse(pode_alterar_senha(self.professor, alvo))
+                self.assertFalse(pode_editar_usuario(self.professor, alvo))
 
     def test_aluno_nao_altera_ninguem_alem_de_si(self):
-        self.assertFalse(pode_alterar_senha(self.aluno, self.pendente))
-        self.assertFalse(pode_alterar_senha(self.aluno, self.professor))
+        self.assertFalse(pode_editar_usuario(self.aluno, self.pendente))
+        self.assertFalse(pode_editar_usuario(self.aluno, self.professor))
 
 
 class AtualizarUsuarioFormSenhaTests(TestCase):
@@ -432,7 +432,7 @@ class AtualizarUsuarioFormSenhaTests(TestCase):
 
     def test_coordenador_nao_altera_nem_status_de_outro_coordenador_sem_mexer_em_senha(self):
         """
-        pode_alterar_senha() em clean() é um gate do formulário inteiro, não só da senha:
+        pode_editar_usuario() em clean() é um gate do formulário inteiro, não só da senha:
         um Coordenador não pode nem alternar "Ativo" de outro Coordenador por este modal,
         mesmo sem tocar nos campos de senha — é a mesma regra de hierarquia de
         acesso/permissions.py, aplicada de forma consistente ao invés de só à senha.
@@ -453,7 +453,7 @@ class AtualizarUsuarioFormSenhaTests(TestCase):
     def test_coordenador_promove_professor_a_coordenador_e_define_senha_no_mesmo_envio(self):
         """
         Regressão: aplicar() mudava self.alvo.tipo_perfil_global ANTES de chamar
-        redefinir_senha(), que reavalia pode_alterar_senha() contra esse tipo já mutado.
+        redefinir_senha(), que reavalia pode_editar_usuario() contra esse tipo já mutado.
         Um Coordenador promovendo um Professor a Coordenador e definindo senha nova no
         mesmo envio via um PermissionError não tratado (clean() aprova contra o tipo
         original do alvo; a ordem em aplicar() não pode invalidar essa aprovação).
@@ -482,6 +482,7 @@ class MinhaContaViewTests(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.usuario = _criar_usuario("autoalteracao", Usuario.TipoPerfilGlobal.ALUNO)
+        cls.admin = _criar_usuario("autoalteracao.admin", Usuario.TipoPerfilGlobal.ADMIN)
 
     def test_senha_atual_incorreta_e_rejeitada(self):
         self.client.force_login(self.usuario)
@@ -556,6 +557,21 @@ class MinhaContaViewTests(TestCase):
         self.assertContains(resposta, "Minha Conta")
         self.assertContains(resposta, "Voltar para")
         self.assertContains(resposta, reverse("base:home"))
+
+    def test_nao_mostra_mensagem_pendente_de_outra_tela(self):
+        """
+        Regressão: minha_conta.html incluía _mensagens.html sem tag="conta", então
+        qualquer mensagem pendente da sessão (de uma ação em outra aba/tela) aparecia
+        aqui — mesmo sem relação nenhuma com troca de senha.
+        """
+        self.client.force_login(self.admin)
+        # usuario_atualizar sem user_id enfileira uma mensagem de erro sem extra_tags e
+        # redireciona sem renderizar nada — a mensagem fica pendente na sessão.
+        self.client.post(reverse("acesso:usuario_atualizar"), {})
+
+        resposta = self.client.get(reverse("acesso:minha_conta"))
+
+        self.assertNotContains(resposta, "Usuario alvo nao informado")
 
 
 class PainelAdministrativoModalSenhaTests(TestCase):
