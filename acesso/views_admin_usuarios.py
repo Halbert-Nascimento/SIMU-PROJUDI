@@ -25,6 +25,13 @@ from .forms_admin_usuarios import AtualizarUsuarioForm
 from .permissions import tipos_que_pode_atribuir, pode_gerenciar_usuarios, pode_editar_usuario
 
 
+def _usuarios_editaveis(ator, usuarios):
+    """Pks editáveis por `ator`; autoedição fica fora — as duas telas bloqueiam alterar o próprio usuário."""
+    return frozenset(
+        u.pk for u in usuarios
+        if u.pk != ator.pk and pode_editar_usuario(ator, u)
+    )
+
 
 @login_required
 @exige_permissao(pode_gerenciar_usuarios, tipos_que_pode_atribuir)
@@ -36,12 +43,7 @@ def usuario_lista(request):
         for tipo in Usuario.TipoPerfilGlobal
         if tipo in tipos_permitidos
     ]
-    # Mesma regra do AtualizarUsuarioForm.clean(); autoedição fica de fora porque
-    # usuario_atualizar() bloqueia alterar o próprio usuário por esta tela.
-    usuarios_editaveis = frozenset(
-        u.pk for u in usuarios
-        if u.pk != request.user.pk and pode_editar_usuario(request.user, u)
-    )
+    usuarios_editaveis = _usuarios_editaveis(request.user, usuarios)
 
     return render(
         request,
@@ -125,12 +127,7 @@ def painel_administrativo(request):
         context["usuarios"] = usuarios
         context["tipos_opcoes"] = tipos_opcoes
         context["usuarios_pendentes_count"] = usuarios.filter(is_active=False).count()
-        # Mesma regra do AtualizarUsuarioForm.clean(); autoedição fica de fora porque
-        # usuario_atualizar() bloqueia alterar o próprio usuário por esta tela.
-        context["usuarios_editaveis"] = frozenset(
-            u.pk for u in usuarios
-            if u.pk != request.user.pk and pode_editar_usuario(request.user, u)
-        )
+        context["usuarios_editaveis"] = _usuarios_editaveis(request.user, usuarios)
 
     # Os nomes gravados são capitalizados ("Em andamento"); __in seria sensível a caixa fora do MySQL
     status_em_andamento_ou_finalizado = Q(

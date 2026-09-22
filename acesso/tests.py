@@ -494,6 +494,12 @@ class UsuariosEditaveisTests(TestCase):
         cls.professor = _criar_usuario("prof.editaveis", Usuario.TipoPerfilGlobal.PROFESSOR)
         cls.outro_professor = _criar_usuario("prof.editaveis.2", Usuario.TipoPerfilGlobal.PROFESSOR)
         cls.aluno = _criar_usuario("aluno.editaveis", Usuario.TipoPerfilGlobal.ALUNO)
+        cls.pendente = _criar_usuario("pendente.editaveis", Usuario.TipoPerfilGlobal.PENDENTE)
+        # _criar_usuario() não mexe em is_active (create_user() usa o default True do
+        # AbstractUser); Pendente vira is_active=False só pelo fluxo real de cadastro,
+        # então fixamos aqui para exercitar a aba "Pendentes" do painel.
+        cls.pendente.is_active = False
+        cls.pendente.save(update_fields=["is_active"])
 
     def test_usuario_lista_esconde_professor_coordenador_e_admin_para_professor(self):
         self.client.force_login(self.professor)
@@ -502,9 +508,53 @@ class UsuariosEditaveisTests(TestCase):
 
         editaveis = resposta.context["usuarios_editaveis"]
         self.assertIn(self.aluno.pk, editaveis)
+        self.assertIn(self.pendente.pk, editaveis)
         self.assertNotIn(self.outro_professor.pk, editaveis)
         self.assertNotIn(self.coordenador.pk, editaveis)
         self.assertNotIn(self.admin.pk, editaveis)
+
+    def test_usuario_lista_coordenador_pode_editar_professor_aluno_e_pendente_mas_nao_admin_ou_outro_coordenador(self):
+        outro_coordenador = _criar_usuario("coord.editaveis.2", Usuario.TipoPerfilGlobal.COORDENADOR)
+        self.client.force_login(self.coordenador)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        editaveis = resposta.context["usuarios_editaveis"]
+        self.assertIn(self.professor.pk, editaveis)
+        self.assertIn(self.aluno.pk, editaveis)
+        self.assertIn(self.pendente.pk, editaveis)
+        self.assertNotIn(outro_coordenador.pk, editaveis)
+        self.assertNotIn(self.admin.pk, editaveis)
+
+    def test_usuario_lista_renderiza_botao_editar_so_para_linha_editavel(self):
+        """Trava o {% if %} de fato: sem ele o botão do professor renderizaria para toda linha."""
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:usuario_lista"))
+
+        self.assertContains(resposta, f'data-user-id="{self.aluno.id}"')
+        self.assertContains(resposta, f'data-user-id="{self.pendente.id}"')
+        self.assertNotContains(resposta, f'data-user-id="{self.outro_professor.id}"')
+
+    def test_painel_administrativo_renderiza_botao_editar_na_aba_todos(self):
+        self.client.force_login(self.professor)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        self.assertContains(resposta, f"abrirEdicao('{self.aluno.id}'")
+        self.assertNotContains(resposta, f"abrirEdicao('{self.outro_professor.id}'")
+
+    def test_painel_administrativo_renderiza_botao_editar_para_pendente_nas_duas_abas(self):
+        """
+        self.pendente é is_active=False: aparece na aba "Pendentes" (filtrada por
+        not u.is_active) e de novo na aba "Todos" (sem filtro) — duas ocorrências
+        esperadas, não uma coincidência a ignorar.
+        """
+        self.client.force_login(self.coordenador)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        self.assertContains(resposta, f"abrirEdicao('{self.pendente.id}'", count=2)
 
     def test_usuario_lista_exclui_o_proprio_ator_da_edicao(self):
         self.client.force_login(self.admin)
