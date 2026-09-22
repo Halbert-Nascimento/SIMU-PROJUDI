@@ -479,7 +479,7 @@ class AtualizarUsuarioFormSenhaTests(TestCase):
 class UsuariosEditaveisTests(TestCase):
     """
     Regressão: o botão "editar" da tabela de usuários ficava visível em toda linha, mesmo
-    quando pode_alterar_senha() bloqueava a submissão no clean() do form — um Professor via
+    quando pode_editar_usuario() bloqueava a submissão no clean() do form — um Professor via
     "editar" em outro Professor, Coordenador ou Admin e só descobria a falta de permissão
     depois de preencher e salvar. usuarios_editaveis (usuario_lista e painel_administrativo,
     acesso/views_admin_usuarios.py) filtra a exibição pela mesma regra de hierarquia, e
