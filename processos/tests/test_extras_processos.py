@@ -5,6 +5,8 @@ import json
 from django.urls import reverse
 
 from ciclos.models import GrupoTrabalho
+from movimentacoes.models import MovimentacaoProcessual
+from notificacoes.models import Notificacao, TipoNotificacao
 from processos.models import GrupoProcesso, PoloProcessual
 from processos.permissions import pode_editar_processo, pode_visualizar_processo
 
@@ -21,6 +23,33 @@ class ExtrasProcessosTests(CenarioMovimentacoesTestCase):
         self.assertEqual(processo.grupos.count(), 0)
         for polo in PoloProcessual.objects.filter(processo=processo):
             self.assertIsNone(polo.grupo_id)
+
+    def test_remover_tudo_registra_redistribuicao_e_notifica(self):
+        """'Desvincular Grupos' em massa precisa passar por aplicar_grupos() como
+        qualquer outra troca — sem isso o histórico se perde (grupo_processo das
+        movimentações antigas é SET_NULL) e ninguém é avisado da remoção."""
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA", "APP"])  # também vincula o SC do ator
+
+        with self.captureOnCommitCallbacks(execute=True):
+            self.autuar_processo(processo, [])
+
+        movimentacao = (
+            MovimentacaoProcessual.objects.filter(processo=processo)
+            .order_by("-data_movimento", "-pk")
+            .first()
+        )
+        self.assertEqual(movimentacao.tipo_movimento.nome_movimentacao, "Redistribuição")
+        self.assertIsNone(movimentacao.grupo_processo_id)
+        self.assertIn("desvinculado", movimentacao.descricao_evento.lower())
+
+        # o SC é o ator da remoção: notificar_grupo_desvinculado_processo exclui o
+        # próprio ator, então só APA e APP (que não agiram) recebem o aviso
+        destinatarios = set(
+            Notificacao.objects.filter(tipo=TipoNotificacao.GRUPO_DESVINCULADO_PROCESSO)
+            .values_list("destinatario_id", flat=True)
+        )
+        self.assertEqual(destinatarios, {self.usuarios["APA"].pk, self.usuarios["APP"].pk})
 
     def test_sc_aceita_multiplos_grupos_sem_substituir(self):
         """SC fica fora da regra de 'um grupo por papel': ciclo pode ter mais de um

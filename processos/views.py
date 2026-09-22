@@ -38,7 +38,6 @@ from movimentacoes.services import registrar_movimentacao
 from .models import (
     ClasseProcessual,
     Comarca,
-    GrupoProcesso,
     ParteFicticia,
     PoloProcessual,
     ProcessoJudicial,
@@ -663,10 +662,17 @@ def atribuir_grupo_processos(request):
     # processos alterada e parte não, com o cliente recebendo só um erro genérico
     with transaction.atomic():
         if remover_tudo:
-            # um DELETE no lugar de um clear() por processo, e um UPDATE no lugar
-            # de um filter().update() por processo para soltar os polos
-            GrupoProcesso.objects.filter(processo__in=processos).delete()
-            PoloProcessual.objects.filter(processo__in=processos).update(grupo=None)
+            # cada processo passa por aplicar_grupos(): sem isso o histórico e a notificação
+            # de quem saiu se perdem (grupo_processo das movimentações é SET_NULL)
+            for processo in processos:
+                aplicar_grupos(
+                    processo,
+                    grupos_adicionar=[],
+                    grupos_remover=[],
+                    ator=request.user,
+                    grupo_serventia=grupo_serventia,
+                    remover_todos=True,
+                )
         else:
             grupos_adicionar = list(
                 GrupoTrabalho.objects.filter(

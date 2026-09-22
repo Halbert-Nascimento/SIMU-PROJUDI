@@ -29,7 +29,9 @@ def _descrever_alteracoes(entraram, sairam) -> str:
     return " ".join(partes)
 
 
-def aplicar_grupos(processo, *, grupos_adicionar, grupos_remover, ator, grupo_serventia):
+def aplicar_grupos(
+    processo, *, grupos_adicionar, grupos_remover, ator, grupo_serventia, remover_todos=False,
+):
     """
     Aplica num processo as trocas de grupo pedidas pelo serventuário.
 
@@ -38,6 +40,11 @@ def aplicar_grupos(processo, *, grupos_adicionar, grupos_remover, ator, grupo_se
     de um grupo de cartório). `grupos_remover` são desvinculados. Os dois argumentos precisam
     vir com `cargo_simulacao` pré-carregado (select_related), porque a resolução do papel
     roda por grupo já vinculado, sem query nova.
+
+    `remover_todos=True` ("Desvincular Grupos") ignora `grupos_adicionar`/`grupos_remover` e
+    desvincula todo mundo, inclusive o grupo do próprio cartório — por isso o evento é
+    registrado com `grupo_processo=None` em vez de reancorar o cartório, que é o que a
+    chamada normal faz ao final.
 
     Ajusta o polo de quem entra e de quem sai, registra um único evento nos autos —
     "Autuação e Distribuição" na primeira distribuição de um processo Protocolado,
@@ -50,6 +57,10 @@ def aplicar_grupos(processo, *, grupos_adicionar, grupos_remover, ator, grupo_se
             for v in GrupoProcesso.objects.filter(processo=processo)
             .select_related("grupo__cargo_simulacao")
         }
+
+        if remover_todos:
+            grupos_remover = [v.grupo for v in vinculos.values()]
+            grupos_adicionar = []
 
         entraram = []
         sairam = []
@@ -110,20 +121,26 @@ def aplicar_grupos(processo, *, grupos_adicionar, grupos_remover, ator, grupo_se
         protocolado = processo.status_atual.nome_status == "Protocolado"
         # autuando: primeira distribuição de fato (entra grupo, ou só regulariza o polo do
         # protocolante). Remoção pura num Protocolado não autua, mas ainda vira Redistribuição.
+        # remover_todos nunca autua: entraram e polo_mudou já saem vazios/falsos nesse modo.
         autuando = protocolado and (bool(entraram) or polo_mudou)
         nome_tipo = NOME_AUTUACAO if autuando else NOME_REDISTRIBUICAO
         tipo_movimentacao = TipoMovimentacao.objects.select_related("efeito_status").get(
             nome_movimentacao=nome_tipo
         )
-        grupo_processo_serventia, _ = GrupoProcesso.objects.get_or_create(
-            processo=processo, grupo=grupo_serventia
-        )
+
+        if remover_todos:
+            grupo_processo_ancora = None
+        else:
+            grupo_processo_ancora, _ = GrupoProcesso.objects.get_or_create(
+                processo=processo, grupo=grupo_serventia
+            )
+
         registrar_movimentacao(
             processo=processo,
             autor=ator,
             tipo_movimentacao=tipo_movimentacao,
             descricao_evento=_descrever_alteracoes(entraram, sairam),
-            grupo_processo=grupo_processo_serventia,
+            grupo_processo=grupo_processo_ancora,
         )
 
         for grupo in entraram:
