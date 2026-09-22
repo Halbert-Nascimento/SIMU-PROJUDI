@@ -8,6 +8,7 @@ from __future__ import annotations
 NOME_PROTOCOLO = "Protocolo da Petição Inicial"
 NOME_CONTESTACAO = "Contestação"
 NOME_MP_DEVE_INTERVIR_SIM = "MP Deve Intervir — Sim"
+NOME_AUTUACAO = "Autuação e Distribuição"
 NOME_REDISTRIBUICAO = "Redistribuição"
 
 NOMES_TRANSVERSAIS = {
