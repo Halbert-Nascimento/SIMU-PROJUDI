@@ -8,14 +8,16 @@ from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
+from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from base.breadcrumbs import home_breadcrumb
 from base.navegacao import home_do_usuario, tem_tela_inicial
 from usuarios.forms import CadastroPublicoForm
-from usuarios.models import Usuario
+from usuarios.models import DATA_VIGENCIA_TERMOS, VERSAO_TERMOS_ATUAL, Usuario
 
-from .forms import AlterarMinhaSenhaForm, LoginForm
+from .forms import AceiteTermosForm, AlterarMinhaSenhaForm, LoginForm
 
 
 logger = logging.getLogger(__name__)
@@ -116,6 +118,67 @@ def cadastrar(request):
         form = CadastroPublicoForm()
 
     return render(request, "acesso/cadastro_usuario.html", {"form": form})
+
+
+def _contexto_documento_legal(request):
+    logado = request.user.is_authenticated
+    return {
+        # Só serve de reserva: o rodapé (base.html) linka estas páginas a
+        # partir de qualquer tela, então "voltar" de verdade é o histórico do
+        # navegador (ver onclick em termos_de_uso.html/politica_privacidade.html);
+        # este valor só é usado se o visitante chegar sem histórico ou com JS
+        # desabilitado.
+        "voltar_url": "base:home" if logado else "acesso:cadastro",
+        "versao_termos_atual": VERSAO_TERMOS_ATUAL,
+        "data_vigencia_termos": DATA_VIGENCIA_TERMOS,
+    }
+
+
+def termos_de_uso(request):
+    contexto = _contexto_documento_legal(request)
+    return render(request, "acesso/termos_de_uso.html", contexto)
+
+
+def politica_privacidade(request):
+    contexto = _contexto_documento_legal(request)
+    return render(request, "acesso/politica_privacidade.html", contexto)
+
+
+@login_required
+def aceite_termos_pendente(request):
+    """
+    Portão exibido a quem está logado mas não aceitou a versão vigente dos
+    Termos de Uso / Política de Privacidade — ver
+    `acesso.middleware.TermosAceitosMiddleware`.
+    """
+    proximo = request.POST.get("next") or request.GET.get("next") or ""
+
+    if request.method == "POST":
+        form = AceiteTermosForm(request.POST)
+        if form.is_valid():
+            request.user.aceitou_termos_em = timezone.now()
+            request.user.versao_termos_aceita = VERSAO_TERMOS_ATUAL
+            request.user.save(
+                update_fields=["aceitou_termos_em", "versao_termos_aceita"]
+            )
+            logger.info(
+                "Termos de Uso versao=%s aceitos por usuario=%s",
+                VERSAO_TERMOS_ATUAL, request.user.pk,
+            )
+
+            destino = "base:home"
+            if proximo and url_has_allowed_host_and_scheme(
+                proximo,
+                allowed_hosts={request.get_host()},
+                require_https=request.is_secure(),
+            ):
+                destino = proximo
+            return redirect(destino)
+    else:
+        form = AceiteTermosForm()
+
+    contexto = {"form": form, "next": proximo}
+    return render(request, "acesso/aceite_termos_pendente.html", contexto)
 
 
 @login_required

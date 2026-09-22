@@ -1,10 +1,24 @@
+from django import forms
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+
+from usuarios.forms import campo_aceite_termos
 
 from .services import alterar_minha_senha
 
 
 class LoginForm(AuthenticationForm):
     pass
+
+
+class AceiteTermosForm(forms.Form):
+    """Usado só pelo portão `acesso:aceite_termos_pendente` — mesmo campo que
+    `usuarios.forms.CadastroPublicoForm.aceite_termos`, para quem já tem conta
+    e precisa re-aceitar uma versão nova dos Termos/Política."""
+
+    aceite_termos = campo_aceite_termos(
+        "É necessário aceitar os Termos de Uso e a Política de "
+        "Privacidade para continuar."
+    )
 
 
 class AlterarMinhaSenhaForm(PasswordChangeForm):

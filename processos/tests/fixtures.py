@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from ciclos.models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
 from movimentacoes.models import TipoMovimentacao
@@ -17,7 +18,16 @@ from processos.models import (
     VaraServentia,
 )
 from processos.services import estado_posicoes_do_processo
-from usuarios.models import Usuario
+from usuarios.models import VERSAO_TERMOS_ATUAL, Usuario
+
+# aceite dos termos já registrado nos usuários de teste: estas fixtures cobrem
+# outras telas, não o portão acesso.middleware.TermosAceitosMiddleware. Exposto
+# sem "_" porque outros arquivos de teste deste pacote (ex.: test_atribuicao_grupos.py)
+# também criam usuários avulsos e reaproveitam esta constante.
+ACEITE_TERMOS_TESTE = {
+    "aceitou_termos_em": timezone.now(),
+    "versao_termos_aceita": VERSAO_TERMOS_ATUAL,
+}
 
 CARGOS = [
     ("Serventia/Cartório", "SC"),
@@ -46,6 +56,7 @@ class CenarioMovimentacoesTestCase(TestCase):
         cls.professor = Usuario.objects.create_user(
             username="prof.coord", email="prof.coord@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.PROFESSOR,
+            **ACEITE_TERMOS_TESTE,
         )
         cls.ciclo = CicloSimulacao.objects.create(
             nome_edicao="Ciclo de Teste", coordenador=cls.professor,
@@ -58,6 +69,7 @@ class CenarioMovimentacoesTestCase(TestCase):
             u = Usuario.objects.create_user(
                 username=f"aluno.{cod.lower()}", email=f"aluno.{cod.lower()}@teste.local",
                 password="s3nha-teste", tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+                **ACEITE_TERMOS_TESTE,
             )
             cls.ciclo.participantes.add(u)
             g = GrupoTrabalho.objects.create(ciclo=cls.ciclo, cargo_simulacao=cls.cargos[cod], nome=f"Grupo {cod}")

@@ -25,7 +25,7 @@ from processos.services import (
 )
 from usuarios.models import Usuario
 
-from .fixtures import CenarioMovimentacoesTestCase
+from .fixtures import ACEITE_TERMOS_TESTE, CenarioMovimentacoesTestCase
 
 
 class EstadoDasPosicoesTests(CenarioMovimentacoesTestCase):
@@ -455,6 +455,7 @@ class AplicacaoDeAlteracoesTests(CenarioMovimentacoesTestCase):
         aluno_novo = Usuario.objects.create_user(
             username="aluno.apa2", email="aluno.apa2@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+            **ACEITE_TERMOS_TESTE,
         )
         apa_novo.membros.add(aluno_novo)
         Notificacao.objects.all().delete()
@@ -792,10 +793,12 @@ class PodeAtribuirGruposTests(CenarioMovimentacoesTestCase):
         admin = Usuario.objects.create_user(
             username="admin.atribuicao", email="admin.atribuicao@teste.local",
             password="s3nha-teste", tipo_perfil_global=Usuario.TipoPerfilGlobal.ADMIN,
+            **ACEITE_TERMOS_TESTE,
         )
         coordenador = Usuario.objects.create_user(
             username="coord.atribuicao", email="coord.atribuicao@teste.local",
             password="s3nha-teste", tipo_perfil_global=Usuario.TipoPerfilGlobal.COORDENADOR,
+            **ACEITE_TERMOS_TESTE,
         )
 
         self.assertFalse(pode_atribuir_grupos(self.professor, processo))
@@ -814,6 +817,7 @@ class PodeAtribuirGruposTests(CenarioMovimentacoesTestCase):
         aluno_alheio = Usuario.objects.create_user(
             username="aluno.alheio", email="aluno.alheio@teste.local",
             password="s3nha-teste", tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+            **ACEITE_TERMOS_TESTE,
         )
         grupo_sc_alheio.membros.add(aluno_alheio)
 
