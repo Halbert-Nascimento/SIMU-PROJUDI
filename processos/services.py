@@ -29,6 +29,7 @@ def _descrever_alteracoes(entraram, sairam) -> str:
 
 def aplicar_grupos(
     processo, *, grupos_adicionar, grupos_remover, ator, grupo_serventia, remover_todos=False,
+    tipos_movimentacao=None,
 ):
     """
     Aplica num processo as trocas de grupo pedidas pelo serventuário.
@@ -43,6 +44,10 @@ def aplicar_grupos(
     desvincula todo mundo, inclusive o grupo do próprio cartório — por isso o evento é
     registrado com `grupo_processo=None` em vez de reancorar o cartório, que é o que a
     chamada normal faz ao final.
+
+    `tipos_movimentacao` aceita um dict pré-buscado {nome_movimentacao: TipoMovimentacao} —
+    quem chama em lote (um processo por iteração) evita repetir o mesmo SELECT a cada volta.
+    Sem ele, busca avulsa por nome, como sempre.
 
     Ajusta o polo de quem entra e de quem sai, registra um único evento nos autos —
     "Autuação e Distribuição" na primeira distribuição de um processo Protocolado,
@@ -122,9 +127,12 @@ def aplicar_grupos(
         # remover_todos nunca autua: entraram e polo_mudou já saem vazios/falsos nesse modo.
         autuando = protocolado and (bool(entraram) or polo_mudou)
         nome_tipo = NOME_AUTUACAO if autuando else NOME_REDISTRIBUICAO
-        tipo_movimentacao = TipoMovimentacao.objects.select_related("efeito_status").get(
-            nome_movimentacao=nome_tipo
-        )
+        if tipos_movimentacao is not None:
+            tipo_movimentacao = tipos_movimentacao[nome_tipo]
+        else:
+            tipo_movimentacao = TipoMovimentacao.objects.select_related("efeito_status").get(
+                nome_movimentacao=nome_tipo
+            )
 
         if remover_todos:
             grupo_processo_ancora = None

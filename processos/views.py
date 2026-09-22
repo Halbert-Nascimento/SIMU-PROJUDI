@@ -31,6 +31,7 @@ from .permissions import (
 )
 from .services import aplicar_grupos
 from .utils import validar_multiplos_arquivos
+from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
 from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
 from movimentacoes.permissions import grupo_processo_do_usuario, pode_movimentar_processo
 from movimentacoes.services import registrar_movimentacao
@@ -658,6 +659,15 @@ def atribuir_grupo_processos(request):
         ).select_related("status_atual")
     )
 
+    # pré-busca dos dois tipos possíveis de movimentação: aplicar_grupos() escolhe um deles
+    # por processo, e sem isso o laço abaixo repetiria o mesmo SELECT a cada volta
+    tipos_movimentacao = {
+        t.nome_movimentacao: t
+        for t in TipoMovimentacao.objects.select_related("efeito_status").filter(
+            nome_movimentacao__in=[NOME_AUTUACAO, NOME_REDISTRIBUICAO]
+        )
+    }
+
     # atomic(): em autocommit uma falha no meio do laço deixaria parte dos
     # processos alterada e parte não, com o cliente recebendo só um erro genérico
     with transaction.atomic():
@@ -672,6 +682,7 @@ def atribuir_grupo_processos(request):
                     ator=request.user,
                     grupo_serventia=grupo_serventia,
                     remover_todos=True,
+                    tipos_movimentacao=tipos_movimentacao,
                 )
         else:
             grupos_adicionar = list(
@@ -691,6 +702,7 @@ def atribuir_grupo_processos(request):
                     grupos_remover=grupos_remover,
                     ator=request.user,
                     grupo_serventia=grupo_serventia,
+                    tipos_movimentacao=tipos_movimentacao,
                 )
 
     return JsonResponse({"sucesso": True, "atualizados": len(processos)})

@@ -2,13 +2,17 @@ from __future__ import annotations
 
 import json
 
+from django.db import connection
+from django.test.utils import CaptureQueriesContext
 from django.urls import reverse
 
 from ciclos.models import GrupoTrabalho
-from movimentacoes.models import MovimentacaoProcessual
+from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
+from movimentacoes.models import MovimentacaoProcessual, TipoMovimentacao
 from notificacoes.models import Notificacao, TipoNotificacao
 from processos.models import GrupoProcesso, PoloProcessual
 from processos.permissions import pode_editar_processo, pode_visualizar_processo
+from processos.services import aplicar_grupos
 
 from .fixtures import CenarioMovimentacoesTestCase
 
@@ -72,6 +76,42 @@ class ExtrasProcessosTests(CenarioMovimentacoesTestCase):
             .values_list("grupo__nome", flat=True)
         )
         self.assertEqual(nomes_sc, ["Grupo SC", "Grupo SC-2"])
+
+    def test_aplicar_grupos_tipos_movimentacao_prebuscado_evita_select_repetido(self):
+        """Regressão de performance: quem chama aplicar_grupos() em lote (um processo por
+        iteração) pode pré-buscar os dois TipoMovimentacao possíveis e passar pronto —
+        sem isso seria o mesmo SELECT repetido a cada processo do lote."""
+        tipos_movimentacao = {
+            t.nome_movimentacao: t
+            for t in TipoMovimentacao.objects.select_related("efeito_status").filter(
+                nome_movimentacao__in=[NOME_AUTUACAO, NOME_REDISTRIBUICAO]
+            )
+        }
+
+        def grupo_apa_fresco():
+            return list(
+                GrupoTrabalho.objects.filter(pk=self.grupos["APA"].pk)
+                .select_related("cargo_simulacao")
+            )
+
+        processo_sem_cache = self.criar_processo_protocolado()
+        grupos_1 = grupo_apa_fresco()
+        with CaptureQueriesContext(connection) as sem_cache:
+            aplicar_grupos(
+                processo_sem_cache, grupos_adicionar=grupos_1, grupos_remover=[],
+                ator=self.usuarios["SC"], grupo_serventia=self.grupos["SC"],
+            )
+
+        processo_com_cache = self.criar_processo_protocolado()
+        grupos_2 = grupo_apa_fresco()
+        with CaptureQueriesContext(connection) as com_cache:
+            aplicar_grupos(
+                processo_com_cache, grupos_adicionar=grupos_2, grupos_remover=[],
+                ator=self.usuarios["SC"], grupo_serventia=self.grupos["SC"],
+                tipos_movimentacao=tipos_movimentacao,
+            )
+
+        self.assertEqual(len(sem_cache.captured_queries) - len(com_cache.captured_queries), 1)
 
     def test_pode_editar_processo_nao_confundido_com_pode_visualizar(self):
         processo = self.criar_processo_protocolado(autor=self.usuarios["APA"], segredo_justica=True)
