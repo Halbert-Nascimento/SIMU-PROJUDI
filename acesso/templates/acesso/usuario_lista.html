@@ -94,6 +94,33 @@
                        class="w-3.5 h-3.5 accent-acao">
                 Ativo
             </label>
+
+            <!-- Seção retrátil de senha — sempre recolhida e em branco ao abrir o modal
+                 (ver openModal no script abaixo), para nunca reaplicar num usuário a senha
+                 digitada e não confirmada para outro. -->
+            <div class="border border-contorno">
+                <div id="senha-accordion-header" class="accordion-item-closed">
+                    <i class="fa-solid fa-caret-right accordion-icon"></i>
+                    Alterar Senha
+                </div>
+                <div id="senha-accordion-content" class="accordion-content hidden px-4 py-[14px] bg-white">
+                    <p class="text-apoio text-rotulo mb-3">
+                        Deixe ambos os campos em branco se não desejar alterar a senha.
+                    </p>
+                    {% campo label="Nova senha" para="modal-nova-senha" %}
+                        <div class="relative">
+                            <input type="password" id="modal-nova-senha" name="nova_senha"
+                                   class="{% classe_campo %}" autocomplete="new-password">
+                        </div>
+                    {% endcampo %}
+                    {% campo label="Confirmação" para="modal-confirmacao-senha" %}
+                        <div class="relative">
+                            <input type="password" id="modal-confirmacao-senha" name="confirmacao_senha"
+                                   class="{% classe_campo %}" autocomplete="new-password">
+                        </div>
+                    {% endcampo %}
+                </div>
+            </div>
         </div>
 
         <!-- Rodapé de ações do guia (seção 07): #fbfbfc com borda superior.
@@ -121,18 +148,69 @@
         const activeInput = document.getElementById('modal-is-active');
         const openButtons = document.querySelectorAll('[data-modal-open]');
 
+        const novaSenhaInput = document.getElementById('modal-nova-senha');
+        const confirmacaoSenhaInput = document.getElementById('modal-confirmacao-senha');
+        const senhaAccordionHeader = document.getElementById('senha-accordion-header');
+        const senhaAccordionContent = document.getElementById('senha-accordion-content');
+        const senhaAccordionIcon = senhaAccordionHeader.querySelector('.accordion-icon');
+
+        function fecharAccordionSenha() {
+            senhaAccordionContent.classList.add('hidden');
+            senhaAccordionHeader.classList.remove('accordion-item-aberto');
+            senhaAccordionHeader.classList.add('accordion-item-closed');
+            senhaAccordionIcon.classList.remove('fa-caret-down');
+            senhaAccordionIcon.classList.add('fa-caret-right');
+        }
+
+        function limparCampoSenha(input) {
+            input.value = '';
+            // Volta ao type="password": sem isto, o olho clicado antes deixaria a próxima
+            // senha digitada (de outro usuário) visível em texto puro por padrão.
+            input.type = 'password';
+            const icone = input.parentElement.querySelector('i');
+            if (icone) {
+                icone.className = 'fa-solid fa-eye';
+                icone.style.color = '#6b7280';
+            }
+        }
+
+        senhaAccordionHeader.addEventListener('click', function () {
+            const fechado = senhaAccordionContent.classList.contains('hidden');
+            if (fechado) {
+                senhaAccordionContent.classList.remove('hidden');
+                senhaAccordionHeader.classList.remove('accordion-item-closed');
+                senhaAccordionHeader.classList.add('accordion-item-aberto');
+                senhaAccordionIcon.classList.remove('fa-caret-right');
+                senhaAccordionIcon.classList.add('fa-caret-down');
+            } else {
+                fecharAccordionSenha();
+            }
+        });
+
         function openModal(button) {
             userIdInput.value = button.dataset.userId;
             usernameSpan.textContent = button.dataset.username;
             emailSpan.textContent = button.dataset.email;
             tipoSelect.value = button.dataset.tipo;
             activeInput.checked = button.dataset.active === 'true';
+
+            // Sempre em branco e recolhido: reabrir para outro usuário (ou para o mesmo)
+            // nunca deve carregar uma senha digitada e não confirmada anteriormente.
+            limparCampoSenha(novaSenhaInput);
+            limparCampoSenha(confirmacaoSenhaInput);
+            fecharAccordionSenha();
+
             // .modal-fundo alterna por `open`, não por `hidden` — ver componentes.css
             overlay.classList.add('open');
         }
 
         function closeModal() {
             overlay.classList.remove('open');
+            // Segunda rede de segurança: cancelar sem salvar também não deve deixar uma
+            // senha digitada à espera da próxima abertura.
+            limparCampoSenha(novaSenhaInput);
+            limparCampoSenha(confirmacaoSenhaInput);
+            fecharAccordionSenha();
         }
 
         openButtons.forEach((button) => {

@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
 
+from acesso.forms_admin_usuarios import AtualizarUsuarioForm
+from acesso.permissions import pode_editar_usuario
 from avaliacoes.models import FeedbackProfessor
 from ciclos.models import (
     CargoSimulacao,
@@ -278,3 +280,320 @@ class LoginViewUsuarioLogadoTests(TestCase):
         self.client.force_login(self.professor)
         resposta = self.client.post(reverse("acesso:logout"), follow=True)
         self.assertTemplateUsed(resposta, "acesso/login.html")
+
+
+class PodeEditarUsuarioTests(TestCase):
+    """Hierarquia de acesso.permissions.pode_editar_usuario — usada pelo modal de gestão e por acesso/services.py."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = _criar_usuario("admin.senha", Usuario.TipoPerfilGlobal.ADMIN)
+        cls.coordenador = _criar_usuario("coord.senha", Usuario.TipoPerfilGlobal.COORDENADOR)
+        cls.professor = _criar_usuario("prof.senha", Usuario.TipoPerfilGlobal.PROFESSOR)
+        cls.aluno = _criar_usuario("aluno.senha", Usuario.TipoPerfilGlobal.ALUNO)
+        cls.pendente = _criar_usuario("pendente.senha", Usuario.TipoPerfilGlobal.PENDENTE)
+
+    def test_autoalteracao_sempre_permitida(self):
+        for usuario in (self.admin, self.coordenador, self.professor, self.aluno, self.pendente):
+            with self.subTest(usuario=usuario.username):
+                self.assertTrue(pode_editar_usuario(usuario, usuario))
+
+    def test_admin_altera_qualquer_um(self):
+        for alvo in (self.coordenador, self.professor, self.aluno, self.pendente):
+            with self.subTest(alvo=alvo.username):
+                self.assertTrue(pode_editar_usuario(self.admin, alvo))
+
+    def test_coordenador_altera_professor_aluno_e_pendente(self):
+        for alvo in (self.professor, self.aluno, self.pendente):
+            with self.subTest(alvo=alvo.username):
+                self.assertTrue(pode_editar_usuario(self.coordenador, alvo))
+
+    def test_coordenador_nao_altera_outro_coordenador_nem_admin(self):
+        outro_coordenador = _criar_usuario("coord.senha.2", Usuario.TipoPerfilGlobal.COORDENADOR)
+        for alvo in (outro_coordenador, self.admin):
+            with self.subTest(alvo=alvo.username):
+                self.assertFalse(pode_editar_usuario(self.coordenador, alvo))
+
+    def test_professor_altera_aluno_e_pendente(self):
+        for alvo in (self.aluno, self.pendente):
+            with self.subTest(alvo=alvo.username):
+                self.assertTrue(pode_editar_usuario(self.professor, alvo))
+
+    def test_professor_nao_altera_professor_coordenador_nem_admin(self):
+        outro_professor = _criar_usuario("prof.senha.2", Usuario.TipoPerfilGlobal.PROFESSOR)
+        for alvo in (outro_professor, self.coordenador, self.admin):
+            with self.subTest(alvo=alvo.username):
+                self.assertFalse(pode_editar_usuario(self.professor, alvo))
+
+    def test_aluno_nao_altera_ninguem_alem_de_si(self):
+        self.assertFalse(pode_editar_usuario(self.aluno, self.pendente))
+        self.assertFalse(pode_editar_usuario(self.aluno, self.professor))
+
+
+class AtualizarUsuarioFormSenhaTests(TestCase):
+    """Seção "Alterar Senha" do modal de gestão — acesso/forms_admin_usuarios.py."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = _criar_usuario("admin.form", Usuario.TipoPerfilGlobal.ADMIN)
+        cls.coordenador = _criar_usuario("coord.form", Usuario.TipoPerfilGlobal.COORDENADOR)
+        cls.outro_coordenador = _criar_usuario("coord.form.2", Usuario.TipoPerfilGlobal.COORDENADOR)
+        cls.professor = _criar_usuario("prof.form", Usuario.TipoPerfilGlobal.PROFESSOR)
+
+    def test_campos_de_senha_vazios_nao_altera_hash(self):
+        hash_antes = self.professor.password
+        form = AtualizarUsuarioForm(
+            {
+                "is_active": "on",
+                "tipo_perfil_global": Usuario.TipoPerfilGlobal.PROFESSOR,
+                "nova_senha": "",
+                "confirmacao_senha": "",
+            },
+            ator=self.coordenador,
+            alvo=self.professor,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        form.aplicar()
+        self.professor.refresh_from_db()
+        self.assertEqual(hash_antes, self.professor.password)
+
+    def test_preencher_apenas_um_campo_de_senha_e_invalido(self):
+        form = AtualizarUsuarioForm(
+            {
+                "is_active": "on",
+                "tipo_perfil_global": Usuario.TipoPerfilGlobal.PROFESSOR,
+                "nova_senha": "Senha-Nova-Forte-1",
+                "confirmacao_senha": "",
+            },
+            ator=self.coordenador,
+            alvo=self.professor,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("confirmacao_senha", form.errors)
+
+    def test_senhas_diferentes_e_invalido(self):
+        form = AtualizarUsuarioForm(
+            {
+                "is_active": "on",
+                "tipo_perfil_global": Usuario.TipoPerfilGlobal.PROFESSOR,
+                "nova_senha": "Senha-Nova-Forte-1",
+                "confirmacao_senha": "Senha-Diferente-2",
+            },
+            ator=self.coordenador,
+            alvo=self.professor,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("confirmacao_senha", form.errors)
+
+    def test_senha_fraca_dispara_validate_password(self):
+        form = AtualizarUsuarioForm(
+            {
+                "is_active": "on",
+                "tipo_perfil_global": Usuario.TipoPerfilGlobal.PROFESSOR,
+                "nova_senha": "12345678",
+                "confirmacao_senha": "12345678",
+            },
+            ator=self.coordenador,
+            alvo=self.professor,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("nova_senha", form.errors)
+
+    def test_coordenador_redefine_senha_de_professor(self):
+        form = AtualizarUsuarioForm(
+            {
+                "is_active": "on",
+                "tipo_perfil_global": Usuario.TipoPerfilGlobal.PROFESSOR,
+                "nova_senha": "Senha-Nova-Forte-1",
+                "confirmacao_senha": "Senha-Nova-Forte-1",
+            },
+            ator=self.coordenador,
+            alvo=self.professor,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        form.aplicar()
+        self.professor.refresh_from_db()
+        self.assertTrue(self.professor.check_password("Senha-Nova-Forte-1"))
+
+    def test_coordenador_nao_altera_dados_nem_senha_de_admin(self):
+        """Regressão do achado de segurança: tipo ATUAL do alvo, não só o de destino."""
+        form = AtualizarUsuarioForm(
+            {
+                "is_active": "on",
+                "tipo_perfil_global": Usuario.TipoPerfilGlobal.PROFESSOR,
+                "nova_senha": "Senha-Nova-Forte-1",
+                "confirmacao_senha": "Senha-Nova-Forte-1",
+            },
+            ator=self.coordenador,
+            alvo=self.admin,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("__all__", form.errors)
+
+    def test_coordenador_nao_altera_nem_status_de_outro_coordenador_sem_mexer_em_senha(self):
+        """
+        pode_editar_usuario() em clean() é um gate do formulário inteiro, não só da senha:
+        um Coordenador não pode nem alternar "Ativo" de outro Coordenador por este modal,
+        mesmo sem tocar nos campos de senha — é a mesma regra de hierarquia de
+        acesso/permissions.py, aplicada de forma consistente ao invés de só à senha.
+        """
+        form = AtualizarUsuarioForm(
+            {
+                "is_active": "off",
+                "tipo_perfil_global": Usuario.TipoPerfilGlobal.COORDENADOR,
+                "nova_senha": "",
+                "confirmacao_senha": "",
+            },
+            ator=self.coordenador,
+            alvo=self.outro_coordenador,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("__all__", form.errors)
+
+    def test_coordenador_promove_professor_a_coordenador_e_define_senha_no_mesmo_envio(self):
+        """
+        Regressão: aplicar() mudava self.alvo.tipo_perfil_global ANTES de chamar
+        redefinir_senha(), que reavalia pode_editar_usuario() contra esse tipo já mutado.
+        Um Coordenador promovendo um Professor a Coordenador e definindo senha nova no
+        mesmo envio via um PermissionError não tratado (clean() aprova contra o tipo
+        original do alvo; a ordem em aplicar() não pode invalidar essa aprovação).
+        """
+        form = AtualizarUsuarioForm(
+            {
+                "is_active": "on",
+                "tipo_perfil_global": Usuario.TipoPerfilGlobal.COORDENADOR,
+                "nova_senha": "Senha-Nova-Forte-1",
+                "confirmacao_senha": "Senha-Nova-Forte-1",
+            },
+            ator=self.coordenador,
+            alvo=self.professor,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        form.aplicar()
+
+        self.professor.refresh_from_db()
+        self.assertEqual(self.professor.tipo_perfil_global, Usuario.TipoPerfilGlobal.COORDENADOR)
+        self.assertTrue(self.professor.check_password("Senha-Nova-Forte-1"))
+
+
+class MinhaContaViewTests(TestCase):
+    """Autoalteração de senha — acesso/views.py:minha_conta."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.usuario = _criar_usuario("autoalteracao", Usuario.TipoPerfilGlobal.ALUNO)
+        cls.admin = _criar_usuario("autoalteracao.admin", Usuario.TipoPerfilGlobal.ADMIN)
+
+    def test_senha_atual_incorreta_e_rejeitada(self):
+        self.client.force_login(self.usuario)
+        resposta = self.client.post(
+            reverse("acesso:minha_conta"),
+            {
+                "old_password": "senha-errada",
+                "new_password1": "Senha-Nova-Forte-1",
+                "new_password2": "Senha-Nova-Forte-1",
+            },
+        )
+        self.assertEqual(resposta.status_code, 200)
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.check_password("s3nha-teste"))
+        # O erro aparece só inline (form.<campo>.errors), não duplicado via messages —
+        # a view reexibe o form no mesmo request, então propagar_erros_form duplicaria.
+        self.assertEqual(len(list(resposta.context["messages"])), 0)
+        self.assertTrue(resposta.context["form"].errors.get("old_password"))
+
+    def test_senha_nova_fraca_e_rejeitada(self):
+        self.client.force_login(self.usuario)
+        resposta = self.client.post(
+            reverse("acesso:minha_conta"),
+            {
+                "old_password": "s3nha-teste",
+                "new_password1": "12345678",
+                "new_password2": "12345678",
+            },
+        )
+        self.assertEqual(resposta.status_code, 200)
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.check_password("s3nha-teste"))
+
+    def test_troca_com_sucesso_mantem_sessao_ativa(self):
+        self.client.force_login(self.usuario)
+        resposta = self.client.post(
+            reverse("acesso:minha_conta"),
+            {
+                "old_password": "s3nha-teste",
+                "new_password1": "Senha-Nova-Forte-1",
+                "new_password2": "Senha-Nova-Forte-1",
+            },
+        )
+        self.assertRedirects(resposta, reverse("acesso:minha_conta"))
+        self.usuario.refresh_from_db()
+        self.assertTrue(self.usuario.check_password("Senha-Nova-Forte-1"))
+
+        # Sessão não foi derrubada pela troca de senha (update_session_auth_hash).
+        resposta_seguinte = self.client.get(reverse("acesso:minha_conta"))
+        self.assertEqual(resposta_seguinte.status_code, 200)
+
+    def test_aluno_sem_ciclo_ainda_alcanca_minha_conta(self):
+        """
+        Regressão: AlunoSemCicloMiddleware prendia o Aluno sem ciclo numa lista fechada de
+        rotas liberadas (ver ciclos/middleware.py) e não incluía minha_conta — o Aluno preso
+        na tela de boas-vindas não conseguia trocar a própria senha.
+        """
+        self.assertFalse(self.usuario.ciclos_participados.exists())
+        self.client.force_login(self.usuario)
+
+        resposta = self.client.get(reverse("acesso:minha_conta"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertTemplateUsed(resposta, "acesso/minha_conta.html")
+
+    def test_tela_mostra_breadcrumb_e_link_de_volta(self):
+        """A tela precisa deixar claro onde o usuário está e como voltar ao painel/área dele."""
+        self.client.force_login(self.usuario)
+
+        resposta = self.client.get(reverse("acesso:minha_conta"))
+
+        self.assertContains(resposta, "Minha Conta")
+        self.assertContains(resposta, "Voltar para")
+        self.assertContains(resposta, reverse("base:home"))
+
+    def test_nao_mostra_mensagem_pendente_de_outra_tela(self):
+        """
+        Regressão: minha_conta.html incluía _mensagens.html sem tag="conta", então
+        qualquer mensagem pendente da sessão (de uma ação em outra aba/tela) aparecia
+        aqui — mesmo sem relação nenhuma com troca de senha.
+        """
+        self.client.force_login(self.admin)
+        # usuario_atualizar sem user_id enfileira uma mensagem de erro sem extra_tags e
+        # redireciona sem renderizar nada — a mensagem fica pendente na sessão.
+        self.client.post(reverse("acesso:usuario_atualizar"), {})
+
+        resposta = self.client.get(reverse("acesso:minha_conta"))
+
+        self.assertNotContains(resposta, "Usuario alvo nao informado")
+
+
+class PainelAdministrativoModalSenhaTests(TestCase):
+    """
+    Regressão: painel_administrativo.html tem um modal de "Editar/Aprovar Usuário"
+    inteiramente separado do de usuario_lista.html (mesma view usuario_atualizar, HTML e
+    JS próprios — abrirEdicao/fecharEdicao, ids "edicao-*"). A seção "Alterar Senha" foi
+    implementada primeiro só em usuario_lista.html; este teste garante que o modal
+    realmente usado (painel_administrativo é o LOGIN_REDIRECT_URL) também a tenha.
+    """
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = _criar_usuario("admin.painel.senha", Usuario.TipoPerfilGlobal.ADMIN)
+
+    def test_modal_do_painel_tem_secao_de_alterar_senha(self):
+        self.client.force_login(self.admin)
+
+        resposta = self.client.get(reverse("acesso:painel_administrativo"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, "Alterar Senha")
+        self.assertContains(resposta, 'name="nova_senha"')
+        self.assertContains(resposta, 'name="confirmacao_senha"')
+        self.assertContains(resposta, 'id="edicao-senha-accordion-header"')

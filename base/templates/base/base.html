@@ -189,7 +189,12 @@
                             title="Diminuir fonte" aria-label="Diminuir tamanho da fonte">A-</button>
                 </div>
                 {% if user.is_authenticated %}
-                    <form id="logout-form" method="post" action="{% url 'acesso:logout' %}" class="ml-4">
+                    <a href="{% url 'acesso:minha_conta' %}"
+                       class="ml-4 flex items-center hover:text-white transition-colors"
+                       title="Minha conta" aria-label="Minha conta">
+                        <i class="fa-solid fa-user-lock text-base"></i>
+                    </a>
+                    <form id="logout-form" method="post" action="{% url 'acesso:logout' %}" class="ml-2">
                         {% csrf_token %}
                         <button type="submit" class="{% classe_botao 'sobre-navy' padding=True %} flex items-center gap-1.5">
                             <i class="fa-solid fa-right-from-bracket"></i> Sair
