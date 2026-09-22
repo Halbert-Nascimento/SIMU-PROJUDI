@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.db import transaction
 
-from movimentacoes.catalogo import NOME_REDISTRIBUICAO
+from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
 from movimentacoes.models import TipoMovimentacao
 from movimentacoes.services import registrar_movimentacao
 from notificacoes.services import (
@@ -11,8 +11,6 @@ from notificacoes.services import (
 )
 
 from .models import GrupoProcesso, PoloProcessual
-
-NOME_AUTUACAO = "Autuação e Distribuição"
 
 _POLO_DO_CARGO = {
     "APA": PoloProcessual.TipoPolo.ATIVO,
