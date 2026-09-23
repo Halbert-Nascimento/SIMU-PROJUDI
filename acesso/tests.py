@@ -645,6 +645,21 @@ class TermosAceitosMiddlewareTests(TestCase):
 
         self.assertEqual(resposta.status_code, 200)
 
+    def test_post_bloqueado_nao_carrega_next_no_redirect(self):
+        """Regressão: se o `next` de um POST bloqueado fosse reaproveitado
+        depois do aceite, o redirect final bateria via GET numa view que só
+        aceita POST (ex.: ciclos:ativar_ciclo, do formulário de troca de
+        ciclo no cabeçalho de toda página) e o Django devolveria 405."""
+        self.client.force_login(self.pendente)
+
+        resposta = self.client.post(reverse("acesso:minha_conta"), {})
+
+        self.assertRedirects(
+            resposta,
+            reverse("acesso:aceite_termos_pendente"),
+            fetch_redirect_response=False,
+        )
+
     def test_contagem_de_notificacoes_nao_e_redirecionada(self):
         """Regressão: o sino do cabeçalho consulta essa rota a cada 30s
         mesmo na tela de aceite — sem a liberação, vira um loop de redirect."""
@@ -661,6 +676,27 @@ class TermosAceitosMiddlewareTests(TestCase):
         resposta = self.client.get(reverse("acesso:minha_conta"))
 
         self.assertEqual(resposta.status_code, 200)
+
+    def test_usuario_com_versao_antiga_tambem_e_redirecionado(self):
+        """A comparação é sempre contra VERSAO_TERMOS_ATUAL, não contra
+        "aceitou alguma vez" — quem aceitou uma versão velha (não vazia, só
+        desatualizada) cai no portão do mesmo jeito de quem nunca aceitou."""
+        versao_antiga = Usuario.objects.create_user(
+            username="aluno.versao.antiga",
+            email="aluno.versao.antiga@teste.local",
+            password="s3nha-teste",
+            tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+            aceitou_termos_em=timezone.now(),
+            versao_termos_aceita="0.9",
+        )
+        self.client.force_login(versao_antiga)
+
+        resposta = self.client.get(reverse("acesso:minha_conta"))
+
+        self.assertEqual(resposta.status_code, 302)
+        self.assertTrue(
+            resposta.url.startswith(reverse("acesso:aceite_termos_pendente"))
+        )
 
     def test_usuario_anonimo_nao_e_afetado_pelo_portao(self):
         resposta = self.client.get(reverse("acesso:login"))
@@ -757,4 +793,44 @@ class AceiteTermosPendenteViewTests(TestCase):
 
         self.assertRedirects(
             resposta, reverse("base:home"), fetch_redirect_response=False
+        )
+
+
+class CadastroViewAceiteTermosTests(TestCase):
+    """Cobre a view acesso:cadastro de ponta a ponta com o checkbox de aceite
+    — se o include de _aceite_termos_campo.html sumir de cadastro_usuario.html,
+    é esta suíte que quebra, não a de usuarios.tests (que só testa o form)."""
+
+    def _dados(self, **sobrescritas):
+        dados = {
+            "first_name": "Maria Souza",
+            "email": "maria.souza.cadastro@teste.local",
+            "password1": "senha-forte-123",
+            "password2": "senha-forte-123",
+        }
+        dados.update(sobrescritas)
+        return dados
+
+    def test_tela_de_cadastro_mostra_o_checkbox_de_aceite(self):
+        resposta = self.client.get(reverse("acesso:cadastro"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertContains(resposta, 'name="aceite_termos"')
+
+    def test_post_sem_marcar_aceite_nao_cria_conta(self):
+        resposta = self.client.post(reverse("acesso:cadastro"), self._dados())
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertFalse(
+            Usuario.objects.filter(email="maria.souza.cadastro@teste.local").exists()
+        )
+
+    def test_post_marcando_aceite_cria_conta(self):
+        resposta = self.client.post(
+            reverse("acesso:cadastro"), self._dados(aceite_termos="on")
+        )
+
+        self.assertRedirects(resposta, reverse("acesso:login"))
+        self.assertTrue(
+            Usuario.objects.filter(email="maria.souza.cadastro@teste.local").exists()
         )

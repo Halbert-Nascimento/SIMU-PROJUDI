@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import os
 import sys
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from types import SimpleNamespace as Obj
 
@@ -233,7 +233,7 @@ def ctx_documento_legal(logado=False):
         "email_contato_dpo": "contato@simu-projudi.local",
         "foro_comarca": "Goiânia/GO",
         "versao_termos_atual": "1.0",
-        "data_vigencia_termos": "2026-09-22",
+        "data_vigencia_termos": date(2026, 9, 22),
     }
 
 

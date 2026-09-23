@@ -21,14 +21,16 @@ from processos.models import (
 )
 from usuarios.models import VERSAO_TERMOS_ATUAL, Usuario
 
-# aceite dos termos já registrado nos usuários de teste: estas fixtures cobrem
-# outras telas, não o portão acesso.middleware.TermosAceitosMiddleware. Exposto
-# sem "_" porque outros arquivos de teste deste pacote também criam usuários
-# avulsos e podem reaproveitar esta constante.
-ACEITE_TERMOS_TESTE = {
-    "aceitou_termos_em": timezone.now(),
-    "versao_termos_aceita": VERSAO_TERMOS_ATUAL,
-}
+def aceite_termos_teste():
+    """Aceite dos termos já registrado nos usuários de teste: estas fixtures
+    cobrem outras telas, não o portão acesso.middleware.TermosAceitosMiddleware.
+    Função, não dicionário de módulo — um dicionário fixaria `timezone.now()`
+    no instante em que o módulo é importado, não em que o usuário nasce."""
+    return {
+        "aceitou_termos_em": timezone.now(),
+        "versao_termos_aceita": VERSAO_TERMOS_ATUAL,
+    }
+
 
 CARGOS = [
     ("Serventia/Cartório", "SC"),
@@ -57,7 +59,7 @@ class CenarioMovimentacoesTestCase(TestCase):
         cls.professor = Usuario.objects.create_user(
             username="prof.coord", email="prof.coord@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.PROFESSOR,
-            **ACEITE_TERMOS_TESTE,
+            **aceite_termos_teste(),
         )
         cls.ciclo = CicloSimulacao.objects.create(
             nome_edicao="Ciclo de Teste", coordenador=cls.professor,
@@ -70,7 +72,7 @@ class CenarioMovimentacoesTestCase(TestCase):
             u = Usuario.objects.create_user(
                 username=f"aluno.{cod.lower()}", email=f"aluno.{cod.lower()}@teste.local",
                 password="s3nha-teste", tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
-                **ACEITE_TERMOS_TESTE,
+                **aceite_termos_teste(),
             )
             cls.ciclo.participantes.add(u)
             g = GrupoTrabalho.objects.create(ciclo=cls.ciclo, cargo_simulacao=cls.cargos[cod], nome=f"Grupo {cod}")
