@@ -270,3 +270,54 @@
 /* Indicador que pede ação: mesma geometria, trio de erro do guia (seção 02). */
 .card-kpi--alerta { border-top-color: #b33a3a; }
 .card-kpi--alerta .numero { color: #b33a3a; }
+
+/* ── Estrelas ───────────────────────────────────────────────────────────────
+   Avaliação de 1 a 5. `.estrelas` só exibe; `.estrelas-campo` é o seletor.
+   Cheia é ícone sólido e vazia é de contorno, então a diferença não depende só
+   de cor: cheia em #1f4f9c (ação), vazia em #d3d7de (borda de campo). Dentro de
+   uma `.pill`, `.herda` deixa a estrela na cor do estado. */
+.estrelas { display: inline-flex; gap: 2px; white-space: nowrap; }
+.estrelas .cheia { color: #1f4f9c; }
+.estrelas .vazia { color: #d3d7de; }
+.estrelas.herda .cheia, .estrelas.herda .vazia { color: inherit; }
+
+/* Os rádios vêm do maior para o menor e a linha é invertida: o "~" (irmãos
+   seguintes) enxerga as estrelas menores, e o preenchimento não precisa de JS. */
+.estrelas-campo {
+    display: inline-flex; flex-direction: row-reverse; justify-content: flex-end;
+    gap: 2px; border: 0; margin: 0; padding: 0; min-width: 0;
+}
+.estrelas-campo label {
+    cursor: pointer; padding: 2px 3px; border: 1px solid transparent;
+    line-height: 1; color: #d3d7de;
+    font-size: calc(28px * var(--escala-fonte, 1));
+}
+.estrelas-campo label::before {
+    content: "\f005"; font-family: "Font Awesome 6 Free"; font-weight: 400;
+}
+.estrelas-campo input:checked ~ label { color: #1f4f9c; }
+.estrelas-campo input:checked ~ label::before { font-weight: 900; }
+/* Com o cursor no campo, a prévia manda: apaga o marcado e pinta até a estrela
+   sob o cursor. Mesma especificidade, e a ordem faz a prévia vencer. */
+.estrelas-campo:hover input:checked ~ label { color: #d3d7de; }
+.estrelas-campo:hover input:checked ~ label::before { font-weight: 400; }
+.estrelas-campo:hover input ~ label:hover,
+.estrelas-campo:hover label:hover ~ label { color: #1f4f9c; }
+.estrelas-campo:hover input ~ label:hover::before,
+.estrelas-campo:hover label:hover ~ label::before { font-weight: 900; }
+/* Foco só por borda, como os campos do guia. */
+.estrelas-campo input:focus-visible + label { border-color: #1f4f9c; }
+
+/* ── Barra de filtro ───────────────────────────────────────────────────────
+   Guia seção 05: gap 12px, alinhada ao fim, ações à direita. O botão (~33,75px) é
+   mais baixo que o campo (37,2px) e os dois números vêm do guia: quem cede é o
+   botão, e a altura do campo fica escrita em calc(). */
+.barra-filtro {
+    background: #fbfbfc; border: 1px solid #e2e5ea; padding: 14px 16px;
+    display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+}
+.barra-filtro .acoes { margin-left: auto; display: flex; gap: 8px; }
+.barra-filtro .acoes > * {
+    min-height: calc(8px + 8px + (12px * 1.6) + 2px);
+    display: inline-flex; align-items: center; justify-content: center;
+}

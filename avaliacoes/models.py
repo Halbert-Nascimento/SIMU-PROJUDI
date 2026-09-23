@@ -1,7 +1,10 @@
 from __future__ import annotations
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+
+from .estrelas import NOTA_MAX, NOTA_MIN, nota_valida
 
 
 class FeedbackProfessor(models.Model):
@@ -40,3 +43,10 @@ class FeedbackProfessor(models.Model):
 
     def __str__(self) -> str:
         return f"Feedback #{self.pk} — {self.movimentacao}"
+
+    # clean() não gera migration: o admin recusa nota fora de 0–10 sem constraint
+    def clean(self):
+        if self.nota is not None and not nota_valida(self.nota):
+            raise ValidationError(
+                {"nota": f"A nota deve estar entre {NOTA_MIN} e {NOTA_MAX}."}
+            )

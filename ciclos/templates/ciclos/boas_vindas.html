@@ -7,7 +7,7 @@
 <main class="max-w-conteudo mx-auto px-7 py-5">
     <div class="w-full max-w-[560px] mx-auto">
 
-        {% include 'base/components/_mensagens.html' %}
+        {% include 'base/components/_mensagens.html' with as_toast=True %}
 
         <!-- Sem navegação secundária: enquanto o vínculo não vem, não há segunda
              tela para onde a barra apontar. -->

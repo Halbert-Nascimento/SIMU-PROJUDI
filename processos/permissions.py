@@ -32,6 +32,13 @@ def pode_editar_processo(user, processo) -> bool:
     ).exists()
 
 
+def grupo_serventia_do_usuario(user, ciclo):
+    """Vínculo do usuário com a serventia (grupo de cargo SC) do ciclo, ou None."""
+    if not user.is_authenticated:
+        return None
+    return user.grupos_trabalho.filter(ciclo=ciclo, cargo_simulacao__cod="SC").first()
+
+
 def pode_visualizar_processo(user, processo) -> bool:
     """
     Processo sem segredo de justiça e já autuado: público, qualquer pessoa acessa sem login.

@@ -8,9 +8,14 @@ from __future__ import annotations
 NOME_PROTOCOLO = "Protocolo da Petição Inicial"
 NOME_CONTESTACAO = "Contestação"
 NOME_MP_DEVE_INTERVIR_SIM = "MP Deve Intervir — Sim"
+NOME_AUTUACAO = "Autuação e Distribuição"
+NOME_REDISTRIBUICAO = "Redistribuição"
 
 NOMES_TRANSVERSAIS = {
     "Cancelamento / Tornar Sem Efeito",
     "Desentranhamento",
     "Juntada de Documentos",
+    # Repete a cada troca de grupo no processo; fora daqui, a segunda redistribuição
+    # seria lida como correção da primeira.
+    NOME_REDISTRIBUICAO,
 }
