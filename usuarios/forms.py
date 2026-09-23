@@ -2,10 +2,11 @@ import re
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.utils import timezone
 
 from base.ui import CLASSE_CAMPO
 
-from .models import Usuario
+from .models import VERSAO_TERMOS_ATUAL, Usuario
 
 _NAME_REGEX = re.compile(
     r'^[^\W\d_]+'              # começa com uma ou mais letras Unicode (sem dígitos, sem _)
@@ -26,7 +27,25 @@ _EMAIL_REGEX = re.compile(
 )
 
 
+def campo_aceite_termos(mensagem_erro):
+    """Campo do checkbox de aceite dos Termos de Uso / Política de Privacidade.
+
+    Compartilhado por `CadastroPublicoForm` (abaixo) e por
+    `acesso.forms.AceiteTermosForm` — é o mesmo campo nos dois lugares, só a
+    mensagem de erro muda conforme o contexto (criar conta vs. reaceitar).
+    """
+    return forms.BooleanField(
+        required=True,
+        error_messages={"required": mensagem_erro},
+    )
+
+
 class CadastroPublicoForm(UserCreationForm):
+    aceite_termos = campo_aceite_termos(
+        "É necessário aceitar os Termos de Uso e a Política de "
+        "Privacidade para criar a conta."
+    )
+
     class Meta:
         model = Usuario
         fields = ("first_name", "email", "password1", "password2")
@@ -34,7 +53,11 @@ class CadastroPublicoForm(UserCreationForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for field in self.fields.values():
+        for name, field in self.fields.items():
+            # aceite_termos é renderizado à mão em _aceite_termos_campo.html,
+            # não pelo loop genérico de campos — não leva estilo de campo de texto.
+            if name == "aceite_termos":
+                continue
             field.widget.attrs.update(
                 {
                     "class": CLASSE_CAMPO,
@@ -64,6 +87,8 @@ class CadastroPublicoForm(UserCreationForm):
         user.tipo_perfil_global = Usuario.TipoPerfilGlobal.PENDENTE
         user.is_active = False
         user.is_staff = False
+        user.aceitou_termos_em = timezone.now()
+        user.versao_termos_aceita = VERSAO_TERMOS_ATUAL
         if commit:
             user.save()
         return user

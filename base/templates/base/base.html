@@ -453,9 +453,11 @@
             <div class="flex items-center gap-3">
                 <img src="{% static 'img/logo-iesgo-branco.png' %}" alt="Grupo IESGO"
                      class="h-7 w-auto" width="87" height="28">
-                <span>Simulador Universitário Projudi · Faculdade IESGO</span>
+                <span>Simulador Universitário Projudi · {{ nome_instituicao }}</span>
             </div>
-            <div>
+            <div class="flex items-center gap-4">
+                <a href="{% url 'acesso:termos_de_uso' %}" class="text-navy-40 hover:text-white text-meta hover:underline">Termos de Uso</a>
+                <a href="{% url 'acesso:politica_privacidade' %}" class="text-navy-40 hover:text-white text-meta hover:underline">Política de Privacidade</a>
                 <span class="footer-badge">Em desenvolvimento</span>
             </div>
         </div>

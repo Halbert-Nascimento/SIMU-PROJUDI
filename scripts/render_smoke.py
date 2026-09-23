@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import os
 import sys
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from types import SimpleNamespace as Obj
 
@@ -224,6 +224,32 @@ def ctx_visualizar(sem_movimentacao=False, com_arquivo=True, pode_alterar=True):
     }
 
 
+def ctx_documento_legal(logado=False):
+    usr = ALUNO if logado else Obj(is_authenticated=False)
+    return {
+        "user": usr, "request": Obj(user=usr),
+        "voltar_url": "base:home" if logado else "acesso:cadastro",
+        "nome_instituicao": "Faculdade IESGO",
+        "email_contato_dpo": "contato@simu-projudi.local",
+        "foro_comarca": "Goiânia/GO",
+        "versao_termos_atual": "1.0",
+        "data_vigencia_termos": date(2026, 9, 22),
+    }
+
+
+def ctx_aceite_termos(com_erro=False):
+    msg = (
+        "É necessário aceitar os Termos de Uso e a Política de Privacidade "
+        "para continuar."
+    )
+    erros = [msg] if com_erro else []
+    return {
+        "user": ALUNO, "request": Obj(user=ALUNO),
+        "form": Obj(aceite_termos=campo_form(None, erros)),
+        "next": "/processos/area-servidor/",
+    }
+
+
 def ctx_login(com_erros=False, expirada=False):
     anonimo = Obj(is_authenticated=False)
     erros = ["Por favor, entre com um Usuário e senha corretos."] if com_erros else []
@@ -240,6 +266,12 @@ def ctx_login(com_erros=False, expirada=False):
 
 
 CASOS = [
+    ("acesso/termos_de_uso.html", "visitante anônimo", ctx_documento_legal()),
+    ("acesso/termos_de_uso.html", "usuário logado", ctx_documento_legal(logado=True)),
+    ("acesso/politica_privacidade.html", "visitante anônimo", ctx_documento_legal()),
+    ("acesso/aceite_termos_pendente.html", "formulário limpo", ctx_aceite_termos()),
+    ("acesso/aceite_termos_pendente.html", "form com erro",
+     ctx_aceite_termos(com_erro=True)),
     ("acesso/login.html", "form limpo", ctx_login()),
     ("acesso/login.html", "credenciais inválidas", ctx_login(com_erros=True)),
     ("acesso/login.html", "sessão expirada", ctx_login(expirada=True)),

@@ -1,0 +1,202 @@
+{% extends 'base/base.html' %}
+{% load ui %}
+
+{% block title %}Termos de Uso{% endblock %}
+
+{% block content %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+
+    <div class="max-w-[720px] mx-auto">
+        <div class="mb-[14px] pb-[14px] border-b border-contorno">
+            <a href="{% url voltar_url %}"
+               onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }"
+               class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+                <i class="fa-solid fa-file-contract"></i> Termos de Uso
+            </h1>
+            <p class="text-corpo text-texto-neutro mt-1.5">
+                Simulador Universitário Projudi — {{ nome_instituicao }}
+            </p>
+        </div>
+
+        {% card titulo="TERMOS DE USO" icone="fa-file-contract" classe_corpo="px-5 py-5 flex flex-col gap-[18px]" %}
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">1. Definições e natureza do sistema</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O Simulador Universitário Projudi ("Simulador") é uma ferramenta acadêmica
+                    desenvolvida e mantida no âmbito de {{ nome_instituicao }}, destinada
+                    exclusivamente à prática pedagógica de processo judicial simulado por
+                    alunos, professores, coordenadores e administradores do curso de Direito.
+                </p>
+                <p class="text-corpo text-texto mt-1.5">
+                    O Simulador <strong>não é o sistema Projudi</strong> operado pelo Tribunal
+                    de Justiça do Estado de Goiás (TJGO), nem qualquer outro sistema oficial do
+                    Poder Judiciário. Não há qualquer afiliação, parceria, endosso ou vínculo
+                    entre o Simulador e o TJGO, o Conselho Nacional de Justiça (CNJ) ou qualquer
+                    órgão do Poder Judiciário brasileiro. Nenhum processo, movimentação,
+                    decisão, documento ou dado criado dentro do Simulador possui validade
+                    jurídica, produz efeitos legais reais ou pode ser utilizado como prova,
+                    petição, decisão ou peça processual em qualquer processo judicial
+                    verdadeiro.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">2. Objeto e finalidade</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O Simulador tem finalidade exclusivamente pedagógica: reproduzir, em
+                    ambiente controlado e fictício, o fluxo de um processo judicial para fins
+                    de ensino e prática acadêmica. O acesso é restrito a pessoas vinculadas a
+                    {{ nome_instituicao }} e autorizadas por um Administrador, Coordenador ou
+                    Professor do ciclo de simulação.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">3. Aceite destes Termos</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O acesso e o uso do Simulador pressupõem a leitura e o aceite expresso
+                    destes Termos de Uso e da
+                    <a href="{% url 'acesso:politica_privacidade' %}" target="_blank" rel="noopener" class="text-acao font-semibold hover:underline">Política de Privacidade</a>.
+                    O aceite é condição para a criação e para a manutenção da conta de acesso.
+                    Sempre que o conteúdo destes Termos for alterado de forma relevante, uma
+                    nova versão passa a vigorar e o usuário precisa reaceitá-la antes de
+                    continuar usando o sistema.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">4. Cadastro e conta de acesso</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O usuário é responsável por fornecer, no cadastro, seu nome completo e
+                    e-mail verdadeiros, e por manter sua senha em sigilo, não a compartilhando
+                    com terceiros. Toda atividade realizada com o login do usuário é de sua
+                    responsabilidade. O Simulador organiza o acesso em perfis hierárquicos —
+                    Administrador, Coordenador, Professor, Aluno e Pendente — cada um com
+                    permissões próprias, definidas pela coordenação do curso.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">5. Proibição expressa de dados reais</h2>
+                <p class="text-corpo text-texto mt-1.5 font-semibold">
+                    É terminantemente proibido inserir, em qualquer campo, formulário,
+                    processo, parte, movimentação, documento anexado ou qualquer outra área do
+                    Simulador, dados reais e verdadeiros de pessoa física ou jurídica
+                    existente — incluindo, mas não se limitando a, nome completo real, CPF ou
+                    CNPJ verdadeiro, endereço real, número de processo judicial real,
+                    documentos digitalizados verdadeiros, imagens, assinaturas ou qualquer
+                    outro dado pessoal ou sensível de terceiro.
+                </p>
+                <p class="text-corpo text-texto mt-1.5">
+                    Todo nome, CPF/CNPJ, endereço, processo, parte e documento inserido no
+                    Simulador deve ser inteiramente fictício, inventado exclusivamente para
+                    fins de prática acadêmica, sem correspondência com qualquer pessoa,
+                    processo ou situação real. O usuário que descumprir esta regra é o único e
+                    exclusivo responsável, civil e criminalmente, por qualquer dano,
+                    reclamação, sanção administrativa ou judicial dela decorrente, nos termos
+                    da cláusula 9 destes Termos.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">6. Conteúdo enviado pelo usuário</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Movimentações processuais podem incluir texto livre e upload de arquivos
+                    (nos formatos e limite de tamanho definidos pelo sistema). O usuário
+                    declara, ao enviar qualquer arquivo ou texto, que seu conteúdo é fictício e
+                    não contém dado real ou sensível de terceiro. A instituição pode remover,
+                    sem aviso prévio, qualquer conteúdo que viole esta regra e suspender ou
+                    encerrar a conta responsável, sem prejuízo de outras medidas cabíveis.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">7. Propriedade intelectual e marca</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O nome "Projudi" e referências visuais ao sistema do TJGO são utilizados no
+                    Simulador exclusivamente em caráter descritivo e educacional, para
+                    identificar o objeto da prática pedagógica, sem qualquer finalidade
+                    comercial e sem sugerir vínculo oficial. O código, os textos, a identidade
+                    visual e os demais elementos próprios do Simulador são de autoria de
+                    {{ nome_instituicao }} e/ou de seus mantenedores, não podendo ser
+                    copiados, redistribuídos ou utilizados fora do contexto acadêmico sem
+                    autorização.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">8. Limitação de responsabilidade</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O Simulador é fornecido "como está" ("as is"), sem garantia de
+                    disponibilidade contínua, ininterrupta ou livre de erros.
+                    {{ nome_instituicao }} e os mantenedores do Simulador não respondem por:
+                    (i) decisões acadêmicas, avaliações ou notas atribuídas com base no uso do
+                    Simulador; (ii) conteúdo inserido por usuários, incluindo eventual violação
+                    da cláusula 5; (iii) indisponibilidade temporária, perda de dados ou falhas
+                    técnicas; e (iv) qualquer dano indireto, incidental ou consequente
+                    decorrente do uso ou da impossibilidade de uso do sistema, nos limites
+                    máximos permitidos pela legislação brasileira.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">9. Indenização</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    O usuário se compromete a indenizar e a manter {{ nome_instituicao }} e os
+                    mantenedores do Simulador isentos de qualquer reclamação, multa,
+                    indenização, dano ou processo — administrativo, judicial ou extrajudicial
+                    — decorrente do descumprimento destes Termos por sua parte, incluindo, sem
+                    limitação, a inserção de dados reais de terceiros em violação à cláusula 5.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">10. Suspensão e encerramento de conta</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    A conta do usuário pode ser suspensa ou encerrada, a critério de um
+                    Administrador, Coordenador ou Professor responsável, em caso de violação
+                    destes Termos, uso indevido do sistema ou por decisão da coordenação
+                    acadêmica, conforme as regras de gestão de usuários do Simulador.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">11. Alterações nestes Termos</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Estes Termos podem ser atualizados a qualquer momento. Alterações
+                    relevantes geram uma nova versão numerada, e o usuário precisa reaceitá-la
+                    para continuar utilizando o Simulador — inclusive usuários já cadastrados,
+                    que veem o aceite pendente no próximo login.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">12. Legislação aplicável e foro</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Estes Termos são regidos pelas leis da República Federativa do Brasil. Fica
+                    eleito o foro da comarca de {{ foro_comarca }} para dirimir quaisquer
+                    controvérsias decorrentes destes Termos, com renúncia a qualquer outro, por
+                    mais privilegiado que seja.
+                </p>
+            </section>
+
+            <section>
+                <h2 class="text-apoio font-bold uppercase tracking-[.08em] text-navy">13. Contato</h2>
+                <p class="text-corpo text-texto mt-1.5">
+                    Dúvidas sobre estes Termos podem ser encaminhadas para
+                    {{ nome_instituicao }}, pelo e-mail
+                    <a href="mailto:{{ email_contato_dpo }}" class="text-acao font-semibold hover:underline">{{ email_contato_dpo }}</a>.
+                </p>
+            </section>
+
+            <p class="text-meta text-rotulo mt-[18px] pt-[14px] border-t border-divisor">
+                Versão {{ versao_termos_atual }} — vigente desde {{ data_vigencia_termos|date:"d/m/Y" }}.
+            </p>
+        {% endcard %}
+    </div>
+</main>
+{% endblock %}
