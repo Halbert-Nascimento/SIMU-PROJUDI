@@ -1,0 +1,16 @@
+{% load ui %}
+{% comment %}
+Conteúdo compartilhado das páginas de erro HTTP (400/403/404/500/403_csrf).
+
+    {% include 'base/components/_erro_http.html' with icone="fa-solid fa-lock" titulo="Acesso negado" mensagem="..." url_botao=url_home rotulo_botao="Voltar para o início" only %}
+
+Sem lógica de domínio — por isso mora em base/components/, não num app.
+{% endcomment %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+    <div class="flex flex-col items-center text-center py-[28px] gap-[14px]">
+        <i class="{{ icone }} text-[42px] text-erro-txt" aria-hidden="true"></i>
+        <h1 class="text-navy text-h1 font-bold">{{ titulo }}</h1>
+        <p class="text-corpo text-texto-neutro max-w-[520px]">{{ mensagem }}</p>
+        <a href="{{ url_botao }}" class="{% classe_botao 'primario' padding=True %} inline-flex items-center mt-[6px]">{{ rotulo_botao }}</a>
+    </div>
+</main>

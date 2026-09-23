@@ -157,6 +157,10 @@ LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após
 LOGIN_URL = 'acesso:login'
 LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
 
+# Falha de CSRF (token expirado/ausente) não usa 403.html por padrão — o Django
+# chama esta view diretamente, fora do fluxo normal de exceção HTTP.
+CSRF_FAILURE_VIEW = 'base.views_erros.csrf_failure'
+
 # ─── Segurança ────────────────────────────────────────────────────────────────
 # Padrão do Django, repetido aqui porque é a defesa contra roubo de sessão por XSS
 SESSION_COOKIE_HTTPONLY = True

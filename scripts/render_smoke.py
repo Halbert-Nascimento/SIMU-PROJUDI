@@ -265,6 +265,11 @@ def ctx_login(com_erros=False, expirada=False):
     }
 
 
+def ctx_erro_http(logado=True):
+    usr = ALUNO if logado else Obj(is_authenticated=False)
+    return {"user": usr, "request": Obj(user=usr)}
+
+
 CASOS = [
     ("acesso/termos_de_uso.html", "visitante anônimo", ctx_documento_legal()),
     ("acesso/termos_de_uso.html", "usuário logado", ctx_documento_legal(logado=True)),
@@ -291,6 +296,15 @@ CASOS = [
     ("avaliacoes/avaliacoes_pendentes.html", "sem pendência", ctx_avaliacoes_pendentes(vazio=True)),
     ("ciclos/boas_vindas.html", "primeiro acesso", ctx_boas_vindas()),
     ("ciclos/boas_vindas.html", "ciclo anterior encerrado", ctx_boas_vindas(ja_participou=True)),
+    ("404.html", "visitante anônimo", ctx_erro_http(logado=False)),
+    ("404.html", "usuário logado", ctx_erro_http()),
+    ("403.html", "usuário logado", ctx_erro_http()),
+    ("400.html", "usuário logado", ctx_erro_http()),
+    ("403_csrf.html", "usuário logado", ctx_erro_http()),
+    # Contexto vazio de propósito: é assim que o Django realmente chama este
+    # template — django.views.defaults.server_error renderiza sem contexto
+    # nem request, diferente de 400/403/404 (ver comentário em templates/500.html).
+    ("500.html", "contexto vazio (como o Django renderiza de fato)", {}),
 ]
 
 
