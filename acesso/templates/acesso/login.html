@@ -7,7 +7,7 @@
     <!-- Container Principal -->
     <main class="max-w-conteudo mx-auto px-7 py-5">
 
-        {% include 'base/components/_mensagens.html' %}
+        {% include 'base/components/_mensagens.html' with as_toast=True %}
 
         <!-- Guia seção 08: colunas em frações, nunca percentuais mistos. -->
         <div class="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-[14px] items-start">
@@ -112,7 +112,7 @@
                             <span class="text-h1 font-bold tracking-[.12em] leading-none">SIMU</span>
                         </div>
                         <span class="text-acao font-bold text-corpo">Simulador Projudi</span>
-                        <span class="text-meta text-rotulo mt-1">Ambiente acadêmico · Faculdade IESGO</span>
+                        <span class="text-meta text-rotulo mt-1">Ambiente acadêmico · {{ nome_instituicao }}</span>
                     </div>
                 </section>
 
@@ -174,7 +174,10 @@
                             </div>
 
                             <div class="text-center">
-                                <a href="#" class="text-acao text-apoio hover:underline">Esqueceu a sua senha?</a>
+                                <button type="button" id="btn-esqueceu-senha"
+                                        class="text-acao text-apoio hover:underline bg-transparent border-0 cursor-pointer p-0">
+                                    Esqueceu a sua senha?
+                                </button>
                             </div>
                         </form>
                     </div>
@@ -203,6 +206,21 @@
         </div>
 
     </main>
+
+    {% modal id="modal-esqueceu-senha" titulo="Esqueceu a sua senha?" icone="fa-key" fechar_id="modal-esqueceu-senha-fechar" %}
+        <div class="px-4 py-[14px]">
+            <p class="text-corpo text-texto-neutro text-justify">
+                O simulador não envia e-mail de redefinição. Procure seu coordenador,
+                professor ou administrador responsável — a redefinição é feita manualmente
+                pela Gestão de Usuários.
+            </p>
+        </div>
+        <div class="modal-acoes">
+            <button type="button" id="modal-esqueceu-senha-ok" class="{% classe_botao 'primario' padding=True %}">
+                Entendi
+            </button>
+        </div>
+    {% endmodal %}
 
     <!-- Script para Accordion -->
     <script>
@@ -258,6 +276,30 @@
                     const usuarioInput = loginForm.querySelector('input[name="username"]');
                     if (usuarioInput) {
                         usuarioInput.focus();
+                    }
+                });
+            }
+
+            // Modal estático "Esqueceu a sua senha?" — só orienta, não coleta nada.
+            const btnEsqueceuSenha = document.getElementById('btn-esqueceu-senha');
+            const modalEsqueceuSenha = document.getElementById('modal-esqueceu-senha');
+            const fecharEsqueceuSenha = document.getElementById('modal-esqueceu-senha-fechar');
+            const okEsqueceuSenha = document.getElementById('modal-esqueceu-senha-ok');
+
+            if (btnEsqueceuSenha && modalEsqueceuSenha) {
+                btnEsqueceuSenha.addEventListener('click', function () {
+                    modalEsqueceuSenha.classList.add('open');
+                });
+                [fecharEsqueceuSenha, okEsqueceuSenha].forEach(function (botao) {
+                    if (botao) {
+                        botao.addEventListener('click', function () {
+                            modalEsqueceuSenha.classList.remove('open');
+                        });
+                    }
+                });
+                modalEsqueceuSenha.addEventListener('click', function (event) {
+                    if (event.target === modalEsqueceuSenha) {
+                        modalEsqueceuSenha.classList.remove('open');
                     }
                 });
             }

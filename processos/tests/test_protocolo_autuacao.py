@@ -79,7 +79,7 @@ class ProtocoloAutuacaoTests(CenarioMovimentacoesTestCase):
         client = self.cliente_logado(self.usuarios["SC"])
         resp = client.post(
             reverse("processos:atribuir_grupo_processos"),
-            data=json.dumps({"processo_ids": [processo.pk], "grupo_ids": [999999]}),
+            data=json.dumps({"processo_ids": [processo.pk], "grupo_ids_adicionar": [999999]}),
             content_type="application/json",
         )
         processo.refresh_from_db()

@@ -88,6 +88,15 @@ class AlunoSemCicloMiddleware:
         "ciclos:boas_vindas",
         "acesso:logout",
         "acesso:manter_sessao",
+        # Trocar a própria senha não pode depender de já estar posto num ciclo.
+        "acesso:minha_conta",
+        # Idem para o aceite dos Termos de Uso/Política: sem isso, um aluno
+        # aprovado mas ainda sem ciclo cai sempre em boas_vindas e nunca chega
+        # ao portão de aceite — TermosAceitosMiddleware.ROTAS_LIBERADAS já
+        # libera essas mesmas rotas pelo motivo espelhado.
+        "acesso:aceite_termos_pendente",
+        "acesso:termos_de_uso",
+        "acesso:politica_privacidade",
         "notificacoes:listar",
         "notificacoes:contagem",
         "notificacoes:recentes",

@@ -58,7 +58,7 @@
 
         <!-- Mensagens de feedback -->
 
-        {% include 'base/components/_mensagens.html' %}
+        {% include 'base/components/_mensagens.html' with as_toast=True %}
 
 
 
@@ -530,19 +530,19 @@
 
                 <h2 class="section-title !mt-0">
 
-                    Resumo do Semestre (Atual)
+                    Resumo dos ciclos ativos
 
                 </h2>
 
                 <div class="grid grid-cols-2 gap-[14px] mb-[14px] mt-[14px]">
 
-                    {% include 'base/components/_card_kpi.html' with rotulo="Processos Ativos" numero=45 only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Processos Ativos" numero=processos_ativos_count only %}
 
-                    {% include 'base/components/_card_kpi.html' with rotulo="Avaliações Pendentes" numero=12 variante="alerta" only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Avaliações Pendentes" numero=avaliacoes_pendentes_count variante="alerta" only %}
 
-                    {% include 'base/components/_card_kpi.html' with rotulo="Grupos de Trabalho" numero=8 only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Grupos de Trabalho" numero=grupos_trabalho_count only %}
 
-                    {% include 'base/components/_card_kpi.html' with rotulo="Alunos Vinculados" numero=20 only %}
+                    {% include 'base/components/_card_kpi.html' with rotulo="Alunos Vinculados" numero=total_alunos_vinculados only %}
 
                 </div>
 
@@ -558,11 +558,11 @@
 
                     <div class="grid grid-cols-2 gap-[14px] mt-[14px]">
 
-                        <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
+                        <a href="{% url 'avaliacoes:relatorio_notas' %}" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
 
-                            <i class="fa-solid fa-file-circle-plus text-2xl text-navy mb-2"></i>
+                            <i class="fa-solid fa-clipboard-check text-2xl text-navy mb-2"></i>
 
-                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Distribuir<br>Novo Processo</span>
+                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Relatório de<br>Notas</span>
 
                         </a>
 
@@ -576,19 +576,11 @@
 
                         </button>
 
-                        <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
+                        <a href="{% url 'avaliacoes:avaliacoes_pendentes' %}" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
 
-                            <i class="fa-solid fa-calendar-days text-2xl text-navy mb-2"></i>
+                            <i class="fa-solid fa-list-check text-2xl text-navy mb-2"></i>
 
-                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Agendar<br>Audiência</span>
-
-                        </a>
-
-                        <a href="#" class="bg-white border border-contorno hover:border-acao hover:bg-linha-hover transition-colors cursor-pointer flex flex-col items-center justify-center p-3 text-center h-[90px]">
-
-                            <i class="fa-solid fa-clipboard-check text-2xl text-navy mb-2"></i>
-
-                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Relatório de<br>Notas</span>
+                            <span class="text-[calc(11px*var(--escala-fonte,1))] font-bold leading-tight text-texto">Avaliações<br>Pendentes</span>
 
                         </a>
 
@@ -917,6 +909,48 @@
                         class="w-3.5 h-3.5 accent-acao">
 
                     <label for="edicao-ativo" class="text-micro font-semibold uppercase text-rotulo cursor-pointer">Ativo (liberar acesso ao sistema)</label>
+
+                </div>
+
+                <div class="border border-contorno">
+
+                    <div id="edicao-senha-accordion-header" class="accordion-item-closed">
+
+                        <i class="fa-solid fa-caret-right accordion-icon"></i>
+
+                        Alterar Senha
+
+                    </div>
+
+                    <div id="edicao-senha-accordion-content" class="accordion-content hidden px-4 py-[14px] bg-white">
+
+                        <p class="text-apoio text-rotulo mb-3">
+
+                            Deixe ambos os campos em branco se não desejar alterar a senha.
+
+                        </p>
+
+                        <div class="mb-3">
+
+                            <label for="edicao-nova-senha" class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">Nova senha</label>
+
+                            <div class="relative">
+                                <input type="password" id="edicao-nova-senha" name="nova_senha" class="{% classe_campo %}" autocomplete="new-password">
+                            </div>
+
+                        </div>
+
+                        <div>
+
+                            <label for="edicao-confirmacao-senha" class="block text-micro font-semibold uppercase text-rotulo mb-[5px]">Confirmação</label>
+
+                            <div class="relative">
+                                <input type="password" id="edicao-confirmacao-senha" name="confirmacao_senha" class="{% classe_campo %}" autocomplete="new-password">
+                            </div>
+
+                        </div>
+
+                    </div>
 
                 </div>
 
@@ -1372,6 +1406,106 @@
 
 
 
+    function fecharAccordionSenhaEdicao() {
+
+        const header = document.getElementById('edicao-senha-accordion-header');
+
+        const content = document.getElementById('edicao-senha-accordion-content');
+
+        if (!header || !content) return;
+
+        content.classList.add('hidden');
+
+        header.classList.remove('accordion-item-aberto');
+
+        header.classList.add('accordion-item-closed');
+
+        const icon = header.querySelector('.accordion-icon');
+
+        icon.classList.remove('fa-caret-down');
+
+        icon.classList.add('fa-caret-right');
+
+    }
+
+
+
+    function limparCampoSenhaEdicao(input) {
+
+        if (!input) return;
+
+        input.value = '';
+
+        // Volta ao type="password": sem isto, o olho clicado antes deixaria a próxima
+
+        // senha digitada (de outro usuário) visível em texto puro por padrão.
+
+        input.type = 'password';
+
+        const icone = input.parentElement.querySelector('i');
+
+        if (icone) {
+
+            icone.className = 'fa-solid fa-eye';
+
+            icone.style.color = '#6b7280';
+
+        }
+
+    }
+
+
+
+    function limparCamposSenhaEdicao() {
+
+        limparCampoSenhaEdicao(document.getElementById('edicao-nova-senha'));
+
+        limparCampoSenhaEdicao(document.getElementById('edicao-confirmacao-senha'));
+
+        fecharAccordionSenhaEdicao();
+
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        const header = document.getElementById('edicao-senha-accordion-header');
+
+        if (!header) return;
+
+        header.addEventListener('click', function () {
+
+            const content = document.getElementById('edicao-senha-accordion-content');
+
+            const fechado = content.classList.contains('hidden');
+
+            if (fechado) {
+
+                content.classList.remove('hidden');
+
+                header.classList.remove('accordion-item-closed');
+
+                header.classList.add('accordion-item-aberto');
+
+                const icon = header.querySelector('.accordion-icon');
+
+                icon.classList.remove('fa-caret-right');
+
+                icon.classList.add('fa-caret-down');
+
+            } else {
+
+                fecharAccordionSenhaEdicao();
+
+            }
+
+        });
+
+    });
+
+
+
     function abrirEdicao(id, username, email, tipo, ativo) {
 
         document.getElementById('edicao-user-id').value = id;
@@ -1383,6 +1517,12 @@
         document.getElementById('edicao-tipo').value = tipo;
 
         document.getElementById('edicao-ativo').checked = ativo;
+
+        // Sempre em branco e recolhido: reabrir para outro usuário (ou para o mesmo)
+
+        // nunca deve carregar uma senha digitada e não confirmada anteriormente.
+
+        limparCamposSenhaEdicao();
 
         const modal = document.getElementById('modal-editar-usuario');
 
@@ -1401,6 +1541,12 @@
         const modal = document.getElementById('modal-editar-usuario');
 
         modal.classList.remove('modal-active');
+
+        // Segunda rede de segurança: cancelar sem salvar também não deve deixar uma
+
+        // senha digitada à espera da próxima abertura.
+
+        limparCamposSenhaEdicao();
 
         setTimeout(() => {
 

@@ -1,0 +1,107 @@
+{% extends 'base/layouts/layout_admin.html' %}
+{% load static %}
+{% load ui %}
+
+{% block title %}Relatório de Notas — Simulador Projudi{% endblock %}
+{% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'js/paginador.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+
+    {% include 'base/components/_breadcrumbs.html' %}
+
+    <div class="mb-[14px] pb-[14px] border-b border-contorno">
+        <a href="{% url 'acesso:painel_administrativo' %}"
+           class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
+            <i class="fa-solid fa-arrow-left"></i> Voltar para o Painel
+        </a>
+        <h1 class="text-navy text-h1 font-bold">Relatório de Notas</h1>
+        <p class="text-corpo text-texto-neutro mt-1.5">Desempenho dos alunos nas movimentações avaliadas, por ciclo.</p>
+    </div>
+
+    {% include 'base/components/_mensagens.html' %}
+
+    {% include 'avaliacoes/components/_filtro_ciclo.html' with form=form_filtro %}
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-[14px] mb-[14px]">
+        {% include 'base/components/_card_kpi.html' with rotulo="Alunos" numero=total_alunos apoio="nos ciclos listados" only %}
+        <!-- direto na classe: o apoio interpola contadores, e o include recebe texto pronto -->
+        <div class="card-kpi">
+            <span class="rotulo">Movimentações avaliadas</span>
+            <span class="numero">{{ total_avaliadas }}</span>
+            <span class="apoio">de {{ total_movimentacoes }} registradas pelos alunos</span>
+        </div>
+        {% include 'base/components/_card_kpi.html' with rotulo="Média Geral" numero=media_geral|floatformat:1|default:"—" apoio="de 5 estrelas, nas avaliações com nota" only %}
+    </div>
+
+    <div class="border border-contorno bg-white overflow-hidden">
+        <div class="px-4 py-[9px] border-b border-contorno bg-card-topo">
+            <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy">NOTAS POR ALUNO</span>
+        </div>
+        <div class="px-4 py-[14px] text-corpo text-texto overflow-x-auto">
+            {% if linhas %}
+            <table class="tbl-projudi" id="tabela-notas">
+                <thead>
+                    <tr>
+                        <th>Aluno</th>
+                        <th>Ciclo</th>
+                        <th class="text-center" style="width:130px;">Movimentações</th>
+                        <th class="text-center" style="width:130px;">Avaliadas</th>
+                        <th class="text-center" style="width:130px;">Média</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for linha in linhas %}
+                    <tr class="nota-row">
+                        <td>
+                            <div class="celula-dupla">
+                                <span class="principal">{{ linha.aluno.get_full_name|default:linha.aluno.username }}</span>
+                                <span class="secundario font-mono">{{ linha.aluno.username }}</span>
+                            </div>
+                        </td>
+                        <td class="text-texto-neutro">{{ linha.ciclo.nome_edicao }}</td>
+                        <td class="text-center font-mono">{{ linha.total_movimentacoes }}</td>
+                        <td class="text-center font-mono">{{ linha.total_avaliadas }}</td>
+                        <td class="text-center">
+                            {% if linha.media is None %}
+                            <span class="pill gray">Sem nota</span>
+                            {% else %}
+                            <span class="pill {{ linha.faixa }} font-mono">{{ linha.media|floatformat:1 }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% include 'base/components/_paginacao.html' with container_id="paginacao-notas" info_id="paginacao-notas-info" paginas_id="paginacao-notas-paginas" btn_prefixo="btn-nota" handler="mudarPaginaNotas" only %}
+            {% else %}
+            {% include 'base/components/_estado_vazio.html' with mensagem="Nenhum aluno encontrado nos ciclos selecionados." only %}
+            {% endif %}
+        </div>
+    </div>
+
+</main>
+
+{% if linhas %}
+<script>
+    const paginadorNotas = criarPaginador({
+        rowSelector: '.nota-row',
+        porPagina: 10,
+        tabelaId: 'tabela-notas',
+        paginacaoId: 'paginacao-notas',
+        infoId: 'paginacao-notas-info',
+        paginasContainerId: 'paginacao-notas-paginas',
+        btnPrimeiraId: 'btn-nota-primeira',
+        btnAnteriorId: 'btn-nota-anterior',
+        btnProximaId: 'btn-nota-proxima',
+        btnUltimaId: 'btn-nota-ultima',
+    });
+    function mudarPaginaNotas(acao) { paginadorNotas.mudarPagina(acao); }
+    paginadorNotas.resetar();
+</script>
+{% endif %}
+{% endblock %}

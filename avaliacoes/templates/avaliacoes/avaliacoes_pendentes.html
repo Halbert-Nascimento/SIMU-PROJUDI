@@ -1,0 +1,106 @@
+{% extends 'base/layouts/layout_admin.html' %}
+{% load static %}
+{% load ui %}
+
+{% block title %}Avaliações Pendentes — Simulador Projudi{% endblock %}
+{% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
+
+{% block extra_head %}
+<script src="{% static 'js/paginador.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+
+    {% include 'base/components/_breadcrumbs.html' %}
+
+    <div class="mb-[14px] pb-[14px] border-b border-contorno">
+        <a href="{% url 'acesso:painel_administrativo' %}"
+           class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
+            <i class="fa-solid fa-arrow-left"></i> Voltar para o Painel
+        </a>
+        <h1 class="text-navy text-h1 font-bold">Avaliações Pendentes</h1>
+        <p class="text-corpo text-texto-neutro mt-1.5">Movimentações dos ciclos em andamento que ainda não receberam avaliação, da mais antiga para a mais recente.</p>
+    </div>
+
+    {% include 'base/components/_mensagens.html' %}
+
+    {% include 'avaliacoes/components/_filtro_ciclo.html' with form=form_filtro %}
+
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-[14px] mb-[14px]">
+        {% include 'base/components/_card_kpi.html' with rotulo="Pendentes" numero=pendentes|length variante="alerta" apoio="movimentações sem avaliação" only %}
+        {% include 'base/components/_card_kpi.html' with rotulo="Alunos aguardando" numero=total_alunos_aguardando apoio="com ao menos uma pendência" only %}
+        {% include 'base/components/_card_kpi.html' with rotulo="Mais antiga" numero=mais_antiga|date:"d/m/Y"|default:"—" apoio="data do registro" only %}
+    </div>
+
+    <div class="border border-contorno bg-white overflow-hidden">
+        <div class="px-4 py-[9px] border-b border-contorno bg-card-topo">
+            <span class="text-apoio font-bold uppercase tracking-[.12em] text-navy">MOVIMENTAÇÕES A AVALIAR</span>
+        </div>
+        <div class="px-4 py-[14px] text-corpo text-texto overflow-x-auto">
+            {% if pendentes %}
+            <table class="tbl-projudi" id="tabela-pendentes">
+                <thead>
+                    <tr>
+                        <th>Movimentação</th>
+                        <th>Aluno</th>
+                        <th>Ciclo</th>
+                        <th style="width:150px;">Registrada em</th>
+                        <th class="col-acoes">Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for mov in pendentes %}
+                    <tr class="pendente-row">
+                        <td>
+                            <div class="celula-dupla">
+                                <span class="principal">{{ mov.tipo_movimento.nome_movimentacao }}</span>
+                                <a href="{% url 'processos:visualizar_processo' mov.processo.numero %}" class="secundario font-mono">{{ mov.processo.numero }}</a>
+                            </div>
+                        </td>
+                        <td>{{ mov.autor.get_full_name|default:mov.autor.username }}</td>
+                        <td class="text-texto-neutro">{{ mov.processo.ciclo.nome_edicao }}</td>
+                        <td>
+                            <div class="celula-dupla">
+                                <span class="principal font-mono">{{ mov.data_movimento|date:"d/m/Y" }}</span>
+                                <span class="secundario">há {{ mov.data_movimento|timesince }}</span>
+                            </div>
+                        </td>
+                        <td class="col-acoes">
+                            <a href="{% url 'avaliacoes:avaliar' mov.pk %}"
+                               class="{% classe_botao 'linha' padding=True %} inline-flex items-center gap-1 whitespace-nowrap">
+                                Avaliar
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% include 'base/components/_paginacao.html' with container_id="paginacao-pendentes" info_id="paginacao-pendentes-info" paginas_id="paginacao-pendentes-paginas" btn_prefixo="btn-pend" handler="mudarPaginaPendentes" only %}
+            {% else %}
+            {% include 'base/components/_estado_vazio.html' with mensagem="Nenhuma avaliação pendente nos ciclos selecionados." only %}
+            {% endif %}
+        </div>
+    </div>
+
+</main>
+
+{% if pendentes %}
+<script>
+    const paginadorPendentes = criarPaginador({
+        rowSelector: '.pendente-row',
+        porPagina: 10,
+        tabelaId: 'tabela-pendentes',
+        paginacaoId: 'paginacao-pendentes',
+        infoId: 'paginacao-pendentes-info',
+        paginasContainerId: 'paginacao-pendentes-paginas',
+        btnPrimeiraId: 'btn-pend-primeira',
+        btnAnteriorId: 'btn-pend-anterior',
+        btnProximaId: 'btn-pend-proxima',
+        btnUltimaId: 'btn-pend-ultima',
+    });
+    function mudarPaginaPendentes(acao) { paginadorPendentes.mudarPagina(acao); }
+    paginadorPendentes.resetar();
+</script>
+{% endif %}
+{% endblock %}

@@ -4,6 +4,7 @@ import json
 
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from ciclos.models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
 from movimentacoes.models import TipoMovimentacao
@@ -18,7 +19,18 @@ from processos.models import (
     TipoProcesso,
     VaraServentia,
 )
-from usuarios.models import Usuario
+from usuarios.models import VERSAO_TERMOS_ATUAL, Usuario
+
+def aceite_termos_teste():
+    """Aceite dos termos já registrado nos usuários de teste: estas fixtures
+    cobrem outras telas, não o portão acesso.middleware.TermosAceitosMiddleware.
+    Função, não dicionário de módulo — um dicionário fixaria `timezone.now()`
+    no instante em que o módulo é importado, não em que o usuário nasce."""
+    return {
+        "aceitou_termos_em": timezone.now(),
+        "versao_termos_aceita": VERSAO_TERMOS_ATUAL,
+    }
+
 
 CARGOS = [
     ("Serventia/Cartório", "SC"),
@@ -47,6 +59,7 @@ class CenarioMovimentacoesTestCase(TestCase):
         cls.professor = Usuario.objects.create_user(
             username="prof.coord", email="prof.coord@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.PROFESSOR,
+            **aceite_termos_teste(),
         )
         cls.ciclo = CicloSimulacao.objects.create(
             nome_edicao="Ciclo de Teste", coordenador=cls.professor,
@@ -59,6 +72,7 @@ class CenarioMovimentacoesTestCase(TestCase):
             u = Usuario.objects.create_user(
                 username=f"aluno.{cod.lower()}", email=f"aluno.{cod.lower()}@teste.local",
                 password="s3nha-teste", tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+                **aceite_termos_teste(),
             )
             cls.ciclo.participantes.add(u)
             g = GrupoTrabalho.objects.create(ciclo=cls.ciclo, cargo_simulacao=cls.cargos[cod], nome=f"Grupo {cod}")
@@ -110,10 +124,17 @@ class CenarioMovimentacoesTestCase(TestCase):
     def autuar_processo(self, processo, cods_grupos, *, sc_user=None):
         """Bate na view processos:atribuir_grupo_processos de verdade (não reimplementa a lógica aqui)."""
         client = self.cliente_logado(sc_user or self.usuarios["SC"])
-        grupo_ids = [self.grupos[cod].pk for cod in cods_grupos]
+        # cods_grupos vazio expressa "remover tudo", como o card "Remover atribuição" do modal
+        if cods_grupos:
+            corpo = {
+                "processo_ids": [processo.pk],
+                "grupo_ids_adicionar": [self.grupos[cod].pk for cod in cods_grupos],
+            }
+        else:
+            corpo = {"processo_ids": [processo.pk], "remover_tudo": True}
         resp = client.post(
             reverse("processos:atribuir_grupo_processos"),
-            data=json.dumps({"processo_ids": [processo.pk], "grupo_ids": grupo_ids}),
+            data=json.dumps(corpo),
             content_type="application/json",
         )
         processo.refresh_from_db()

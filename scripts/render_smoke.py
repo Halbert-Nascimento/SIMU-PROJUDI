@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import os
 import sys
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from types import SimpleNamespace as Obj
 
@@ -66,7 +66,7 @@ def campo_form(valor=None, erros=()):
     return Obj(value=lambda: valor, errors=list(erros), id_for_label="id_campo")
 
 
-def feedback(nota=8.5):
+def feedback(nota=8.0):
     return Obj(nota=nota, data_feedback=QUANDO, professor=PROFESSOR,
                comentario="Boa fundamentação.", movimentacao=movimentacao())
 
@@ -79,35 +79,94 @@ def ctx_avaliar(com_erros=False, com_historico=True):
         "processo": Obj(numero=NUMERO, classe=Obj(nome="Procedimento Comum Cível")),
         "ciclo": "2026.2 — Prática Jurídica", "autor": ALUNO,
         "grupo_autor": Obj(nome="Grupo 1", cargo_simulacao=Obj(nome="Advogado do Polo Ativo")),
-        "form": Obj(nota=campo_form(8.5, ["Informe um valor entre 0 e 10."] if com_erros else []),
+        "form": Obj(estrelas=campo_form(4, ["Escolha de 1 a 5 estrelas."] if com_erros else []),
                     comentario=campo_form("", ["Este campo é obrigatório."] if com_erros else [])),
         "feedback_existente": feedback(),
         "mov_origem": movimentacao(com_documentos=False),
         "feedback_origem": feedback(None),
         "historico": hist,
-        "media_notas": 8.25 if com_historico else None,
+        "media_notas": 4.1 if com_historico else None,
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
                         {"label": f"Processo {NUMERO}", "url": "/p/"},
                         {"label": "Avaliar Movimentação", "url": None}],
     }
 
 
+def avaliacao_json(estrelas, faixa):
+    # o mesmo template que a view usa para o desenho das estrelas
+    from avaliacoes.estrelas import contexto_estrelas
+    return {"id": 1, "data": "26/08/2026", "mov": "Juntada",
+            "mov_texto": "…", "proc": NUMERO, "prof": "Ana Ribeiro",
+            "prof_iniciais": "AR", "estrelas": estrelas, "faixa": faixa,
+            "estrelas_html": render_to_string(
+                "avaliacoes/components/_estrelas.html",
+                contexto_estrelas(estrelas, herda_cor=True)),
+            "comentario": "Boa peça.", "documentos": []}
+
+
 def ctx_minhas_notas(vazio=False):
-    fbs = [] if vazio else [feedback(9.2), feedback(None), feedback(5.5)]
+    fbs = [] if vazio else [feedback(10.0), feedback(None), feedback(6.0)]
     return {
         "user": ALUNO, "request": Obj(user=ALUNO),
         "feedbacks": fbs,
-        "feedbacks_json": [{"id": 1, "data": "26/08/2026", "mov": "Juntada",
-                            "mov_texto": "…", "proc": NUMERO, "prof": "Ana Ribeiro",
-                            "prof_iniciais": "AR", "nota": 9.2,
-                            "comentario": "Boa peça.", "documentos": []}],
+        "feedbacks_json": [avaliacao_json(5, "ok"), avaliacao_json(None, "gray"),
+                           avaliacao_json(3, "warn")],
         "total_movimentacoes": 0 if vazio else 7,
         "total_avaliadas": 0 if vazio else 3,
-        "media_geral": None if vazio else 7.9,
-        "melhor_nota": None if vazio else 9.2,
+        "media_geral": None if vazio else 3.9,
+        "media_percentual": 0 if vazio else 78,
+        "melhor_avaliacao": None if vazio else 5,
         "ultima_avaliacao": None if vazio else feedback(),
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
                         {"label": "Minhas Notas", "url": None}],
+    }
+
+
+class _Ciclo:
+    pk = 7
+
+    def __str__(self):
+        return "2026.2 — Prática Jurídica"
+
+
+def _filtro_ciclo(com_erro=False):
+    ciclo = Obj(id_for_label="id_ciclo", value=lambda: "7",
+                errors=["Ciclo inválido para o seu perfil."] if com_erro else [])
+    return Obj(ciclo=ciclo, fields=Obj(ciclo=Obj(queryset=[_Ciclo()])))
+
+
+def ctx_relatorio_notas(variante="com_notas"):
+    vazio = variante == "vazio"
+    linhas = [] if vazio else [
+        {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
+         "total_movimentacoes": 7, "total_avaliadas": 3, "media": 3.9, "faixa": "warn"},
+        {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
+         "total_movimentacoes": 0, "total_avaliadas": 0, "media": None, "faixa": "gray"},
+    ]
+    return {
+        "user": PROFESSOR, "request": Obj(user=PROFESSOR, path="/avaliacoes/relatorio-notas/"),
+        "form_filtro": _filtro_ciclo(com_erro=variante == "filtro_invalido"),
+        "linhas": linhas, "total_alunos": 0 if vazio else 1,
+        "total_avaliadas": 0 if vazio else 3, "total_movimentacoes": 0 if vazio else 7,
+        "media_geral": None if vazio else 3.9,
+        "breadcrumbs": [{"label": "Painel Administrativo", "url": "/"},
+                        {"label": "Relatório de Notas", "url": None}],
+    }
+
+
+def ctx_avaliacoes_pendentes(vazio=False):
+    pendentes = [] if vazio else [
+        Obj(pk=1, tipo_movimento=Obj(nome_movimentacao="Juntada de contestação"),
+            autor=ALUNO, data_movimento=QUANDO,
+            processo=Obj(numero=NUMERO, ciclo=Obj(nome_edicao="2026.2 — Prática Jurídica"))),
+    ]
+    return {
+        "user": PROFESSOR, "request": Obj(user=PROFESSOR, path="/avaliacoes/pendentes/"),
+        "form_filtro": _filtro_ciclo(),
+        "pendentes": pendentes, "total_alunos_aguardando": len(pendentes),
+        "mais_antiga": None if vazio else QUANDO,
+        "breadcrumbs": [{"label": "Painel Administrativo", "url": "/"},
+                        {"label": "Avaliações Pendentes", "url": None}],
     }
 
 
@@ -165,6 +224,32 @@ def ctx_visualizar(sem_movimentacao=False, com_arquivo=True, pode_alterar=True):
     }
 
 
+def ctx_documento_legal(logado=False):
+    usr = ALUNO if logado else Obj(is_authenticated=False)
+    return {
+        "user": usr, "request": Obj(user=usr),
+        "voltar_url": "base:home" if logado else "acesso:cadastro",
+        "nome_instituicao": "Faculdade IESGO",
+        "email_contato_dpo": "contato@simu-projudi.local",
+        "foro_comarca": "Goiânia/GO",
+        "versao_termos_atual": "1.0",
+        "data_vigencia_termos": date(2026, 9, 22),
+    }
+
+
+def ctx_aceite_termos(com_erro=False):
+    msg = (
+        "É necessário aceitar os Termos de Uso e a Política de Privacidade "
+        "para continuar."
+    )
+    erros = [msg] if com_erro else []
+    return {
+        "user": ALUNO, "request": Obj(user=ALUNO),
+        "form": Obj(aceite_termos=campo_form(None, erros)),
+        "next": "/processos/area-servidor/",
+    }
+
+
 def ctx_login(com_erros=False, expirada=False):
     anonimo = Obj(is_authenticated=False)
     erros = ["Por favor, entre com um Usuário e senha corretos."] if com_erros else []
@@ -181,6 +266,12 @@ def ctx_login(com_erros=False, expirada=False):
 
 
 CASOS = [
+    ("acesso/termos_de_uso.html", "visitante anônimo", ctx_documento_legal()),
+    ("acesso/termos_de_uso.html", "usuário logado", ctx_documento_legal(logado=True)),
+    ("acesso/politica_privacidade.html", "visitante anônimo", ctx_documento_legal()),
+    ("acesso/aceite_termos_pendente.html", "formulário limpo", ctx_aceite_termos()),
+    ("acesso/aceite_termos_pendente.html", "form com erro",
+     ctx_aceite_termos(com_erro=True)),
     ("acesso/login.html", "form limpo", ctx_login()),
     ("acesso/login.html", "credenciais inválidas", ctx_login(com_erros=True)),
     ("acesso/login.html", "sessão expirada", ctx_login(expirada=True)),
@@ -193,6 +284,11 @@ CASOS = [
     ("avaliacoes/avaliar.html", "sem histórico", ctx_avaliar(com_historico=False)),
     ("avaliacoes/minhas_notas.html", "com avaliações", ctx_minhas_notas()),
     ("avaliacoes/minhas_notas.html", "sem avaliação", ctx_minhas_notas(vazio=True)),
+    ("avaliacoes/relatorio_notas.html", "com notas", ctx_relatorio_notas()),
+    ("avaliacoes/relatorio_notas.html", "sem aluno", ctx_relatorio_notas("vazio")),
+    ("avaliacoes/relatorio_notas.html", "filtro inválido", ctx_relatorio_notas("filtro_invalido")),
+    ("avaliacoes/avaliacoes_pendentes.html", "com pendências", ctx_avaliacoes_pendentes()),
+    ("avaliacoes/avaliacoes_pendentes.html", "sem pendência", ctx_avaliacoes_pendentes(vazio=True)),
     ("ciclos/boas_vindas.html", "primeiro acesso", ctx_boas_vindas()),
     ("ciclos/boas_vindas.html", "ciclo anterior encerrado", ctx_boas_vindas(ja_participou=True)),
 ]
