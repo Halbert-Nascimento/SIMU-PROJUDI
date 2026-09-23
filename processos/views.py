@@ -1,14 +1,16 @@
 from __future__ import annotations
 
 import datetime
+import decimal
 import json
 
 from django.conf import settings as django_settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.db.models import Q
+from django.utils import timezone
 from django.http import JsonResponse
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
@@ -17,29 +19,39 @@ from django.urls import reverse
 from base.breadcrumbs import home_breadcrumb
 from django.views.decorators.http import require_POST
 
-from ciclos.models import CicloSimulacao, GrupoTrabalho
+from base.mensagens import propagar_erros_form
 
-from usuarios.models import Usuario
+from ciclos.models import GrupoTrabalho
 
 from .forms import ProcessoJudicialForm
-from .permissions import pode_visualizar_processo
+from .permissions import (
+    grupo_serventia_do_usuario,
+    pode_editar_processo,
+    pode_visualizar_processo,
+)
+from .services import aplicar_grupos
 from .utils import validar_multiplos_arquivos
+from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
+from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
+from movimentacoes.permissions import grupo_processo_do_usuario, pode_movimentar_processo
+from movimentacoes.services import registrar_movimentacao
+
 from .models import (
     ClasseProcessual,
     Comarca,
-    DocumentoAnexado,
-    MovimentacaoProcessual,
     ParteFicticia,
     PoloProcessual,
     ProcessoJudicial,
     StatusProcessoJudicial,
-    TipoMovimentacao,
+    TipoProcesso,
     VaraServentia,
 )
 
 
 def _saudacao():
-    hora = datetime.datetime.now().hour
+    # localtime(): USE_TZ=True guarda tudo em UTC; o "agora" do usuário é o de
+    # TIME_ZONE, não o do relógio do sistema onde o processo roda.
+    hora = timezone.localtime().hour
     if hora < 12:
         return "Bom Dia"
     if hora < 18:
@@ -101,13 +113,14 @@ def cadastrar_processo(request):
 
         if not tem_erro:
             try:
-                status_autuado = StatusProcessoJudicial.objects.get(
-                    nome_status__iexact="Autuado"
+                tipo_cadastro = TipoMovimentacao.objects.select_related("efeito_status").get(
+                    nome_movimentacao="Protocolo da Petição Inicial"
                 )
-            except StatusProcessoJudicial.DoesNotExist:
+            except TipoMovimentacao.DoesNotExist:
                 messages.error(
                     request,
-                    'Status "Autuado" não encontrado. Contate o administrador do sistema.',
+                    'Tipo de movimentação "Protocolo da Petição Inicial" não encontrado. '
+                    "Contate o administrador do sistema.",
                     extra_tags="processo",
                 )
                 return render(
@@ -121,14 +134,17 @@ def cadastrar_processo(request):
             with transaction.atomic():
                 processo = form.save(commit=False)
                 processo.numero = ProcessoJudicial.gerar_numero_cnj(
-                    ano=datetime.datetime.now().year,
+                    # o ano entra no número CNJ, que é único e nunca recalculado:
+                    # na virada do ano um servidor em UTC geraria o ano seguinte
+                    ano=timezone.localtime().year,
                     tr=26,
                     origem=processo.vara.comarca_id,
                 )
                 processo.ciclo = ciclo
-                processo.status_atual = status_autuado
+                processo.status_atual = tipo_cadastro.efeito_status
                 processo.save()
 
+                # Livre para qualquer papel — o vínculo formal ao grupo (e ao polo) só acontece na Autuação
                 grupo_criador = request.user.grupos_trabalho.filter(ciclo=ciclo).first()
                 if grupo_criador:
                     processo.grupos.add(grupo_criador)
@@ -147,14 +163,11 @@ def cadastrar_processo(request):
                         tipo_polo="Terceiro",
                     )
 
-                tipo_cadastro, _ = TipoMovimentacao.objects.get_or_create(
-                    nome_movimentacao="Cadastro do Processo",
-                )
-                mov_cadastro = MovimentacaoProcessual.objects.create(
-                    descricao_evento=f'Processo "{processo.numero}" cadastrado.',
+                mov_cadastro = registrar_movimentacao(
                     processo=processo,
                     autor=request.user,
-                    tipo_movimento=tipo_cadastro,
+                    tipo_movimentacao=tipo_cadastro,
+                    descricao_evento=f'Processo "{processo.numero}" cadastrado.',
                 )
 
                 for arquivo, titulo in arquivos_validos:
@@ -171,9 +184,7 @@ def cadastrar_processo(request):
             )
             return redirect("processos:cadastrar_processo")
         else:
-            for erros in form.errors.values():
-                for erro in erros:
-                    messages.error(request, erro, extra_tags="processo")
+            propagar_erros_form(request, form, extra_tags="processo")
 
             # Restaura os polos no contexto para re-renderização com os dados preservados
             if polo_ativo_ids:
@@ -242,7 +253,7 @@ def pagina_aluno(request):
                 ciclo=grupo.ciclo,
             )
             .select_related("classe", "status_atual", "vara", "vara__comarca")
-            .prefetch_related("polos__parte")
+            .prefetch_related("polos__parte", "grupos")
         )
     else:
         processos = (
@@ -272,6 +283,15 @@ def pagina_aluno(request):
     # Paginação
     paginator = Paginator(processos, 10)
     page_obj = paginator.get_page(request.GET.get("page", 1))
+
+    # O modal de atribuição marca por aqui quais grupos o processo já tem.
+    # Só a página corrente entra: a seleção em lote não alcança outras páginas.
+    grupos_vinculados_por_processo = {}
+    if is_serventia:
+        grupos_vinculados_por_processo = {
+            str(processo.pk): [g.pk for g in processo.grupos.all()]
+            for processo in page_obj
+        }
 
     x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
     ip = x_forwarded_for.split(",")[0].strip() if x_forwarded_for else request.META.get("REMOTE_ADDR", "")
@@ -303,6 +323,7 @@ def pagina_aluno(request):
             "filtro_situacao": filtro_situacao,
             "is_serventia": is_serventia,
             "grupos_ciclo": grupos_ciclo,
+            "grupos_vinculados_por_processo": grupos_vinculados_por_processo,
         },
     )
 
@@ -332,7 +353,6 @@ def criar_parte(request):
     if request.method != "POST":
         return JsonResponse({"erro": "Método não permitido."}, status=405)
 
-    import json
     try:
         dados = json.loads(request.body)
     except json.JSONDecodeError:
@@ -345,14 +365,122 @@ def criar_parte(request):
     if not nome or not cpf_cnpj or not tipo_pessoa:
         return JsonResponse({"erro": "Preencha todos os campos."}, status=400)
 
+    # choices do model não é restrição de banco: sem esta verificação uma
+    # string arbitrária é gravada (e acima de 8 caracteres vira DataError)
+    if tipo_pessoa not in ParteFicticia.TipoPessoa.values:
+        return JsonResponse({"erro": "Tipo de pessoa inválido."}, status=400)
+
     if ParteFicticia.objects.filter(cpf_cnpj=cpf_cnpj).exists():
         return JsonResponse({"erro": "Já existe uma parte com este CPF/CNPJ."}, status=400)
 
-    parte = ParteFicticia.objects.create(
-        nome_razao=nome,
-        cpf_cnpj=cpf_cnpj,
-        tipo_pessoa=tipo_pessoa,
+    try:
+        parte = ParteFicticia.objects.create(
+            nome_razao=nome,
+            cpf_cnpj=cpf_cnpj,
+            tipo_pessoa=tipo_pessoa,
+        )
+    except IntegrityError:
+        # quem perdeu a corrida com o unique de cpf_cnpj vê a mesma mensagem
+        # que quem foi barrado pela checagem acima
+        return JsonResponse({"erro": "Já existe uma parte com este CPF/CNPJ."}, status=400)
+
+    return JsonResponse({
+        "id": parte.id,
+        "nome_razao": parte.nome_razao,
+        "cpf_cnpj": parte.cpf_cnpj,
+        "tipo_pessoa": parte.tipo_pessoa,
+    })
+
+
+@login_required
+@require_POST
+def modificar_dados_processo(request, numero):
+    """Altera os dados cadastrais do processo — os que o form de cadastro edita."""
+    processo = get_object_or_404(ProcessoJudicial, numero=numero)
+
+    if not pode_editar_processo(request.user, processo):
+        raise PermissionDenied
+
+    try:
+        dados = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"erro": "JSON inválido."}, status=400)
+
+    vara = VaraServentia.objects.filter(pk=dados.get("vara_id")).first()
+    tipo = TipoProcesso.objects.filter(pk=dados.get("tipo_processo_id")).first()
+    classe = ClasseProcessual.objects.filter(pk=dados.get("classe_id")).first()
+
+    if vara is None or tipo is None or classe is None:
+        return JsonResponse({"erro": "Selecione vara, tipo e classe."}, status=400)
+
+    # o valor chega como string do campo mascarado; vazio vale zero
+    bruto = str(dados.get("valor_causa") or "0").replace(".", "").replace(",", ".")
+    try:
+        valor = decimal.Decimal(bruto)
+    except decimal.InvalidOperation:
+        return JsonResponse({"erro": "Valor da causa inválido."}, status=400)
+    if valor < 0:
+        return JsonResponse({"erro": "O valor da causa não pode ser negativo."}, status=400)
+
+    processo.vara = vara
+    processo.tipo_processo = tipo
+    processo.classe = classe
+    processo.valor_causa = valor
+    processo.segredo_justica = bool(dados.get("segredo_justica"))
+    processo.save(update_fields=[
+        "vara", "tipo_processo", "classe", "valor_causa", "segredo_justica",
+    ])
+
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+def alterar_parte(request, numero):
+    """Altera os dados cadastrais de uma parte que já figura no processo."""
+    processo = get_object_or_404(ProcessoJudicial, numero=numero)
+
+    if not pode_editar_processo(request.user, processo):
+        raise PermissionDenied
+
+    try:
+        dados = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({"erro": "JSON inválido."}, status=400)
+
+    # a parte tem que figurar NESTE processo — sem isso a rota viraria um
+    # editor aberto de qualquer parte do banco
+    polo = (
+        processo.polos.select_related("parte")
+        .filter(parte_id=dados.get("parte_id"))
+        .first()
     )
+    if polo is None:
+        return JsonResponse({"erro": "Esta parte não figura no processo."}, status=404)
+
+    nome = (dados.get("nome_razao") or "").strip()
+    cpf_cnpj = (dados.get("cpf_cnpj") or "").strip()
+    tipo_pessoa = (dados.get("tipo_pessoa") or "").strip()
+
+    if not nome or not cpf_cnpj or not tipo_pessoa:
+        return JsonResponse({"erro": "Preencha todos os campos."}, status=400)
+
+    if tipo_pessoa not in ParteFicticia.TipoPessoa.values:
+        return JsonResponse({"erro": "Tipo de pessoa inválido."}, status=400)
+
+    if (
+        ParteFicticia.objects.filter(cpf_cnpj=cpf_cnpj)
+        .exclude(pk=polo.parte_id)
+        .exists()
+    ):
+        return JsonResponse({"erro": "Já existe outra parte com este CPF/CNPJ."}, status=400)
+
+    parte = polo.parte
+    parte.nome_razao = nome
+    parte.cpf_cnpj = cpf_cnpj
+    parte.tipo_pessoa = tipo_pessoa
+    parte.save(update_fields=["nome_razao", "cpf_cnpj", "tipo_pessoa"])
+
     return JsonResponse({
         "id": parte.id,
         "nome_razao": parte.nome_razao,
@@ -394,7 +522,7 @@ def visualizar_processo(request, numero):
     movimentacoes_qs = list(
         processo.movimentacoes
         .select_related("tipo_movimento", "autor")
-        .prefetch_related("documentos")
+        .prefetch_related("documentos", "tipo_movimento__efeitos_colaterais")
         .order_by("-data_movimento")
     )
 
@@ -403,7 +531,7 @@ def visualizar_processo(request, numero):
     feedbacks_existentes = feedbacks_ids_para_movimentacoes(mov_ids)
 
     mov_cadastro = next(
-        (m for m in movimentacoes_qs if m.tipo_movimento.nome_movimentacao == "Cadastro do Processo"),
+        (m for m in movimentacoes_qs if m.tipo_movimento.nome_movimentacao == "Protocolo da Petição Inicial"),
         None,
     )
 
@@ -416,28 +544,47 @@ def visualizar_processo(request, numero):
         movimentacoes.append({
             "id": mov.id,
             "autor_id": mov.autor_id,
+            "grupo_processo_id": mov.grupo_processo_id,
             "nome": mov.tipo_movimento.nome_movimentacao,
             "descricao": mov.descricao_evento,
             "data": mov.data_movimento,
             "autor_nome": mov.autor.get_full_name() or mov.autor.username,
             "documentos": list(mov.documentos.all()),
             "tem_feedback": mov.id in feedbacks_existentes,
+            "efeitos_colaterais": [e.categoria for e in mov.tipo_movimento.efeitos_colaterais.all()],
         })
 
     if mov_cadastro:
         movimentacoes.append({
             "id": mov_cadastro.id,
             "autor_id": mov_cadastro.autor_id,
-            "nome": "Petição Inicial",
+            "grupo_processo_id": mov_cadastro.grupo_processo_id,
+            "nome": mov_cadastro.tipo_movimento.nome_movimentacao,
             "descricao": mov_cadastro.descricao_evento,
             "data": mov_cadastro.data_movimento,
             "autor_nome": mov_cadastro.autor.get_full_name() or mov_cadastro.autor.username,
             "documentos": list(mov_cadastro.documentos.all()),
             "tem_feedback": mov_cadastro.id in feedbacks_existentes,
+            "efeitos_colaterais": [e.categoria for e in mov_cadastro.tipo_movimento.efeitos_colaterais.all()],
         })
 
     from avaliacoes.permissions import perfil_pode_avaliar
     pode_avaliar = perfil_pode_avaliar(request.user)
+    pode_movimentar = pode_movimentar_processo(request.user, processo)
+    mantem_autos = pode_editar_processo(request.user, processo)
+
+    # o lápis segue exatamente a regra que a view de edição aplica
+    # (movimentacoes.permissions.pode_editar_movimentacao): só o grupo dono do
+    # registro corrige, nunca outro grupo vinculado ao processo. O grupo do
+    # usuário é resolvido uma vez fora do laço — aquela função consulta o banco
+    # e chamá-la por linha seria um N+1.
+    grupo_processo_usuario = grupo_processo_do_usuario(request.user, processo)
+    for item in movimentacoes:
+        item["pode_editar"] = (
+            grupo_processo_usuario is not None
+            and item["grupo_processo_id"] is not None
+            and item["grupo_processo_id"] == grupo_processo_usuario.pk
+        )
 
     return render(
         request,
@@ -447,6 +594,23 @@ def visualizar_processo(request, numero):
             "polos_ativo": polos_ativo,
             "polos_passivo": polos_passivo,
             "polos_terceiro": polos_terceiro,
+            "pode_editar_processo": mantem_autos,
+            "pode_movimentar_processo": pode_movimentar,
+            "comarcas": Comarca.objects.all().order_by("nome"),
+            "tipos_processo": TipoProcesso.objects.all().order_by("nome"),
+            "classes_processuais": ClasseProcessual.objects.all().order_by("nome"),
+            "varas_da_comarca": VaraServentia.objects.filter(
+                comarca_id=processo.vara.comarca_id).order_by("nome"),
+            "partes_json": [
+                {
+                    "id": p.parte_id,
+                    "nome_razao": p.parte.nome_razao,
+                    "cpf_cnpj": p.parte.cpf_cnpj,
+                    "tipo_pessoa": p.parte.tipo_pessoa,
+                    "polo": p.get_tipo_polo_display(),
+                }
+                for p in processo.polos.all()
+            ],
             "grupo_serventia": grupo_serventia,
             "grupos_vinculados": grupos_vinculados,
             "movimentacoes": movimentacoes,
@@ -468,38 +632,78 @@ def atribuir_grupo_processos(request):
         return JsonResponse({"erro": "JSON inválido."}, status=400)
 
     processo_ids = dados.get("processo_ids", [])
-    grupo_ids = dados.get("grupo_ids", [])
+    grupo_ids_adicionar = dados.get("grupo_ids_adicionar", [])
+    grupo_ids_remover = dados.get("grupo_ids_remover", [])
+    remover_tudo = dados.get("remover_tudo", False)
 
     if not processo_ids:
         return JsonResponse({"erro": "Nenhum processo selecionado."}, status=400)
+    if not remover_tudo and not grupo_ids_adicionar and not grupo_ids_remover:
+        return JsonResponse({"erro": "Nenhuma alteração selecionada."}, status=400)
 
     ciclo = request.ciclo_ativo
     if not ciclo:
         return JsonResponse({"erro": "Nenhum ciclo ativo selecionado."}, status=400)
 
-    grupo_usuario = (
-        request.user.grupos_trabalho
-        .filter(ciclo=ciclo, cargo_simulacao__cod="SC")
-        .first()
-    )
-    if not grupo_usuario:
+    grupo_serventia = grupo_serventia_do_usuario(request.user, ciclo)
+    if grupo_serventia is None:
         return JsonResponse({"erro": "Permissão negada."}, status=403)
 
-    processos = ProcessoJudicial.objects.filter(
-        pk__in=processo_ids,
-        ciclo=grupo_usuario.ciclo,
+    # materializa a lista: sem isso o queryset é reavaliado a cada uso e o
+    # len() final custa mais um SELECT. select_related("status_atual") alimenta
+    # a checagem de "Protocolado" que aplicar_grupos faz por processo.
+    processos = list(
+        ProcessoJudicial.objects.filter(
+            pk__in=processo_ids,
+            ciclo=ciclo,
+        ).select_related("status_atual")
     )
 
-    if grupo_ids:
-        grupos = GrupoTrabalho.objects.filter(
-            pk__in=grupo_ids,
-            ciclo=grupo_usuario.ciclo,
+    # pré-busca dos dois tipos possíveis de movimentação: aplicar_grupos() escolhe um deles
+    # por processo, e sem isso o laço abaixo repetiria o mesmo SELECT a cada volta
+    tipos_movimentacao = {
+        t.nome_movimentacao: t
+        for t in TipoMovimentacao.objects.select_related("efeito_status").filter(
+            nome_movimentacao__in=[NOME_AUTUACAO, NOME_REDISTRIBUICAO]
         )
-        for processo in processos:
-            processo.grupos.add(*grupos)
-    else:
-        for processo in processos:
-            processo.grupos.clear()
+    }
 
-    return JsonResponse({"sucesso": True, "atualizados": processos.count()})
+    # atomic(): em autocommit uma falha no meio do laço deixaria parte dos
+    # processos alterada e parte não, com o cliente recebendo só um erro genérico
+    with transaction.atomic():
+        if remover_tudo:
+            # cada processo passa por aplicar_grupos(): sem isso o histórico e a notificação
+            # de quem saiu se perdem (grupo_processo das movimentações é SET_NULL)
+            for processo in processos:
+                aplicar_grupos(
+                    processo,
+                    grupos_adicionar=[],
+                    grupos_remover=[],
+                    ator=request.user,
+                    grupo_serventia=grupo_serventia,
+                    remover_todos=True,
+                    tipos_movimentacao=tipos_movimentacao,
+                )
+        else:
+            grupos_adicionar = list(
+                GrupoTrabalho.objects.filter(
+                    pk__in=grupo_ids_adicionar, ciclo=ciclo
+                ).select_related("cargo_simulacao")
+            )
+            grupos_remover = list(
+                GrupoTrabalho.objects.filter(
+                    pk__in=grupo_ids_remover, ciclo=ciclo
+                ).select_related("cargo_simulacao")
+            )
+            for processo in processos:
+                aplicar_grupos(
+                    processo,
+                    grupos_adicionar=grupos_adicionar,
+                    grupos_remover=grupos_remover,
+                    ator=request.user,
+                    grupo_serventia=grupo_serventia,
+                    tipos_movimentacao=tipos_movimentacao,
+                )
+
+    return JsonResponse({"sucesso": True, "atualizados": len(processos)})
 

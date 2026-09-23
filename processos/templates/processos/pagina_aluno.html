@@ -1,208 +1,143 @@
 {% extends 'base/base.html' %}
+{% load ui %}
+{% load processos_ui %}
 {% load static %}
 
-{% block title %}Processo Judicial - Área do Servidor{% endblock %}
+{% block title %}Processo Judicial - Área do Aluno{% endblock %}
 
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <style>
-    .section-title {
-        color: #1a5b9e;
-        font-size: 13px;
-        font-weight: bold;
-        text-transform: uppercase;
-        padding: 6px 0 6px 8px;
-        border-left: 4px solid #1a5b9e;
-        background: #f4f4f4;
-        margin-bottom: 0;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-    }
-    .tbl-projudi {
-        width: 100%;
-        border-collapse: collapse;
-        font-size: 12px;
-    }
-    .tbl-projudi thead th {
-        background: #e0e0e0;
-        text-align: left;
-        font-weight: bold;
-        color: #333;
-        padding: 6px 10px;
-        border: 1px solid #c8c8c8;
-        font-size: 12px;
-    }
-    .tbl-projudi tbody td {
-        padding: 6px 10px;
-        border: 1px solid #d8d8d8;
-        background: #fff;
-        vertical-align: middle;
-    }
-    .tbl-projudi tbody tr:nth-child(even) td { background: #ececec; }
-    .tbl-projudi tbody tr:hover td { background: #fffbe5; }
-    .tbl-projudi a { color: #1a5b9e; font-weight: bold; }
-    .tbl-projudi a:hover { text-decoration: underline; }
-    .pill {
-        display: inline-block;
-        padding: 1px 7px;
-        font-size: 10px;
-        font-weight: bold;
-        border-radius: 10px;
-        text-transform: uppercase;
-    }
-    .pill.ok { background: #dff5e1; color: #2e7d32; border: 1px solid #bee0c2; }
-    .pill.gray { background: #eee; color: #555; border: 1px solid #ccc; }
-    .pill.warn { background: #fff4e0; color: #a96400; border: 1px solid #f1d59c; }
-
+    /* Filtros em linha — guia seção 05: gap 12px, alinhamento flex-end,
+       botões empurrados por margin-left auto. */
     .filtros {
-        background: #f4f4f4;
-        border: 1px solid #d1d1d1;
-        padding: 10px 12px;
+        background: #fbfbfc;
+        border: 1px solid #e2e5ea;
+        padding: 14px 16px;
         display: flex;
-        gap: 10px;
+        gap: 12px;
         align-items: flex-end;
         flex-wrap: wrap;
     }
     .filtros label {
-        font-size: 11px;
-        font-weight: bold;
-        color: #444;
         display: block;
-        margin-bottom: 3px;
+        font-size: calc(10px * var(--escala-fonte, 1));
+        font-weight: 600;
+        letter-spacing: .1em;
         text-transform: uppercase;
+        color: #6b7280;
+        margin-bottom: 5px;
     }
     .filtros input, .filtros select {
-        border: 1px solid #b8b8b8;
-        padding: 4px 6px;
-        font-size: 12px;
-        background: #fff;
+        border: 1px solid #d3d7de;
         border-radius: 2px;
+        padding: 8px 9px;
+        font-size: calc(12px * var(--escala-fonte, 1));
+        background: #fff;
+        color: #23262e;
     }
     .filtros input:focus, .filtros select:focus {
         outline: none;
-        border-color: #1a5b9e;
-        box-shadow: 0 0 0 1px #1a5b9e;
+        border-color: #1f4f9c;
     }
-    .btn-proj {
-        background: #1e5894;
-        color: #fff;
-        padding: 5px 14px;
-        font-size: 11px;
-        font-weight: bold;
-        text-transform: uppercase;
-        border: 1px solid #154170;
-        border-radius: 2px;
-        cursor: pointer;
+    .filtros .acoes { margin-left: auto; display: flex; gap: 8px; }
+    /* O botão do guia (~33,75px) é mais baixo que o campo do guia (37,2px), e com
+       `align-items: flex-end` a folga de 3,45px aparecia toda no topo. Os dois
+       valores vêm do guia e são incompatíveis por construção: o padding do campo
+       é fixado textualmente (seção 05) e a altura do botão é chamada de
+       "resultante" (seção 04) — então quem cede é o botão. A conta fica escrita
+       para quem mexer no campo saber o que reajustar aqui.
+       As telas processuais resolvem o mesmo desencontro com `items-stretch`, que
+       aqui esticaria o botão sobre rótulo + campo: o rótulo mora DENTRO da coluna. */
+    .filtros .acoes > * {
+        min-height: calc(8px + 8px + (12px * 1.6) + 2px);   /* = altura do campo */
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
-    .btn-proj:hover { background: #226bb8; }
-    .btn-sec {
-        background: #fff;
-        color: #333;
-        border: 1px solid #b8b8b8;
-        padding: 5px 14px;
-        font-size: 11px;
-        font-weight: bold;
-        text-transform: uppercase;
-        border-radius: 2px;
-        cursor: pointer;
-    }
-    .btn-sec:hover { background: #eee; }
 
-    /* Modal */
-    .modal-overlay {
-        position: fixed; inset: 0; background: rgba(0,0,0,.45);
-        display: none; align-items: center; justify-content: center; z-index: 100;
-    }
-    .modal-overlay.open { display: flex; }
-    .modal {
-        background: #fff; width: 580px; max-width: 92vw;
-        border-radius: 4px; overflow: hidden;
-        box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
-        transform: scale(.96); transition: transform .15s ease;
-    }
-    .modal-overlay.open .modal { transform: scale(1); }
-
+    /* Cartão de grupo dentro do modal de atribuição */
     .grp-card {
-        border: 1px solid #d1d1d1; border-radius: 3px; padding: 10px;
-        display: flex; align-items: center; gap: 10px; cursor: pointer;
-        background: #fff; transition: all .12s;
+        position: relative;
+        border: 1px solid #e2e5ea;
+        padding: 11px 12px;
+        display: flex; align-items: center; gap: 11px;
+        cursor: pointer; background: #fff;
+        transition: background-color .12s ease, border-color .12s ease;
     }
-    .grp-card:hover { background: #f4f9ff; border-color: #1a5b9e; }
-    .grp-card.selected { background: #e9f1fa; border-color: #1a5b9e; box-shadow: inset 0 0 0 1px #1a5b9e; }
+    .grp-card:hover { background: #f7faff; border-color: #1f4f9c; }
+    .grp-card.selected { background: #f7faff; border-color: #1f4f9c; }
+    .grp-card.marcado-remover { background: #fdeeee; border-color: #f3cfcf; }
+    /* Totalmente vinculado: o corpo não é mais um alvo de clique válido — só
+       a lixeira desvincula — então o hover de seleção não se aplica aqui.
+       :not(.marcado-remover) preserva o hover vermelho de quem já foi marcado
+       pra sair, que é o card também vinculado. */
+    .grp-card.vinculado:not(.marcado-remover) { cursor: default; }
+    .grp-card.vinculado:not(.marcado-remover):hover { background: #fff; border-color: #e2e5ea; }
+    /* selecao marcada pela faixa de 3px do guia (secao 01), nao por sombra —
+       o mesmo indicador que o .grupo-item de gerenciar_grupos usa. Remoção
+       pendente usa a mesma faixa, em vermelho, pra reaproveitar um único
+       mecanismo visual de "isto vai mudar" nos dois estados. */
+    .grp-card.selected::before, .grp-card.marcado-remover::before {
+        content: ''; position: absolute; left: 0; top: 0; bottom: 0;
+        width: 3px; background: #1f4f9c;
+    }
+    .grp-card.marcado-remover::before { background: #b33a3a; }
     .grp-avatar {
-        width: 36px; height: 36px; border-radius: 50%;
-        background: #1a5b9e; color: #fff;
+        width: 34px; height: 34px; border-radius: 50%;
+        background: #1f4f9c; color: #fff;
         display: flex; align-items: center; justify-content: center;
-        font-weight: bold; font-size: 13px; flex-shrink: 0;
+        font-weight: 600; font-size: calc(12px * var(--escala-fonte, 1)); flex-shrink: 0;
     }
-    .grp-card .check { color: #ccc; font-size: 18px; }
-    .grp-card.selected .check { color: #1a5b9e; }
-
-    /* Toast */
-    .toast {
-        position: fixed; bottom: 24px; right: 24px;
-        background: #2e7d32; color: #fff; padding: 12px 18px;
-        border-radius: 3px; font-size: 13px; font-weight: bold;
-        box-shadow: 0 6px 16px rgba(0,0,0,.2);
-        display: flex; align-items: center; gap: 8px;
-        transform: translateY(20px); opacity: 0; pointer-events: none;
-        transition: all .25s ease; z-index: 200;
+    .grp-card .check { color: #d3d7de; font-size: calc(16px * var(--escala-fonte, 1)); }
+    .grp-card.selected .check { color: #1f4f9c; }
+    .grp-card.marcado-remover .check { color: #b33a3a; }
+    /* dois seletores de classe para vencer o display:inline-flex de .pill,
+       que o `hidden` do Tailwind só venceria por ordem de carga */
+    .grp-card .grp-vinculo { flex-shrink: 0; }
+    .grp-card .grp-vinculo.oculto { display: none; }
+    /* Lixeira por card: só aparece em grupo já vinculado (Etapa 2 do desenho
+       de correção do modal). Ícone dimensionado por valor fixo é aceito pelo
+       guia — a escala de texto não cobre ícone. */
+    .grp-card .grp-remover {
+        flex-shrink: 0; border: none; background: transparent; cursor: pointer;
+        padding: 4px; color: #9aa1ad; font-size: calc(13px * var(--escala-fonte, 1));
     }
-    .toast.show { transform: translateY(0); opacity: 1; }
+    .grp-card .grp-remover:hover { color: #b33a3a; }
+    .grp-card .grp-remover.oculto { display: none; }
+    /* Painel de confirmação substitui a lista de cards no corpo do modal —
+       mesmo mecanismo pra troca de papel, remoção de um grupo e remoção
+       total, em vez de três diálogos diferentes. */
+    #grpSelecao.oculto, #grpConfirmacao.oculto, #grpAcoes.oculto { display: none; }
+    /* .modal-acoes do componente (componentes.css) empurra tudo pra direita;
+       só este modal separa o destrutivo à esquerda do par cancelar/confirmar,
+       então o ajuste fica aqui, não no componente compartilhado. */
+    #grpModal .modal-acoes { justify-content: space-between; }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Navigation Bar -->
-<nav class="bg-fundo-caixa border-b border-borda sticky top-[45px] z-40">
-    <div class="w-full max-w-[1200px] mx-auto px-6 py-2 flex items-center justify-between text-[12px]">
-        <div class="flex items-center gap-5">
-            <a href="{% url 'processos:pagina_aluno' %}" class="hover:underline text-texto-principal font-medium">Pagina Inicial</a>
-
-            <!-- Processos com Dropdown -->
-            <div class="relative group">
-                <a href="#" class="hover:underline text-texto-principal font-medium py-1 inline-block">Processos</a>
-                <div class="hidden group-hover:block absolute left-0 top-full bg-fundo-container border border-borda shadow-md min-w-[230px] z-50 rounded">
-                    <a href="{% url 'processos:cadastrar_processo' %}" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Cadastrar Processos</a>
-                    <a href="#" class="block px-4 py-2.5 text-texto-principal hover:bg-fundo-caixa border-b border-borda/50 transition-colors">Consultar Todos</a>
-                </div>
-            </div>
-
-            <a href="#" class="hover:underline text-texto-principal font-medium">Audiencias</a>
-            {% if request.user.tipo_perfil_global == "Aluno" %}
-            <a href="{% url 'avaliacoes:minhas_notas' %}" class="hover:underline text-texto-principal font-medium">Minhas Notas</a>
-            {% endif %}
-        </div>
-        <div class="flex items-center gap-1 text-texto-secundario">
-            <i class="fas fa-clock text-[11px]"></i>
-            <span id="session-debug-timer" title="Tempo restante de sessão">--:--</span>
-        </div>
-    </div>
-</nav>
+{% nav_secundaria ativo='inicio' %}
 
 <!-- Main Content -->
-<main class="max-w-container mx-auto px-6 py-5">
+<main class="max-w-conteudo mx-auto px-7 py-5">
 
     <!-- Cabecalho -->
-    <div class="mb-4 pb-3 border-b border-gray-200 flex items-end gap-4">
+    <div class="mb-5 pb-4 border-b border-contorno flex items-end gap-4">
         <div class="flex-1">
-            <h1 class="text-[#1a5b9e] text-2xl font-bold flex items-center gap-2">
-                {% if is_serventia %}
-                <i class="fa-solid fa-user-tie"></i> Área do Serventuário
-                {% else %}
-                <i class="fa-solid fa-user"></i> Área do Servidor
-                {% endif %}
+            <h1 class="text-navy text-h1 font-bold">
+                Área do Aluno
             </h1>
-            <p class="text-[12px] text-gray-700 mt-1">
-                {{ saudacao }}, <strong>{% if usuario.get_full_name %}{{ usuario.get_full_name|upper }}{% else %}{{ usuario.username|upper }}{% endif %}</strong> | Seja bem vindo ao <strong>Processo Judicial</strong>
+            <p class="text-corpo text-texto-neutro mt-1.5">
+                {{ saudacao }}, <strong>{% if usuario.get_full_name %}{{ usuario.get_full_name|upper }}{% else %}{{ usuario.username|upper }}{% endif %}</strong> | Seja bem vindo ao <strong>Simulador de Processo Judicial</strong>
             </p>
             {% if serventia %}
-            <p class="text-[12px] text-gray-700">{{ serventia }}{% if cargo %} — {{ cargo }}{% endif %}</p>
+            <p class="text-corpo text-texto-neutro">{{ serventia }}{% if cargo %} — {{ cargo }}{% endif %}</p>
             {% endif %}
-            <p class="text-[12px] text-gray-700">E-mail: <span class="text-[#1a5b9e]">{{ usuario.email }}</span></p>
+            <p class="text-corpo text-texto-neutro">E-mail: <span class="text-acao">{{ usuario.email }}</span></p>
         </div>
-        <div class="text-[11px] text-gray-500 text-right">
+        <div class="text-apoio text-rotulo text-right">
             {% if penultimo_login %}
             <div>Último acesso: <strong>{{ penultimo_login|date:"d/m/Y" }} às {{ penultimo_login|date:"H:i" }}</strong></div>
             {% endif %}
@@ -217,7 +152,7 @@
     <form method="GET" action="{% url 'processos:pagina_aluno' %}" class="filtros mb-5">
         <div>
             <label>Nº do Processo</label>
-            <input type="text" name="numero" value="{{ filtro_numero }}" placeholder="0000000-00.0000.0.00.0000" style="width:220px;">
+            <input type="text" name="numero" value="{{ filtro_numero }}" placeholder="0000000-00.0000.0.00.0000" class="font-mono" style="width:230px;">
         </div>
         <div>
             <label>Classe</label>
@@ -237,23 +172,23 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="flex gap-2">
-            <button type="submit" class="btn-proj"><i class="fa-solid fa-magnifying-glass mr-1"></i> Pesquisar</button>
-            <a href="{% url 'processos:pagina_aluno' %}" class="btn-sec">Limpar</a>
+        <div class="acoes">
+            <button type="submit" class="{% classe_botao 'primario' padding=True %}"><i class="fa-solid fa-magnifying-glass mr-1.5"></i> Pesquisar</button>
+            <a href="{% url 'processos:pagina_aluno' %}" class="{% classe_botao 'secundario' padding=True %} inline-flex items-center">Limpar</a>
         </div>
     </form>
 
     <!-- Tabela de processos -->
-    <div class="flex items-center justify-between mb-2">
-        <h2 class="section-title flex-1" style="margin:0;">
+    <h2 class="section-title justify-between">
+        <span class="flex items-center gap-2">
             <i class="fa-solid fa-list"></i> {% if is_serventia %}PROCESSOS DA VARA{% else %}PROCESSOS VINCULADOS{% endif %}
-        </h2>
+        </span>
         {% if page_obj %}
-        <div class="text-[11px] text-gray-600 ml-2">
-            Exibindo <strong>{{ page_obj|length }}</strong> de <strong>{{ total_processos }}</strong> processo{{ total_processos|pluralize:"s" }}
-        </div>
+        <span class="text-apoio text-rotulo font-normal normal-case tracking-normal">
+            Exibindo <strong class="font-semibold text-texto">{{ page_obj|length }}</strong> de <strong class="font-semibold text-texto">{{ total_processos }}</strong> processo{{ total_processos|pluralize:"s" }}
+        </span>
         {% endif %}
-    </div>
+    </h2>
 
     <div class="overflow-x-auto">
         <table class="tbl-projudi">
@@ -271,21 +206,15 @@
                 {% for processo in page_obj %}
                 <tr data-id="{{ processo.id }}">
                     {% if is_serventia %}<td><input type="checkbox" class="rowChk" value="{{ processo.id }}"></td>{% endif %}
-                    <td class="font-mono text-[11px]"><a href="{% url 'processos:visualizar_processo' processo.numero %}">{{ processo.numero }}</a></td>
-                    <td class="text-[11px]">{{ processo.partes_resumo }}</td>
-                    <td class="text-[11px]">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
+                    <td class="font-mono text-dado"><a href="{% url 'processos:visualizar_processo' processo.numero %}">{{ processo.numero }}</a></td>
+                    <td class="text-dado">{{ processo.partes_resumo }}</td>
+                    <td class="text-apoio text-rotulo">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
                     <td>
-                        {% if processo.status_atual.nome_status == "Arquivado" %}
-                            <span class="pill gray">{{ processo.status_atual.nome_status }}</span>
-                        {% elif processo.status_atual.nome_status == "Suspenso" %}
-                            <span class="pill warn">{{ processo.status_atual.nome_status }}</span>
-                        {% else %}
-                            <span class="pill ok">{{ processo.status_atual.nome_status }}</span>
-                        {% endif %}
+                        {% pill_status_processo processo.status_atual %}
                     </td>
                     {% if is_serventia %}
                     <td class="text-center">
-                        <button type="button" class="text-[#1a5b9e] hover:text-[#226bb8] btn-atribuir-row" data-id="{{ processo.id }}" data-num="{{ processo.numero }}" data-classe="{{ processo.classe.nome }}" title="Atribuir grupo">
+                        <button type="button" class="text-acao hover:text-navy btn-atribuir-row" data-id="{{ processo.id }}" data-num="{{ processo.numero }}" data-classe="{{ processo.classe.nome }}" title="Atribuir grupo">
                             <i class="fa-solid fa-users-gear"></i>
                         </button>
                     </td>
@@ -293,7 +222,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="{% if is_serventia %}6{% else %}4{% endif %}" class="text-center italic py-4" style="color: #666;">
+                    <td colspan="{% if is_serventia %}6{% else %}4{% endif %}" class="text-center italic py-6 text-rotulo">
                         Nenhum processo vinculado ao seu usuário.
                     </td>
                 </tr>
@@ -304,31 +233,31 @@
 
     <!-- Ações em lote (serventia) -->
     {% if is_serventia and page_obj %}
-    <div class="flex items-center justify-between mt-4 text-[12px]">
+    <div class="flex items-center justify-between mt-4 text-corpo">
         <div class="flex items-center gap-2">
-            <button type="button" class="btn-sec" id="bulkAssign">
+            <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="bulkAssign">
                 <i class="fa-solid fa-users-gear mr-1"></i> Atribuir grupo aos selecionados
             </button>
-            <span id="selCount" class="text-gray-500">0 selecionados</span>
+            <span id="selCount" class="text-rotulo">0 selecionados</span>
         </div>
 
         <!-- Paginação -->
         {% if page_obj.paginator.num_pages > 1 %}
         <div class="flex items-center gap-1">
             {% if page_obj.has_previous %}
-            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-left"></i></a>
-            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-left"></i></a>
+            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-left"></i></a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-left"></i></a>
             {% endif %}
             {% for num in page_obj.paginator.page_range %}
                 {% if num == page_obj.number %}
-                <span class="px-3 py-1 bg-[#1a5b9e] text-white font-bold text-[11px]">{{ num }}</span>
+                <span class="px-3 py-1.5 bg-navy text-white border border-navy font-bold text-meta">{{ num }}</span>
                 {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-3 text-[11px]">{{ num }}</a>
+                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-3 py-1.5 inline-flex items-center">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-right"></i></a>
-            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-right"></i></a>
+            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-right"></i></a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-right"></i></a>
             {% endif %}
         </div>
         {% endif %}
@@ -336,22 +265,22 @@
     {% else %}
     <!-- Paginação (sem serventia) -->
     {% if page_obj.paginator.num_pages > 1 %}
-    <div class="flex items-center justify-end mt-4 text-[12px]">
+    <div class="flex items-center justify-end mt-4 text-corpo">
         <div class="flex items-center gap-1">
             {% if page_obj.has_previous %}
-            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-left"></i></a>
-            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-left"></i></a>
+            <a href="?page=1{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-left"></i></a>
+            <a href="?page={{ page_obj.previous_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-left"></i></a>
             {% endif %}
             {% for num in page_obj.paginator.page_range %}
                 {% if num == page_obj.number %}
-                <span class="px-3 py-1 bg-[#1a5b9e] text-white font-bold text-[11px]">{{ num }}</span>
+                <span class="px-3 py-1.5 bg-navy text-white border border-navy font-bold text-meta">{{ num }}</span>
                 {% elif num > page_obj.number|add:"-3" and num < page_obj.number|add:"3" %}
-                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-3 text-[11px]">{{ num }}</a>
+                <a href="?page={{ num }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-3 py-1.5 inline-flex items-center">{{ num }}</a>
                 {% endif %}
             {% endfor %}
             {% if page_obj.has_next %}
-            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angle-right"></i></a>
-            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="btn-sec px-2"><i class="fa-solid fa-angles-right"></i></a>
+            <a href="?page={{ page_obj.next_page_number }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angle-right"></i></a>
+            <a href="?page={{ page_obj.paginator.num_pages }}{% if filtro_numero %}&numero={{ filtro_numero }}{% endif %}{% if filtro_classe %}&classe={{ filtro_classe }}{% endif %}{% if filtro_situacao %}&situacao={{ filtro_situacao }}{% endif %}" class="{% classe_botao 'secundario' %} px-2 py-1.5 inline-flex items-center"><i class="fa-solid fa-angles-right"></i></a>
             {% endif %}
         </div>
     </div>
@@ -362,72 +291,77 @@
 
 {% if is_serventia %}
 <!-- Modal: Atribuir Grupo -->
-<div class="modal-overlay" id="grpModal">
-    <div class="modal">
-        <div class="bg-[#153a61] text-white p-3 flex items-center justify-between">
-            <div class="text-[12px] font-bold uppercase flex items-center gap-2">
-                <i class="fa-solid fa-users-gear"></i> Atribuir Grupo ao Processo
-            </div>
-            <button type="button" id="modalClose" class="text-white hover:text-gray-300">
-                <i class="fa-solid fa-xmark"></i>
-            </button>
-        </div>
+{% modal id="grpModal" titulo="Atribuir Grupo ao Processo" icone="fa-users-gear" fechar_id="modalClose" %}
 
         <div class="p-5">
-            <div class="mb-3 text-[12px]">
-                <div class="text-gray-500 uppercase text-[10px] font-bold">Processo</div>
-                <div id="modalProcNum" class="font-bold text-[#1a5b9e]">—</div>
-                <div id="modalProcClass" class="text-gray-600">—</div>
+            <div class="mb-4 text-corpo">
+                <div class="text-rotulo uppercase text-micro font-semibold">Processo</div>
+                <div id="modalProcNum" class="font-mono font-medium text-acao text-dado mt-1">—</div>
+                <div id="modalProcClass" class="text-apoio text-rotulo">—</div>
             </div>
 
-            <div class="text-[11px] font-bold uppercase text-gray-600 mb-2">Selecione os grupos responsáveis</div>
-
-            <div class="space-y-2 max-h-[280px] overflow-y-auto pr-1" id="grpList">
-                {% for g in grupos_ciclo %}
-                <div class="grp-card" data-grupo-id="{{ g.id }}">
-                    <div class="grp-avatar">{{ g.nome|truncatechars:1 }}</div>
-                    <div class="flex-1">
-                        <div class="text-[13px] font-bold text-gray-800">{{ g.nome }}</div>
-                        <div class="text-[11px] text-gray-500">{{ g.cargo_simulacao.nome }}</div>
+            <div id="grpSelecao">
+                <div class="text-micro font-semibold uppercase text-rotulo mb-2.5">Selecione os grupos responsáveis</div>
+                <div class="space-y-2 max-h-[280px] overflow-y-auto pr-1" id="grpList">
+                    {% for g in grupos_ciclo %}
+                    <div class="grp-card" data-grupo-id="{{ g.id }}" data-cargo="{{ g.cargo_simulacao.cod }}">
+                        <div class="grp-avatar">{{ g.nome|truncatechars:1 }}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="text-dado font-semibold text-texto">{{ g.nome }}</div>
+                            <div class="text-meta text-rotulo">{{ g.cargo_simulacao.nome }}</div>
+                        </div>
+                        <span class="pill ok grp-vinculo oculto"></span>
+                        <button type="button" class="grp-remover oculto" title="Remover {{ g.nome }} do processo">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                        <i class="fa-solid fa-circle check"></i>
                     </div>
-                    <i class="fa-solid fa-circle check"></i>
+                    {% endfor %}
                 </div>
-                {% endfor %}
-                <div class="grp-card" data-grupo-id="">
-                    <div class="grp-avatar" style="background:#aaa;"><i class="fa-solid fa-ban"></i></div>
-                    <div class="flex-1">
-                        <div class="text-[13px] font-bold text-gray-800">Remover atribuição</div>
-                        <div class="text-[11px] text-gray-500">Processo ficará sem grupo definido</div>
-                    </div>
-                    <i class="fa-solid fa-circle check"></i>
+            </div>
+
+            <div id="grpConfirmacao" class="oculto">
+                <div class="text-corpo mb-4" id="grpConfirmacaoTexto"></div>
+                <div class="flex gap-2 justify-end">
+                    <button type="button" class="{% classe_botao 'primario' padding=True %}" id="grpConfirmacaoSim">Sim</button>
+                    <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="grpConfirmacaoNao">Não</button>
                 </div>
             </div>
         </div>
 
-        <div class="bg-gray-50 px-5 py-3 flex justify-end gap-2 border-t border-gray-200">
-            <button type="button" class="btn-sec" id="modalCancel">Cancelar</button>
-            <button type="button" class="btn-proj" id="modalConfirm">
-                <i class="fa-solid fa-check mr-1"></i> Confirmar Atribuição
+        <div class="modal-acoes" id="grpAcoes">
+            <button type="button" class="{% classe_botao 'destrutivo' padding=True %}" id="modalRemoverTudo">
+                <i class="fa-solid fa-trash-can mr-1.5"></i> Desvincular Grupos
             </button>
+            <div class="flex gap-2">
+                <button type="button" class="{% classe_botao 'primario' padding=True %}" id="modalConfirm">
+                    <i class="fa-solid fa-check mr-1.5"></i> Confirmar Atribuição
+                </button>
+                <button type="button" class="{% classe_botao 'secundario' padding=True %}" id="modalCancel">Cancelar</button>
+            </div>
         </div>
-    </div>
-</div>
+    {% endmodal %}
 
 <!-- Toast -->
-<div class="toast" id="toast">
-    <i class="fa-solid fa-circle-check"></i>
-    <span id="toastMsg"></span>
-</div>
+{% include 'base/components/_toast.html' %}
+
+{{ grupos_vinculados_por_processo|json_script:"grupos-vinculados" }}
 
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const csrfToken = "{{ csrf_token }}";
+    const gruposVinculados = JSON.parse(document.getElementById("grupos-vinculados").textContent);
     const modal = document.getElementById("grpModal");
     const selAllChk = document.getElementById("selAll");
     const selCountEl = document.getElementById("selCount");
+    const grpSelecao = document.getElementById("grpSelecao");
+    const grpConfirmacao = document.getElementById("grpConfirmacao");
+    const grpConfirmacaoTexto = document.getElementById("grpConfirmacaoTexto");
+    const grpAcoes = document.getElementById("grpAcoes");
     let modalProcessos = [];
     let selectedGrupoIds = new Set();
-    let removeMode = false;
+    let grupoIdsRemover = new Set();
+    let confirmacaoPendente = null;
 
     // --- Checkbox select all ---
     selAllChk.addEventListener("change", function () {
@@ -454,7 +388,9 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("modalProcNum").textContent = titulo;
         document.getElementById("modalProcClass").textContent = subtitulo;
         selectedGrupoIds.clear();
-        removeMode = false;
+        grupoIdsRemover.clear();
+        fecharConfirmacao();
+        renderGrpVinculos();
         renderGrpSelection();
         modal.classList.add("open");
     }
@@ -463,36 +399,198 @@ document.addEventListener("DOMContentLoaded", function () {
         modal.classList.remove("open");
     }
 
+    // Quantos dos processos abertos no modal já têm este grupo vinculado
+    function contarVinculos(grupoId) {
+        return modalProcessos.filter(function (processoId) {
+            const ids = gruposVinculados[String(processoId)] || [];
+            return ids.indexOf(Number(grupoId)) !== -1;
+        }).length;
+    }
+
+    function cardInfo(id) {
+        const card = document.querySelector('#grpList .grp-card[data-grupo-id="' + id + '"]');
+        return {
+            nome: card.querySelector(".text-dado").textContent.trim(),
+            cargoNome: card.querySelector(".text-meta").textContent.trim(),
+            cargo: card.dataset.cargo,
+        };
+    }
+
+    // Id do grupo (!= idExcluir) que já ocupa o mesmo papel de `cargo` no processo, ou null.
+    // Grupo já marcado pra sair (lixeira) não conta como ocupante: o usuário já decidiu
+    // desvinculá-lo, então selecionar outro do mesmo papel não é mais uma troca ambígua.
+    function grupoDoPapelJaVinculado(processoId, cargo, idExcluir) {
+        const ids = gruposVinculados[String(processoId)] || [];
+        for (let i = 0; i < ids.length; i++) {
+            const gid = String(ids[i]);
+            if (gid === idExcluir || grupoIdsRemover.has(gid)) continue;
+            const card = document.querySelector('#grpList .grp-card[data-grupo-id="' + gid + '"]');
+            if (card && card.dataset.cargo === cargo) return gid;
+        }
+        return null;
+    }
+
+    function renderGrpVinculos() {
+        const total = modalProcessos.length;
+        const grpList = document.getElementById("grpList");
+        const infos = [...grpList.querySelectorAll(".grp-card")].map(card => ({
+            card,
+            vinculados: contarVinculos(card.dataset.grupoId),
+        }));
+
+        infos.forEach(({ card, vinculados }) => {
+            const selo = card.querySelector(".grp-vinculo");
+            const lixeira = card.querySelector(".grp-remover");
+            // totalmente vinculado (a todos os processos abertos): corpo do card para
+            // de responder a clique, só a lixeira desvincula — nada a "adicionar" aqui
+            card.classList.toggle("vinculado", total > 0 && vinculados === total);
+            lixeira.classList.toggle("oculto", vinculados === 0);
+            if (vinculados === 0) {
+                selo.classList.add("oculto");
+                return;
+            }
+            if (total === 1) {
+                selo.textContent = "Já vinculado";
+            } else if (vinculados === total) {
+                selo.textContent = "Em todos os " + total;
+            } else {
+                selo.textContent = "Em " + vinculados + " de " + total;
+            }
+            selo.classList.toggle("gray", vinculados < total);
+            selo.classList.toggle("ok", vinculados === total);
+            selo.classList.remove("oculto");
+        });
+
+        // grupos com algum vínculo sobem pro topo — o serventuário vê primeiro o
+        // que já toca o(s) processo(s) aberto(s), antes dos ainda disponíveis
+        infos
+            .slice()
+            .sort((a, b) => (b.vinculados > 0) - (a.vinculados > 0))
+            .forEach(({ card }) => grpList.appendChild(card));
+    }
+
     function renderGrpSelection() {
         document.querySelectorAll("#grpList .grp-card").forEach(card => {
             const id = card.dataset.grupoId;
-            let isSelected;
-            if (id === "") {
-                isSelected = removeMode;
-            } else {
-                isSelected = selectedGrupoIds.has(id);
-            }
-            card.classList.toggle("selected", isSelected);
+            const selecionado = selectedGrupoIds.has(id);
+            const remover = grupoIdsRemover.has(id);
+            card.classList.toggle("selected", selecionado);
+            card.classList.toggle("marcado-remover", remover);
             const icon = card.querySelector(".check");
-            icon.className = `fa-solid ${isSelected ? "fa-circle-check" : "fa-circle"} check`;
+            let iconeClasse = "fa-circle";
+            if (remover) iconeClasse = "fa-circle-xmark";
+            else if (selecionado) iconeClasse = "fa-circle-check";
+            icon.className = `fa-solid ${iconeClasse} check`;
         });
     }
 
+    // --- Confirmação compartilhada: troca de papel, remoção de um grupo e
+    // remoção total passam todas por aqui, em vez de três diálogos diferentes.
+    // O rodapé (Desvincular Grupos/Cancelar/Confirmar) some enquanto isso —
+    // clicar neles no meio de uma confirmação pendente levaria a erro. ---
+    function abrirConfirmacao(opcoes) {
+        grpConfirmacaoTexto.textContent = opcoes.texto;
+        confirmacaoPendente = opcoes.aoConfirmar;
+        grpSelecao.classList.add("oculto");
+        grpAcoes.classList.add("oculto");
+        grpConfirmacao.classList.remove("oculto");
+    }
+
+    function fecharConfirmacao() {
+        confirmacaoPendente = null;
+        grpConfirmacao.classList.add("oculto");
+        grpSelecao.classList.remove("oculto");
+        grpAcoes.classList.remove("oculto");
+    }
+
+    document.getElementById("grpConfirmacaoSim").addEventListener("click", function () {
+        const acao = confirmacaoPendente;
+        fecharConfirmacao();
+        if (acao) acao();
+    });
+    document.getElementById("grpConfirmacaoNao").addEventListener("click", fecharConfirmacao);
+
+    // Clique no corpo do card: seleciona pra adicionar. Grupo já vinculado a
+    // todos os processos abertos não responde ao corpo — só a lixeira desvincula,
+    // não há nada a "adicionar" nele. Se o papel já está ocupado por outro grupo
+    // em algum processo aberto, pede confirmação — só marca a seleção se o
+    // serventuário confirmar a troca. SC não entra nessa checagem: ciclo pode ter
+    // mais de um grupo de cartório, então nunca é conflito de papel.
     document.querySelectorAll("#grpList .grp-card").forEach(card => {
         card.addEventListener("click", function () {
+            if (this.classList.contains("vinculado")) return;
             const id = this.dataset.grupoId;
-            if (id === "") {
-                removeMode = !removeMode;
-                if (removeMode) selectedGrupoIds.clear();
-            } else {
-                removeMode = false;
-                if (selectedGrupoIds.has(id)) {
-                    selectedGrupoIds.delete(id);
-                } else {
-                    selectedGrupoIds.add(id);
-                }
+            const cargo = this.dataset.cargo;
+
+            if (selectedGrupoIds.has(id)) {
+                selectedGrupoIds.delete(id);
+                renderGrpSelection();
+                return;
             }
-            renderGrpSelection();
+
+            if (cargo === "SC") {
+                selectedGrupoIds.add(id);
+                renderGrpSelection();
+                return;
+            }
+
+            const processosComConflito = modalProcessos.filter(function (pid) {
+                return grupoDoPapelJaVinculado(pid, cargo, id) !== null;
+            });
+
+            if (processosComConflito.length === 0) {
+                selectedGrupoIds.add(id);
+                renderGrpSelection();
+                return;
+            }
+
+            const novo = cardInfo(id);
+            let texto;
+            if (modalProcessos.length === 1) {
+                const ocupante = cardInfo(grupoDoPapelJaVinculado(modalProcessos[0], cargo, id));
+                texto = `O grupo "${ocupante.nome}" (${ocupante.cargoNome}) já está vinculado a este processo. Substituir por "${novo.nome}"?`;
+            } else {
+                texto = `${processosComConflito.length} de ${modalProcessos.length} processo(s) já têm um grupo diferente vinculado a esse papel. Substituir em todos?`;
+            }
+
+            abrirConfirmacao({
+                texto: texto,
+                aoConfirmar: function () {
+                    selectedGrupoIds.add(id);
+                    renderGrpSelection();
+                },
+            });
+        });
+    });
+
+    // Lixeira: marca um grupo específico pra remoção, sem afetar os demais —
+    // reversível clicando de novo, antes de "Confirmar Atribuição" gravar.
+    document.querySelectorAll(".grp-remover").forEach(btn => {
+        btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            const card = this.closest(".grp-card");
+            const id = card.dataset.grupoId;
+
+            if (grupoIdsRemover.has(id)) {
+                grupoIdsRemover.delete(id);
+                renderGrpSelection();
+                return;
+            }
+
+            const info = cardInfo(id);
+            const vinculados = contarVinculos(id);
+            const texto = vinculados === 1
+                ? `Remover o grupo "${info.nome}" deste processo?`
+                : `Remover o grupo "${info.nome}" de ${vinculados} processo(s)?`;
+
+            abrirConfirmacao({
+                texto: texto,
+                aoConfirmar: function () {
+                    grupoIdsRemover.add(id);
+                    selectedGrupoIds.delete(id);
+                    renderGrpSelection();
+                },
+            });
         });
     });
 
@@ -508,7 +606,7 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("bulkAssign").addEventListener("click", function () {
         const ids = getSelectedIds();
         if (ids.length === 0) {
-            showToast("Selecione ao menos um processo.", true);
+            showToast("Selecione ao menos um processo.", "atencao");
             return;
         }
         openModal(ids, `${ids.length} processo(s) selecionado(s)`, "Atribuição em lote");
@@ -518,53 +616,94 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("modalClose").addEventListener("click", closeModal);
     document.getElementById("modalCancel").addEventListener("click", closeModal);
 
-    // Confirmar atribuição
-    document.getElementById("modalConfirm").addEventListener("click", function () {
-        const grupoIds = removeMode ? [] : [...selectedGrupoIds].map(Number);
-        if (!removeMode && grupoIds.length === 0) {
-            showToast("Selecione ao menos um grupo.", true);
-            return;
-        }
+    // POST compartilhado por "Confirmar Atribuição" e "Desvincular Grupos"
+    function enviar(corpo, { mensagemSucesso, gruposAdicionar = [], gruposRemover = [], removerTudo = false }) {
         fetch("{% url 'processos:atribuir_grupo_processos' %}", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": csrfToken,
             },
-            body: JSON.stringify({
-                processo_ids: modalProcessos,
-                grupo_ids: grupoIds,
-            }),
+            body: JSON.stringify(corpo),
         })
         .then(r => r.json().then(data => ({ ok: r.ok, data })))
         .then(({ ok, data }) => {
             if (!ok) {
-                showToast(data.erro || "Erro ao atribuir grupo.", true);
+                showToast(data.erro || "Erro ao atualizar grupos.", "erro");
                 return;
             }
-            showToast(
-                removeMode
-                    ? "Atribuições removidas com sucesso!"
-                    : modalProcessos.length === 1
-                        ? `${grupoIds.length} grupo(s) atribuído(s) com sucesso!`
-                        : `Atribuição em lote concluída! (${data.atualizados} processos)`
-            );
+            showToast(typeof mensagemSucesso === "function" ? mensagemSucesso(data) : mensagemSucesso, "sucesso");
+
+            // espelha o que o servidor gravou: sem isso o selo de vínculo
+            // continuaria mostrando o estado anterior ao reabrir o modal.
+            // Filtrar por cargo reproduz exatamente a troca que o serviço faz —
+            // não é aproximação, é a mesma regra (um grupo por papel).
+            modalProcessos.forEach(function (processoId) {
+                const chave = String(processoId);
+                if (removerTudo) {
+                    gruposVinculados[chave] = [];
+                    return;
+                }
+                let atuais = gruposVinculados[chave] || [];
+                if (gruposRemover.length) {
+                    atuais = atuais.filter(gid => gruposRemover.indexOf(gid) === -1);
+                }
+                gruposAdicionar.forEach(function (gid) {
+                    const cargo = cardInfo(String(gid)).cargo;
+                    atuais = atuais.filter(function (existenteId) {
+                        if (existenteId === gid) return true;
+                        const existenteCard = document.querySelector('#grpList .grp-card[data-grupo-id="' + existenteId + '"]');
+                        return !existenteCard || existenteCard.dataset.cargo !== cargo;
+                    });
+                });
+                gruposVinculados[chave] = [...new Set([...atuais, ...gruposAdicionar])];
+            });
+
             closeModal();
             selAllChk.checked = false;
             document.querySelectorAll(".rowChk").forEach(c => c.checked = false);
             updateSelCount();
         })
-        .catch(() => showToast("Erro de conexão.", true));
+        .catch(() => showToast("Erro de conexão.", "erro"));
+    }
+
+    // Desvincular Grupos (rodapé): ação isolada, própria confirmação, executa
+    // na hora — não fica pendente esperando "Confirmar Atribuição".
+    document.getElementById("modalRemoverTudo").addEventListener("click", function () {
+        const texto = modalProcessos.length === 1
+            ? "Remover todos os grupos vinculados a este processo?"
+            : `Remover todos os grupos vinculados aos ${modalProcessos.length} processos selecionados?`;
+        abrirConfirmacao({
+            texto: texto,
+            aoConfirmar: function () {
+                enviar(
+                    { processo_ids: modalProcessos, remover_tudo: true },
+                    { removerTudo: true, mensagemSucesso: "Atribuições removidas com sucesso!" }
+                );
+            },
+        });
     });
 
-    // --- Toast ---
-    function showToast(msg, err) {
-        const t = document.getElementById("toast");
-        document.getElementById("toastMsg").textContent = msg;
-        t.style.background = err ? "#c0392b" : "#2e7d32";
-        t.classList.add("show");
-        setTimeout(() => t.classList.remove("show"), 2800);
-    }
+    // Confirmar Atribuição: grava de uma vez tudo que ficou marcado nos
+    // cards — adições (com troca já confirmada) e remoções pela lixeira.
+    document.getElementById("modalConfirm").addEventListener("click", function () {
+        const adicionar = [...selectedGrupoIds].map(Number);
+        const remover = [...grupoIdsRemover].map(Number);
+        if (adicionar.length === 0 && remover.length === 0) {
+            showToast("Selecione ao menos uma alteração.", "atencao");
+            return;
+        }
+        enviar(
+            { processo_ids: modalProcessos, grupo_ids_adicionar: adicionar, grupo_ids_remover: remover },
+            {
+                gruposAdicionar: adicionar,
+                gruposRemover: remover,
+                mensagemSucesso: data => modalProcessos.length === 1
+                    ? "Alterações aplicadas com sucesso!"
+                    : `Alteração em lote concluída! (${data.atualizados} processo(s))`,
+            }
+        );
+    });
 });
 </script>
 {% endif %}

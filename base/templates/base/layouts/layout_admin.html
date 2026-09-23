@@ -1,0 +1,15 @@
+{% extends 'base/base.html' %}
+
+{% comment %}
+Telas administrativas: mesmo cabeçalho de base.html, acrescido da saudação.
+O sino de notificações agora é central em base.html (fora deste bloco) e
+aparece em todas as telas autenticadas, não só nas administrativas.
+{% endcomment %}
+
+{% block header_saudacao %}
+{% if user.is_authenticated %}
+<span class="text-apoio font-semibold border-r border-white/20 pr-4 flex items-center gap-2 whitespace-nowrap">
+    <i class="fa-solid fa-circle-user text-base"></i> Olá, {{ user.tipo_perfil_global }} - {{ user.first_name }}
+</span>
+{% endif %}
+{% endblock %}

@@ -10,20 +10,32 @@ from django.urls import reverse
 from django.views.decorators.http import require_POST
 
 from base.breadcrumbs import home_breadcrumb
+from base.navegacao import home_do_usuario
+from base.decorators import exige_permissao
+from base.mensagens import propagar_erros_form
+
+from notificacoes.services import (
+    notificar_coordenador_atribuido,
+    notificar_mudanca_status_ciclo,
+    notificar_participante_adicionado,
+)
 
 from usuarios.models import Usuario
 
 from .forms import CicloSimulacaoForm, GrupoTrabalhoForm
 from .middleware import CICLO_SESSION_KEY
 from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
-from .permissions import pode_criar_ciclo, pode_editar_ciclo, pode_gerenciar_grupos_ciclo
+from .permissions import (
+    aguarda_vinculo_a_ciclo,
+    pode_criar_ciclo,
+    pode_editar_ciclo,
+    pode_gerenciar_grupos_ciclo,
+)
 
 
 @login_required
+@exige_permissao(pode_criar_ciclo)
 def criar_ciclo(request):
-    if not pode_criar_ciclo(request.user):
-        raise Http404()
-
     if request.method != "POST":
         raise Http404()
 
@@ -41,9 +53,7 @@ def criar_ciclo(request):
         ciclo.save()
         messages.success(request, f'Ciclo "{ciclo.nome_edicao}" criado com sucesso.')
     else:
-        for erros in form.errors.values():
-            for erro in erros:
-                messages.error(request, erro, extra_tags="ciclo")
+        propagar_erros_form(request, form, extra_tags="ciclo")
 
     return redirect("acesso:painel_administrativo")
 
@@ -58,6 +68,11 @@ def editar_ciclo(request, ciclo_id):
     if not pode_editar_ciclo(request.user, ciclo):
         raise Http404()
 
+    # Capturado ANTES do form: form.is_valid() já reatribui ciclo.status em
+    # memória (construct_instance), então capturar depois sempre daria igual.
+    status_anterior = ciclo.status
+    coordenador_anterior_id = ciclo.coordenador_id
+
     if request.method == "POST":
         form = CicloSimulacaoForm(request.POST, instance=ciclo, ator=request.user)
         if form.is_valid():
@@ -65,12 +80,21 @@ def editar_ciclo(request, ciclo_id):
             if "coordenador" in form.fields:
                 ciclo_salvo.coordenador = form.cleaned_data["coordenador"]
             ciclo_salvo.save()
+            notificar_mudanca_status_ciclo(
+                ciclo=ciclo_salvo,
+                status_anterior=status_anterior,
+                status_novo=ciclo_salvo.status,
+                ator=request.user,
+            )
+            notificar_coordenador_atribuido(
+                ciclo=ciclo_salvo,
+                coordenador_anterior_id=coordenador_anterior_id,
+                ator=request.user,
+            )
             messages.success(request, f'Ciclo "{ciclo_salvo.nome_edicao}" atualizado com sucesso.')
             return redirect("acesso:painel_administrativo")
         else:
-            for erros in form.errors.values():
-                for erro in erros:
-                    messages.error(request, erro)
+            propagar_erros_form(request, form)
     else:
         form = CicloSimulacaoForm(instance=ciclo, ator=request.user)
 
@@ -87,6 +111,7 @@ def editar_ciclo(request, ciclo_id):
 
 
 @login_required
+@exige_permissao(pode_criar_ciclo)
 def detalhe_ciclo(request, ciclo_id):
     ciclo = get_object_or_404(
         CicloSimulacao.objects
@@ -94,9 +119,6 @@ def detalhe_ciclo(request, ciclo_id):
         .prefetch_related("grupos__cargo_simulacao", "grupos__membros"),
         pk=ciclo_id,
     )
-
-    if not pode_criar_ciclo(request.user):
-        raise Http404()
 
     tp = request.user.tipo_perfil_global
     if tp == Usuario.TipoPerfilGlobal.PROFESSOR:
@@ -159,7 +181,7 @@ def gerenciar_grupos(request, ciclo_id):
             {
                 "id": m.pk,
                 "nome": m.get_full_name().strip() or m.username,
-                "matricula": m.username,
+                "email": m.email,
             }
             for m in grupo.membros.all()  # usa cache do prefetch_related
         ]
@@ -170,7 +192,7 @@ def gerenciar_grupos(request, ciclo_id):
         {
             "id": a.pk,
             "nome": a.get_full_name().strip() or a.username,
-            "matricula": a.username,
+            "email": a.email,
         }
         for a in alunos_disponiveis
     ]
@@ -201,9 +223,7 @@ def gerenciar_grupos(request, ciclo_id):
             return redirect("ciclos:gerenciar_grupos", ciclo_id=ciclo.pk)
         else:
             reabrir_modal = True
-            for erros in form.errors.values():
-                for erro in erros:
-                    messages.error(request, erro, extra_tags="grupo")
+            propagar_erros_form(request, form, extra_tags="grupo")
 
     return render(request, "ciclos/gerenciar_grupos.html", {
         "ciclo": ciclo,
@@ -252,13 +272,14 @@ def adicionar_membro(request, ciclo_id, grupo_id):
     with transaction.atomic():
         grupo.membros.add(usuario)
         ciclo.participantes.add(usuario)  # sincroniza participação no ciclo
+        transaction.on_commit(lambda: notificar_participante_adicionado(ciclo=ciclo, usuario=usuario))
 
     return JsonResponse({
         "sucesso": True,
         "membro": {
             "id": usuario.pk,
             "nome": usuario.get_full_name().strip() or usuario.username,
-            "matricula": usuario.username,
+            "email": usuario.email,
         },
     })
 
@@ -293,6 +314,28 @@ def remover_membro(request, ciclo_id, grupo_id, usuario_id):
 
 
 @login_required
+def boas_vindas(request):
+    """
+    Tela de espera do Aluno aceito que ainda não entrou em nenhum ciclo.
+
+    Quem não está nesse estado chegou aqui digitando a URL — o middleware não o
+    traria — e volta para a tela inicial do próprio perfil.
+    """
+    if not aguarda_vinculo_a_ciclo(request.user, request.ciclos_ativos_usuario):
+        return redirect(home_do_usuario(request.user)[1])
+
+    # Aluno que já esteve em ciclo e viu o ciclo encerrar não está esperando
+    # vínculo nenhum: dizer a ele "aguarde um professor" seria falso.
+    ja_participou = CicloSimulacao.objects.filter(
+        Q(coordenador=request.user) | Q(participantes=request.user)
+    ).exists()
+
+    return render(request, "ciclos/boas_vindas.html", {
+        "ja_participou": ja_participou,
+    })
+
+
+@login_required
 def selecionar_ciclo(request):
     """Exibe a tela para o usuário escolher em qual ciclo deseja atuar."""
     ciclos = list(
@@ -324,10 +367,12 @@ def selecionar_ciclo(request):
 def ativar_ciclo(request, ciclo_id):
     """Salva o ciclo escolhido na sessão após validar que o usuário tem acesso."""
     ciclo = get_object_or_404(
+        # distinct(): o OR sobre a M2M participantes duplica a linha quando o
+        # usuário é coordenador e participante do mesmo ciclo.
         CicloSimulacao.objects.filter(
             Q(coordenador=request.user) | Q(participantes=request.user),
             status__nome_status__iexact="em andamento",
-        ),
+        ).distinct(),
         pk=ciclo_id,
     )
     request.session[CICLO_SESSION_KEY] = ciclo.pk

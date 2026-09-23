@@ -1,6 +1,6 @@
 [project]
 name = "simu-projudi"
-version = "1.0.0a1"
+version = "1.0.0a9"
 description = "Sistema de simulação Projudi"
 authors = [
     {name = "Halbert Nascimento", email = "halbert.fac@gmail.com"},
@@ -9,7 +9,7 @@ authors = [
 ]
 requires-python = ">=3.11"
 dependencies = [
-    "django>=6.0",
+    "django>=6.0,<6.1",
     "django-environ>=0.12.0",
     "mysqlclient>=2.2.8",
     "python-magic-bin>=0.4.14",
@@ -33,10 +33,12 @@ build-backend = "hatchling.build"
 packages = [
     "acesso",
     "agendamentos",
+    "avaliacoes",
     "base",
     "ciclos",
     "core",
     "movimentacoes",
+    "notificacoes",
     "processos",
     "usuarios",
 ]

@@ -1,0 +1,8 @@
+{% for n in notificacoes_recentes %}
+<a href="{{ n.link_url }}" class="block px-4 py-2 text-apoio hover:bg-linha-hover border-b border-divisor {% if not n.lida %}font-bold bg-linha-hover{% endif %}">
+    {{ n.mensagem }}
+    <div class="text-meta text-rotulo mt-0.5 font-normal">{{ n.data_criacao|timesince }} atrás</div>
+</a>
+{% empty %}
+<div class="px-4 py-3 text-apoio text-rotulo">Nenhuma notificação.</div>
+{% endfor %}

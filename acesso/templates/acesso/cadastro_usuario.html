@@ -1,128 +1,110 @@
 {% extends 'base/base.html' %}
+{% load ui %}
 
 {% block title %}Cadastro de Usuario{% endblock %}
 
 {% block header_titulo %}Processo Judicial{% endblock %}
 
 {% block content %}
-<main class="main-container px-10 py-8">
+<main class="max-w-conteudo mx-auto px-7 py-5">
 
-    <div class="mb-6 border-b border-gray-100 pb-4">
-        <h2 class="text-tjgo-blue text-xl font-bold flex items-center gap-2">
+    <div class="mb-[14px] pb-[14px] border-b border-contorno">
+        <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
             <i class="fa-solid fa-user-plus"></i> Cadastro de Usuário
-        </h2>
-        <p class="text-gray-500 text-sm mt-1">Preencha os dados abaixo para criar sua conta no Simulador Projudi.</p>
+        </h1>
+        <p class="text-corpo text-texto-neutro mt-1.5">Preencha os dados abaixo para criar sua conta no Simulador Projudi.</p>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-[60%_35%] gap-x-[5%]">
+    <!-- Guia seção 08: colunas de conteúdo em frações, nunca percentuais
+         mistos; gap de 14px entre cards. -->
+    <div class="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-[14px] items-start">
         <section>
-            <div class="border border-gray-200 bg-white">
-                <div class="bg-tjgo-navy text-white p-2 text-[11px] font-bold uppercase flex items-center">
-                    <i class="fa-solid fa-id-card mr-2 text-sm"></i> DADOS BÁSICOS DE ACESSO
-                </div>
-                <div class="p-5 text-[13px] leading-relaxed text-gray-800">
-                    <form method="post" novalidate class="space-y-3">
-                        {% csrf_token %}
+            {% card titulo="DADOS BÁSICOS DE ACESSO" icone="fa-id-card" %}
+                <form method="post" novalidate class="px-4 py-[14px] flex flex-col gap-3">
+                    {% csrf_token %}
 
-                        {% for field in form %}
-                            <div>
-                                <label for="{{ field.id_for_label }}" class="mb-1 block text-xs font-bold text-tjgo-text-main uppercase">
-                                    {{ field.label }}
-                                </label>
-                                {{ field }}
-                                {% if field.help_text and field.html_name != 'password1' and field.html_name != 'password2' %}
-                                    <p class="mt-1 text-xs text-tjgo-text-light">{{ field.help_text|safe }}</p>
-                                {% endif %}
-                                {% for error in field.errors %}
-                                    <p class="mt-1 text-xs text-[#b54a65]">{{ error }}</p>
-                                {% endfor %}
-                            </div>
-                        {% endfor %}
+                    {% for field in form %}
+                        {% if field.html_name != 'aceite_termos' %}
+                            {% if field.help_text and field.html_name != 'password1' and field.html_name != 'password2' %}
+                                {% campo label=field.label para=field.id_for_label erros=field.errors ajuda=field.help_text %}{{ field }}{% endcampo %}
+                            {% else %}
+                                {% campo label=field.label para=field.id_for_label erros=field.errors %}{{ field }}{% endcampo %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
 
-                        {% for error in form.non_field_errors %}
-                            <p class="text-xs text-[#b54a65]">{{ error }}</p>
-                        {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <p class="text-meta text-validacao font-semibold">{{ error }}</p>
+                    {% endfor %}
 
-                        <div class="flex justify-start gap-2 pt-2">
-                            <button type="submit" class="bg-tjgo-blue hover:bg-tjgo-light-blue text-white font-bold py-1 px-4 text-sm rounded shadow-sm transition">
-                                Criar usuário
-                            </button>
-                            <a href="{% url 'base:home' %}" class="bg-tjgo-gray-card hover:bg-gray-300 text-tjgo-navy font-bold py-1 px-4 text-sm rounded shadow-sm transition">
-                                Cancelar
-                            </a>
-                        </div>
-                    </form>
-                </div>
-            </div>
+                    {% include 'acesso/components/_aceite_termos_campo.html' %}
+
+                    <div class="flex gap-2 pt-1">
+                        <button type="submit" class="{% classe_botao 'primario' padding=True %}">
+                            Criar usuário
+                        </button>
+                        <a href="{% url 'base:home' %}" class="{% classe_botao 'secundario' padding=True %} inline-flex items-center">
+                            Cancelar
+                        </a>
+                    </div>
+                </form>
+            {% endcard %}
         </section>
 
-        <aside class="space-y-4">
+        <aside class="flex flex-col gap-[14px]">
 
             <!-- COMO FUNCIONA -->
-            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
-                <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
-                    <i class="fa-solid fa-circle-info mr-2 text-sm"></i> COMO FUNCIONA
-                </div>
-                <div class="p-4 space-y-3 text-xs text-gray-600">
+            {% card titulo="COMO FUNCIONA" icone="fa-circle-info" classe_corpo="px-4 py-[14px] flex flex-col gap-3 text-apoio text-texto-neutro" %}
                     <div class="flex items-start gap-2">
-                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-navy text-white text-[10px] font-bold mt-0.5">1</span>
-                        <span><strong class="text-tjgo-text-main">Dados de Acesso</strong> — Preencha seu cadastro com os dados de login e senha.</span>
+                        <!-- Passo com raio 0, como todo contêiner do guia — o
+                             círculo é reservado a avatar e ponto de status. -->
+                        <span class="shrink-0 flex items-center justify-center w-[18px] h-[18px] bg-navy text-white text-[calc(10px*var(--escala-fonte,1))] font-bold mt-px">1</span>
+                        <span><strong class="font-semibold text-texto">Dados de Acesso</strong> — Preencha seu cadastro com os dados de login e senha.</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-gray-card text-gray-500 text-[10px] font-bold mt-0.5">2</span>
-                        <span><strong class="text-tjgo-text-main">Ativação</strong> — Um administrador, coordenador ou professor irá ativar o cadastro, liberando seu acesso.</span>
+                        <span class="shrink-0 flex items-center justify-center w-[18px] h-[18px] bg-neutro-bg text-neutro-txt border border-neutro-bd text-[calc(10px*var(--escala-fonte,1))] font-bold mt-px">2</span>
+                        <span><strong class="font-semibold text-texto">Ativação</strong> — Um administrador, coordenador ou professor irá ativar o cadastro, liberando seu acesso.</span>
                     </div>
                     <div class="flex items-start gap-2">
-                        <span class="flex-shrink-0 flex items-center justify-center w-5 h-5 rounded-full bg-tjgo-gray-card text-gray-500 text-[10px] font-bold mt-0.5">3</span>
-                        <span><strong class="text-tjgo-text-main">Acesso Liberado</strong> — Com o acesso ativado, você já pode entrar no sistema.</span>
+                        <span class="shrink-0 flex items-center justify-center w-[18px] h-[18px] bg-neutro-bg text-neutro-txt border border-neutro-bd text-[calc(10px*var(--escala-fonte,1))] font-bold mt-px">3</span>
+                        <span><strong class="font-semibold text-texto">Acesso Liberado</strong> — Com o acesso ativado, você já pode entrar no sistema.</span>
                     </div>
-                </div>
-            </div>
+                {% endcard %}
 
             <!-- REQUISITOS DE SENHA -->
-            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
-                <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
-                    <i class="fa-solid fa-shield-halved mr-2 text-sm"></i> REQUISITOS DE SENHA
-                </div>
-                <div class="p-4">
-                    <ul class="space-y-1.5 text-xs">
-                        <li id="req_len" class="flex items-center gap-2 text-gray-400">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Mínimo de 8 caracteres
+            {% card titulo="REQUISITOS DE SENHA" icone="fa-shield-halved" classe_corpo="px-4 py-[14px]" %}
+                    <ul class="flex flex-col gap-1.5 text-apoio">
+                        <li id="req_len" class="flex items-center gap-2 text-rotulo">
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Mínimo de 8 caracteres
                         </li>
-                        {% comment %} <li id="req_upper" class="flex items-center gap-2 text-gray-400">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Ao menos uma letra maiúscula
+                        {% comment %} <li id="req_upper" class="flex items-center gap-2 text-rotulo">
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Ao menos uma letra maiúscula
                         </li> {% endcomment %}
-                        {% comment %} <li id="req_num" class="flex items-center gap-2 text-gray-400">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Ao menos um número
+                        {% comment %} <li id="req_num" class="flex items-center gap-2 text-rotulo">
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Ao menos um número
                         </li> {% endcomment %}
-                        {% comment %} <li id="req_special" class="flex items-center gap-2 text-gray-400">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Ao menos um caractere especial
+                        {% comment %} <li id="req_special" class="flex items-center gap-2 text-rotulo">
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Ao menos um caractere especial
                         </li> {% endcomment %}
-                        <li class="flex items-center gap-2 text-gray-400   ">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser inteiramente numérica
+                        <li class="flex items-center gap-2 text-rotulo   ">
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Não pode ser inteiramente numérica
                         </li>
-                        <li class="flex items-center gap-2 text-gray-400">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser uma senha comumente utilizada
+                        <li class="flex items-center gap-2 text-rotulo">
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Não pode ser uma senha comumente utilizada
                         </li>
-                        <li class="flex items-center gap-2 text-gray-400">
-                            <i class="fa-solid fa-circle text-[8px]"></i> Não pode ser similar às suas informações pessoais
+                        <li class="flex items-center gap-2 text-rotulo">
+                            <i class="fa-solid fa-circle text-[calc(8px*var(--escala-fonte,1))]"></i> Não pode ser similar às suas informações pessoais
                         </li>
                     </ul>
-                </div>
-            </div>
+                {% endcard %}
 
             <!-- SUPORTE -->
-            <div class="border border-tjgo-gray-border bg-white shadow-sm rounded-sm overflow-hidden">
-                <div class="bg-tjgo-navy text-white p-2.5 text-[11px] font-bold uppercase flex items-center">
-                    <i class="fa-solid fa-headset mr-2 text-sm"></i> SUPORTE
-                </div>
-                <div class="p-4 text-xs text-gray-600 space-y-2">
+            {% card titulo="SUPORTE" icone="fa-headset" classe_corpo="px-4 py-[14px] text-apoio text-texto-neutro flex flex-col gap-2" %}
                     <p>Dúvidas sobre o cadastro? Entre em contato com a coordenação do simulador.</p>
-                    <a href="mailto:simulador@tjgo.jus.br" class="text-tjgo-blue font-bold hover:underline flex items-center gap-1">
-                        <i class="fa-solid fa-envelope text-[11px]"></i> simulador@tjgo.jus.br
+                    <a href="mailto:{{ email_contato_dpo }}" class="text-acao font-semibold hover:underline flex items-center gap-1.5">
+                        <i class="fa-solid fa-envelope text-[calc(11px*var(--escala-fonte,1))]"></i> {{ email_contato_dpo }}
                     </a>
-                </div>
-            </div>
+                {% endcard %}
 
         </aside>
     </div>
@@ -136,7 +118,8 @@
     function showError(input, msg) {
         removeError(input);
         const p = document.createElement('p');
-        p.className = 'mt-1 text-xs text-[#b54a65] js-field-error';
+        // mesma cadeia de erro que o componente de campo usa
+        p.className = 'text-meta text-validacao font-semibold js-field-error';
         p.textContent = msg;
         input.closest('div').appendChild(p);
     }
@@ -195,9 +178,9 @@
     function setReq(id, ok){
         const el = document.getElementById(id);
         if(!el) return;
-        el.classList.toggle('text-green-600', ok);
-        el.classList.toggle('text-gray-400', !ok);
-        el.querySelector('i').className = 'fa-solid text-[8px] ' + (ok ? 'fa-circle-check' : 'fa-circle');
+        el.classList.toggle('text-ok-txt', ok);
+        el.classList.toggle('text-rotulo', !ok);
+        el.querySelector('i').className = 'fa-solid text-[calc(8px*var(--escala-fonte,1))] ' + (ok ? 'fa-circle-check' : 'fa-circle');
     }
 
     pwdInput.addEventListener('input', function(){

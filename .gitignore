@@ -63,5 +63,7 @@ dmypy.json
 
 
 # outros
+.verificacao-snapshot.json
 docs-tuto/
-CLAUDE.md
+#CLAUDE.md
+contexto_implementacao_movimentacoes

@@ -1,73 +1,93 @@
-/* Estilos adicionais finos para replicação exata */
-body { background-color: #f7f7f7; }
-.main-container { max-width: 1200px; margin: 0 auto; background-color: white; min-height: 100vh; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
-.top-bar-icon { font-size: 14px; margin-left: 12px; cursor: pointer; }
+/* Escala de fonte do A+/A- do cabeçalho. O JS (static/js/acessibilidade.js)
+   sobrescreve isto no <html>; aqui fica o valor de quem navega sem JavaScript. */
+:root { --escala-fonte: 1; }
 
-/* Ícones customizados simbolizando imagens específicas */
-.icon-sessao-virtual {
-    display: flex; justify-content: center; align-items: center;
-    width: 100px; height: 70px; background-color: #2c6eb5; color: white;
-    border-radius: 4px; font-size: 40px; border: 3px solid #143d6b;
-    position: relative;
-}
-.icon-sessao-virtual::after {
-    content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
-    width: 40px; height: 5px; background-color: #143d6b; border-radius: 2px;
+/* Estrutura de página — Guia de Design (IESGO), seção 08.
+   O contêiner de página é `max-w-conteudo mx-auto px-7 py-5` no template: os
+   mesmos 1280px/28px do guia, alinhados com o cabeçalho e a navegação. A classe
+   .main-container que vivia aqui saiu junto com a última tela que a usava — ela
+   pintava #fff sobre 100vh e cobria o #f4f5f7 que o guia pede como fundo. */
+
+/* Ícone dentro de campo com prefixo */
+.input-group-icon {
+    position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
+    color: #6b7280; font-size: calc(13px * var(--escala-fonte, 1));
 }
 
-/* Estilização específica do Accordion (Informações Importantes) */
-.accordion-item-closed {
-    background-color: #e8e8e8;
-    color: #1a5b9e;
-    padding: 8px 12px;
-    font-size: 11px;
-    font-weight: bold;
-    border-bottom: 2px solid white;
-    cursor: pointer;
+/* Acordeão de informações — guia seção 03: 11px / 700 / .1em / caixa alta.
+   Os dois estados dividem a mesma geometria: antes o aberto vinha de classes
+   Tailwind soltas (padding 8px) e o fechado desta classe (padding 9px 14px),
+   então o cabeçalho saltava ao abrir. Só a cor muda. */
+.accordion-item-closed,
+.accordion-item-aberto {
+    padding: 9px 14px;
+    font-size: calc(11px * var(--escala-fonte, 1));
+    font-weight: 700;
+    letter-spacing: .1em;
     text-transform: uppercase;
+    border-bottom: 1px solid #e2e5ea;
+    cursor: pointer;
     display: flex;
     align-items: center;
-    transition: background-color 0.2s;
+    transition: background-color .15s ease;
 }
-.accordion-item-closed:hover { background-color: #dcdcdc; }
-.accordion-item-closed i { font-size: 10px; margin-right: 6px; color: #1a5b9e; }
+.accordion-item-closed { background: #f7f8fa; color: #0a083d; }
+.accordion-item-closed:hover { background: #eef0f3; }
+.accordion-item-closed i { font-size: calc(10px * var(--escala-fonte, 1)); margin-right: 8px; color: #1f4f9c; }
 
-.input-group-icon {
-    position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: #555; font-size: 14px;
+.accordion-item-aberto { background: #0a083d; color: #fff; }
+.accordion-item-aberto i { font-size: calc(10px * var(--escala-fonte, 1)); margin-right: 8px; color: #a7abcd; }
+
+/* Marca da tela de login. Era .icon-sessao-virtual com um icone de grupo de
+   pessoas — heranca do bloco "Sessao Virtual" do Projudi, onde o icone levava
+   as sessoes. Aqui nao levava a nada, e o guia poe "sem icone decorativo" em
+   Nao faca; sobrou o letreiro. O fio de 4px e o unico papel que o guia reserva
+   a cor marca, entao e dele o vermelho. */
+.marca-simulador {
+    display: flex; justify-content: center; align-items: center;
+    width: 100px; height: 70px;
+    background: #0a083d; color: #fff;
+    border: 1px solid #0a083d;
+    position: relative;
+}
+.marca-simulador::after {
+    content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%);
+    width: 40px; height: 4px; background: #d30000;
 }
 
-/* Estilização do rodapé */
+/* Card de manual da tela de login. O card sem manual anexado nao reage ao
+   ponteiro: sem hover, para nao prometer um clique que nao existe. */
+.card-manual { transition: background-color .15s ease, border-color .15s ease; }
+.card-manual:not(.card-manual-vazio):hover { border-color: #1f4f9c; background: #f7faff; }
+
+/* Rodapé */
 .footer {
-    background-color: #153a61;
-    color: #b8c5d6;
-    padding: 20px 0;
+    background: #0a083d;
+    color: #a7abcd;
+    padding: 18px 0;
     margin-top: auto;
-    border-top: 3px solid #1a5b9e;
+    border-top: 3px solid #d30000;
 }
 .footer-content {
-    max-width: 1200px;
+    max-width: 1280px;
     margin: 0 auto;
-    padding: 0 40px;
+    padding: 0 28px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 11px;
+    font-size: calc(11px * var(--escala-fonte, 1));
 }
 .footer-badge {
     display: inline-block;
-    background-color: #e67e22;
-    color: white;
-    padding: 2px 8px;
-    border-radius: 3px;
-    font-size: 10px;
-    font-weight: bold;
+    background: transparent;
+    color: #d8dae9;
+    border: 1px solid rgba(255, 255, 255, .24);
+    padding: 3px 9px;
+    font-size: calc(10px * var(--escala-fonte, 1));
+    font-weight: 700;
+    letter-spacing: .08em;
     text-transform: uppercase;
-    margin-left: 8px;
 }
 @media (max-width: 768px) {
-    .footer-content {
-        flex-direction: column;
-        text-align: center;
-        gap: 10px;
-    }
+    .footer-content { flex-direction: column; text-align: center; gap: 10px; }
 }

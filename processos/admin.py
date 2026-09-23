@@ -11,7 +11,6 @@ from .models import (
     StatusAudiencia,
     StatusProcessoJudicial,
     TipoAudiencia,
-    TipoMovimentacao,
     TipoProcesso,
     VaraServentia,
 )
@@ -46,13 +45,6 @@ class TipoProcessoAdmin(admin.ModelAdmin):
     list_display = ("nome",)
 
 
-@admin.register(TipoMovimentacao)
-class TipoMovimentacaoAdmin(admin.ModelAdmin):
-    list_display = ("nome_movimentacao",)
-    search_fields = ("nome_movimentacao",)
-    ordering = ("nome_movimentacao",)
-
-
 @admin.register(StatusAudiencia)
 class StatusAudienciaAdmin(admin.ModelAdmin):
     list_display = ("nome_status_audiencia",)
@@ -79,7 +71,7 @@ class AudienciaInline(admin.TabularInline):
 class PoloProcessualInline(admin.TabularInline):
     model = PoloProcessual
     extra = 0
-    fields = ("parte", "tipo_polo")
+    fields = ("parte", "tipo_polo", "grupo")
 
 
 class GrupoProcessoInline(admin.TabularInline):
@@ -104,6 +96,7 @@ class AudienciaAdmin(admin.ModelAdmin):
 
 @admin.register(PoloProcessual)
 class PoloProcessualAdmin(admin.ModelAdmin):
-    list_display = ("processo", "parte", "tipo_polo")
+    list_display = ("processo", "parte", "tipo_polo", "grupo")
+    list_select_related = ("parte", "grupo")
     list_filter = ("tipo_polo",)
     search_fields = ("processo__numero", "parte__nome_razao")

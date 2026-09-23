@@ -2,7 +2,7 @@
 
 import private_storage.fields
 import private_storage.storage.files
-import processos.models
+import movimentacoes.models  # _upload_to_documento vive aqui: o domínio de movimentação mora no app movimentacoes
 from django.db import migrations
 
 
@@ -16,6 +16,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='documentoanexado',
             name='caminho_arquivo',
-            field=private_storage.fields.PrivateFileField(max_length=255, storage=private_storage.storage.files.PrivateFileSystemStorage(), upload_to=processos.models._upload_to_documento),
+            field=private_storage.fields.PrivateFileField(max_length=255, storage=private_storage.storage.files.PrivateFileSystemStorage(), upload_to=movimentacoes.models._upload_to_documento),
         ),
     ]

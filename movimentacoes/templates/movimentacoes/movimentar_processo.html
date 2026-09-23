@@ -1,0 +1,947 @@
+{% extends 'base/base.html' %}
+{% load ui %}
+{% load static %}
+
+{% block title %}Movimentar Processo — Simulador Projudi{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/formularios.css' %}">
+<style>
+    /* Marcador de passo — raio 0 e a geometria de etiqueta do guia (seção 02).
+       Tinha raio de 2px, que o guia reserva a campo de formulário. */
+    .step-badge {
+        background: #0a083d; color: #fff; padding: 3px 9px;
+        font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 700; letter-spacing: .07em;
+        text-transform: uppercase; display: inline-block;
+    }
+
+    /* Rótulo de campo — guia seção 03: 10px / 600 / .1em / caixa alta / #6b7280.
+       Era 12px em negrito e cor de corpo, o mesmo peso do valor ao lado. */
+    .lbl {
+        display: block; font-size: calc(10px * var(--escala-fonte, 1)); font-weight: 600;
+        letter-spacing: .1em; text-transform: uppercase;
+        color: #6b7280; margin-bottom: 5px;
+    }
+    .lbl .req { color: #c0392b; margin-right: 2px; }
+    .lbl-icon { color: #1f4f9c; font-size: calc(11px * var(--escala-fonte, 1)); margin-left: 2px; cursor: pointer; }
+    .lbl-x { color: #6b7280; font-size: calc(11px * var(--escala-fonte, 1)); margin-left: 2px; cursor: pointer; }
+
+    /* Instrução de preenchimento. Vinha em #c0392b, a cor que o guia reserva a
+       erro de validação — parecia falha num campo ainda vazio. */
+    .hint-campo {
+        color: #6b7280; font-weight: 400; font-size: calc(10.5px * var(--escala-fonte, 1));
+        text-transform: none; letter-spacing: normal;
+    }
+
+    /* As abas vivem em componentes.css — duas telas processuais as usam. */
+    .tab-content { background: #fff; border: 1px solid #e2e5ea; border-top: 0; padding: 14px 16px; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* Área de soltar arquivo. O tracejado é affordance e fica; o raio sai. */
+    .dropzone {
+        border: 2px dashed #d3d7de;
+        padding: 24px; text-align: center; background: #fbfbfc;
+        transition: border-color .15s ease, background-color .15s ease; cursor: pointer;
+    }
+    .dropzone:hover, .dropzone.over { border-color: #1f4f9c; background: #f7faff; }
+    .dropzone .ico { font-size: calc(38px * var(--escala-fonte, 1)); color: #1f4f9c; margin-bottom: 8px; }
+
+    .action-icons { display: flex; gap: 8px; margin-bottom: 4px; padding: 4px 2px; }
+    .action-icons button {
+        background: transparent; border: 0; cursor: pointer;
+        color: #1f4f9c; font-size: calc(14px * var(--escala-fonte, 1)); padding: 4px;
+    }
+    .action-icons button:hover { color: #0a083d; }
+    .action-icons button.danger { color: #c0392b; }
+
+    /* O TinyMCE tem chrome próprio (fora de escopo — ver NOVO-DESIGN.md seção 5);
+       aqui só a moldura externa se alinha ao resto. */
+    .tox-tinymce { border-radius: 0 !important; border-color: #e2e5ea !important; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+<script>const STATIC_URL = "{% get_static_prefix %}";</script>
+<script src="{% static 'js/modelos_documentos.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+
+<!-- Navigation Bar -->
+{% nav_secundaria ativo='processos' %}
+
+<main class="max-w-conteudo mx-auto px-7 py-5">
+
+    {% include 'base/components/_breadcrumbs.html' %}
+
+    <h1 class="text-navy text-h1 font-bold mb-[14px]">&raquo; Movimentar Processo</h1>
+
+    {% include 'base/components/_mensagens.html' with tag="movimentacao" %}
+
+    <form id="formMovimentar" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% if movimentacao_origem_id %}
+    <input type="hidden" name="movimentacao_origem_id" value="{{ movimentacao_origem_id }}">
+    {% endif %}
+    {# campos ocultos para documentos gerados pelo editor #}
+    <textarea name="editor_html" id="editorHtmlHidden" class="hidden"></textarea>
+    <input type="hidden" name="editor_html_nome" id="editorHtmlNome">
+
+    <span class="step-badge mb-3 inline-block" id="stepBadge">Passo 1</span>
+
+    <!-- ====== PASSO 1 - DADOS MOVIMENTAÇÃO ====== -->
+    <fieldset class="p-5 mb-4 mt-3">
+        <legend>PASSO 1 - DADOS MOVIMENTAÇÃO</legend>
+
+        <!-- Identificação do processo -->
+        <div class="bg-card-topo border border-contorno p-3 mb-4 text-[calc(12px*var(--escala-fonte,1))]">
+            <div class="flex items-center gap-2 mb-1">
+                <i class="fa-solid fa-folder-open text-acao"></i>
+                <span class="font-bold text-acao">Processo nº {{ processo.numero }}</span>
+                <span class="text-rotulo font-normal">— {{ processo.vara.nome }} / {{ processo.vara.comarca.nome }}</span>
+            </div>
+            <div class="text-rotulo text-[calc(11px*var(--escala-fonte,1))] mt-1">
+                <span class="font-medium text-texto">{{ processo.tipo_processo.nome }}</span>
+                &nbsp;•&nbsp;
+                {% for polo in polos_ativo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
+                <span class="mx-1">×</span>
+                {% for polo in polos_passivo %}<strong>{{ polo.parte.nome_razao }}</strong>{% if not forloop.last %}, {% endif %}{% endfor %}
+            </div>
+            <div class="mt-1 text-[calc(11px*var(--escala-fonte,1))]">
+                <span class="text-rotulo">Classe:</span>
+                <span class="font-medium">{{ processo.classe.nome }}</span>
+                &nbsp;•&nbsp;
+                <span class="text-rotulo">Status:</span>
+                <span class="font-medium">{{ processo.status_atual.nome_status }}</span>
+            </div>
+        </div>
+
+        <!-- Tipo Movimentação -->
+        <div class="mb-3">
+            <label class="lbl" for="tipoMovInput">
+                <span class="req">*</span>Tipo Movimentação
+                <span class="hint-campo ml-2">Preencher conforme TPU CNJ para alimentar estatística de produtividade</span>
+            </label>
+            <div class="relative" id="tipoMovWrapper">
+                <input type="text" id="tipoMovInput" autocomplete="off"
+                       placeholder="— Digite ou selecione o Tipo de Movimentação —"
+                       class="{% classe_campo %} pr-8"/>
+                <span class="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-rotulo text-[calc(10px*var(--escala-fonte,1))]">
+                    <i class="fa-solid fa-chevron-down"></i>
+                </span>
+                <input type="hidden" id="tipoMov" name="tipo_movimento"/>
+                <div id="tipoMovDropdown"
+                     class="hidden absolute left-0 right-0 top-full mt-0.5 bg-white border border-contorno shadow-modal z-cabecalho max-h-56 overflow-y-auto text-corpo">
+                </div>
+            </div>
+            {# dados dos tipos para o combobox JS #}
+            <script id="tipoMovData" type="application/json">
+            [{% for tipo in tipos_movimentacao %}{"id":"{{ tipo.id }}","nome":"{{ tipo.nome_movimentacao|escapejs }}","janela_aberta":{% if tipo.id in tipos_com_janela_aberta %}true{% else %}false{% endif %}}{% if not forloop.last %},{% endif %}{% endfor %}]
+            </script>
+        </div>
+
+        {% if not movimentacao_origem_id %}
+        <!-- Correção do envio anterior — só existe pra quem chega pelo combobox de "Movimentar";
+             editar_movimentacao já é, por si só, uma correção explícita (Ponto 4 do mapa). -->
+        <div class="mb-3 hidden" id="corrigeAnteriorWrapper">
+            <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="corrigeAnterior" name="corrige_anterior" class="accent-acao w-3.5 h-3.5">
+                <span class="text-corpo">Isto corrige o envio anterior deste tipo?</span>
+            </label>
+        </div>
+        {% endif %}
+
+        <!-- Descrição Movimentação -->
+        <div class="mb-3">
+            <label class="lbl">
+                Descrição Movimentação
+                <i class="fa-solid fa-circle-xmark lbl-x"></i>
+            </label>
+            <textarea id="descMov" name="descricao_evento" rows="3"
+                      class="{% classe_campo %} resize-none overflow-hidden"
+                      oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+        </div>
+
+        <!-- ====== DOCUMENTOS DA MOVIMENTAÇÃO ====== -->
+        <fieldset class="p-4 mt-4">
+            <legend>DOCUMENTOS DA MOVIMENTAÇÃO</legend>
+
+            <!-- Tabs -->
+            <div class="tabs interativa">
+                <div class="tab active" data-tab="upload">Upload de Arquivos</div>
+                <div class="tab" data-tab="editor">Modelos, Editor on-line</div>
+            </div>
+
+            <div class="tab-content">
+
+                <!-- ===== UPLOAD ===== -->
+                <div id="panel-upload" class="tab-panel active">
+                    <div class="dropzone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+                        <div class="ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+                        <div class="font-bold text-acao text-[calc(13px*var(--escala-fonte,1))]">Arraste arquivos aqui ou clique para selecionar</div>
+                        <div class="text-[calc(11px*var(--escala-fonte,1))] text-rotulo mt-1">Tamanho máximo: 10MB por arquivo • PDF, DOC, DOCX, ODT, JPG, PNG</div>
+                        <input id="fileInput" name="documentos" type="file" multiple class="hidden" accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png"/>
+                    </div>
+                    <div id="pendingFiles" class="mt-4 space-y-2"></div>
+                </div>
+
+                <!-- ===== EDITOR ===== -->
+                <div id="panel-editor" class="tab-panel">
+
+                    <!-- Seletor de modelos -->
+                    <div class="mb-4 p-3 bg-card-topo border border-contorno ">
+                        <label class="lbl mb-2">
+                            <i class="fa-solid fa-file-lines lbl-icon"></i>
+                            Carregar Modelo de Documento
+                        </label>
+                        <!-- items-stretch pelo mesmo motivo da busca de parte em
+                             cadastro_processo: campo e botão têm alturas diferentes
+                             por definição do guia, e a linha manda. -->
+                        <div class="flex gap-2 items-stretch">
+                            <select id="modeloSelect" class="{% classe_campo %} flex-1">
+                                <option value="">— Selecione um modelo —</option>
+                            </select>
+                            <button type="button" onclick="carregarModelo()"
+                                    class="{% classe_botao 'primario' %} px-[18px] flex items-center justify-center gap-1.5">
+                                <i class="fa-solid fa-file-import"></i> Carregar
+                            </button>
+                            <button type="button" onclick="limparEditor()" title="Limpar editor"
+                                    class="{% classe_botao 'secundario' %} px-3 flex items-center justify-center">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+                        <p class="text-rotulo text-[calc(11px*var(--escala-fonte,1))] mt-1.5">
+                            <i class="fa-solid fa-triangle-exclamation text-atencao-txt mr-1"></i>
+                            Ao carregar um modelo ou rascunho, o conteúdo atual do editor será substituído.
+                        </p>
+                        <div class="flex items-center gap-2 mt-2 pt-2 border-t border-contorno">
+                            <span class="text-rotulo text-[calc(11px*var(--escala-fonte,1))]">Continuar edição de rascunho salvo:</span>
+                            <button type="button" onclick="document.getElementById('rascunhoInput').click()"
+                                    class="{% classe_botao 'secundario' %} {% padding_botao 'linha' %} flex items-center gap-1.5">
+                                <i class="fa-solid fa-folder-open"></i> Abrir Rascunho (.html)
+                            </button>
+                            <input type="file" id="rascunhoInput" accept=".html" class="hidden">
+                        </div>
+                    </div>
+
+                    <!-- Nome do arquivo -->
+                    <div class="mb-3">
+                        <label class="lbl">Nome do arquivo para salvar</label>
+                        <input id="editorFileName" type="text"
+                               class="{% classe_campo %}"
+                               placeholder="Ex.: peticao_inicial_joao_silva"/>
+                    </div>
+
+                    <!-- TinyMCE -->
+                    <textarea id="tinymce-editor"></textarea>
+
+                    <!-- Botões editor -->
+                    <!-- Assinar (secundário) vem antes de Incluir na Movimentação (primário) —
+                         foge da regra "primário sempre à esquerda" do guia (seção 04) de propósito:
+                         aqui a ordem é sequência de fluxo, não hierarquia visual — assinar é
+                         pré-requisito pra incluir o documento corretamente na movimentação. -->
+                    <div class="flex flex-wrap justify-center gap-2 mt-3">
+                        <button type="button" id="btnAssinar"
+                                class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
+                                onclick="assinarTexto()" title="Carimba o documento com seu nome e a data">
+                            <i class="fa-solid fa-signature"></i> Assinar
+                        </button>
+                        <button type="button"
+                                class="{% classe_botao 'primario' padding=True %} flex items-center gap-1.5"
+                                onclick="incluirNaMovimentacao()" title="Adiciona este documento à lista de anexos da movimentação">
+                            <i class="fa-solid fa-paperclip"></i> Incluir na Movimentação
+                        </button>
+                        <button type="button"
+                                class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
+                                onclick="salvarRascunho()" title="Salva localmente como .html para continuar depois">
+                            <i class="fa-solid fa-clock-rotate-left"></i> Salvar Rascunho
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </fieldset>
+    </fieldset>
+
+    <!-- ====== DOCUMENTOS A ANEXAR ====== -->
+    <fieldset class="p-5 mb-4">
+        <legend>DOCUMENTOS A ANEXAR</legend>
+
+        <div class="action-icons">
+            <button title="Recarregar" onclick="renderFiles()"><i class="fa-solid fa-arrows-rotate"></i></button>
+            <button title="Remover selecionados" class="danger" onclick="removeSelected()"><i class="fa-solid fa-trash"></i></button>
+            <button title="Selecionar todos" onclick="toggleSelectAll()"><i class="fa-solid fa-arrow-pointer"></i></button>
+            <button title="Adicionar" onclick="document.getElementById('fileInput').click()"><i class="fa-solid fa-file-circle-plus"></i></button>
+        </div>
+
+        <table class="tbl-files" id="filesTable">
+            <thead>
+                <tr>
+                    <th style="width:30px;"><input type="checkbox" id="selAllFiles"/></th>
+                    <th>Descrição</th>
+                    <th>Nome do Arquivo</th>
+                    <th style="width:120px;">Opções</th>
+                </tr>
+            </thead>
+            <tbody id="filesBody">
+                <tr class="empty"><td colspan="4">Nenhum arquivo adicionado</td></tr>
+            </tbody>
+        </table>
+    </fieldset>
+
+    <!-- Botões Passo 1 -->
+    <div id="btnsPasso1" class="flex justify-center gap-3 my-6">
+        <button type="button"
+                class="{% classe_botao 'primario' padding=True %} flex items-center gap-1.5"
+                onclick="avancar()">
+            Avançar <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <a href="{% url 'processos:visualizar_processo' processo.numero %}"
+           class="{% classe_botao 'secundario' padding=True %} inline-flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-left"></i> Cancelar
+        </a>
+    </div>
+
+    <!-- ====== PASSO 2 — REVISÃO ====== -->
+    <div id="painelPasso2" class="hidden">
+        <div class="bg-white border border-contorno px-4 py-[18px] mb-[14px]">
+            <h3 class="text-navy text-apoio font-bold uppercase tracking-[.12em] mb-[14px] pb-2 border-b border-contorno flex items-center gap-2">
+                <i class="fa-solid fa-clipboard-check"></i> Revisão da Movimentação
+            </h3>
+
+            <div class="grid grid-cols-2 gap-x-[28px] gap-y-2 text-corpo mb-[14px]">
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-rotulo w-36 shrink-0">Processo:</span>
+                    <span class="font-bold">{{ processo.numero }}</span>
+                </div>
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-rotulo w-36 shrink-0">Tipo de Movimentação:</span>
+                    <span id="rev-tipo" class="font-bold"></span>
+                </div>
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-rotulo w-36 shrink-0">Descrição:</span>
+                    <span id="rev-descricao" class="whitespace-pre-wrap"></span>
+                </div>
+                {% if movimentacao_origem_id %}
+                <div class="col-span-2 flex gap-2">
+                    <span class="text-rotulo w-36 shrink-0">Modo:</span>
+                    <span class="font-bold text-atencao-txt">
+                        <i class="fa-solid fa-pen mr-1"></i>Edição — nova versão da movimentação #{{ movimentacao_origem_id }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="border-t border-contorno pt-3">
+                <div class="text-micro font-semibold uppercase text-rotulo mb-2">Documentos a anexar:</div>
+                <ul id="rev-arquivos" class="text-corpo space-y-1"></ul>
+            </div>
+        </div>
+
+        <!-- Botões Passo 2 -->
+        <div class="flex justify-center gap-3 my-6">
+            <button type="button"
+                    class="{% classe_botao 'primario' padding=True %} flex items-center gap-1.5"
+                    onclick="confirmarMovimentacao()">
+                <i class="fa-solid fa-circle-check"></i> Confirmar Movimentação
+            </button>
+            <button type="button"
+                    class="{% classe_botao 'secundario' padding=True %} flex items-center gap-1.5"
+                    onclick="voltarPasso1()">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </button>
+        </div>
+    </div>
+
+    </form>
+
+</main>
+
+<!-- Toast -->
+{% include 'base/components/_toast.html' %}
+
+<script>
+// ── Combobox: Tipo Movimentação ───────────────────────
+(function () {
+    const TIPOS = JSON.parse(document.getElementById('tipoMovData').textContent);
+    const input    = document.getElementById('tipoMovInput');
+    const hidden   = document.getElementById('tipoMov');
+    const dropdown = document.getElementById('tipoMovDropdown');
+    let highlighted = -1;
+
+    function buildItems(lista) {
+        dropdown.innerHTML = '';
+        highlighted = -1;
+        if (lista.length === 0) {
+            dropdown.innerHTML = '<div class="px-3 py-2 text-rotulo italic">Nenhum resultado encontrado</div>';
+            return;
+        }
+        lista.forEach((t, i) => {
+            const d = document.createElement('div');
+            d.className = 'px-3 py-2 cursor-pointer hover:bg-card-topo';
+            d.dataset.id   = t.id;
+            d.dataset.nome = t.nome;
+            d.dataset.idx  = i;
+            d.textContent  = t.nome;
+            d.addEventListener('mousedown', e => {
+                e.preventDefault();
+                selectOption(t.id, t.nome);
+            });
+            dropdown.appendChild(d);
+        });
+    }
+
+    function openDropdown(query) {
+        const q = (query || '').toLowerCase().trim();
+        const lista = q ? TIPOS.filter(t => t.nome.toLowerCase().includes(q)) : TIPOS;
+        buildItems(lista);
+        dropdown.classList.remove('hidden');
+    }
+
+    function closeDropdown() {
+        dropdown.classList.add('hidden');
+        highlighted = -1;
+    }
+
+    function selectOption(id, nome) {
+        hidden.value  = id;
+        input.value   = nome;
+        input.dataset.selected = id;
+        closeDropdown();
+        atualizarCorrigeAnterior(id);
+    }
+
+    // Toggle "isto corrige o envio anterior?" — só aparece quando o tipo escolhido
+    // tem um vigente dentro da janela de correção (Ponto 4 do mapa); nunca um seletor.
+    function atualizarCorrigeAnterior(tipoId) {
+        const wrapper = document.getElementById('corrigeAnteriorWrapper');
+        if (!wrapper) return;
+        const tipo = TIPOS.find(t => t.id === tipoId);
+        const aberta = !!(tipo && tipo.janela_aberta);
+        wrapper.classList.toggle('hidden', !aberta);
+        if (!aberta) document.getElementById('corrigeAnterior').checked = false;
+    }
+
+    function highlight(dir) {
+        const items = dropdown.querySelectorAll('[data-id]');
+        if (!items.length) return;
+        if (highlighted >= 0) items[highlighted].classList.remove('bg-card-topo');
+        highlighted = Math.max(0, Math.min(items.length - 1, highlighted + dir));
+        items[highlighted].classList.add('bg-card-topo');
+        items[highlighted].scrollIntoView({ block: 'nearest' });
+    }
+
+    input.addEventListener('focus', () => openDropdown(input.value));
+    input.addEventListener('input', () => {
+        hidden.value = '';
+        input.dataset.selected = '';
+        openDropdown(input.value);
+        atualizarCorrigeAnterior('');
+    });
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            closeDropdown();
+            // Se digitou mas não selecionou nada, limpa o campo
+            if (!hidden.value) input.value = '';
+        }, 150);
+    });
+    input.addEventListener('keydown', e => {
+        if (e.key === 'ArrowDown')  { e.preventDefault(); highlight(+1); return; }
+        if (e.key === 'ArrowUp')    { e.preventDefault(); highlight(-1); return; }
+        if (e.key === 'Escape')     { closeDropdown(); input.blur(); return; }
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            const items = dropdown.querySelectorAll('[data-id]');
+            if (highlighted >= 0 && items[highlighted]) {
+                selectOption(items[highlighted].dataset.id, items[highlighted].dataset.nome);
+            }
+        }
+    });
+
+    // Fecha ao clicar fora
+    document.addEventListener('click', e => {
+        if (!document.getElementById('tipoMovWrapper').contains(e.target)) closeDropdown();
+    });
+
+    // Expõe para uso externo (pré-preenchimento no modo edição)
+    window._tipoMovSelect = selectOption;
+})();
+
+// ── State ─────────────────────────────────────────────
+let pendingFiles = [];
+let savedFiles   = [];   // { id, desc, name, file: File }
+let fid = 0;
+
+// ── Assinatura (carimbo) ───────────────────────────────
+const USUARIO_NOME = "{{ user.get_full_name|default:user.username|escapejs }}";
+let documentoAssinado = false;
+
+function escapeHtml(texto) {
+    const d = document.createElement('div');
+    d.textContent = texto;
+    return d.innerHTML;
+}
+
+function formatarDataHora(d) {
+    const p = n => String(n).padStart(2, '0');
+    return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+
+// Reflete `documentoAssinado` no botão — cor decidida em Python (CLASSES_BOTAO),
+// o JS só troca qual variante está em uso.
+function atualizarBotaoAssinar() {
+    const btn = document.getElementById('btnAssinar');
+    if (!btn) return;
+    btn.disabled = documentoAssinado;
+    btn.className = (documentoAssinado
+        ? "{% classe_botao 'desabilitado' padding=True %}"
+        : "{% classe_botao 'secundario' padding=True %}") + " flex items-center gap-1.5";
+}
+
+// Chamado sempre que o conteúdo do editor é substituído (modelo, rascunho,
+// limpar) — um carimbo só vale para o documento em que foi aposto.
+function resetAssinatura() {
+    documentoAssinado = false;
+    atualizarBotaoAssinar();
+}
+
+// ── Tabs ──────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(t => {
+    t.addEventListener('click', () => {
+        document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(x => x.classList.remove('active'));
+        t.classList.add('active');
+        document.getElementById('panel-' + t.dataset.tab).classList.add('active');
+    });
+});
+
+// ── File upload ───────────────────────────────────────
+const fileInput = document.getElementById('fileInput');
+const dropZone  = document.getElementById('dropZone');
+
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+['dragenter','dragover'].forEach(ev =>
+    dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.add('over'); })
+);
+['dragleave','drop'].forEach(ev =>
+    dropZone.addEventListener(ev, e => { e.preventDefault(); dropZone.classList.remove('over'); })
+);
+dropZone.addEventListener('drop', e => handleFiles(e.dataTransfer.files));
+
+function handleFiles(list) {
+    for (const f of list) {
+        pendingFiles.push({ id: ++fid, name: f.name, size: f.size, title: f.name.replace(/\.[^.]+$/, ''), file: f });
+    }
+    fileInput.value = '';
+    renderPending();
+}
+
+function formatSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1024 * 1024) return (b / 1024).toFixed(1) + ' KB';
+    return (b / 1024 / 1024).toFixed(2) + ' MB';
+}
+
+function iconFor(name) {
+    const ext = name.split('.').pop().toLowerCase();
+    if (['pdf'].includes(ext))                    return ['fa-file-pdf', '#c0392b'];
+    if (['doc','docx','odt'].includes(ext))       return ['fa-file-word', '#1f4f9c'];
+    if (['jpg','jpeg','png','gif'].includes(ext)) return ['fa-file-image', '#0a083d'];
+    return ['fa-file', '#6b7280'];
+}
+
+function renderPending() {
+    const c = document.getElementById('pendingFiles');
+    if (pendingFiles.length === 0) { c.innerHTML = ''; return; }
+    c.innerHTML = `
+        <div class="bg-card-topo border border-contorno p-2 text-[calc(11px*var(--escala-fonte,1))] font-bold uppercase text-rotulo flex items-center gap-2">
+            <i class="fa-solid fa-circle-info text-acao"></i>
+            Defina o título para cada arquivo antes de incluir na lista
+        </div>
+    ` + pendingFiles.map(f => {
+        const [ico, col] = iconFor(f.name);
+        return `
+            <div class="border border-contorno bg-white p-3 flex items-center gap-3">
+                <i class="fa-solid ${ico} text-2xl" style="color:${col}"></i>
+                <div class="flex-1">
+                    <div class="text-[calc(12px*var(--escala-fonte,1))] font-bold text-texto">${f.name}
+                        <span class="text-rotulo text-[calc(10px*var(--escala-fonte,1))] font-normal">(${formatSize(f.size)})</span>
+                    </div>
+                    <div class="mt-1.5">
+                        <label class="lbl text-[calc(11px*var(--escala-fonte,1))]"><span class="req">*</span>Título do arquivo</label>
+                        <input type="text"
+                               class="w-full bg-white border border-contorno py-1 px-2 text-[calc(12px*var(--escala-fonte,1))] outline-none"
+                               value="${f.title}"
+                               oninput="updateTitle(${f.id}, this.value)"
+                               placeholder="Ex.: Petição inicial, Procuração, Documento pessoal..."/>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <button type="button" class="bg-navy hover:bg-acao text-white border border-navy hover:border-acao text-meta font-bold uppercase tracking-[.1em] transition-colors px-2.5 py-[5px] flex items-center gap-1"
+                            onclick="confirmFile(${f.id})" title="Adicionar à lista">
+                        <i class="fa-solid fa-check"></i>
+                    </button>
+                    <button type="button" class="bg-white hover:bg-erro-bg text-erro-txt border border-erro-bd hover:border-erro-txt text-meta font-bold uppercase tracking-[.1em] transition-colors px-2.5 py-[5px] flex items-center gap-1"
+                            onclick="removePending(${f.id})" title="Remover">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function updateTitle(id, v) {
+    const f = pendingFiles.find(x => x.id === id);
+    if (f) f.title = v;
+}
+
+function removePending(id) {
+    pendingFiles = pendingFiles.filter(f => f.id !== id);
+    renderPending();
+}
+
+function confirmFile(id) {
+    const f = pendingFiles.find(x => x.id === id);
+    if (!f) return;
+    if (!f.title.trim()) { showToast('Informe o título do arquivo', 'atencao'); return; }
+    savedFiles.push({ id: f.id, desc: f.title.trim(), name: f.name, file: f.file });
+    pendingFiles = pendingFiles.filter(x => x.id !== id);
+    renderPending();
+    renderFiles();
+    showToast('Arquivo adicionado à lista', 'sucesso');
+}
+
+// ── Lista de arquivos ─────────────────────────────────
+function renderFiles() {
+    const body = document.getElementById('filesBody');
+    if (savedFiles.length === 0) {
+        body.innerHTML = '<tr class="empty"><td colspan="4">Nenhum arquivo adicionado</td></tr>';
+        return;
+    }
+    body.innerHTML = savedFiles.map(f => {
+        const [ico, col] = iconFor(f.name);
+        return `
+            <tr data-id="${f.id}">
+                <td><input type="checkbox" class="fileChk" data-id="${f.id}"/></td>
+                <td>${f.desc}</td>
+                <td><i class="fa-solid ${ico} mr-1.5" style="color:${col}"></i>${f.name}</td>
+                <td>
+                    <button type="button" class="text-acao hover:text-navy mr-2" title="Editar título" onclick="editTitle(${f.id})"><i class="fa-solid fa-pen"></i></button>
+                    <button type="button" class="text-validacao hover:text-erro-txt" title="Remover" onclick="removeFile(${f.id})"><i class="fa-solid fa-trash"></i></button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function editTitle(id) {
+    const f = savedFiles.find(x => x.id === id);
+    if (!f) return;
+    const v = prompt('Novo título do arquivo:', f.desc);
+    if (v !== null && v.trim()) { f.desc = v.trim(); renderFiles(); }
+}
+
+function removeFile(id) {
+    savedFiles = savedFiles.filter(f => f.id !== id);
+    renderFiles();
+}
+
+function toggleSelectAll() {
+    const cb = document.getElementById('selAllFiles');
+    cb.checked = !cb.checked;
+    cb.dispatchEvent(new Event('change'));
+}
+document.getElementById('selAllFiles').addEventListener('change', e => {
+    document.querySelectorAll('.fileChk').forEach(c => c.checked = e.target.checked);
+});
+
+function removeSelected() {
+    const ids = [...document.querySelectorAll('.fileChk:checked')].map(c => parseInt(c.dataset.id));
+    if (ids.length === 0) { showToast('Selecione ao menos um arquivo', 'atencao'); return; }
+    savedFiles = savedFiles.filter(f => !ids.includes(f.id));
+    renderFiles();
+    showToast(`${ids.length} arquivo(s) removido(s)`, 'sucesso');
+}
+
+// ── TinyMCE ───────────────────────────────────────────
+tinymce.init({
+    selector: '#tinymce-editor',
+    height: 520,
+    menubar: true,
+    plugins: 'lists link image table pagebreak searchreplace preview fullscreen code wordcount',
+    toolbar: [
+        'undo redo | styles | fontfamily fontsize',
+        'bold italic underline strikethrough | forecolor backcolor | removeformat',
+        'alignleft aligncenter alignright alignjustify | bullist numlist | outdent indent',
+        'table link image | pagebreak | searchreplace | fullscreen preview code'
+    ].join(' | '),
+    toolbar_mode: 'wrap',
+    font_family_formats: [
+        'Arial=arial,helvetica,sans-serif',
+        'Times New Roman=times new roman,times,serif',
+        'Courier New=courier new,courier,monospace',
+        'Verdana=verdana,geneva,sans-serif'
+    ].join(';'),
+    font_size_formats: '8pt 9pt 10pt 11pt 12pt 14pt 16pt 18pt 24pt 36pt',
+    content_style: `
+        body { font-family: "Times New Roman", Times, serif; font-size: 12pt;
+               line-height: 2; color: #000; margin: 32px 48px; background: #fff; }
+        p { text-align: justify; margin: 0 0 6px 0; }
+    `,
+    language: 'pt_BR',
+    language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/pt_BR.js',
+    branding: false, promotion: false,
+    image_uploadtab: true, automatic_uploads: false,
+    file_picker_types: 'image',
+    file_picker_callback: function(cb) {
+        const input = document.createElement('input');
+        input.setAttribute('type', 'file');
+        input.setAttribute('accept', 'image/*');
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            const reader = new FileReader();
+            reader.addEventListener('load', function() { cb(reader.result, { title: file.name }); });
+            reader.readAsDataURL(file);
+        });
+        input.click();
+    },
+    menu: {
+        file: { title: 'Arquivo', items: 'newdocument | preview | exportarpdf exportardoc' }
+    },
+    setup: function(editor) {
+        // O editor roda dentro de um iframe, e evento de iframe nao sobe para o
+        // documento de fora — sem isto, escrever uma peca de meia hora conta como
+        // inatividade e a sessao expira com o texto na tela.
+        // typeof, e nao window.sessionTimer: `const` no topo do script nao vira
+        // propriedade do objeto global, e em tela sem login o timer nem existe.
+        editor.on('keydown click', function () {
+            if (typeof sessionTimer !== 'undefined') sessionTimer.registrarInteracao();
+        });
+        editor.ui.registry.addMenuItem('exportarpdf', {
+            text: 'Exportar PDF',
+            icon: 'new-document',
+            onAction: function() { exportarPdf(); }
+        });
+        editor.ui.registry.addMenuItem('exportardoc', {
+            text: 'Exportar DOC (Word)',
+            icon: 'new-document',
+            onAction: function() { exportarDoc(); }
+        });
+    }
+});
+
+function getEditor() { return tinymce.get('tinymce-editor'); }
+function editorVazio() {
+    const ed = getEditor();
+    return !ed || !ed.getContent({ format: 'text' }).trim();
+}
+
+document.getElementById('rascunhoInput').addEventListener('change', function () {
+    const file = this.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function (e) {
+        const ed = getEditor();
+        if (!ed) { showToast('Editor ainda carregando, aguarde...', 'atencao'); return; }
+        ed.setContent(e.target.result);
+        document.getElementById('editorFileName').value = file.name.replace(/\.html$/i, '');
+        resetAssinatura();
+        showToast('Rascunho carregado — continue a edição', 'info');
+    };
+    reader.readAsText(file, 'UTF-8');
+    this.value = '';
+});
+
+function limparEditor() {
+    const ed = getEditor();
+    if (ed) ed.setContent('');
+    document.getElementById('editorFileName').value = '';
+    document.getElementById('modeloSelect').value = '';
+    resetAssinatura();
+}
+
+function assinarTexto() {
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
+    if (documentoAssinado) {
+        showToast('Documento já assinado — limpe o editor ou carregue outro modelo/rascunho para assinar de novo', 'atencao');
+        return;
+    }
+    const ed = getEditor();
+    const carimbo = `
+<div class="carimbo-assinatura" style="margin-top:28px;display:inline-block;border:1px solid #000;padding:6px 12px;font-family:'Times New Roman',Times,serif;font-size:10pt;line-height:1.5;">
+<strong>ASSINADO ELETRONICAMENTE</strong><br>
+${escapeHtml(USUARIO_NOME)} &mdash; ${formatarDataHora(new Date())}
+</div>`;
+    ed.setContent(ed.getContent() + carimbo);
+    documentoAssinado = true;
+    atualizarBotaoAssinar();
+    showToast('Documento assinado com sucesso', 'sucesso');
+
+    // O carimbo vai pro fim do texto — sem isto ele fica fora da área visível
+    // do editor e o toast é a única pista de que algo mudou.
+    const carimboEl = ed.dom.select('.carimbo-assinatura')[0];
+    if (carimboEl) carimboEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function salvarRascunho() {
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
+    const html = getEditor().getContent();
+    const name = (document.getElementById('editorFileName').value.trim() || 'rascunho') + '.html';
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = name; a.click();
+    URL.revokeObjectURL(url);
+    showToast('Rascunho salvo — abra-o novamente para continuar a edição', 'sucesso');
+}
+
+// ── Exportar PDF (diálogo nativo do browser, sem biblioteca) ─────────────
+function exportarPdf() {
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
+    const html = getEditor().getContent();
+    const nome = document.getElementById('editorFileName').value.trim() || 'documento';
+    const iframe = document.createElement('iframe');
+    iframe.style.cssText = 'position:fixed;left:-9999px;top:-9999px;width:1px;height:1px;border:0;';
+    document.body.appendChild(iframe);
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    doc.open();
+    doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${nome}</title>
+<style>
+body{font-family:"Times New Roman",serif;font-size:12pt;line-height:2;margin:2cm;color:#000;}
+p{text-align:justify;margin:0 0 6px 0;}
+@page{margin:2cm;}
+</style></head><body>${html}</body></html>`);
+    doc.close();
+    setTimeout(() => {
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(() => { if (iframe.parentNode) iframe.parentNode.removeChild(iframe); }, 1500);
+    }, 300);
+    showToast('Diálogo de impressão aberto — selecione "Salvar como PDF"', 'info');
+}
+
+// ── Exportar DOC (Word-HTML, sem biblioteca) ─────────────────────────────
+function exportarDoc() {
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
+    const html = getEditor().getContent();
+    const nome = (document.getElementById('editorFileName').value.trim() || 'documento') + '.doc';
+    const conteudo = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head><meta charset="utf-8">
+<meta name=ProgId content=Word.Document>
+<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View>
+<w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->
+<style>
+/* @page é o que o Word usa pra margem de página — "margin" no body vira
+   recuo somado à margem padrão do Word (~2,5cm), dobrando o espaço em branco. */
+@page WordSection1 { size: 21cm 29.7cm; margin: 2cm; mso-page-orientation: portrait; }
+div.WordSection1 { page: WordSection1; }
+/* Word não herda CSS do body como o navegador — repete em cada elemento de bloco.
+   line-height sem unidade também não é confiável no Word; usa % + mso-line-height-rule. */
+body,p,li,td,th,h1,h2,h3,h4,h5,h6{font-family:"Times New Roman",serif;font-size:12pt;line-height:200%;mso-line-height-rule:exactly;color:#000;}
+body{margin:0;background:#fff;}
+p{text-align:justify;margin:0 0 6px 0;}
+</style></head><body><div class="WordSection1">${html}</div></body></html>`;
+    const blob = new Blob(['﻿', conteudo], { type: 'application/msword' });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href = url; a.download = nome; a.click();
+    URL.revokeObjectURL(url);
+    showToast('Documento DOC exportado com sucesso', 'sucesso');
+}
+
+// ── Incluir na Movimentação (via campo oculto — sem restrição de MIME) ───
+function incluirNaMovimentacao() {
+    if (editorVazio()) { showToast('Editor vazio', 'atencao'); return; }
+    const nome = (document.getElementById('editorFileName').value.trim() || 'documento_editor');
+    const html = getEditor().getContent();
+    document.getElementById('editorHtmlHidden').value = html;
+    document.getElementById('editorHtmlNome').value   = nome;
+    // Exibe na lista (sem File object — tratado pelo campo oculto)
+    savedFiles = savedFiles.filter(f => !f.fromEditor);
+    savedFiles.push({ id: ++fid, desc: nome, name: nome + '.html', file: null, fromEditor: true });
+    renderFiles();
+    showToast('Documento incluído na lista — será anexado ao salvar', 'sucesso');
+}
+
+// ── Fluxo passo 1 → passo 2 ──────────────────────────
+function avancar() {
+    if (!document.getElementById('tipoMov').value) {
+        showToast('Selecione o Tipo de Movimentação', 'atencao'); return;
+    }
+    if (pendingFiles.length > 0) {
+        showToast('Confirme ou remova os arquivos pendentes antes de avançar', 'atencao'); return;
+    }
+
+    // Preenche card de revisão
+    const desc  = document.getElementById('descMov').value.trim();
+    document.getElementById('rev-tipo').textContent      = document.getElementById('tipoMovInput').value;
+    document.getElementById('rev-descricao').textContent = desc || '(sem descrição)';
+
+    const ul = document.getElementById('rev-arquivos');
+    if (savedFiles.length === 0) {
+        ul.innerHTML = '<li class="text-rotulo italic">Nenhum documento</li>';
+    } else {
+        ul.innerHTML = savedFiles.map(f => {
+            const [ico, col] = iconFor(f.name);
+            return `<li class="flex items-center gap-2">
+                <i class="fa-solid ${ico}" style="color:${col}"></i>
+                <span>${f.desc}</span>
+                <span class="text-rotulo text-[calc(10px*var(--escala-fonte,1))]">(${f.name})</span>
+            </li>`;
+        }).join('');
+    }
+
+    // Troca de painel
+    document.getElementById('stepBadge').textContent = 'Passo 2';
+    document.querySelectorAll('#formMovimentar > fieldset, #btnsPasso1').forEach(el => el.classList.add('hidden'));
+    document.getElementById('painelPasso2').classList.remove('hidden');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function voltarPasso1() {
+    document.getElementById('stepBadge').textContent = 'Passo 1';
+    document.querySelectorAll('#formMovimentar > fieldset, #btnsPasso1').forEach(el => el.classList.remove('hidden'));
+    document.getElementById('painelPasso2').classList.add('hidden');
+}
+
+// ── Envio real do formulário ──────────────────────────
+function confirmarMovimentacao() {
+    // Reconstrói o fileInput com todos os arquivos de savedFiles
+    const dt = new DataTransfer();
+    savedFiles.forEach(f => { if (f.file) dt.items.add(f.file); });
+    fileInput.files = dt.files;
+
+    // Remove hidden inputs de nomes antigos e injeta novos na ordem correta
+    const form = document.getElementById('formMovimentar');
+    form.querySelectorAll('input[name="documento_nomes"]').forEach(el => el.remove());
+    savedFiles.forEach(f => {
+        const inp = document.createElement('input');
+        inp.type  = 'hidden';
+        inp.name  = 'documento_nomes';
+        inp.value = f.desc;
+        form.appendChild(inp);
+    });
+
+    form.submit();
+}
+
+// ── Pré-preenchimento modo edição ─────────────────────
+{% if movimentacao_origem_id %}
+document.addEventListener('DOMContentLoaded', function () {
+    const TIPOS = JSON.parse(document.getElementById('tipoMovData').textContent);
+    const tipo  = TIPOS.find(t => t.id === '{{ edicao_tipo_id }}');
+    if (tipo) window._tipoMovSelect(tipo.id, tipo.nome);
+    const ta = document.getElementById('descMov');
+    ta.value = `{{ edicao_descricao|escapejs }}`;
+    ta.dispatchEvent(new Event('input'));
+});
+{% endif %}
+
+// ── Toast ─────────────────────────────────────────────
+</script>
+
+{% endblock %}

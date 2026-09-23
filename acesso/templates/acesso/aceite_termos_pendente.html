@@ -1,0 +1,53 @@
+{% extends 'base/base.html' %}
+{% load ui %}
+
+{% block title %}Atualização dos Termos de Uso{% endblock %}
+
+{% block content %}
+<main class="max-w-conteudo mx-auto px-7 py-5">
+    <div class="w-full max-w-[560px] mx-auto">
+
+        {% include 'base/components/_mensagens.html' with as_toast=True %}
+
+        <!-- Sem navegação secundária: enquanto o aceite não vem, nada mais no
+             sistema deve ficar acessível — é o mesmo motivo de ciclos/boas_vindas.html. -->
+        <div class="mb-[14px] pb-[14px] border-b border-contorno">
+            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+                <i class="fa-solid fa-file-signature"></i> Atualização dos Termos de Uso
+            </h1>
+            <p class="text-corpo text-texto-neutro mt-1.5">
+                Os Termos de Uso e a Política de Privacidade do Simulador Projudi foram
+                atualizados. Para continuar, leia os documentos e confirme o aceite abaixo.
+            </p>
+        </div>
+
+        {% card titulo="ACEITE OBRIGATÓRIO" icone="fa-file-signature" classe_corpo="px-4 py-[14px] flex flex-col gap-3" %}
+            <p class="text-corpo text-texto">
+                Confira o texto completo antes de aceitar:
+            </p>
+            <div class="flex flex-col gap-1.5">
+                <a href="{% url 'acesso:termos_de_uso' %}" target="_blank" rel="noopener"
+                   class="text-acao font-semibold hover:underline flex items-center gap-1.5">
+                    <i class="fa-solid fa-file-contract"></i> Termos de Uso
+                </a>
+                <a href="{% url 'acesso:politica_privacidade' %}" target="_blank" rel="noopener"
+                   class="text-acao font-semibold hover:underline flex items-center gap-1.5">
+                    <i class="fa-solid fa-shield-halved"></i> Política de Privacidade
+                </a>
+            </div>
+
+            <form method="post" class="flex flex-col gap-3 pt-1">
+                {% csrf_token %}
+                {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+
+                {% include 'acesso/components/_aceite_termos_campo.html' %}
+
+                <div class="flex items-center gap-3 pt-1">
+                    <button type="submit" class="{% classe_botao 'primario' padding=True %}">Continuar</button>
+                </div>
+            </form>
+        {% endcard %}
+
+    </div>
+</main>
+{% endblock %}

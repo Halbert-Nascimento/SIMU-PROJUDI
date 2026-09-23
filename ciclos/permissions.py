@@ -51,6 +51,19 @@ def pode_gerenciar_grupos_ciclo(user: Usuario, ciclo) -> bool:
     return False
 
 
+def pode_trocar_ciclo_ativo(user: Usuario) -> bool:
+    """
+    Quem troca de ciclo pela barra do cabeçalho.
+
+    Só o Aluno: ele atua dentro de um ciclo por vez. Admin, Coordenador e
+    Professor enxergam todos os ciclos pelo painel, e o seletor sugeriria um
+    escopo que as telas deles não têm.
+    """
+    if not user.is_authenticated:
+        return False
+    return user.tipo_perfil_global == Usuario.TipoPerfilGlobal.ALUNO
+
+
 def pode_ver_todos_ciclos(user: Usuario) -> bool:
     if not user.is_authenticated:
         return False
@@ -67,3 +80,21 @@ def pode_ver_ciclos_arquivados(user: Usuario) -> bool:
         Usuario.TipoPerfilGlobal.ADMIN,
         Usuario.TipoPerfilGlobal.COORDENADOR,
     )
+
+
+def aguarda_vinculo_a_ciclo(user: Usuario, ciclos_ativos) -> bool:
+    """
+    Aluno já aceito no sistema que ainda não foi posto em nenhum ciclo em
+    andamento — o estado em que não há processo, grupo nem nota para ver.
+
+    Recebe os ciclos em vez de consultá-los: quem chama é o middleware, que já
+    pagou essa query no `CicloAtivoMiddleware`.
+
+    Fora do nome `pode_<acao>_<recurso>` de propósito: não é autorização, é o
+    estado do cadastro. Quem autoriza continua sendo a guarda de cada tela.
+    """
+    if not user.is_authenticated:
+        return False
+    if user.tipo_perfil_global != Usuario.TipoPerfilGlobal.ALUNO:
+        return False
+    return not ciclos_ativos
