@@ -67,6 +67,33 @@ class CenarioCicloTestCase(TestCase):
         return client
 
 
+class SelecionarCicloOpenRedirectTests(CenarioCicloTestCase):
+    """Regressão: GET /ciclos/selecionar/?next=... não pode sair do site --
+    professor_original tem exatamente 1 ciclo em andamento, o que cai direto
+    no branch que redireciona sem renderizar nenhuma tela."""
+
+    def test_next_externo_e_ignorado(self):
+        client = self.cliente_logado(self.professor_original)
+
+        resposta = client.get(
+            reverse("ciclos:selecionar_ciclo"),
+            {"next": "https://evil.example.com/phish"},
+        )
+
+        self.assertRedirects(
+            resposta, reverse("acesso:painel_administrativo"),
+            fetch_redirect_response=False,
+        )
+
+    def test_next_seguro_e_respeitado(self):
+        client = self.cliente_logado(self.professor_original)
+        destino = reverse("acesso:minha_conta")
+
+        resposta = client.get(reverse("ciclos:selecionar_ciclo"), {"next": destino})
+
+        self.assertRedirects(resposta, destino, fetch_redirect_response=False)
+
+
 class AdicionarMembroNotificacaoTests(CenarioCicloTestCase):
     def test_adicionar_membro_notifica_o_aluno(self):
         client = self.cliente_logado(self.professor_original)

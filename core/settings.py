@@ -157,6 +157,10 @@ LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após
 LOGIN_URL = 'acesso:login'
 LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
 
+# CSRF_FAILURE_VIEW não é redefinido aqui: o default do Django
+# (django.views.csrf.csrf_failure) já procura templates/403_csrf.html
+# automaticamente e passa `request` (context processors rodam).
+
 # ─── Segurança ────────────────────────────────────────────────────────────────
 # Padrão do Django, repetido aqui porque é a defesa contra roubo de sessão por XSS
 SESSION_COOKIE_HTTPONLY = True
