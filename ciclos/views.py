@@ -7,6 +7,7 @@ from django.db.models import Q
 from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.views.decorators.http import require_POST
 
 from base.breadcrumbs import home_breadcrumb
@@ -378,6 +379,13 @@ def ativar_ciclo(request, ciclo_id):
     request.session[CICLO_SESSION_KEY] = ciclo.pk
 
     next_url = request.POST.get("next", "").strip()
-    if next_url and next_url.startswith("/"):
+    # startswith("/") sozinho deixa passar "//evil.com/" -- navegador trata como
+    # protocol-relative e sai do site. url_has_allowed_host_and_scheme (mesmo
+    # padrão de acesso/views.py, do portão de Termos de Uso) valida host e esquema.
+    if next_url and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
         return redirect(next_url)
     return redirect("acesso:painel_administrativo")
