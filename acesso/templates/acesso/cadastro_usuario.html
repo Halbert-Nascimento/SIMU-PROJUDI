@@ -113,7 +113,8 @@
 <script>
 (function () {
     const EMAIL_REGEX = /^(?![0-9]+@)(?!.*\.\.)[a-z0-9][a-z0-9._\-]*(?<![._\-])@[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9\-]*[a-z0-9])?)*\.[a-z]{2,}$/;
-    const NAME_REGEX  = /^[^\W\d_]+(?:[ '\-][^\W\d_]+)*$/u;
+    // \w/\W em JS são sempre ASCII, mesmo com a flag u — \p{L} é o equivalente Unicode do backend
+    const NAME_REGEX  = /^\p{L}+(?:[ '\-]\p{L}+)*$/u;
 
     function showError(input, msg) {
         removeError(input);
