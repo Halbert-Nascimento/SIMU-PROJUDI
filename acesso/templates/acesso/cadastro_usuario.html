@@ -24,16 +24,20 @@
                     {% csrf_token %}
 
                     {% for field in form %}
-                        {% if field.help_text and field.html_name != 'password1' and field.html_name != 'password2' %}
-                            {% campo label=field.label para=field.id_for_label erros=field.errors ajuda=field.help_text %}{{ field }}{% endcampo %}
-                        {% else %}
-                            {% campo label=field.label para=field.id_for_label erros=field.errors %}{{ field }}{% endcampo %}
+                        {% if field.html_name != 'aceite_termos' %}
+                            {% if field.help_text and field.html_name != 'password1' and field.html_name != 'password2' %}
+                                {% campo label=field.label para=field.id_for_label erros=field.errors ajuda=field.help_text %}{{ field }}{% endcampo %}
+                            {% else %}
+                                {% campo label=field.label para=field.id_for_label erros=field.errors %}{{ field }}{% endcampo %}
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
 
                     {% for error in form.non_field_errors %}
                         <p class="text-meta text-validacao font-semibold">{{ error }}</p>
                     {% endfor %}
+
+                    {% include 'acesso/components/_aceite_termos_campo.html' %}
 
                     <div class="flex gap-2 pt-1">
                         <button type="submit" class="{% classe_botao 'primario' padding=True %}">
@@ -97,8 +101,8 @@
             <!-- SUPORTE -->
             {% card titulo="SUPORTE" icone="fa-headset" classe_corpo="px-4 py-[14px] text-apoio text-texto-neutro flex flex-col gap-2" %}
                     <p>Dúvidas sobre o cadastro? Entre em contato com a coordenação do simulador.</p>
-                    <a href="mailto:simulador@tjgo.jus.br" class="text-acao font-semibold hover:underline flex items-center gap-1.5">
-                        <i class="fa-solid fa-envelope text-[calc(11px*var(--escala-fonte,1))]"></i> simulador@tjgo.jus.br
+                    <a href="mailto:{{ email_contato_dpo }}" class="text-acao font-semibold hover:underline flex items-center gap-1.5">
+                        <i class="fa-solid fa-envelope text-[calc(11px*var(--escala-fonte,1))]"></i> {{ email_contato_dpo }}
                     </a>
                 {% endcard %}
 
