@@ -1,0 +1,8 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Página não encontrada — Simu Projudi{% endblock %}
+
+{% block content %}
+{% url 'base:home' as url_base_home %}
+{% include 'base/components/_erro_http.html' with icone="fa-solid fa-magnifying-glass" titulo="Página não encontrada" mensagem="O endereço acessado não existe ou foi removido. Confira o link ou volte para o início." url_botao=url_base_home rotulo_botao="Voltar para o início" only %}
+{% endblock %}

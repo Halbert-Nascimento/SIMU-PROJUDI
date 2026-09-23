@@ -453,7 +453,7 @@
             <div class="flex items-center gap-3">
                 <img src="{% static 'img/logo-iesgo-branco.png' %}" alt="Grupo IESGO"
                      class="h-7 w-auto" width="87" height="28">
-                <span>Simulador Universitário Projudi · {{ nome_instituicao }}</span>
+                <span>Simulador Universitário Projudi{% if nome_instituicao %} · {{ nome_instituicao }}{% endif %}</span>
             </div>
             <div class="flex items-center gap-4">
                 <a href="{% url 'acesso:termos_de_uso' %}" class="text-navy-40 hover:text-white text-meta hover:underline">Termos de Uso</a>
