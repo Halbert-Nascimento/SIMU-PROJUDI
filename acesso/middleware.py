@@ -82,12 +82,15 @@ class TermosAceitosMiddleware:
         "acesso:politica_privacidade",
         "acesso:logout",
         # pings em segundo plano — a página de aceite mantém o cabeçalho
-        # inteiro (inclusive o sino), que continua consultando essas rotas
-        # a cada 30s; sem a liberação, cada consulta vira um redirect para
-        # a própria página de aceite em vez de devolver o JSON esperado.
+        # inteiro (inclusive o sino), que continua consultando essa rota a
+        # cada 30s; sem a liberação, cada consulta vira um redirect para a
+        # própria página de aceite em vez de devolver o JSON esperado.
+        # "notificacoes:recentes" fica de fora de propósito: ao contrário de
+        # "contagem" (só um número), ela devolve o conteúdo das notificações
+        # e marca como lidas — deixaria quem ainda não aceitou ler tudo pelo
+        # sino, driblando o próprio sentido do portão.
         "acesso:manter_sessao",
         "notificacoes:contagem",
-        "notificacoes:recentes",
     )
 
     def __init__(self, get_response):
@@ -109,6 +112,13 @@ class TermosAceitosMiddleware:
             and request.path not in self.caminhos_liberados
         ):
             destino = reverse("acesso:aceite_termos_pendente")
-            return redirect(f"{destino}?{urlencode({'next': request.path})}")
+            # `next` só faz sentido para GET: se a requisição bloqueada era um
+            # POST (ex.: o formulário de troca de ciclo no cabeçalho, presente
+            # em toda página), reaproveitar o caminho depois do aceite bateria
+            # via GET numa view que só aceita POST e devolveria 405.
+            if request.method == "GET":
+                proximo = urlencode({"next": request.get_full_path()})
+                destino = f"{destino}?{proximo}"
+            return redirect(destino)
 
         return self.get_response(request)

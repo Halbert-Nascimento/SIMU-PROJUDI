@@ -43,13 +43,16 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
-# Dados institucionais citados nos Termos de Uso e na Política de Privacidade.
-# Ficam no .env (não no texto) porque a instituição/mantenedor responsável pode
-# mudar sem que o conteúdo jurídico em si precise ser reescrito. Os "_DEFAULT"
-# ficam nomeados (em vez de só o literal no env()) porque base.checks os usa
-# para avisar, em produção, que ainda não foram preenchidos — duplicar o
-# literal nos dois lugares deixaria o aviso vulnerável a ficar desatualizado.
-NOME_INSTITUICAO_DEFAULT = "[Nome da instituição a definir]"
+# Dados institucionais citados nos Termos de Uso, na Política de Privacidade,
+# no rodapé (base.html) e na tela de login. Ficam no .env (não hardcoded nos
+# templates) porque a instituição/mantenedor responsável pode mudar sem que o
+# conteúdo jurídico nem a interface precisem ser reescritos — e para não ter
+# "Faculdade IESGO" fixo num template e um placeholder diferente no outro. Os
+# "_DEFAULT" ficam nomeados (em vez de só o literal no env()) porque
+# base.checks os usa para avisar, em produção, que ainda não foram definidos
+# explicitamente — duplicar o literal nos dois lugares deixaria o aviso
+# vulnerável a ficar desatualizado.
+NOME_INSTITUICAO_DEFAULT = "Faculdade IESGO"
 EMAIL_CONTATO_DPO_DEFAULT = "contato@simu-projudi.local"
 FORO_COMARCA_DEFAULT = "[Comarca a definir]"
 

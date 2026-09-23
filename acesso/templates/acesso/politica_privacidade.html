@@ -45,7 +45,8 @@
                     <li>Perfil de acesso (Administrador, Coordenador, Professor, Aluno ou Pendente);</li>
                     <li>Horário da última atividade na sessão, usado apenas para controlar a expiração automática por inatividade;</li>
                     <li>Ciclo de simulação ativo na sessão do usuário;</li>
-                    <li>Endereço IP de acesso, usado apenas para exibir ao próprio usuário a informação do penúltimo login.</li>
+                    <li>Data e horário do último login (campo padrão de autenticação do Django), usado para exibir ao próprio usuário quando foi seu penúltimo acesso;</li>
+                    <li>Endereço IP da requisição, lido a cada acesso apenas para exibição ao próprio usuário do IP em uso no momento — não é armazenado em banco de dados.</li>
                 </ul>
                 <p class="text-corpo text-texto mt-1.5">
                     O sistema também armazena dados inseridos pelo próprio usuário dentro dos
@@ -164,7 +165,7 @@
             </section>
 
             <p class="text-meta text-rotulo mt-[18px] pt-[14px] border-t border-divisor">
-                Versão {{ versao_termos_atual }} — vigente desde {{ data_vigencia_termos }}.
+                Versão {{ versao_termos_atual }} — vigente desde {{ data_vigencia_termos|date:"d/m/Y" }}.
             </p>
         {% endcard %}
     </div>

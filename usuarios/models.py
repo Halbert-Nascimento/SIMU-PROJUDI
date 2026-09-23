@@ -1,3 +1,5 @@
+import datetime
+
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -6,7 +8,9 @@ from django.db import models
 # aceite antigo registrado como se ainda valesse para o texto novo; mudar só a
 # constante sem mudar o texto força um re-aceite vazio, sem motivo.
 VERSAO_TERMOS_ATUAL = "1.0"
-DATA_VIGENCIA_TERMOS = "2026-09-22"
+# date, não string: os templates formatam com |date:"d/m/Y", o mesmo padrão
+# usado no resto do sistema (ex.: painel_administrativo.html, avaliar.html).
+DATA_VIGENCIA_TERMOS = datetime.date(2026, 9, 22)
 
 
 class Usuario(AbstractUser):
