@@ -32,6 +32,13 @@ def pode_editar_processo(user, processo) -> bool:
     ).exists()
 
 
+def grupo_serventia_do_usuario(user, ciclo):
+    """Vínculo do usuário com a serventia (grupo de cargo SC) do ciclo, ou None."""
+    if not user.is_authenticated:
+        return None
+    return user.grupos_trabalho.filter(ciclo=ciclo, cargo_simulacao__cod="SC").first()
+
+
 def pode_visualizar_processo(user, processo) -> bool:
     """
     Processo sem segredo de justiça e já autuado: público, qualquer pessoa acessa sem login.
@@ -69,21 +76,3 @@ def pode_visualizar_processo(user, processo) -> bool:
         return True
 
     return False
-
-
-def pode_atribuir_grupos(user, processo) -> bool:
-    """
-    Quem distribui e redistribui grupos: aluno em grupo Serventia (cod="SC") do ciclo do
-    processo.
-
-    Admin, Coordenador e Professor ficam fora de propósito: quem pratica ato processual é o
-    papel simulado, não a autoridade sobre o ciclo — a mesma regra que
-    `movimentacoes.permissions` já aplica ao negar movimentação a esses perfis.
-    """
-    if not user.is_authenticated:
-        return False
-
-    return user.grupos_trabalho.filter(
-        ciclo_id=processo.ciclo_id,
-        cargo_simulacao__cod="SC",
-    ).exists()
