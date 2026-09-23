@@ -6,21 +6,21 @@
 {% block content %}
 <main class="max-w-conteudo mx-auto px-7 py-5">
 
-    <div class="mb-[14px] pb-[14px] border-b border-contorno">
-        <a href="{% url voltar_url %}"
-           onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }"
-           class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
-            <i class="fa-solid fa-arrow-left"></i> Voltar
-        </a>
-        <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
-            <i class="fa-solid fa-file-contract"></i> Termos de Uso
-        </h1>
-        <p class="text-corpo text-texto-neutro mt-1.5">
-            Simulador Universitário Projudi — {{ nome_instituicao }}
-        </p>
-    </div>
+    <div class="max-w-[720px] mx-auto">
+        <div class="mb-[14px] pb-[14px] border-b border-contorno">
+            <a href="{% url voltar_url %}"
+               onclick="if (window.history.length > 1) { event.preventDefault(); window.history.back(); }"
+               class="text-meta text-rotulo hover:text-acao font-semibold mb-1.5 flex items-center gap-1.5 transition-colors w-fit">
+                <i class="fa-solid fa-arrow-left"></i> Voltar
+            </a>
+            <h1 class="text-navy text-h1 font-bold flex items-center gap-2.5">
+                <i class="fa-solid fa-file-contract"></i> Termos de Uso
+            </h1>
+            <p class="text-corpo text-texto-neutro mt-1.5">
+                Simulador Universitário Projudi — {{ nome_instituicao }}
+            </p>
+        </div>
 
-    <div class="max-w-[720px]">
         {% card titulo="TERMOS DE USO" icone="fa-file-contract" classe_corpo="px-5 py-5 flex flex-col gap-[18px]" %}
 
             <section>
