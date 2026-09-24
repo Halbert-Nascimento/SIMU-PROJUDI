@@ -139,16 +139,16 @@ def ctx_relatorio_notas(variante="com_notas"):
     vazio = variante == "vazio"
     linhas = [] if vazio else [
         {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
-         "total_movimentacoes": 7, "total_avaliadas": 3, "media": 3.9, "faixa": "warn"},
+         "total_movimentacoes": 7, "total_avaliadas": 3, "media": 3.9, "estrelas": 4, "faixa": "ok"},
         {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
-         "total_movimentacoes": 0, "total_avaliadas": 0, "media": None, "faixa": "gray"},
+         "total_movimentacoes": 0, "total_avaliadas": 0, "media": None, "estrelas": None, "faixa": "gray"},
     ]
     return {
         "user": PROFESSOR, "request": Obj(user=PROFESSOR, path="/avaliacoes/relatorio-notas/"),
         "form_filtro": _filtro_ciclo(com_erro=variante == "filtro_invalido"),
         "linhas": linhas, "total_alunos": 0 if vazio else 1,
         "total_avaliadas": 0 if vazio else 3, "total_movimentacoes": 0 if vazio else 7,
-        "media_geral": None if vazio else 3.9,
+        "media_geral_estrelas": None if vazio else 4,
         "breadcrumbs": [{"label": "Painel Administrativo", "url": "/"},
                         {"label": "Relatório de Notas", "url": None}],
     }

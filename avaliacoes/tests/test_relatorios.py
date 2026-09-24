@@ -83,7 +83,7 @@ class RelatorioNotasTests(CenarioRelatorios):
         self.assertEqual(linha["faixa"], "ok")
 
     def test_faixa_da_linha_concorda_com_a_media_exibida(self):
-        casos = {"7.00": ("3.5", "warn"), "8.00": ("4.0", "ok"), "5.00": ("2.5", "erro")}
+        casos = {"7.00": ("3.5", "ok"), "8.00": ("4.0", "ok"), "5.00": ("2.5", "warn"), "4.00": ("2.0", "erro")}
         for nota, (media, faixa) in casos.items():
             with self.subTest(nota=nota):
                 movimentacao = self.nova_movimentacao()
@@ -96,6 +96,24 @@ class RelatorioNotasTests(CenarioRelatorios):
 
                 self.assertEqual(str(linha["media"]), media)
                 self.assertEqual(linha["faixa"], faixa)
+
+    def test_media_e_exibida_em_estrelas_e_nao_como_numero(self):
+        self.avaliar(self.nova_movimentacao(), "7.00")
+
+        resposta = self.obter(self.admin, URL_NOTAS)
+
+        # linha da tabela e card de média geral: ambos desenham 3,5 como 4 estrelas
+        self.assertContains(resposta, 'aria-label="4 de 5 estrelas"', count=2)
+        self.assertNotContains(resposta, ">3,5<")
+        self.assertNotContains(resposta, ">3.5<")
+
+    def test_aluno_sem_nota_continua_com_a_etiqueta_sem_nota(self):
+        self.nova_movimentacao()
+
+        resposta = self.obter(self.admin, URL_NOTAS)
+
+        self.assertContains(resposta, "Sem nota")
+        self.assertNotContains(resposta, 'class="estrelas')
 
     def test_duas_avaliacoes_da_mesma_movimentacao_contam_uma_vez(self):
         movimentacao = self.nova_movimentacao()

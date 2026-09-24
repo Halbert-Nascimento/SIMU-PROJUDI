@@ -52,6 +52,14 @@ def media_em_estrelas(media) -> float | None:
     return max(0.0, min(float(ESTRELAS_MAX), estrelas))
 
 
+def media_para_estrelas(media) -> int | None:
+    """Estrelas inteiras de uma média já em estrelas (3,5 -> 4; meio para cima), para desenhar com `estrelas`."""
+    if media is None:
+        return None
+    estrelas = Decimal(str(media)).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return max(0, min(ESTRELAS_MAX, int(estrelas)))
+
+
 def faixa_da_estrela(estrelas: int | None) -> str:
     """Trio de estado do guia: 4–5 ok, 3 atenção, 1–2 erro, sem nota neutro."""
     if estrelas is None:
@@ -64,10 +72,8 @@ def faixa_da_estrela(estrelas: int | None) -> str:
 
 
 def faixa_da_media(media: float | None) -> str:
-    """Trio de uma média já em estrelas: pelo piso, para a cor concordar com o número exibido."""
-    if media is None:
-        return "gray"
-    return faixa_da_estrela(int(media))
+    """Trio de uma média já em estrelas: pelas estrelas desenhadas, para a cor concordar com elas."""
+    return faixa_da_estrela(media_para_estrelas(media))
 
 
 def contexto_estrelas(estrelas: int | None, *, herda_cor: bool = False) -> dict:

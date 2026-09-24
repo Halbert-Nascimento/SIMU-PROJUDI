@@ -8,6 +8,7 @@ from base.decorators import exige_permissao
 from base.mensagens import propagar_erros_form
 
 from .forms import FiltroCicloForm
+from .estrelas import media_para_estrelas
 from .permissions import pode_ver_avaliacoes_pendentes, pode_ver_relatorio_notas
 from .services import (
     ciclos_do_avaliador,
@@ -46,7 +47,7 @@ def relatorio_notas(request):
             "total_alunos": len({linha["aluno"].pk for linha in linhas}),
             "total_avaliadas": sum(linha["total_avaliadas"] for linha in linhas),
             "total_movimentacoes": sum(linha["total_movimentacoes"] for linha in linhas),
-            "media_geral": media_geral_das_notas(ciclos),
+            "media_geral_estrelas": media_para_estrelas(media_geral_das_notas(ciclos)),
             "breadcrumbs": [
                 home_breadcrumb(request.user),
                 {"label": "Relatório de Notas", "url": None},

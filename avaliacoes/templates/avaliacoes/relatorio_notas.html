@@ -1,6 +1,7 @@
 {% extends 'base/layouts/layout_admin.html' %}
 {% load static %}
 {% load ui %}
+{% load avaliacoes_ui %}
 
 {% block title %}Relatório de Notas — Simulador Projudi{% endblock %}
 {% block header_titulo %}Processo Judicial | Gestão Acadêmica{% endblock %}
@@ -35,7 +36,12 @@
             <span class="numero">{{ total_avaliadas }}</span>
             <span class="apoio">de {{ total_movimentacoes }} registradas pelos alunos</span>
         </div>
-        {% include 'base/components/_card_kpi.html' with rotulo="Média Geral" numero=media_geral|floatformat:1|default:"—" apoio="de 5 estrelas, nas avaliações com nota" only %}
+        <!-- direto na classe: o número é o desenho das estrelas, e o include recebe texto pronto -->
+        <div class="card-kpi">
+            <span class="rotulo">Média Geral</span>
+            <span class="numero">{% estrelas media_geral_estrelas %}</span>
+            <span class="apoio">de 5 estrelas, nas avaliações com nota</span>
+        </div>
     </div>
 
     <div class="border border-contorno bg-white overflow-hidden">
@@ -70,7 +76,7 @@
                             {% if linha.media is None %}
                             <span class="pill gray">Sem nota</span>
                             {% else %}
-                            <span class="pill {{ linha.faixa }} font-mono">{{ linha.media|floatformat:1 }}</span>
+                            <span class="pill {{ linha.faixa }}">{% estrelas linha.estrelas herda_cor=True %}</span>
                             {% endif %}
                         </td>
                     </tr>

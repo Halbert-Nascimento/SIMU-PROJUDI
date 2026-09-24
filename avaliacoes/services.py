@@ -7,7 +7,7 @@ from ciclos.permissions import pode_ver_todos_ciclos
 from movimentacoes.models import MovimentacaoProcessual
 from usuarios.models import Usuario
 
-from .estrelas import faixa_da_media, media_em_estrelas
+from .estrelas import faixa_da_estrela, media_em_estrelas, media_para_estrelas
 from .models import FeedbackProfessor
 
 
@@ -60,13 +60,15 @@ def notas_por_aluno(ciclos):
     for participante in participantes:
         agregado = agregados.get((participante.usuario_id, participante.ciclo_id), {})
         media = media_em_estrelas(agregado.get("media"))
+        estrelas = media_para_estrelas(media)
         linhas.append({
             "aluno": participante.usuario,
             "ciclo": participante.ciclo,
             "total_movimentacoes": agregado.get("total_movimentacoes", 0),
             "total_avaliadas": agregado.get("total_avaliadas", 0),
             "media": media,
-            "faixa": faixa_da_media(media),
+            "estrelas": estrelas,
+            "faixa": faixa_da_estrela(estrelas),
         })
     return linhas
 
