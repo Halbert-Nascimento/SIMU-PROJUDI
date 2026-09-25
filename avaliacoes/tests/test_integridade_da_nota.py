@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 from django.test import SimpleTestCase
 from django.urls import reverse
 
-from ..estrelas import media_em_estrelas
+from ..estrelas import nota_para_meias_estrelas
 from ..models import FeedbackProfessor
 from .cenario import CenarioAvaliacao
 
@@ -119,25 +119,25 @@ class FaixaDaNotaTests(CenarioAvaliacao):
                 comentario="x", nota=Decimal(nota),
             )
         minhas_notas = self.cliente(self.aluno).get(reverse("avaliacoes:minhas_notas"))
-        self.assertEqual(minhas_notas.context["media_geral"], 5.0)
+        self.assertEqual(minhas_notas.context["media_geral"], 5)
         avaliar = self.cliente(self.prof).get(
             reverse("avaliacoes:avaliar", args=[self.nova_movimentacao().pk]),
         )
-        self.assertEqual(avaliar.context["media_notas"], 5.0)
-        self.assertIn("5,0 de 5 estrelas", avaliar.content.decode())
+        self.assertEqual(avaliar.context["media_notas"], 5)
+        self.assertIn('aria-label="5 de 5 estrelas"', avaliar.content.decode())
 
 
-class MediaEmEstrelasTests(SimpleTestCase):
+class MediaEmMeiasEstrelasTests(SimpleTestCase):
 
     def test_media_fica_entre_zero_e_cinco(self):
-        self.assertEqual(media_em_estrelas(Decimal("12")), 5.0)
-        self.assertEqual(media_em_estrelas(Decimal("99.99")), 5.0)
-        self.assertEqual(media_em_estrelas(Decimal("-1")), 0.0)
+        self.assertEqual(nota_para_meias_estrelas(Decimal("12")), 5)
+        self.assertEqual(nota_para_meias_estrelas(Decimal("99.99")), 5)
+        self.assertEqual(nota_para_meias_estrelas(Decimal("-1")), 0)
 
     def test_media_dentro_da_faixa_nao_muda(self):
-        self.assertEqual(media_em_estrelas(Decimal("7.8")), 3.9)
-        self.assertEqual(media_em_estrelas(Decimal("10")), 5.0)
-        self.assertIsNone(media_em_estrelas(None))
+        self.assertEqual(nota_para_meias_estrelas(Decimal("7")), 3.5)
+        self.assertEqual(nota_para_meias_estrelas(Decimal("10")), 5)
+        self.assertIsNone(nota_para_meias_estrelas(None))
 
 
 class RenderizacaoDasEstrelasTests(CenarioAvaliacao):

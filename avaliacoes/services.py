@@ -7,7 +7,7 @@ from ciclos.permissions import pode_ver_todos_ciclos
 from movimentacoes.models import MovimentacaoProcessual
 from usuarios.models import Usuario
 
-from .estrelas import faixa_da_media, media_em_estrelas
+from .estrelas import faixa_da_estrela, nota_para_meias_estrelas
 from .models import FeedbackProfessor
 
 
@@ -28,7 +28,7 @@ def ciclos_do_avaliador(usuario):
 
 
 def notas_por_aluno(ciclos):
-    """Uma linha por aluno e ciclo: movimentações, avaliadas e média em estrelas."""
+    """Uma linha por aluno e ciclo: movimentações, avaliadas e média em estrelas (com meia)."""
     agregados = {
         (linha["autor_id"], linha["processo__ciclo_id"]): linha
         for linha in (
@@ -59,20 +59,22 @@ def notas_por_aluno(ciclos):
     linhas = []
     for participante in participantes:
         agregado = agregados.get((participante.usuario_id, participante.ciclo_id), {})
-        media = media_em_estrelas(agregado.get("media"))
+        # arredonda uma vez só, da média bruta (0–10): passar por uma casa decimal antes empurraria 2,45 para 3 estrelas
+        estrelas = nota_para_meias_estrelas(agregado.get("media"))
         linhas.append({
             "aluno": participante.usuario,
             "ciclo": participante.ciclo,
             "total_movimentacoes": agregado.get("total_movimentacoes", 0),
             "total_avaliadas": agregado.get("total_avaliadas", 0),
-            "media": media,
-            "faixa": faixa_da_media(media),
+            "estrelas": estrelas,
+            "faixa": faixa_da_estrela(estrelas),
         })
     return linhas
 
 
 def media_geral_das_notas(ciclos):
-    media = (
+    """Média bruta (0–10) das notas dos alunos; quem exibe converte com `nota_para_meias_estrelas`."""
+    return (
         FeedbackProfessor.objects
         .filter(
             movimentacao__processo__ciclo__in=ciclos,
@@ -81,7 +83,6 @@ def media_geral_das_notas(ciclos):
         )
         .aggregate(media=Avg("nota"))["media"]
     )
-    return media_em_estrelas(media)
 
 
 def movimentacoes_pendentes_de_avaliacao(usuario, ciclos):

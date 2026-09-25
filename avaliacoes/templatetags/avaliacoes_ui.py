@@ -21,9 +21,10 @@ def em_estrelas(nota):
 @register.inclusion_tag("avaliacoes/components/_estrelas.html")
 def estrelas(valor, herda_cor=False):
     """
-    Estrelas só de leitura. `valor` já em estrelas (use `|em_estrelas` sobre uma
-    nota gravada). Com `herda_cor=True` as estrelas ficam na cor do elemento pai,
-    como dentro de uma `.pill`. Valor nulo mostra um traço.
+    Estrelas só de leitura. `valor` já em estrelas — inteiro ou com meia, como
+    3.5 (use `|em_estrelas` sobre uma nota gravada). Com `herda_cor=True` as
+    estrelas ficam na cor do elemento pai, como dentro de uma `.pill`. Valor nulo
+    mostra um traço.
     """
     return contexto_estrelas(valor, herda_cor=herda_cor)
 
