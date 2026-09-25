@@ -8,9 +8,7 @@ from ..estrelas import (
     contexto_estrelas,
     estrelas_para_nota,
     faixa_da_estrela,
-    faixa_da_media,
     media_em_estrelas,
-    media_para_estrelas,
     nota_para_estrelas,
 )
 
@@ -73,24 +71,6 @@ class MediaEFaixaTests(SimpleTestCase):
         self.assertEqual(
             [faixa_da_estrela(n) for n in (None, 0, 1, 2, 3, 4, 5)],
             ["gray", "erro", "erro", "erro", "warn", "ok", "ok"],
-        )
-
-    def test_faixa_da_media_segue_as_estrelas_desenhadas(self):
-        self.assertEqual(
-            [faixa_da_media(m) for m in (None, 0.0, 2.4, 2.5, 3.0, 3.4, 3.5, 3.9, 4.0, 5.0)],
-            ["gray", "erro", "erro", "warn", "warn", "warn", "ok", "ok", "ok", "ok"],
-        )
-
-    def test_media_de_sete_pontos_desenha_quatro_estrelas_e_pinta_como_quatro(self):
-        media = media_em_estrelas(Decimal("7.00"))
-        self.assertEqual(media, 3.5)
-        self.assertEqual(media_para_estrelas(media), 4)
-        self.assertEqual(faixa_da_media(media), "ok")
-
-    def test_media_vira_estrela_inteira_com_meio_para_cima(self):
-        self.assertEqual(
-            [media_para_estrelas(m) for m in (None, 0.0, 2.4, 2.5, 3.5, 3.9, 4.4, 5.0)],
-            [None, 0, 2, 3, 4, 4, 4, 5],
         )
 
     def test_contexto_das_estrelas(self):

@@ -79,12 +79,16 @@ class RelatorioNotasTests(CenarioRelatorios):
         self.assertEqual(linha["aluno"], self.aluno)
         self.assertEqual(linha["total_movimentacoes"], 3)
         self.assertEqual(linha["total_avaliadas"], 1)
-        self.assertEqual(linha["media"], 4.0)
+        self.assertEqual(linha["estrelas"], 4)
         self.assertEqual(linha["faixa"], "ok")
 
-    def test_faixa_da_linha_concorda_com_a_media_exibida(self):
-        casos = {"7.00": ("3.5", "ok"), "8.00": ("4.0", "ok"), "5.00": ("2.5", "warn"), "4.00": ("2.0", "erro")}
-        for nota, (media, faixa) in casos.items():
+    def test_faixa_da_linha_concorda_com_as_estrelas_desenhadas(self):
+        # 4.90 e 6.90 são as médias x,45 de estrela: arredondar duas vezes as empurraria para cima
+        casos = {
+            "4.00": (2, "erro"), "4.90": (2, "erro"), "5.00": (3, "warn"),
+            "6.90": (3, "warn"), "7.00": (4, "ok"), "8.00": (4, "ok"),
+        }
+        for nota, (estrelas, faixa) in casos.items():
             with self.subTest(nota=nota):
                 movimentacao = self.nova_movimentacao()
                 feedback = self.avaliar(movimentacao, nota)
@@ -94,8 +98,15 @@ class RelatorioNotasTests(CenarioRelatorios):
                 feedback.delete()
                 movimentacao.delete()
 
-                self.assertEqual(str(linha["media"]), media)
+                self.assertEqual(linha["estrelas"], estrelas)
                 self.assertEqual(linha["faixa"], faixa)
+
+    def test_media_geral_arredonda_uma_vez_so(self):
+        self.avaliar(self.nova_movimentacao(), "4.90")
+
+        resposta = self.obter(self.admin, URL_NOTAS)
+
+        self.assertEqual(resposta.context["media_geral_estrelas"], 2)
 
     def test_media_e_exibida_em_estrelas_e_nao_como_numero(self):
         self.avaliar(self.nova_movimentacao(), "7.00")
@@ -124,13 +135,13 @@ class RelatorioNotasTests(CenarioRelatorios):
 
         self.assertEqual(linha["total_movimentacoes"], 1)
         self.assertEqual(linha["total_avaliadas"], 1)
-        self.assertEqual(linha["media"], 4.0)
+        self.assertEqual(linha["estrelas"], 4)
 
     def test_aluno_sem_movimentacao_aparece_sem_nota(self):
         [linha] = notas_por_aluno(CicloSimulacao.objects.filter(pk=self.ciclo.pk))
 
         self.assertEqual(linha["total_movimentacoes"], 0)
-        self.assertIsNone(linha["media"])
+        self.assertIsNone(linha["estrelas"])
         self.assertEqual(linha["faixa"], "gray")
 
     def test_professor_so_ve_o_ciclo_que_coordena(self):

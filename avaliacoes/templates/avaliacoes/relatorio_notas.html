@@ -73,7 +73,7 @@
                         <td class="text-center font-mono">{{ linha.total_movimentacoes }}</td>
                         <td class="text-center font-mono">{{ linha.total_avaliadas }}</td>
                         <td class="text-center">
-                            {% if linha.media is None %}
+                            {% if linha.estrelas is None %}
                             <span class="pill gray">Sem nota</span>
                             {% else %}
                             <span class="pill {{ linha.faixa }}">{% estrelas linha.estrelas herda_cor=True %}</span>

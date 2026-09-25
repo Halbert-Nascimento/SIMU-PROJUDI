@@ -139,9 +139,9 @@ def ctx_relatorio_notas(variante="com_notas"):
     vazio = variante == "vazio"
     linhas = [] if vazio else [
         {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
-         "total_movimentacoes": 7, "total_avaliadas": 3, "media": 3.9, "estrelas": 4, "faixa": "ok"},
+         "total_movimentacoes": 7, "total_avaliadas": 3, "estrelas": 4, "faixa": "ok"},
         {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
-         "total_movimentacoes": 0, "total_avaliadas": 0, "media": None, "estrelas": None, "faixa": "gray"},
+         "total_movimentacoes": 0, "total_avaliadas": 0, "estrelas": None, "faixa": "gray"},
     ]
     return {
         "user": PROFESSOR, "request": Obj(user=PROFESSOR, path="/avaliacoes/relatorio-notas/"),
