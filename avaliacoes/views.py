@@ -19,8 +19,8 @@ from .estrelas import (
     ESTRELAS_MAX,
     contexto_estrelas,
     faixa_da_estrela,
-    media_em_estrelas,
     nota_para_estrelas,
+    nota_para_meias_estrelas,
 )
 from .forms import FeedbackForm
 from .models import FeedbackProfessor
@@ -125,7 +125,7 @@ def avaliar_movimentacao(request, movimentacao_id):
         .order_by("-data_feedback")
     )
 
-    media_notas = media_em_estrelas(
+    media_notas = nota_para_meias_estrelas(
         historico
         .filter(nota__isnull=False)
         .aggregate(media=Avg("nota"))["media"]
@@ -187,7 +187,7 @@ def minhas_notas(request):
 
     total_avaliadas = stats["total"] or 0
     ultima_avaliacao = feedbacks.first()
-    media_geral = media_em_estrelas(stats["media"])
+    media_geral = nota_para_meias_estrelas(stats["media"])
     melhor_avaliacao = nota_para_estrelas(stats["melhor"])
     # Largura da barra de progresso: média sobre o máximo, com teto de 100%
     media_percentual = (

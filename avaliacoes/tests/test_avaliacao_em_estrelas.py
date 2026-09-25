@@ -115,14 +115,17 @@ class AvaliarViewTests(CenarioAvaliacao):
 
     def test_historico_e_media_do_aluno_aparecem_em_estrelas(self):
         atual = self.nova_movimentacao()
-        for nota in ("8.00", "7.00"):
+        for nota in ("8.00", "6.00"):
             FeedbackProfessor.objects.create(
                 movimentacao=self.nova_movimentacao(), professor=self.prof,
                 comentario="x", nota=Decimal(nota),
             )
         html = self.cliente(self.prof).get(self.url(atual)).content.decode()
-        self.assertIn("3,8 de 5 estrelas", html)
+        # linhas do histórico (4★ e 3★) e a média (7,0 = 3,5★), todas pelo mesmo componente
         self.assertIn('aria-label="4 de 5 estrelas"', html)
+        self.assertIn('aria-label="3 de 5 estrelas"', html)
+        self.assertIn('aria-label="3,5 de 5 estrelas"', html)
+        self.assertNotIn("de 5 estrelas</strong>", html)
 
 
 class MinhasNotasViewTests(CenarioAvaliacao):
@@ -137,9 +140,21 @@ class MinhasNotasViewTests(CenarioAvaliacao):
         self.avaliar(Decimal("6.00"))
         resposta = self.cliente(self.aluno).get(reverse("avaliacoes:minhas_notas"))
         self.assertEqual(resposta.status_code, 200)
-        self.assertEqual(resposta.context["media_geral"], 4.0)
+        self.assertEqual(resposta.context["media_geral"], 4)
         self.assertEqual(resposta.context["melhor_avaliacao"], 5)
         self.assertEqual(resposta.context["media_percentual"], 80)
+
+    def test_media_com_meia_estrela_aparece_desenhada_nos_cards_e_nao_como_numero(self):
+        self.avaliar(Decimal("8.00"))
+        self.avaliar(Decimal("6.00"))
+        resposta = self.cliente(self.aluno).get(reverse("avaliacoes:minhas_notas"))
+        html = resposta.content.decode()
+        self.assertEqual(resposta.context["media_geral"], 3.5)
+        self.assertEqual(resposta.context["media_percentual"], 70)
+        self.assertIn('aria-label="3,5 de 5 estrelas"', html)
+        self.assertIn("fa-star-half-stroke", html)
+        self.assertNotIn(">3,5<", html)
+        self.assertNotIn(">3.5<", html)
 
     def test_json_das_avaliacoes_traz_estrelas_faixa_e_html_pronto(self):
         self.avaliar(Decimal("8.00"))

@@ -85,7 +85,7 @@ def ctx_avaliar(com_erros=False, com_historico=True):
         "mov_origem": movimentacao(com_documentos=False),
         "feedback_origem": feedback(None),
         "historico": hist,
-        "media_notas": 4.1 if com_historico else None,
+        "media_notas": 3.5 if com_historico else None,
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
                         {"label": f"Processo {NUMERO}", "url": "/p/"},
                         {"label": "Avaliar Movimentação", "url": None}],
@@ -113,8 +113,8 @@ def ctx_minhas_notas(vazio=False):
                            avaliacao_json(3, "warn")],
         "total_movimentacoes": 0 if vazio else 7,
         "total_avaliadas": 0 if vazio else 3,
-        "media_geral": None if vazio else 3.9,
-        "media_percentual": 0 if vazio else 78,
+        "media_geral": None if vazio else 3.5,
+        "media_percentual": 0 if vazio else 70,
         "melhor_avaliacao": None if vazio else 5,
         "ultima_avaliacao": None if vazio else feedback(),
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
@@ -139,7 +139,7 @@ def ctx_relatorio_notas(variante="com_notas"):
     vazio = variante == "vazio"
     linhas = [] if vazio else [
         {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
-         "total_movimentacoes": 7, "total_avaliadas": 3, "estrelas": 4, "faixa": "ok"},
+         "total_movimentacoes": 7, "total_avaliadas": 3, "estrelas": 3.5, "faixa": "warn"},
         {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
          "total_movimentacoes": 0, "total_avaliadas": 0, "estrelas": None, "faixa": "gray"},
     ]
@@ -148,7 +148,7 @@ def ctx_relatorio_notas(variante="com_notas"):
         "form_filtro": _filtro_ciclo(com_erro=variante == "filtro_invalido"),
         "linhas": linhas, "total_alunos": 0 if vazio else 1,
         "total_avaliadas": 0 if vazio else 3, "total_movimentacoes": 0 if vazio else 7,
-        "media_geral_estrelas": None if vazio else 4,
+        "media_geral_estrelas": None if vazio else 3.5,
         "breadcrumbs": [{"label": "Painel Administrativo", "url": "/"},
                         {"label": "Relatório de Notas", "url": None}],
     }

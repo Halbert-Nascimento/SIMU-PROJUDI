@@ -83,10 +83,11 @@ class RelatorioNotasTests(CenarioRelatorios):
         self.assertEqual(linha["faixa"], "ok")
 
     def test_faixa_da_linha_concorda_com_as_estrelas_desenhadas(self):
-        # 4.90 e 6.90 são as médias x,45 de estrela: arredondar duas vezes as empurraria para cima
+        # cada ponto vale meia estrela e o meio ponto sobe: 4,90 fica em 2,5★ e 6,90 em 3,5★
         casos = {
-            "4.00": (2, "erro"), "4.90": (2, "erro"), "5.00": (3, "warn"),
-            "6.90": (3, "warn"), "7.00": (4, "ok"), "8.00": (4, "ok"),
+            "4.00": (2, "erro"), "4.90": (2.5, "erro"), "5.00": (2.5, "erro"),
+            "6.00": (3, "warn"), "6.90": (3.5, "warn"), "7.00": (3.5, "warn"),
+            "7.90": (4, "ok"), "8.00": (4, "ok"),
         }
         for nota, (estrelas, faixa) in casos.items():
             with self.subTest(nota=nota):
@@ -101,20 +102,21 @@ class RelatorioNotasTests(CenarioRelatorios):
                 self.assertEqual(linha["estrelas"], estrelas)
                 self.assertEqual(linha["faixa"], faixa)
 
-    def test_media_geral_arredonda_uma_vez_so(self):
+    def test_media_geral_vem_da_media_bruta_em_meias_estrelas(self):
         self.avaliar(self.nova_movimentacao(), "4.90")
 
         resposta = self.obter(self.admin, URL_NOTAS)
 
-        self.assertEqual(resposta.context["media_geral_estrelas"], 2)
+        self.assertEqual(resposta.context["media_geral_estrelas"], 2.5)
 
     def test_media_e_exibida_em_estrelas_e_nao_como_numero(self):
         self.avaliar(self.nova_movimentacao(), "7.00")
 
         resposta = self.obter(self.admin, URL_NOTAS)
 
-        # linha da tabela e card de média geral: ambos desenham 3,5 como 4 estrelas
-        self.assertContains(resposta, 'aria-label="4 de 5 estrelas"', count=2)
+        # linha da tabela e card de média geral: ambos desenham 3,5 estrelas, com a meia
+        self.assertContains(resposta, 'aria-label="3,5 de 5 estrelas"', count=2)
+        self.assertContains(resposta, "fa-star-half-stroke", count=2)
         self.assertNotContains(resposta, ">3,5<")
         self.assertNotContains(resposta, ">3.5<")
 

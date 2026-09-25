@@ -1,5 +1,5 @@
 {% comment %}
 Renderizado pela tag {% templatetag openblock %} estrelas {% templatetag closeblock %} — ver avaliacoes/templatetags/avaliacoes_ui.py.
-Cheia é ícone sólido e vazia é ícone de contorno: a diferença não depende só de cor.
+Cheia é ícone sólido, meia é o ícone de meia estrela e vazia é de contorno: a diferença não depende só de cor.
 {% endcomment %}
-{% if valor is None %}<span class="text-rotulo">—</span>{% else %}<span class="estrelas{% if herda_cor %} herda{% endif %}" role="img" aria-label="{{ valor }} de {{ maximo }} estrelas">{% for cheia in itens %}<i class="fa-{% if cheia %}solid cheia{% else %}regular vazia{% endif %} fa-star" aria-hidden="true"></i>{% endfor %}</span>{% endif %}
+{% if valor is None %}<span class="text-rotulo">—</span>{% else %}<span class="estrelas{% if herda_cor %} herda{% endif %}" role="img" aria-label="{{ valor }} de {{ maximo }} estrelas">{% for estado in itens %}<i class="fa-{% if estado == 'vazia' %}regular vazia fa-star{% elif estado == 'meia' %}solid meia fa-star-half-stroke{% else %}solid cheia fa-star{% endif %}" aria-hidden="true"></i>{% endfor %}</span>{% endif %}
