@@ -24,11 +24,12 @@ jurídico real nem produz qualquer efeito fora do ambiente acadêmico.
   - [2. O que Acontece Logo Após o Cadastro](#apos-cadastro)
   - [3. Como Fazer Login](#como-fazer-login)
   - [4. Para onde Cada Perfil é Redirecionado](#redirecionamento)
+  - [5. Como Alterar sua Senha (Minha Conta)](#alterar-senha)
 - [Capítulo do Admin](#capitulo-admin)
   - [1. Painel de Controle](#admin-painel)
   - [2. Como Aprovar um Cadastro Pendente](#admin-aprovar-cadastro)
   - [3. Como Criar um Ciclo de Simulação](#admin-criar-ciclo)
-  - [4. Como Criar um Grupo de Trabalho e Adicionar Alunos](#admin-criar-grupo)
+  - [4. Como Criar, Editar e Excluir um Grupo de Trabalho, e Adicionar/Remover Alunos](#admin-criar-grupo)
 - [Capítulo do Coordenador](#capitulo-coordenador)
 - [Capítulo do Professor](#capitulo-professor)
   - [1. O que o Professor vê no Painel de Controle](#professor-painel)
@@ -48,6 +49,16 @@ jurídico real nem produz qualquer efeito fora do ambiente acadêmico.
   - [10. Como Anexar um Documento em uma Movimentação](#aluno-anexar-documento)
   - [11. Como Usar o Editor On-line para Criar e Assinar um Documento](#aluno-editor-online)
   - [12. Papel de Serventia/Cartório (SC): Vincular um Grupo a um Processo](#aluno-sc-vincular-grupo)
+- [Capítulo de Serventia/Cartório (SC)](#capitulo-sc)
+  - [1. O que muda na Área do Aluno para quem é Serventia/Cartório](#sc-visao-geral)
+  - [2. Vincular um Grupo a um Processo](#sc-vincular-grupo)
+  - [3. Modificar Dados do Processo e Alterar Parte](#sc-modificar-dados)
+  - [4. Movimentar Processo como Serventia/Cartório](#sc-movimentar)
+- [Capítulo de Advogados Polo Ativo (APA)](#capitulo-apa)
+  - [1. O que o APA não pode fazer](#apa-restricoes)
+  - [2. Quais movimentações o APA pode praticar](#apa-movimentar)
+- [Capítulo de Advogados Polo Passivo (APP)](#capitulo-app)
+  - [1. Quais movimentações o APP pode praticar](#app-movimentar)
 - [Notificações do Sistema](#notificacoes-sistema)
 
 *(Este índice será expandido conforme novos capítulos forem escritos.)*
@@ -126,7 +137,9 @@ Esta seção reúne os passos comuns a **todos os perfis de usuário**: cadastro
 2. Preencha **Nome Completo**, **Email** e crie uma **Senha** (mínimo 8 caracteres; não pode ser só
    números, nem uma senha muito comum, nem parecida com seus dados pessoais).
 3. Repita a senha em **Confirmação de Senha**.
-4. Clique em **Criar Usuário**.
+4. Marque a caixa **"Li e aceito os Termos de Uso e a Política de Privacidade"** (os links abrem
+   cada documento em uma nova aba). É obrigatória para prosseguir.
+5. Clique em **Criar Usuário**.
 
 ![Tela de cadastro de usuário em branco, com o formulário de Nome Completo, Email, Senha e Confirmação de Senha à esquerda, e os painéis Como Funciona, Requisitos de Senha e Suporte à direita](assets/img_01_cadastro_vazio.png)
 
@@ -183,15 +196,27 @@ próxima seção, "Para onde cada perfil é redirecionado").
 > tudo certo (o sistema diferencia maiúsculas de minúsculas), e lembre que essa mesma mensagem
 > aparece também quando o cadastro ainda está Pendente (ver seção anterior).
 
+> ℹ️ Se os Termos de Uso ou a Política de Privacidade forem atualizados depois do seu cadastro, o
+> sistema pode pedir para você aceitar a nova versão logo após o login, antes de liberar o resto do
+> sistema. Marque a caixa de aceite e clique em **"Continuar"** para prosseguir.
+
+---
+
+> ℹ️ O link **"Esqueceu a sua senha?"**, abaixo do botão Entrar, só abre um aviso explicando que o
+> simulador **não envia e-mail de redefinição**: é preciso procurar o coordenador, professor ou
+> administrador do ciclo para pedir a redefinição manual (ver ["Redefinir a senha de outro
+> usuário"](#admin-aprovar-cadastro), no Capítulo do Admin).
+
 ---
 
 <a name="redirecionamento"></a>
 ### 4. Para onde Cada Perfil é Redirecionado
 
 **Admin, Coordenador e Professor** caem no mesmo lugar: o **Painel de Controle**
-(`/acesso/painel-administrativo/`), com a Gestão de Ciclos de Simulação, o Resumo do Semestre e os
-atalhos de "Ações Rápidas". A tela é **visualmente idêntica** para os três perfis; o que muda é o
-que cada um enxerga e pode fazer dentro dela (ver o capítulo de cada perfil para as diferenças).
+(`/acesso/painel-administrativo/`), com a Gestão de Ciclos de Simulação, o Resumo dos Ciclos Ativos
+e os atalhos de "Ações Rápidas". A tela é **visualmente idêntica** para os três perfis; o que muda
+é o que cada um enxerga e pode fazer dentro dela (ver o capítulo de cada perfil para as
+diferenças).
 
 ![Painel de Controle logo após o login de um Professor (mesma tela usada por Admin e Coordenador)](assets/img_33_professor_redirecionado_painel.png)
 
@@ -226,6 +251,33 @@ que cada um enxerga e pode fazer dentro dela (ver o capítulo de cada perfil par
 > Esse seletor de ciclo no cabeçalho aparece **só para o Aluno**: Admin, Coordenador e Professor
 > não precisam dele porque o Painel de Controle deles já mostra todos os seus ciclos de uma vez.
 
+<a name="alterar-senha"></a>
+### 5. Como Alterar sua Senha (Minha Conta)
+
+*Disponível para: qualquer perfil logado (Admin, Coordenador, Professor ou Aluno). É a única forma
+de troca de senha feita pelo próprio usuário; veja também [Esqueci minha senha](#como-fazer-login),
+para quando o usuário não consegue nem fazer login.*
+
+1. Em qualquer tela do sistema, já logado, clique no ícone de cadeado (🔒) no canto superior
+   direito do cabeçalho, ao lado do nome do usuário.
+2. Na tela **"Minha Conta"**, preencha **Senha Antiga**, **Nova Senha** e **Confirmação da Nova
+   Senha**.
+3. Clique em **Salvar**.
+
+![Tela "Minha Conta" com o formulário "Alterar Minha Senha" em branco](assets/img_47_minha_conta_vazio.png)
+
+![Formulário "Alterar Minha Senha" preenchido, com a senha antiga e a nova senha (e confirmação)](assets/img_48_minha_conta_preenchido.png)
+
+**Resultado:** mensagem de sucesso "Senha alterada com sucesso.", e a sessão **continua ativa**
+normalmente (o sistema não derruba o login após a troca).
+
+![Tela "Minha Conta" mostrando a mensagem de sucesso após a troca de senha](assets/img_49_minha_conta_sucesso.png)
+
+> ⚠️ As mesmas regras de senha do cadastro valem aqui (mínimo de 8 caracteres, não pode ser
+> inteiramente numérica, não pode ser uma senha comum, não pode ser parecida com os dados
+> pessoais do usuário). Errar a "Senha Antiga" ou digitar confirmações diferentes impede o envio,
+> com a mensagem de erro exibida junto ao campo.
+
 ---
 
 ---
@@ -240,24 +292,33 @@ do escopo deste manual, que cobre a operação normal pela interface do simulado
 <a name="admin-painel"></a>
 ### 1. Painel de Controle
 
-Ao entrar, o Admin é direcionado direto ao **Painel de Controle** (mesma tela do Coordenador; ver capítulo
-seguinte), com:
+Ao entrar, o Admin é direcionado direto ao **Painel de Controle** (mesma tela do Coordenador e do
+Professor; ver capítulos seguintes), com:
 
 - **Gestão de Ciclos de Simulação**: lista os ciclos já criados e o botão para criar um novo.
 - **Processos dos Ciclos Ativos**: lista os processos judiciais fictícios em andamento.
-- **Resumo do Semestre**: contadores de processos ativos, avaliações pendentes, grupos de trabalho
-  e alunos vinculados.
-- **Ações Rápidas**: Distribuir Novo Processo, Gerir Usuários, Agendar Audiência, Relatório de
-  Notas.
+- **Resumo dos Ciclos Ativos**: contadores de Processos Ativos, Avaliações Pendentes, Grupos de
+  Trabalho e Alunos Vinculados, calculados a partir dos dados reais dos ciclos em andamento
+  (o de Avaliações Pendentes some/aumenta conforme movimentações são avaliadas).
+- **Ações Rápidas**: **Relatório de Notas**, **Gerir Usuários** e **Avaliações Pendentes**.
 - Um aviso amarelo no topo, "Aprovações de Cadastro Pendentes", aparece sempre que houver algum
   cadastro aguardando liberação.
 
-> ℹ️ Os números do bloco "Resumo do Semestre" (Processos Ativos, Avaliações Pendentes, Grupos de
-> Trabalho, Alunos Vinculados) são valores de exemplo nesta versão do sistema e não refletem os
-> dados reais do ciclo. Dos 4 botões de "Ações Rápidas", apenas **"Gerir Usuários"** está
-> disponível; **"Distribuir Novo Processo"**, **"Agendar Audiência"** e **"Relatório de Notas"**
-> ainda não foram implementados nesta versão. Essa mesma tela vale igualmente para o Coordenador e
-> o Professor.
+![Painel de Controle com o Resumo dos Ciclos Ativos calculado (Processos Ativos, Avaliações Pendentes, Grupos de Trabalho, Alunos Vinculados) e as 3 Ações Rápidas](assets/img_42_painel_controle_resumo_real.png)
+
+**Relatório de Notas** (`/avaliacoes/relatorio-notas/`) é uma tela própria: mostra, com filtro por
+ciclo, o total de alunos e de movimentações avaliadas, a média geral (em estrelas) e uma tabela
+"Notas por Aluno" com o total de movimentações, quantas foram avaliadas e a média de cada aluno por
+ciclo.
+
+![Tela "Relatório de Notas", com os cartões de resumo e a tabela de notas por aluno](assets/img_43_relatorio_notas.png)
+
+**Avaliações Pendentes** (`/avaliacoes/pendentes/`) lista, com filtro por ciclo, todas as
+movimentações registradas que ainda não receberam avaliação de nenhum Professor, da mais antiga
+para a mais recente, com um botão **"Avaliar"** em cada linha que leva direto à tela de avaliação
+(ver [Capítulo do Professor, seção 3](#professor-avaliar-movimentacao)).
+
+![Tela "Avaliações Pendentes", com os cartões de resumo e a lista de movimentações a avaliar](assets/img_44_avaliacoes_pendentes.png)
 
 <a name="admin-aprovar-cadastro"></a>
 ### 2. Como Aprovar um Cadastro Pendente
@@ -282,6 +343,23 @@ login normalmente, caindo na tela correspondente ao perfil escolhido (ver
 > ⚠️ Os dois campos (perfil e "Ativo") precisam ser preenchidos manualmente: não existe um botão
 > único de "aprovar com um clique" que já libera o acesso automaticamente.
 
+**Redefinir a senha de outro usuário:** o mesmo modal "Editar/Aprovar Usuário" tem uma subseção
+recolhível **"Alterar Senha"**, útil para destravar alguém que esqueceu a senha (o sistema não
+envia e-mail de redefinição pela própria interface).
+
+1. Abra o modal "Editar/Aprovar Usuário" do usuário desejado (mesmos passos acima).
+2. Clique em **"Alterar Senha"** para expandir a subseção.
+3. Preencha **Nova Senha** e **Confirmação**. Deixe os dois em branco se não quiser alterar a
+   senha.
+4. Clique em **Salvar**.
+
+![Subseção "Alterar Senha" expandida no modal Editar/Aprovar Usuário, com os campos em branco](assets/img_52_admin_alterar_senha_expandido.png)
+
+![Subseção "Alterar Senha" preenchida com a nova senha e a confirmação](assets/img_53_admin_alterar_senha_preenchido.png)
+
+**Resultado:** mensagem "Usuário atualizado com sucesso."; a nova senha passa a valer no próximo
+login do usuário afetado.
+
 <a name="admin-criar-ciclo"></a>
 ### 3. Como Criar um Ciclo de Simulação
 
@@ -302,17 +380,23 @@ andamento**, e quem criou o ciclo é automaticamente registrado como o "Respons�
 > é preciso **editar** o ciclo depois de criado.
 
 <a name="admin-criar-grupo"></a>
-### 4. Como Criar um Grupo de Trabalho e Adicionar Alunos
+### 4. Como Criar, Editar e Excluir um Grupo de Trabalho, e Adicionar/Remover Alunos
 
 *Pré-requisito: o ciclo já precisa existir. Um Grupo de Trabalho representa uma equipe de alunos
 atuando com um papel específico no processo simulado (ex.: um "escritório de advocacia" do Polo
-Ativo).*
+Ativo). Esta tela ("Gerenciar Grupos") é a mesma para Admin, Coordenador e Professor responsável
+pelo ciclo: as ações abaixo valem igualmente para os três perfis.*
+
+**Criar um grupo:**
 
 1. Na lista de ciclos, clique em **Gerenciar Grupos** no ciclo desejado.
 2. Clique em **+ Novo Grupo**.
 3. Preencha o **Nome do Grupo** (ex.: "Albuquerque & Associados") e escolha o **Papel Processual**
    (Serventia/Cartório, Advogados Polo Ativo, Advogados Polo Passivo, Ministério Público ou Juiz).
 4. Clique em **Salvar**.
+
+**Adicionar um aluno ao grupo:**
+
 5. Com o grupo selecionado na lista à esquerda, use o campo **Adicionar ao Grupo** para buscar um
    aluno pelo nome ou e-mail, e clique em **+ Add** ao lado do nome dele.
 
@@ -325,6 +409,31 @@ processos vinculados a ele.
 > ⚠️ Um aluno só pode estar em **um grupo por ciclo**: o sistema bloqueia a tentativa de colocá-lo
 > em dois grupos do mesmo ciclo ao mesmo tempo.
 
+**Editar um grupo já existente:**
+
+6. Na lista de grupos, clique no ícone de lápis ao lado do grupo desejado.
+7. No modal "Editar Grupo", altere o **Nome do Grupo** e/ou o **Papel na Simulação** livremente
+   (o sistema não impede a troca de papel mesmo que o grupo já tenha alunos vinculados).
+8. Clique em **Salvar**.
+
+![Modal "Editar Grupo" aberto, com o nome e o papel processual pré-preenchidos para edição](assets/img_45_grupo_editar_modal.png)
+
+**Remover um aluno de um grupo:**
+
+9. Com o grupo selecionado, clique no ícone de lixeira ao lado do nome do aluno em "Membros da
+   Equipe".
+
+**Resultado:** o aluno é removido do grupo imediatamente, **sem pedir confirmação**. Se esse era o
+único grupo do aluno naquele ciclo, ele também é desvinculado do ciclo (volta a ver "Aguardando
+Vínculo" no próximo login); se o aluno participa de outro grupo do mesmo ciclo, ele continua
+vinculado ao ciclo por esse outro grupo.
+
+![Aluno removido do grupo: mensagem de sucesso e "Membros da Equipe (0)"](assets/img_46_grupo_aluno_removido.png)
+
+> ⚠️ **Não existe função para excluir um grupo inteiro.** A tela "Gerenciar Grupos" permite criar,
+> editar (nome e papel) e remover alunos um a um, mas não há botão nem opção para apagar um Grupo
+> de Trabalho já criado. Para "esvaziar" um grupo, é preciso remover seus alunos um a um.
+
 ---
 
 <a name="capitulo-coordenador"></a>
@@ -334,7 +443,7 @@ processos vinculados a ele.
 
 O Painel de Controle do Coordenador é **idêntico** ao do Admin (mesmas seções: Gestão de Ciclos,
 Resumo do Semestre, Ações Rápidas); todos os passos do [Capítulo do Admin](#capitulo-admin) valem
-também para o Coordenador: aprovar cadastros, criar ciclos, criar grupos e adicionar alunos.
+também para o Coordenador: aprovar cadastros, criar ciclos, criar/editar grupos e adicionar/remover alunos dos grupos.
 
 Ao aprovar ou editar um usuário, o Coordenador **não pode atribuir o perfil "Admin"** a
 ninguém: o seletor de Tipo de Perfil só oferece Coordenador, Professor e Aluno. Já o Admin pode
@@ -407,6 +516,11 @@ A partir desse momento, ao logar, o aluno passa a ver na "Área do Aluno" todos 
 vinculados ao grupo dele, podendo movimentar e visualizar os autos conforme o papel processual do
 grupo (Advogado, Serventia, Ministério Público ou Juiz).
 
+Nessa mesma tela também é possível **editar** o grupo (nome e papel, pelo ícone de lápis) e
+**remover** um aluno do grupo (ícone de lixeira ao lado do nome dele, sem pedir confirmação); veja
+os detalhes na [seção 4 do Capítulo do Admin](#admin-criar-grupo). Não existe opção para excluir
+um grupo inteiro.
+
 > ℹ️ Um aluno só pode pertencer a **um grupo por vez** dentro do mesmo ciclo; por isso a lista
 > "Adicionar ao Grupo" só mostra quem ainda está sem grupo.
 
@@ -414,31 +528,37 @@ grupo (Advogado, Serventia, Ministério Público ou Juiz).
 ### 3. Como Avaliar uma Movimentação (Atribuir Nota)
 
 Sempre que um aluno registra uma movimentação em um processo, ela fica disponível para avaliação do
-Professor responsável pelo ciclo.
+Professor responsável pelo ciclo. Há dois caminhos para chegar até a tela de avaliação:
 
-1. Abra o processo (Painel de Controle → "Ver Autos" na linha do processo, ou pela lista de
-   processos do ciclo) e role até a aba **"Eventos do Processo"**.
-2. Na coluna "Opções" de cada linha da movimentação, o Professor vê um menu **"⋮"** (diferente do
-   ícone de lápis que aparece para quem registrou a movimentação), clique nele e escolha
-   **"Avaliar"**.
-3. A tela "Avaliação de Movimentação" mostra os dados completos da movimentação: autor, grupo
-   responsável, tipo, data/hora, descrição e os arquivos anexados (com botões "Visualizar" e
-   "Baixar" para conferir o conteúdo antes de avaliar).
-4. Em **"Nota e Feedback"**, preencha:
-   - **Nota (0 a 10)**: aceita casas decimais (ex.: `9,0`).
-   - **Comentário ao Aluno**: texto livre, explicitamente marcado como "visível para" o aluno
-     autor da movimentação.
-5. Clique em **"Concluir Avaliação"**. Uma caixa de confirmação resume o aluno e a nota antes de
-   enviar definitivamente: clique em **"Confirmar e Enviar"**.
+- Pela página **"Avaliações Pendentes"** (Painel de Controle → atalho "Avaliações Pendentes"),
+  que lista todas as movimentações ainda sem avaliação de todos os ciclos do Professor, da mais
+  antiga para a mais recente, com um botão **"Avaliar"** em cada linha.
+- Pelo próprio processo: abra o processo (Painel de Controle → "Ver Autos" na linha do processo,
+  ou pela lista de processos do ciclo), role até a aba **"Eventos do Processo"** e, na coluna
+  "Opções" de cada linha da movimentação, use o menu **"⋮"** (diferente do ícone de lápis que
+  aparece para quem registrou a movimentação) e escolha **"Avaliar"**.
 
-![Formulário de avaliação preenchido com nota 9,0 e comentário ao aluno](assets/img_25_avaliacao_nota_feedback.png)
+A tela "Avaliação de Movimentação" mostra os dados completos da movimentação: autor, grupo
+responsável, tipo, data/hora e a descrição do evento.
 
-Existe também o botão **"Devolver para Revisão"**, para os casos em que o Professor quer que o
-aluno corrija e reenvie o documento antes de receber uma nota.
+Em **"Nota e Feedback"**, preencha:
 
-*(Seção em elaboração: descrição detalhada do fluxo de devolução para revisão.)*
+- **Avaliação (1 a 5 estrelas)**: clique na estrela correspondente. Sem estrelas marcadas = sem
+  nota (é assim que o Professor consegue enviar um comentário sem atribuir avaliação). O link
+  "Limpar" zera a seleção.
+- **Comentário ao Aluno**: texto livre, explicitamente marcado como "visível para" o aluno autor
+  da movimentação.
 
-*(Seção em elaboração: parte em desenvolvimento.)*
+Depois de preencher, há três botões:
+
+- **"Concluir Avaliação"**: abre uma caixa de confirmação resumindo o aluno e a nota (em estrelas)
+  antes de enviar definitivamente: clique em **"Confirmar e Enviar"**.
+- **"Devolver para Revisão"**: grava o comentário sem atribuir nota.
+
+  *(Seção em elaboração: descrição detalhada do fluxo de devolução para revisão.)*
+- **"Voltar"**: sai da tela sem salvar nada.
+
+![Formulário de avaliação de uma movimentação, com o campo de 1 a 5 estrelas e o comentário ao aluno preenchidos](assets/img_40_professor_avaliar_estrelas.png)
 
 <a name="professor-bloquear-cadastro"></a>
 ### 4. Como Bloquear/Desativar um Cadastro
@@ -461,8 +581,6 @@ sistema não informa que a conta foi desativada.
 
 > ℹ️ O Professor só pode bloquear/reativar cadastros do tipo **Aluno**. Bloquear um Coordenador
 > ou outro Professor exige o perfil Admin ou Coordenador.
-
-*(Seção em elaboração: em desenvolvimento do código.)*
 
 ---
 
@@ -525,19 +643,19 @@ O menu "Processos" abre um submenu com duas opções:
 ### 5. "Minhas Notas"
 
 "Minhas Notas" é um link funcional (`/avaliacoes/minhas-notas/`) e mostra o painel "Meu Desempenho"
-do Aluno: nome/e-mail, três indicadores (Média Geral, Avaliadas, Melhor Nota) e um "Histórico de
-Avaliações". Sem nenhuma movimentação avaliada ainda, os indicadores aparecem como "—"/"0" e o
-histórico mostra "Nenhuma avaliação recebida ainda.".
+do Aluno: nome/e-mail, três indicadores (Média Geral, Avaliadas, Melhor Avaliação, todos em
+estrelas de 1 a 5) e um "Histórico de Avaliações". Sem nenhuma movimentação avaliada ainda, os
+indicadores aparecem como "—"/"0" e o histórico mostra "Nenhuma avaliação recebida ainda.".
 
 ![Tela "Minhas Notas" do Aluno, ainda sem nenhuma avaliação recebida](assets/img_13_aluno_minhas_notas_vazio.png)
 
 Depois que o Professor [avalia uma movimentação](#professor-avaliar-movimentacao), essa mesma tela
-passa a mostrar a nota real: os três indicadores são preenchidos, aparece um aviso de "Última
-avaliação" (com professor, movimentação e nota) e a tabela "Histórico de Avaliações" lista cada
+passa a mostrar a avaliação real: os três indicadores são preenchidos, aparece um aviso de "Última
+avaliação" (com professor, movimentação e estrelas) e a tabela "Histórico de Avaliações" lista cada
 movimentação avaliada, com abas para filtrar "Todas" / "Com Nota" / "Sem Nota" e um ícone de "olho"
 para reabrir o comentário completo do professor.
 
-![Tela "Minhas Notas" do Aluno já com uma avaliação recebida (nota 9,0)](assets/img_26_aluno_minhas_notas.png)
+![Tela "Minhas Notas" do Aluno já com uma avaliação recebida (4 de 5 estrelas)](assets/img_41_aluno_minhas_notas_estrelas.png)
 
 <a name="aluno-notificacoes"></a>
 ### 6. Notificações
@@ -698,23 +816,45 @@ que já foi protocolado **não é feito pelo Professor nem pelo próprio grupo i
 ação exclusiva de quem pertence a um grupo com o papel processual **"Serventia/Cartório" (SC)**,
 feita pela própria "Área do Aluno" desse usuário.
 
-1. Logado como um aluno de um grupo com papel "Serventia/Cartório", a "Área do Aluno" lista **todos
-   os processos do ciclo** (não só os do seu próprio grupo) em "Processos da Vara", com uma coluna
-   "Ações" contendo um ícone de pessoas.
-2. Clique nesse ícone na linha do processo desejado para abrir o modal **"Atribuir Grupo ao
-   Processo"**.
-3. O modal lista todos os grupos do ciclo, marcando os que **já estão vinculados** com a etiqueta
-   "JÁ VINCULADO". Marque o(s) grupo(s) adicional(is) que devem passar a responder pelo processo
-   (a seleção é **aditiva**: marcar um novo grupo não remove os já vinculados).
-4. Existe também a opção **"Remover atribuição"**, que desvincula **todos** os grupos do processo de
-   uma vez (não é possível remover apenas um grupo específico por essa tela).
-5. Clique em **"Confirmar Atribuição"**.
+Logado como um aluno de um grupo com papel "Serventia/Cartório", a "Área do Aluno" lista **todos
+os processos do ciclo** (não só os do seu próprio grupo) em "Processos da Vara", com uma coluna
+extra de checkbox e uma coluna "Ações". Há dois jeitos de abrir o modal **"Atribuir Grupo ao
+Processo"**:
+
+- **Um processo por vez**: clique no ícone de pessoas ("Atribuir grupo") na linha do processo
+  desejado.
+- **Vários processos de uma vez**: marque o checkbox de cada processo (ou o checkbox do
+  cabeçalho, para marcar todos) e clique em **"Atribuir grupo aos selecionados"**, no rodapé da
+  lista. O modal então se aplica à atribuição em lote nos processos marcados.
+
+Dentro do modal, cada grupo do ciclo aparece como um cartão:
+
+![Modal "Atribuir Grupo ao Processo" aberto por um usuário Serventia/Cartório, com os três grupos do ciclo já vinculados](assets/img_50_sc_atribuir_grupo_modal.png)
+
+1. Clicar no **corpo do cartão** marca aquele grupo para ser adicionado ao(s) processo(s) aberto(s)
+   no modal. Se o papel processual do grupo já estiver ocupado por outro grupo em algum dos
+   processos (por exemplo, já existe um Polo Ativo diferente), o sistema pede confirmação antes de
+   tratar como uma troca (exceto para o papel Serventia/Cartório, que pode ter mais de um grupo no
+   mesmo ciclo sem conflito).
+2. Um grupo já vinculado mostra a etiqueta "Já vinculado" (um único processo aberto no modal) ou
+   "Em X de Y"/"Em todos os Y" (atribuição em lote), e ganha um ícone de **lixeira** ao lado: clicar
+   nele marca aquele grupo específico para ser desvinculado, pedindo confirmação antes. É possível
+   desmarcar a remoção clicando de novo na lixeira, antes de confirmar.
+
+   ![Confirmação "Remover o grupo... deste processo?" ao clicar na lixeira de um grupo já vinculado](assets/img_51_sc_remover_grupo_confirmacao.png)
+3. O botão **"Desvincular Grupos"**, no rodapé do modal, continua existindo como ação separada: ele
+   desvincula **todos** os grupos do(s) processo(s) aberto(s) de uma vez, com sua própria
+   confirmação.
+4. Depois de marcar as inclusões, trocas e remoções desejadas, clique em **"Confirmar Atribuição"**
+   para gravar tudo de uma vez.
 
 Depois de confirmado, o campo "Grupos Vinculados" do processo passa a mostrar todos os grupos
 atribuídos, incluindo o próprio grupo de Serventia/Cartório que fez a atribuição e, se ainda não
 houvesse serventia definida, o campo "Serventia" do processo é preenchido automaticamente com o
-nome desse grupo. O status do processo também pode avançar automaticamente (no teste desta rodada,
-foi de "Protocolado" para "Autuado").
+nome desse grupo. O status do processo também pode avançar automaticamente (por exemplo, de
+"Protocolado" para "Autuado"). A atribuição também registra sozinha um evento na aba "Eventos do
+Processo": **"Autuação e Distribuição"** na primeira atribuição de grupos do processo, ou
+**"Redistribuição"** nas atribuições seguintes (inclusive quando a mudança é só uma remoção).
 
 ![Processo com três grupos vinculados: Advogados Polo Ativo, Serventia/Cartório e Advogados Polo Passivo, status "Autuado"](assets/img_21_processo_tres_grupos_vinculados.png)
 
@@ -722,6 +862,167 @@ foi de "Protocolado" para "Autuado").
 > com advogados dos dois polos) depende de existir, no ciclo, pelo menos um grupo com o papel
 > "Serventia/Cartório" e pelo menos um aluno vinculado a ele; sem isso, não há como atribuir o
 > segundo grupo pela interface.
+
+---
+
+<a name="capitulo-sc"></a>
+## Capítulo de Serventia/Cartório (SC)
+
+*Disponível para: Aluno vinculado a um grupo com papel processual **Serventia/Cartório**. É um
+papel "de bastidor": faz o serviço cartorário/administrativo do processo (autuação, custas,
+citação, expedientes, arquivamento), não é parte nem advogado de nenhum polo.*
+
+Toda a navegação básica (Área do Aluno, menu Processos/Audiências/Minhas Notas, notificações) é a
+mesma descrita no [Capítulo do Aluno](#capitulo-aluno). O que diferencia o papel Serventia/Cartório
+são quatro pontos, cobertos abaixo.
+
+<a name="sc-visao-geral"></a>
+### 1. O que muda na Área do Aluno para quem é Serventia/Cartório
+
+Em vez de listar só os processos do próprio grupo, a Área do Aluno de um usuário SC mostra, em
+**"Processos da Vara"**, **todos os processos do ciclo** (com uma coluna de checkbox e uma coluna
+"Ações" que os outros papéis não têm): é essa visão ampliada que permite ao SC atuar em qualquer
+processo, mesmo nos que seu grupo não está diretamente vinculado.
+
+<a name="sc-vincular-grupo"></a>
+### 2. Vincular um Grupo a um Processo
+
+Este é o fluxo mais importante do papel: atribuir (ou remover) o grupo de Polo Ativo, Polo Passivo
+ou outro SC de um processo. Já está descrito em detalhe, com prints, na seção [12 do Capítulo do
+Aluno](#aluno-sc-vincular-grupo); os passos são os mesmos, só reproduzidos lá por terem sido
+escritos antes deste capítulo existir.
+
+<a name="sc-modificar-dados"></a>
+### 3. Modificar Dados do Processo e Alterar Parte
+
+Para qualquer outro papel, a opção **"Modificar Dados"** do menu "Opções Processo" aparece
+desabilitada (ver [seção 8 do Capítulo do Aluno](#aluno-detalhe-processo)). Para o SC, ela é a
+única forma de corrigir os dados cadastrais depois que o processo já foi protocolado.
+
+1. Na tela do processo, abra **Opções Processo → Modificar Dados**.
+2. Altere **Comarca**, **Vara/Serventia**, **Tipo de Processo**, **Classe Processual**, **Valor da
+   Causa** e/ou **Segredo de Justiça**.
+3. Clique em **Salvar**.
+
+![Modal "Modificar Dados do Processo" aberto por um usuário Serventia/Cartório, com todos os campos editáveis](assets/img_54_sc_modificar_dados_modal.png)
+
+> ℹ️ O número do processo, o ciclo, a data de autuação e o status **não são alterados** por essa
+> tela (aviso que aparece no rodapé do próprio modal).
+
+Para corrigir os dados de uma das partes já cadastradas no processo (nome/razão social, CPF/CNPJ,
+tipo de pessoa), use **Opções Processo → Partes → Alterar Parte**:
+
+1. Escolha a parte no seletor **"Parte do Processo"** (mostra o polo de cada uma, ex.: "Ativo:
+   Antônio Ribeiro Pacheco").
+2. Altere os campos desejados.
+3. Clique em **Salvar**.
+
+![Modal "Alterar Parte", com o seletor de parte e os campos Nome/Razão Social, CPF/CNPJ e Tipo de Pessoa](assets/img_55_sc_alterar_parte_modal.png)
+
+> ⚠️ O próprio modal avisa: **"Os dados da parte valem para todos os processos em que ela
+> figura."** Como uma mesma Parte Fictícia pode estar cadastrada em vários processos diferentes, a
+> alteração não fica restrita ao processo aberto no momento.
+
+<a name="sc-movimentar"></a>
+### 4. Movimentar Processo como Serventia/Cartório
+
+O mecanismo de "Movimentar" é o mesmo explicado na [seção 9 do Capítulo do
+Aluno](#aluno-movimentar-processo): um formulário de 2 passos, com o **Tipo de Movimentação** numa
+lista suspensa. A diferença é **quais tipos aparecem**: para o SC, a lista reúne os atos cartorários
+do fluxo processual: entre eles **Autuação e Distribuição**, **Custas Recolhidas**, **Custas Não
+Recolhidas**, as diferentes **Modalidades de Citação** (Mandado, Postal, Edital, Eletrônica) e seus
+desdobramentos, **Revelia**, **Laudo Pericial juntado**, **Publicação/Intimação das Partes**,
+**Remessa ao 2º Grau**, **Trânsito em Julgado**, **Certidão de Trânsito em Julgado**,
+**Arquivamento** e o transversal **Cancelamento/Tornar Sem Efeito** (disponível a qualquer momento,
+sem pré-condição). Cada um só aparece quando sua pré-condição já foi cumprida por uma movimentação
+anterior no mesmo processo; por isso a lista cresce/diminui conforme o processo avança.
+
+![Lista suspensa "Tipo Movimentação" aberta para um usuário SC, mostrando Autuação e Distribuição, Cancelamento/Tornar Sem Efeito, Custas Não Recolhidas e Custas Recolhidas já disponíveis](assets/img_56_sc_movimentar_tipos_dropdown.png)
+
+Testado ao vivo: com o processo já **Autuado**, registrei a movimentação **"Custas Recolhidas"**
+(Passo 1 → descrição → Avançar → Passo 2 de revisão → Confirmar Movimentação). O evento aparece
+imediatamente na aba "Eventos do Processo", numerado em sequência, com usuário e data/hora, e ganha
+um ícone de lápis (só quem registrou pode editar depois).
+
+![Aba "Eventos do Processo" com o novo evento "Custas Recolhidas" no topo da lista, registrado pelo usuário SC](assets/img_57_sc_evento_custas_recolhidas.png)
+
+> ℹ️ Os campos de filtro por tipo de evento e a caixa "Bloquear/Desbloquear", acima da lista de
+> eventos, aparecem sempre desmarcados/travados: são elementos visuais que reproduzem a tela do
+> PROJUDI real, mas **não têm nenhuma função** implementada no simulador.
+
+> ⚠️ **Não testei ao vivo** os demais tipos de movimentação exclusivos do SC (citação em suas
+> variantes, revelia, publicação/intimação, remessa ao 2º grau, trânsito em julgado, arquivamento):
+> o comportamento de cada um (avanço de status, notificações, prazos) segue o mesmo mecanismo já
+> confirmado com "Custas Recolhidas" e "Autuação e Distribuição", mas a lista completa de
+> pré-condições vem apenas do código (migração `0004_popular_catalogo_movimentacao`), não de teste
+> passo a passo de cada ato.
+
+---
+
+<a name="capitulo-apa"></a>
+## Capítulo de Advogados Polo Ativo (APA)
+
+*Disponível para: Aluno vinculado a um grupo com papel processual **Advogados Polo Ativo**. É o
+advogado de quem propôs a ação (o Requerente).*
+
+A navegação (Área do Aluno, menus, notificações, cadastrar processo, anexar documento, editor
+on-line) é toda a mesma do [Capítulo do Aluno](#capitulo-aluno). O que é específico do papel:
+
+<a name="apa-restricoes"></a>
+### 1. O que o APA não pode fazer
+
+Confirmado ao vivo (login como Mariana Albuquerque Teixeira, grupo "Albuquerque & Associados"): no
+menu "Opções Processo", **"Modificar Dados"** e **"Partes → Alterar Parte"** aparecem
+**desabilitados**: essas duas ações são exclusivas do papel [Serventia/Cartório](#sc-modificar-dados).
+
+![Menu "Opções Processo" de um usuário APA, com "Modificar Dados" e "Alterar Parte" em cinza (desabilitados)](assets/img_58_apa_opcoes_menu_restrito.png)
+
+<a name="apa-movimentar"></a>
+### 2. Quais movimentações o APA pode praticar
+
+Como em qualquer papel, a lista do formulário "Movimentar" (explicado na [seção 9 do Capítulo do
+Aluno](#aluno-movimentar-processo)) só mostra os tipos cuja pré-condição já foi cumprida no
+processo. Testado ao vivo: num processo recém-autuado, só **"Juntada de Documentos"** aparecia
+disponível (o transversal, sem pré-condição).
+
+![Lista suspensa "Tipo Movimentação" de um usuário APA, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_59_apa_movimentar_juntada.png)
+
+Pelo código (migração `0004_popular_catalogo_movimentacao`, não testado ato a ato), o papel APA
+está autorizado, mais à frente no processo, para: **Emenda Apresentada**, **Réplica do Autor**,
+**Memoriais/Alegações Finais**, **Embargos de Declaração**, **Apelação**, **Contrarrazões**,
+**Recurso Superior? (STJ/STF)** e **REsp/RE (STJ/STF)**, cada uma na fase correspondente do
+processo (emenda da inicial, após a contestação do réu, fase recursal etc.).
+
+---
+
+<a name="capitulo-app"></a>
+## Capítulo de Advogados Polo Passivo (APP)
+
+*Disponível para: Aluno vinculado a um grupo com papel processual **Advogados Polo Passivo**. É o
+advogado de quem está sendo processado (o Requerido).*
+
+Assim como o APA, a navegação geral é a do [Capítulo do Aluno](#capitulo-aluno), com as mesmas duas
+restrições confirmadas para o APA: **"Modificar Dados"** e **"Alterar Parte"** ficam desabilitados
+(ação exclusiva do [SC](#sc-modificar-dados)); não testado ao vivo separadamente para o APP porque
+o comportamento é idêntico ao do APA e vem da mesma checagem de permissão
+(`pode_editar_processo`), sem distinção entre os dois papéis de advogado.
+
+<a name="app-movimentar"></a>
+### 1. Quais movimentações o APP pode praticar
+
+Pelo código (migração `0004_popular_catalogo_movimentacao`, não testado ao vivo): o papel APP está
+autorizado para **Contestação** (ação exclusiva dele, disponível depois da "Audiência de
+Conciliação: Sem Acordo", e só quando o próprio grupo ocupa o Polo Passivo do processo),
+**Réplica do Autor**, **Memoriais/Alegações Finais**, **Embargos de Declaração**, **Apelação**,
+**Contrarrazões**, **Recurso Superior? (STJ/STF)**, **REsp/RE (STJ/STF)** e o transversal
+**Juntada de Documentos**, disponível a qualquer momento.
+
+> ℹ️ O nome "Réplica do Autor" aparecer também na lista do APP (e não só do APA) é assim no
+> catálogo do sistema (`movimentacoes/migrations/0004_popular_catalogo_movimentacao.py`); este
+> manual descreve o comportamento implementado, não avalia se o nome do ato bate com a prática
+> forense real.
+
+---
 
 <a name="notificacoes-sistema"></a>
 ## Notificações do Sistema

@@ -712,3 +712,249 @@ levantada e reportada ao usuário para aprovação prévia, sem aplicar nada.
 **Atualização Rodada 10**: usuário revisou e aprovou remover o framing de teste também nos dois
 trechos extras identificados (seção 9 do Aluno e "Notificações do Sistema") — ambos ajustados para
 manter só o fato observado, sem "testado com..."/"nesta rodada de testes".
+
+## Rodada 11: investigação de "Devolver para Revisão" + descoberta da mudança de escala (nota → estrelas)
+
+Pedido do usuário: ler o código de "Devolver para Revisão" para entender o fluxo antes de
+documentar. Leitura de `avaliacoes/views.py`, `avaliacoes/models.py`, `avaliacoes/estrelas.py`,
+`movimentacoes/models.py` e `movimentacoes/services.py`.
+
+**Achado 1 (reportado e confirmado com o usuário): "Devolver para Revisão" não é um fluxo
+completo.** O botão só grava um `FeedbackProfessor` com `nota=None` e o comentário preenchido —
+não existe nenhum campo de status na movimentação, nenhuma notificação específica é disparada
+(consistente com o que o manual já documentava sobre notificações de avaliação) e, na tela "Minhas
+Notas" do aluno, o registro aparece igual a qualquer avaliação sem nota, sem nenhum selo de
+"revisão solicitada". Existe uma correção de movimentação ("Emenda/Retificação", com nova versão
+`movimentacao_origem`), mas é um mecanismo totalmente independente do botão "Devolver para
+Revisão" (depende só de não haver ainda outra movimentação encadeada sobre a original). Decisão do
+usuário: manter a seção como "(Seção em elaboração)", sem tentar descrever um fluxo que não existe
+de fato.
+
+**Achado 2 (não perguntado, descoberto durante a investigação): a interface de avaliação mudou de
+"Nota (0 a 10)" para estrelas (1 a 5).** Confirmado ao vivo: a escala interna no banco continua
+0–10 (`avaliacoes/estrelas.py`: 1★ = 2 pontos, 5★ = 10 pontos, conversão centralizada só ali), mas
+o formulário do Professor (`avaliacoes/templates/avaliacoes/avaliar.html`) e a tela "Minhas Notas"
+do Aluno agora usam só estrelas. Testado ao vivo (login como Camila/Professor avaliando uma
+movimentação de Mariana com 4 estrelas, depois login como Mariana conferindo o resultado em
+"Minhas Notas"). Manual atualizado:
+
+- Professor > "3. Como Avaliar uma Movimentação": reescrita para descrever o campo de estrelas (1
+  a 5) em vez de nota numérica, e para mencionar a nova página dedicada **"Avaliações Pendentes"**
+  (`/avaliacoes/pendentes/`) como caminho alternativo de acesso (descoberta também durante o teste:
+  não existia antes, tem filtro por ciclo e contadores de pendentes/alunos aguardando/mais antiga).
+  Print antigo (`img_25`, com "nota 9,0" na interface antiga) substituído por
+  `img_40_professor_avaliar_estrelas.png`.
+- Aluno > "5. Minhas Notas": indicadores descritos como estrelas de 1 a 5 em vez de nota numérica.
+  Print antigo (`img_26`) substituído por `img_41_aluno_minhas_notas_estrelas.png`.
+
+**Achado 3 (à parte, não documentado ainda — para revisão futura): o Painel de Controle do
+Professor hoje mostra um card "Avaliações Pendentes" com número real e calculado (visto: 14 → 13
+depois de avaliar uma movimentação), não mais um valor fixo no template como constatado em rodadas
+anteriores. Vale revisar se a seção "Admin > 1. Painel de Controle" (que descreve o mesmo painel
+compartilhado) ainda reflete o comportamento atual antes de fechar essa parte do manual.
+
+Validação final: 32 âncoras / 32 referências, 39 imagens / 0 faltando, 1 travessão remanescente
+(citação literal do placeholder "—" da interface), 760 linhas.
+
+## Rodada 12: revisão geral do que já estava documentado contra o código atual
+
+Pedido do usuário: "atualize tudo que já foi documentado e teve alteração no código". Levantamento
+via `git log --oneline --since=2026-09-19` no repositório principal (fora `manual-usuario/`): 50
+commits desde a última rodada de testes. Revisão cruzada de cada commit contra o texto já escrito
+no manual; mudanças aplicadas:
+
+1. **Admin/Coordenador/Professor > "1. Painel de Controle"**: reescrito. O "Resumo do Semestre"
+   (agora "Resumo dos Ciclos Ativos" no próprio sistema) mostra números reais e calculados
+   (`d3ddb89`, `4ed2fb8`), confirmado ao vivo (Avaliações Pendentes caiu de 14 para 13 depois de
+   uma avaliação). As "Ações Rápidas" agora têm só 3 botões, todos funcionais: **Relatório de
+   Notas**, **Gerir Usuários**, **Avaliações Pendentes** — "Distribuir Novo Processo" e "Agendar
+   Audiência" não existem mais na tela (`ba98095`). Adicionadas duas subseções novas com prints:
+   Relatório de Notas (`/avaliacoes/relatorio-notas/`) e Avaliações Pendentes
+   (`/avaliacoes/pendentes/`). Prints novos: `img_42_painel_controle_resumo_real.png`,
+   `img_43_relatorio_notas.png`, `img_44_avaliacoes_pendentes.png`.
+2. **"4. Para onde Cada Perfil é Redirecionado"**: "Resumo do Semestre" → "Resumo dos Ciclos
+   Ativos" (só o nome do bloco, para bater com a tela).
+3. **"1. Como se Cadastrar no Sistema"**: adicionado o passo 4 (novo) — caixa obrigatória "Li e
+   aceito os Termos de Uso e a Política de Privacidade" (`c10a0d4`), confirmada ao vivo na tela de
+   cadastro. `img_01_cadastro_vazio.png` recapturado para mostrar a caixa.
+4. **"3. Como Fazer Login"**: adicionada nota sobre o portão de reaceite de Termos de Uso que pode
+   aparecer logo após o login para contas já existentes, quando a versão dos termos muda — vivido
+   ao vivo duas vezes nesta sessão (Camila e Mariana), tela "Atualização dos Termos de Uso"
+   (`acesso/aceite-termos/`).
+5. **Aluno > "12. Papel de Serventia/Cartório (SC)"**: reescrito por completo. O fluxo mudou de
+   "um processo por vez, sem remoção individual" para: seleção em lote de vários processos por
+   checkbox (+ botão "Atribuir grupo aos selecionados"), remoção individual de um grupo específico
+   por um ícone de lixeira no próprio card (com confirmação), e o botão "Desvincular Grupos"
+   (renomeado, `d5bc2db`) continua existindo como remoção total separada
+   (`c875765`, `ac8c429`, `8972aed`, `2e4fde5`, `3251b55`). Também documentado que a atribuição
+   gera sozinha um evento "Autuação e Distribuição" ou "Redistribuição" (tipo novo,
+   `30b385b`/`2353498`) na aba Eventos do Processo. Não foi possível gravar prints novos do modal
+   atualizado nesta rodada (usuário de teste do grupo Serventia/Cartório, Rafael Souza Martins, não
+   tinha a senha padrão de teste) — a reescrita foi feita só por leitura de código
+   (`processos/templates/processos/pagina_aluno.html`), sem confirmação visual ao vivo. Fica como
+   pendência: testar e capturar prints reais desse fluxo numa próxima rodada.
+
+Commits revisados e descartados por não afetarem texto já documentado (mudança interna, correção
+de segurança sem efeito visível, ou funcionalidade nova ainda não escrita no manual): correção de
+regex de nome acentuado no JS de cadastro (`330c727`), correção de open redirect em
+`selecionar_ciclo` (`0889126`), páginas de erro customizadas (`6e6f06c`), tela "Minha Conta"/
+redefinição de senha (`989e7ce`, nova funcionalidade ainda não documentada, não "já documentada").
+
+Validação final: 32 âncoras / 32 referências, 42 imagens / 0 faltando, 1 travessão remanescente
+(citação literal do placeholder "—" da interface), 794 linhas.
+
+
+## Rodada 13: Prints atualizados - Cadastro com Termos de Uso
+
+**Solicitação:** atualizar com prints reais a seção "1. Como se Cadastrar no Sistema", refletindo o novo checkbox obrigatório de aceite dos Termos de Uso e Política de Privacidade (adicionado na Rodada 12 apenas como texto).
+
+**Teste ao vivo realizado:**
+- Usuário fictício de teste criado: Beatriz Nogueira Campos (beatriz.ncampos@exemplo.com, senha Simu@Teste2026).
+- Navegado para `/acesso/cadastro/`, preenchidos Nome Completo, Email, Senha, Confirmação de Senha e marcada a checkbox "Li e aceito os Termos de Uso e a Política de Privacidade do Simulador Projudi.".
+- Submissão via "CRIAR USUÁRIO" confirmada com sucesso: mensagem verde "Cadastro realizado com sucesso! Aguarde a aprovação de um responsável para acessar o sistema."
+- Observação: uma primeira tentativa de e-mail (beatriz.campos@exemplo.com) já havia sido cadastrada em teste anterior (erro "Usuário com este Email já existe."), por isso o cadastro final de confirmação usou o e-mail beatriz.ncampos@exemplo.com.
+
+**Imagens atualizadas (mesmos nomes de arquivo, substituídas em `assets/`):**
+- `img_01_cadastro_vazio.png` - formulário em branco com a checkbox de Termos de Uso visível. **Correção:** a versão commitada na Rodada 12 estava, na verdade, desatualizada (print antigo, sem a checkbox e com e-mail de suporte antigo). Recapturada e substituída nesta rodada apos o usuario apontar o problema.
+- `img_02_cadastro_preenchido.png` - formulário preenchido com todos os campos e checkbox marcada.
+- `img_03_cadastro_sucesso.png` - tela de confirmação com a mensagem de sucesso.
+
+**Validação pós-edição:** script de checagem de âncoras/links internos (0 ausentes), referências de imagens em `assets/` (42 referências, todas existentes em disco) e contagem de travessões (1, o placeholder literal já conhecido na seção "Minhas Notas") - todos OK.
+
+Nenhuma alteração de texto foi necessária no MANUAL_DO_USUARIO.md nesta rodada, apenas substituição das imagens (os nomes de arquivo já estavam referenciados corretamente desde a Rodada 12).
+
+
+## Rodada 14: Verificação de Editar/Excluir Grupo e Adicionar/Remover Aluno
+
+**Solicitação:** verificar se existe (e como funciona) a possibilidade de alterar, inserir e
+remover grupos de um ciclo, e adicionar/remover alunos dos grupos - sessão comum a Admin,
+Coordenador e Professor.
+
+**Verificação no código (`ciclos/views.py`, `ciclos/urls.py`, `ciclos/forms.py`,
+`ciclos/permissions.py`, `ciclos/templates/ciclos/gerenciar_grupos.html`):**
+- `gerenciar_grupos`: mesma view cuida de criar E editar grupo (reusa `GrupoTrabalhoForm`; se o
+  POST trouxer `grupo_id`, edita; senão, cria).
+- `adicionar_membro` / `remover_membro`: endpoints AJAX próprios, JSON, sem tela de confirmação no
+  remover.
+- `pode_gerenciar_grupos_ciclo`: Admin sempre, Coordenador sempre, Professor somente se for
+  responsável (coordenador) do ciclo ou participante - confirma que é a mesma tela/permissão para
+  os três perfis de gestão.
+- **Não existe** nenhuma view, URL ou botão para excluir um Grupo de Trabalho inteiro. Busca por
+  "excluir/deletar/delete" nesses arquivos não retornou nada.
+
+**Teste ao vivo realizado** (login como Camila Ferreira Duarte, Professor/Coordenador do ciclo NPJ
+Cível 2026/2):
+1. Editar grupo: clicado no ícone de lápis do grupo "Albuquerque & Associados" -> modal "Editar
+   Grupo" abriu com Nome e Papel pré-preenchidos -> cancelado (não quis alterar dados reais do
+   ciclo).
+2. Remover aluno: clicado no ícone de lixeira ao lado de "Mariana Albuquerque Teixeira" -> removida
+   imediatamente do grupo, sem confirmação, com toast de sucesso -> **re-adicionada em seguida**
+   (via "+ADD" na lista "Alunos sem Grupo") para restaurar o estado original dos dados de teste.
+3. Confirmado visualmente: nenhum ícone/botão de exclusão de grupo em nenhum lugar da tela.
+
+**Atualização no manual:** seção 4 do Capítulo do Admin (`admin-criar-grupo`) reescrita e
+renomeada para "Como Criar, Editar e Excluir um Grupo de Trabalho, e Adicionar/Remover Alunos",
+cobrindo os 4 fluxos (criar, editar, adicionar aluno, remover aluno) com prints novos
+(`img_45_grupo_editar_modal.png`, `img_46_grupo_aluno_removido.png`) e um aviso explícito de que
+**não existe exclusão de grupo inteiro**. Título no Índice atualizado. Frase-resumo do Capítulo do
+Coordenador (que reaproveita os passos do Admin) atualizada para mencionar editar/remover. Seção 2
+do Capítulo do Professor ganhou um parágrafo apontando para os novos fluxos de editar/remover.
+
+**Validação pós-edição:** âncoras (0 ausentes), imagens (44 referências, todas existentes),
+travessões (1, o placeholder já conhecido) - todos OK.
+
+
+## Rodada 15: Nova Funcionalidade "Alterar Senha" + Redefinição de Senha por Admin + Validação ao Vivo da Seção SC (12)
+
+**Solicitação:** documentar a nova funcionalidade de troca de senha pelo próprio usuário
+("Minha Conta"), e seguir com o roteiro pendente (que incluía redefinir a senha do Rafael para
+validar ao vivo a seção 12).
+
+**1. Nova seção "Como Alterar sua Senha (Minha Conta)" (Primeiros Passos, seção 5):**
+- Código: `acesso/views.py::minha_conta` + `AlterarMinhaSenhaForm` (`acesso/forms.py`, baseado em
+  `PasswordChangeForm` do Django). Acessível a qualquer perfil logado via ícone de cadeado no
+  cabeçalho (`base/templates/base/base.html`).
+- Teste ao vivo com Camila: troquei a senha dela para "Simu@Teste2027", confirmei a mensagem
+  "Senha alterada com sucesso." e que **a sessão não caiu** (`update_session_auth_hash`), depois
+  **revertida** para "Simu@Teste2026" (senha padrão de teste) na sequência.
+- 3 prints novos: `img_47_minha_conta_vazio.png`, `img_48_minha_conta_preenchido.png`,
+  `img_49_minha_conta_sucesso.png`.
+
+**2. Descoberta lateral: redefinição de senha por Admin/Coordenador/Professor (`AtualizarUsuarioForm`,
+`acesso/forms_admin_usuarios.py`):** o modal "Editar/Aprovar Usuário" (já documentado na seção 2 do
+Capítulo do Admin) tem uma subseção colapsável **"Alterar Senha"** com campos "Nova Senha" e
+"Confirmação", **antes não documentada**. Usei exatamente essa funcionalidade real do sistema (não
+uma alteração de código) para redefinir a senha do Rafael Souza Martins para "Simu@Teste2026",
+resolvendo o bloqueio que impedia testar a seção 12 ao vivo desde a Rodada 12. *(Ainda não escrevi
+uma seção própria no manual para esse recurso de "Admin redefine a senha de outro usuário" — fica
+como pendência para a próxima rodada, junto com os capítulos que faltam.)*
+
+**3. Validação ao vivo da seção 12 (SC: vincular grupo a processo), antes só baseada em código:**
+- Login como Rafael Souza Martins (Cartório Distribuidor de Formosa, ciclo NPJ Cível 2026/2) —
+  primeiro login dele nesta bateria de testes, passou pela tela "Atualização dos Termos de Uso"
+  (aceite obrigatório), confirmando também essa feature.
+- Abri o modal "Atribuir Grupo ao Processo" pelo ícone de pessoas: confirma exatamente a descrição
+  já escrita (cartões por grupo, etiqueta "Já Vinculado", ícone de lixeira, botão "Desvincular
+  Grupos", "Confirmar Atribuição").
+- Cliquei na lixeira do grupo "Monteiro & Advogados Associados": apareceu a confirmação "Remover o
+  grupo 'Monteiro & Advogados Associados' deste processo? Sim/Não" — exatamente como documentado.
+  Cliquei em **Não** para não alterar os dados de teste reais.
+- 2 prints novos adicionados à seção 12: `img_50_sc_atribuir_grupo_modal.png`,
+  `img_51_sc_remover_grupo_confirmacao.png`.
+- Não testei a seleção em lote (checkbox + "Atribuir grupo aos selecionados") nem o botão
+  "Desvincular Grupos" em si, porque o ciclo só tem 1 processo cadastrado; a descrição desses dois
+  fluxos continua baseada no código (comportamento simétrico ao que foi confirmado no fluxo de
+  1 processo).
+
+**Validação pós-edição:** âncoras (0 ausentes), imagens (49 referências, todas existentes),
+travessões (1, placeholder já conhecido) - todos OK.
+
+
+## Complemento à Rodada 15: seção de Redefinir Senha por Admin documentada
+
+Adicionada a subseção "Redefinir a senha de outro usuário" na seção 2 do Capítulo do Admin,
+cobrindo a subseção colapsável "Alterar Senha" do modal Editar/Aprovar Usuário (campos Nova Senha
+e Confirmação). Prints: img_52_admin_alterar_senha_expandido.png,
+img_53_admin_alterar_senha_preenchido.png. Também acrescentada uma nota na seção 3 (Como Fazer
+Login) sobre o link "Esqueceu a sua senha?", que só mostra um aviso (sem envio de e-mail) apontando
+para essa mesma funcionalidade do Admin.
+
+Validação pós-edição: âncoras (0 ausentes), imagens (51 referências, todas existentes), travessões
+(1, placeholder já conhecido) - OK.
+
+
+## Rodada 16: Novo Capítulo Dedicado de Serventia/Cartório (SC)
+
+Criado o capítulo próprio "Capítulo de Serventia/Cartório (SC)", posicionado entre o Capítulo do
+Aluno e Notificações do Sistema, cobrindo o que é exclusivo desse papel (a navegação geral já é a
+do Capítulo do Aluno):
+
+1. Visão geral: Área do Aluno mostra TODOS os processos do ciclo ("Processos da Vara"), não só
+   os do próprio grupo.
+2. Vincular Grupo a Processo: aponta para a seção 12 do Capítulo do Aluno (já escrita e validada
+   na Rodada 15), sem duplicar.
+3. Modificar Dados do Processo e Alterar Parte: **novo**, testado ao vivo como Rafael. Confirmei
+   que "Modificar Dados" (desabilitado para Aluno comum) fica habilitado para SC, com todos os
+   campos do processo editáveis. "Alterar Parte" também testado, com o aviso do próprio sistema
+   de que a alteração vale para todos os processos em que a parte figura.
+4. Movimentar Processo como SC: expliquei o mecanismo (já documentado na seção 9 do Aluno) e listei
+   os tipos de movimentação autorizados para SC, com base na migração
+   movimentacoes/migrations/0004_popular_catalogo_movimentacao.py (catálogo fechado de 83+3 tipos
+   de movimentação, com papéis autorizados, pré-condições e efeitos de status/prazo/notificação —
+   fonte de verdade valiosa para os próximos capítulos de APA/APP/MP/JZ também).
+   - **Testado ao vivo**: registrei a movimentação "Custas Recolhidas" no processo já Autuado
+     (Passo 1 → Passo 2 revisão → Confirmar), sucesso confirmado, evento apareceu na aba Eventos
+     do Processo.
+   - Os demais tipos exclusivos do SC (citação em suas variantes, revelia, publicação/intimação,
+     trânsito em julgado, arquivamento etc.) **não foram testados um a um** - documentados como
+     "baseado no código", com aviso explícito no manual.
+   - Descoberta lateral: o filtro por tipo de evento e a caixa "Bloquear/Desbloquear" na aba
+     Eventos do Processo são elementos **puramente decorativos** (disabled no HTML,
+     processos/templates/processos/visualizar_processo.html), sem nenhuma função real - anotado
+     no manual para não confundir quem for usar o simulador.
+
+4 prints novos: img_54_sc_modificar_dados_modal.png, img_55_sc_alterar_parte_modal.png,
+img_56_sc_movimentar_tipos_dropdown.png, img_57_sc_evento_custas_recolhidas.png.
+
+Validação pós-edição: âncoras (0 ausentes), imagens (55 referências, todas existentes), travessões
+(1, placeholder já conhecido) - OK.
