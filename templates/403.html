@@ -1,0 +1,8 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Acesso negado — Simu Projudi{% endblock %}
+
+{% block content %}
+{% url 'base:home' as url_base_home %}
+{% include 'base/components/_erro_http.html' with icone="fa-solid fa-lock" titulo="Acesso negado" mensagem="Você não tem permissão para acessar esta página. Se acha que isso é um engano, procure o coordenador do seu ciclo." url_botao=url_base_home rotulo_botao="Voltar para o início" only %}
+{% endblock %}

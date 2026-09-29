@@ -339,6 +339,7 @@ Antes de escrever HTML novo, verifique se já existe componente para a peça.
 | Paginação | `{% include 'base/components/_paginacao.html' with container_id=... only %}` + `criarPaginador()` de `static/js/paginador.js` | `base` |
 | Toast | `{% include 'base/components/_toast.html' %}` + `showToast()` de `static/js/toast.js` | `base` |
 | Card de indicador (KPI) | `{% include 'base/components/_card_kpi.html' with rotulo="..." numero=... apoio="..." only %}` (`variante="alerta"` para o trio de erro) | `base` |
+| Página de erro HTTP (404/403/400/500/CSRF) | `{% include 'base/components/_erro_http.html' with icone="fa-solid fa-..." titulo="..." mensagem="..." url_botao=... rotulo_botao="..." only %}` | `base` |
 | Card | `{% card titulo="..." icone="fa-..." %}...{% endcard %}` | `base/templatetags/ui.py` |
 | Modal | `{% modal id="..." titulo="..." %}...{% endmodal %}` | `base/templatetags/ui.py` |
 | Campo de formulário | `{% campo label="..." erros=form.x.errors %}<input>{% endcampo %}` | `base/templatetags/ui.py` |

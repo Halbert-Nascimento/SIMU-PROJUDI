@@ -27,3 +27,11 @@ def pode_avaliar_movimentacao(user, movimentacao) -> bool:
     if tp == Usuario.TipoPerfilGlobal.PROFESSOR:
         return movimentacao.processo.ciclo.coordenador_id == user.pk
     return False
+
+
+def pode_ver_relatorio_notas(user) -> bool:
+    return perfil_pode_avaliar(user)
+
+
+def pode_ver_avaliacoes_pendentes(user) -> bool:
+    return perfil_pode_avaliar(user)

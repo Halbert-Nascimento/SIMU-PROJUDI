@@ -281,13 +281,6 @@
                         <div class="opcoes-item text-rotulo" title="Seu perfil não movimenta este processo">Movimentar</div>
                         {% endif %}
 
-                        <!-- Só o cartório distribui, então não há versão desabilitada deste item -->
-                        {% if pode_atribuir_grupos %}
-                        <a href="{% url 'processos:atribuir_grupos' processo.numero %}" class="opcoes-item">
-                            Atribuir Grupos
-                        </a>
-                        {% endif %}
-
 
                     </div>
                 </div>

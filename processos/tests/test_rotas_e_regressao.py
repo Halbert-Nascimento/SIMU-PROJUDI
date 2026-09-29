@@ -41,6 +41,18 @@ class RotasERegressaoTests(CenarioMovimentacoesTestCase):
         resp_app = client_app.get(reverse("movimentacoes:criar_movimentacao", args=[processo.numero]))
         self.assertEqual(resp_app.status_code, 200)
 
+    def test_pagina_aluno_renderiza_modal_de_atribuicao_para_serventia(self):
+        """A serventia vê a lista com o modal de atribuição (com a lixeira e o
+        painel de confirmação por card) — só ela tem cargo SC no ciclo."""
+        self.criar_processo_protocolado(autor=self.usuarios["APA"])
+        client = self.cliente_logado(self.usuarios["SC"])
+        resp = client.get(reverse("processos:pagina_aluno"))
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, 'id="grpModal"')
+        self.assertContains(resp, 'id="modalRemoverTudo"')
+        self.assertContains(resp, 'id="grpConfirmacao"')
+        self.assertContains(resp, 'class="grp-remover oculto"')
+
     def test_regressao_processo_legado_pre_tarefa_0(self):
         """Movimentação criada direto via ORM (sem passar por registrar_movimentacao), como uma
         linha herdada de antes das Tarefas 3/4, continua aparecendo corretamente no histórico."""

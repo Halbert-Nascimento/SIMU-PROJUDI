@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from django import forms
 
+from ciclos.models import CicloSimulacao
+
 from .estrelas import (
     ESTRELAS_MAX,
     ESTRELAS_MIN,
@@ -70,3 +72,18 @@ class FeedbackForm(forms.ModelForm):
         if mantem and nota_para_estrelas(atual) == estrelas:
             return atual
         return estrelas_para_nota(estrelas)
+
+
+class FiltroCicloForm(forms.Form):
+    ciclo = forms.ModelChoiceField(
+        label="Ciclo",
+        queryset=CicloSimulacao.objects.none(),
+        required=False,
+        empty_label="Todos os ciclos",
+        error_messages={"invalid_choice": "Ciclo inválido para o seu perfil."},
+    )
+
+    def __init__(self, *args, ciclos, **kwargs):
+        super().__init__(*args, **kwargs)
+        # o recorte do perfil é o próprio queryset: ciclo de fora vira "escolha inválida"
+        self.fields["ciclo"].queryset = ciclos

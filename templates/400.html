@@ -1,0 +1,8 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Requisição inválida — Simu Projudi{% endblock %}
+
+{% block content %}
+{% url 'base:home' as url_base_home %}
+{% include 'base/components/_erro_http.html' with icone="fa-solid fa-triangle-exclamation" titulo="Requisição inválida" mensagem="Não foi possível processar essa requisição. Volte para o início e tente novamente." url_botao=url_base_home rotulo_botao="Voltar para o início" only %}
+{% endblock %}

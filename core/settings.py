@@ -43,6 +43,23 @@ ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=[])
 
 CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
+# Dados institucionais citados nos Termos de Uso, na Política de Privacidade,
+# no rodapé (base.html) e na tela de login. Ficam no .env (não hardcoded nos
+# templates) porque a instituição/mantenedor responsável pode mudar sem que o
+# conteúdo jurídico nem a interface precisem ser reescritos — e para não ter
+# "Faculdade IESGO" fixo num template e um placeholder diferente no outro. Os
+# "_DEFAULT" ficam nomeados (em vez de só o literal no env()) porque
+# base.checks os usa para avisar, em produção, que ainda não foram definidos
+# explicitamente — duplicar o literal nos dois lugares deixaria o aviso
+# vulnerável a ficar desatualizado.
+NOME_INSTITUICAO_DEFAULT = "Faculdade IESGO"
+EMAIL_CONTATO_DPO_DEFAULT = "contato@simu-projudi.local"
+FORO_COMARCA_DEFAULT = "[Comarca a definir]"
+
+NOME_INSTITUICAO = env("NOME_INSTITUICAO", default=NOME_INSTITUICAO_DEFAULT)
+EMAIL_CONTATO_DPO = env("EMAIL_CONTATO_DPO", default=EMAIL_CONTATO_DPO_DEFAULT)
+FORO_COMARCA = env("FORO_COMARCA", default=FORO_COMARCA_DEFAULT)
+
 
 # Application definition
 
@@ -77,6 +94,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'acesso.middleware.SessionActivityMiddleware',
+    'acesso.middleware.TermosAceitosMiddleware',
     'ciclos.middleware.CicloAtivoMiddleware',
     # depende de `ciclos_ativos_usuario`, populado pelo middleware acima
     'ciclos.middleware.AlunoSemCicloMiddleware',
@@ -97,6 +115,7 @@ TEMPLATES = [
                 'ciclos.context_processors.ciclo_ativo',
                 'notificacoes.context_processors.notificacoes_usuario',
                 'base.context_processors.session_timeout',
+                'base.context_processors.dados_institucionais',
             ],
         },
     },
@@ -137,6 +156,10 @@ AUTH_USER_MODEL = "usuarios.Usuario" # informa ao Django para usar o modelo de u
 LOGOUT_REDIRECT_URL = 'acesso:login' # redireciona para a página de login após logout
 LOGIN_URL = 'acesso:login'
 LOGIN_REDIRECT_URL = 'acesso:painel_administrativo'
+
+# CSRF_FAILURE_VIEW não é redefinido aqui: o default do Django
+# (django.views.csrf.csrf_failure) já procura templates/403_csrf.html
+# automaticamente e passa `request` (context processors rodam).
 
 # ─── Segurança ────────────────────────────────────────────────────────────────
 # Padrão do Django, repetido aqui porque é a defesa contra roubo de sessão por XSS

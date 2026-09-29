@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import os
 import sys
-from datetime import datetime
+from datetime import date, datetime
 from pathlib import Path
 from types import SimpleNamespace as Obj
 
@@ -85,7 +85,7 @@ def ctx_avaliar(com_erros=False, com_historico=True):
         "mov_origem": movimentacao(com_documentos=False),
         "feedback_origem": feedback(None),
         "historico": hist,
-        "media_notas": 4.1 if com_historico else None,
+        "media_notas": 3.5 if com_historico else None,
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
                         {"label": f"Processo {NUMERO}", "url": "/p/"},
                         {"label": "Avaliar Movimentação", "url": None}],
@@ -113,12 +113,60 @@ def ctx_minhas_notas(vazio=False):
                            avaliacao_json(3, "warn")],
         "total_movimentacoes": 0 if vazio else 7,
         "total_avaliadas": 0 if vazio else 3,
-        "media_geral": None if vazio else 3.9,
-        "media_percentual": 0 if vazio else 78,
+        "media_geral": None if vazio else 3.5,
+        "media_percentual": 0 if vazio else 70,
         "melhor_avaliacao": None if vazio else 5,
         "ultima_avaliacao": None if vazio else feedback(),
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
                         {"label": "Minhas Notas", "url": None}],
+    }
+
+
+class _Ciclo:
+    pk = 7
+
+    def __str__(self):
+        return "2026.2 — Prática Jurídica"
+
+
+def _filtro_ciclo(com_erro=False):
+    ciclo = Obj(id_for_label="id_ciclo", value=lambda: "7",
+                errors=["Ciclo inválido para o seu perfil."] if com_erro else [])
+    return Obj(ciclo=ciclo, fields=Obj(ciclo=Obj(queryset=[_Ciclo()])))
+
+
+def ctx_relatorio_notas(variante="com_notas"):
+    vazio = variante == "vazio"
+    linhas = [] if vazio else [
+        {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
+         "total_movimentacoes": 7, "total_avaliadas": 3, "estrelas": 3.5, "faixa": "warn"},
+        {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
+         "total_movimentacoes": 0, "total_avaliadas": 0, "estrelas": None, "faixa": "gray"},
+    ]
+    return {
+        "user": PROFESSOR, "request": Obj(user=PROFESSOR, path="/avaliacoes/relatorio-notas/"),
+        "form_filtro": _filtro_ciclo(com_erro=variante == "filtro_invalido"),
+        "linhas": linhas, "total_alunos": 0 if vazio else 1,
+        "total_avaliadas": 0 if vazio else 3, "total_movimentacoes": 0 if vazio else 7,
+        "media_geral_estrelas": None if vazio else 3.5,
+        "breadcrumbs": [{"label": "Painel Administrativo", "url": "/"},
+                        {"label": "Relatório de Notas", "url": None}],
+    }
+
+
+def ctx_avaliacoes_pendentes(vazio=False):
+    pendentes = [] if vazio else [
+        Obj(pk=1, tipo_movimento=Obj(nome_movimentacao="Juntada de contestação"),
+            autor=ALUNO, data_movimento=QUANDO,
+            processo=Obj(numero=NUMERO, ciclo=Obj(nome_edicao="2026.2 — Prática Jurídica"))),
+    ]
+    return {
+        "user": PROFESSOR, "request": Obj(user=PROFESSOR, path="/avaliacoes/pendentes/"),
+        "form_filtro": _filtro_ciclo(),
+        "pendentes": pendentes, "total_alunos_aguardando": len(pendentes),
+        "mais_antiga": None if vazio else QUANDO,
+        "breadcrumbs": [{"label": "Painel Administrativo", "url": "/"},
+                        {"label": "Avaliações Pendentes", "url": None}],
     }
 
 
@@ -176,6 +224,32 @@ def ctx_visualizar(sem_movimentacao=False, com_arquivo=True, pode_alterar=True):
     }
 
 
+def ctx_documento_legal(logado=False):
+    usr = ALUNO if logado else Obj(is_authenticated=False)
+    return {
+        "user": usr, "request": Obj(user=usr),
+        "voltar_url": "base:home" if logado else "acesso:cadastro",
+        "nome_instituicao": "Faculdade IESGO",
+        "email_contato_dpo": "contato@simu-projudi.local",
+        "foro_comarca": "Goiânia/GO",
+        "versao_termos_atual": "1.0",
+        "data_vigencia_termos": date(2026, 9, 22),
+    }
+
+
+def ctx_aceite_termos(com_erro=False):
+    msg = (
+        "É necessário aceitar os Termos de Uso e a Política de Privacidade "
+        "para continuar."
+    )
+    erros = [msg] if com_erro else []
+    return {
+        "user": ALUNO, "request": Obj(user=ALUNO),
+        "form": Obj(aceite_termos=campo_form(None, erros)),
+        "next": "/processos/area-servidor/",
+    }
+
+
 def ctx_login(com_erros=False, expirada=False):
     anonimo = Obj(is_authenticated=False)
     erros = ["Por favor, entre com um Usuário e senha corretos."] if com_erros else []
@@ -191,99 +265,18 @@ def ctx_login(com_erros=False, expirada=False):
     }
 
 
-def grupo_fake(nome, pk=1):
-    return Obj(pk=pk, nome=nome)
-
-
-def estado_posicao(chave, rotulo, ocupante=None, opcoes=(), conflito=(), indisponivel=False):
-    vinculados = list(conflito) or ([ocupante] if ocupante else [])
-    return Obj(
-        posicao=Obj(chave=chave, rotulo=rotulo),
-        grupo=None if conflito else ocupante,
-        grupos_vinculados=vinculados,
-        opcoes=list(opcoes),
-        em_conflito=bool(conflito),
-        indisponivel=indisponivel,
-        pendente=not vinculados,
-        impressao=",".join(str(g.pk) for g in vinculados),
-    )
-
-
-def processo_fake(status="Autuado"):
-    return Obj(
-        numero=NUMERO,
-        vara=Obj(nome="1ª Vara Cível", comarca=Obj(nome="Goiânia")),
-        classe=Obj(nome="Procedimento Comum Cível"),
-        status_atual=Obj(nome_status=status),
-    )
-
-
-def ctx_atribuir_grupos(passo=1, variante="ocupadas"):
-    alfa, beta = grupo_fake("Grupo Alfa", 1), grupo_fake("Grupo Beta", 2)
-    app1, mp1, mp2 = grupo_fake("Grupo APP", 3), grupo_fake("Grupo MP 1", 4), grupo_fake("Grupo MP 2", 5)
-    jz1 = grupo_fake("Grupo JZ 1", 6)
-
-    if variante == "pendentes":
-        estados = [
-            estado_posicao("polo_ativo", "Polo ativo", opcoes=[alfa, beta, mp1]),
-            estado_posicao("polo_passivo", "Polo passivo", opcoes=[app1]),
-            estado_posicao("ministerio_publico", "Ministério Público (interveniente)", opcoes=[mp1]),
-            estado_posicao("juiz", "Juiz", indisponivel=True),
-        ]
-    elif variante == "conflito":
-        estados = [
-            estado_posicao("polo_ativo", "Polo ativo", ocupante=alfa, opcoes=[beta]),
-            estado_posicao("polo_passivo", "Polo passivo", conflito=[app1, grupo_fake("Grupo APP fora", 7)]),
-            estado_posicao("ministerio_publico", "Ministério Público (interveniente)", opcoes=[mp1, mp2]),
-            estado_posicao("juiz", "Juiz", ocupante=jz1),
-        ]
-    else:
-        estados = [
-            estado_posicao("polo_ativo", "Polo ativo", ocupante=alfa, opcoes=[beta, mp1]),
-            estado_posicao("polo_passivo", "Polo passivo", ocupante=app1, opcoes=[]),
-            estado_posicao("ministerio_publico", "Ministério Público (interveniente)", ocupante=mp1, opcoes=[mp2]),
-            estado_posicao("juiz", "Juiz", ocupante=jz1),
-        ]
-
-    contexto = {
-        "user": ALUNO, "request": Obj(user=ALUNO),
-        "processo": processo_fake("Protocolado" if variante == "pendentes" else "Autuado"),
-        "estados": estados,
-        "proximo": "/processos/area-servidor/",
-        "polos_ativo": [Obj(parte=Obj(nome_razao="João da Silva"))],
-        "polos_passivo": [Obj(parte=Obj(nome_razao="Empresa Ré Ltda."))],
-        "passo": passo,
-        "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
-                        {"label": f"Processo {NUMERO}", "url": "/p/"},
-                        {"label": "Atribuir Grupos", "url": None}],
-    }
-    if passo == 2:
-        posicao_ativo = Obj(chave="polo_ativo", rotulo="Polo ativo")
-        posicao_mp = Obj(chave="ministerio_publico", rotulo="Ministério Público (interveniente)")
-        contexto.update({
-            "plano": Obj(
-                alteracoes=[
-                    Obj(natureza="substituicao", posicao=posicao_ativo,
-                        grupo_anterior=alfa, grupo_novo=beta, posicao_origem=None),
-                    Obj(natureza="atribuicao", posicao=Obj(chave="polo_passivo", rotulo="Polo passivo"),
-                        grupo_anterior=None, grupo_novo=app1, posicao_origem=None),
-                    Obj(natureza="mudanca_de_posicao", posicao=posicao_ativo,
-                        grupo_anterior=None, grupo_novo=mp1, posicao_origem=posicao_mp),
-                    Obj(natureza="remocao", posicao=Obj(chave="juiz", rotulo="Juiz"),
-                        grupo_anterior=jz1, grupo_novo=None, posicao_origem=None),
-                ],
-                donos_de_polo={"Ativo": beta, "Passivo": app1},
-                vinculos_a_remover=[alfa, jz1],
-            ),
-            "descricao_evento": 'Polo ativo: "Grupo Alfa" substituído por "Grupo Beta". '
-                                'Juiz: "Grupo JZ 1" removido.',
-            "nome_evento": "Redistribuição",
-            "escolhas": {"posicao_polo_ativo": "2", "atual_polo_ativo": "1"},
-        })
-    return contexto
+def ctx_erro_http(logado=True):
+    usr = ALUNO if logado else Obj(is_authenticated=False)
+    return {"user": usr, "request": Obj(user=usr)}
 
 
 CASOS = [
+    ("acesso/termos_de_uso.html", "visitante anônimo", ctx_documento_legal()),
+    ("acesso/termos_de_uso.html", "usuário logado", ctx_documento_legal(logado=True)),
+    ("acesso/politica_privacidade.html", "visitante anônimo", ctx_documento_legal()),
+    ("acesso/aceite_termos_pendente.html", "formulário limpo", ctx_aceite_termos()),
+    ("acesso/aceite_termos_pendente.html", "form com erro",
+     ctx_aceite_termos(com_erro=True)),
     ("acesso/login.html", "form limpo", ctx_login()),
     ("acesso/login.html", "credenciais inválidas", ctx_login(com_erros=True)),
     ("acesso/login.html", "sessão expirada", ctx_login(expirada=True)),
@@ -296,15 +289,22 @@ CASOS = [
     ("avaliacoes/avaliar.html", "sem histórico", ctx_avaliar(com_historico=False)),
     ("avaliacoes/minhas_notas.html", "com avaliações", ctx_minhas_notas()),
     ("avaliacoes/minhas_notas.html", "sem avaliação", ctx_minhas_notas(vazio=True)),
+    ("avaliacoes/relatorio_notas.html", "com notas", ctx_relatorio_notas()),
+    ("avaliacoes/relatorio_notas.html", "sem aluno", ctx_relatorio_notas("vazio")),
+    ("avaliacoes/relatorio_notas.html", "filtro inválido", ctx_relatorio_notas("filtro_invalido")),
+    ("avaliacoes/avaliacoes_pendentes.html", "com pendências", ctx_avaliacoes_pendentes()),
+    ("avaliacoes/avaliacoes_pendentes.html", "sem pendência", ctx_avaliacoes_pendentes(vazio=True)),
     ("ciclos/boas_vindas.html", "primeiro acesso", ctx_boas_vindas()),
     ("ciclos/boas_vindas.html", "ciclo anterior encerrado", ctx_boas_vindas(ja_participou=True)),
-    ("processos/atribuir_grupos.html", "posições ocupadas", ctx_atribuir_grupos()),
-    ("processos/atribuir_grupos.html", "pendentes e papel indisponível",
-     ctx_atribuir_grupos(variante="pendentes")),
-    ("processos/atribuir_grupos.html", "posição em conflito",
-     ctx_atribuir_grupos(variante="conflito")),
-    ("processos/atribuir_grupos.html", "resumo com as quatro naturezas",
-     ctx_atribuir_grupos(passo=2)),
+    ("404.html", "visitante anônimo", ctx_erro_http(logado=False)),
+    ("404.html", "usuário logado", ctx_erro_http()),
+    ("403.html", "usuário logado", ctx_erro_http()),
+    ("400.html", "usuário logado", ctx_erro_http()),
+    ("403_csrf.html", "usuário logado", ctx_erro_http()),
+    # Contexto vazio de propósito: é assim que o Django realmente chama este
+    # template — django.views.defaults.server_error renderiza sem contexto
+    # nem request, diferente de 400/403/404 (ver comentário em templates/500.html).
+    ("500.html", "contexto vazio (como o Django renderiza de fato)", {}),
 ]
 
 

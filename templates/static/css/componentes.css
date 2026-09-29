@@ -277,9 +277,9 @@
    de cor: cheia em #1f4f9c (ação), vazia em #d3d7de (borda de campo). Dentro de
    uma `.pill`, `.herda` deixa a estrela na cor do estado. */
 .estrelas { display: inline-flex; gap: 2px; white-space: nowrap; }
-.estrelas .cheia { color: #1f4f9c; }
+.estrelas .cheia, .estrelas .meia { color: #1f4f9c; }
 .estrelas .vazia { color: #d3d7de; }
-.estrelas.herda .cheia, .estrelas.herda .vazia { color: inherit; }
+.estrelas.herda .cheia, .estrelas.herda .meia, .estrelas.herda .vazia { color: inherit; }
 
 /* Os rádios vêm do maior para o menor e a linha é invertida: o "~" (irmãos
    seguintes) enxerga as estrelas menores, e o preenchimento não precisa de JS. */
@@ -307,3 +307,17 @@
 .estrelas-campo:hover label:hover ~ label::before { font-weight: 900; }
 /* Foco só por borda, como os campos do guia. */
 .estrelas-campo input:focus-visible + label { border-color: #1f4f9c; }
+
+/* ── Barra de filtro ───────────────────────────────────────────────────────
+   Guia seção 05: gap 12px, alinhada ao fim, ações à direita. O botão (~33,75px) é
+   mais baixo que o campo (37,2px) e os dois números vêm do guia: quem cede é o
+   botão, e a altura do campo fica escrita em calc(). */
+.barra-filtro {
+    background: #fbfbfc; border: 1px solid #e2e5ea; padding: 14px 16px;
+    display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap;
+}
+.barra-filtro .acoes { margin-left: auto; display: flex; gap: 8px; }
+.barra-filtro .acoes > * {
+    min-height: calc(8px + 8px + (12px * 1.6) + 2px);
+    display: inline-flex; align-items: center; justify-content: center;
+}

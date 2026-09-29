@@ -2,11 +2,22 @@ from __future__ import annotations
 
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from notificacoes.models import Notificacao, TipoNotificacao
-from usuarios.models import Usuario
+from usuarios.models import VERSAO_TERMOS_ATUAL, Usuario
 
 from .models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
+
+def _aceite_termos_teste():
+    """Aceite dos termos já registrado: evita que os testes de HTTP caiam no
+    portão acesso.middleware.TermosAceitosMiddleware. Função, não dicionário
+    de módulo — um dicionário fixaria `timezone.now()` no instante em que o
+    módulo é importado, não em que o usuário de teste é criado."""
+    return {
+        "aceitou_termos_em": timezone.now(),
+        "versao_termos_aceita": VERSAO_TERMOS_ATUAL,
+    }
 
 
 class CenarioCicloTestCase(TestCase):
@@ -24,18 +35,22 @@ class CenarioCicloTestCase(TestCase):
         cls.professor_original = Usuario.objects.create_user(
             username="prof.original", email="prof.original@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.PROFESSOR,
+            **_aceite_termos_teste(),
         )
         cls.professor_novo = Usuario.objects.create_user(
             username="prof.novo", email="prof.novo@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.PROFESSOR,
+            **_aceite_termos_teste(),
         )
         cls.admin = Usuario.objects.create_user(
             username="admin.teste", email="admin.teste@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.ADMIN,
+            **_aceite_termos_teste(),
         )
         cls.aluno = Usuario.objects.create_user(
             username="aluno.teste", email="aluno.teste@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+            **_aceite_termos_teste(),
         )
 
         cls.ciclo = CicloSimulacao.objects.create(
@@ -50,6 +65,33 @@ class CenarioCicloTestCase(TestCase):
         client = Client()
         client.force_login(usuario)
         return client
+
+
+class SelecionarCicloOpenRedirectTests(CenarioCicloTestCase):
+    """Regressão: GET /ciclos/selecionar/?next=... não pode sair do site --
+    professor_original tem exatamente 1 ciclo em andamento, o que cai direto
+    no branch que redireciona sem renderizar nenhuma tela."""
+
+    def test_next_externo_e_ignorado(self):
+        client = self.cliente_logado(self.professor_original)
+
+        resposta = client.get(
+            reverse("ciclos:selecionar_ciclo"),
+            {"next": "https://evil.example.com/phish"},
+        )
+
+        self.assertRedirects(
+            resposta, reverse("acesso:painel_administrativo"),
+            fetch_redirect_response=False,
+        )
+
+    def test_next_seguro_e_respeitado(self):
+        client = self.cliente_logado(self.professor_original)
+        destino = reverse("acesso:minha_conta")
+
+        resposta = client.get(reverse("ciclos:selecionar_ciclo"), {"next": destino})
+
+        self.assertRedirects(resposta, destino, fetch_redirect_response=False)
 
 
 class AdicionarMembroNotificacaoTests(CenarioCicloTestCase):

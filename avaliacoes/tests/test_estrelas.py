@@ -8,8 +8,8 @@ from ..estrelas import (
     contexto_estrelas,
     estrelas_para_nota,
     faixa_da_estrela,
-    media_em_estrelas,
     nota_para_estrelas,
+    nota_para_meias_estrelas,
 )
 
 
@@ -62,10 +62,28 @@ class NotaParaEstrelasTests(SimpleTestCase):
 
 class MediaEFaixaTests(SimpleTestCase):
 
-    def test_media_em_estrelas_tem_uma_casa(self):
-        self.assertIsNone(media_em_estrelas(None))
-        self.assertEqual(media_em_estrelas(Decimal("7.80")), 3.9)
-        self.assertEqual(media_em_estrelas(Decimal("10")), 5.0)
+    def test_nota_vira_meias_estrelas_com_um_ponto_por_meia(self):
+        casos = [
+            (None, None), ("0", 0), ("0.49", 0), ("0.5", 0.5), ("1", 0.5), ("2", 1),
+            ("4.44", 2), ("4.5", 2.5), ("4.9", 2.5), ("5", 2.5), ("6.9", 3.5), ("7", 3.5),
+            ("7.5", 4), ("8", 4), ("9", 4.5), ("9.5", 5), ("10", 5), ("15", 5), ("-1", 0),
+        ]
+        for nota, esperado in casos:
+            with self.subTest(nota=nota):
+                self.assertEqual(
+                    nota_para_meias_estrelas(None if nota is None else Decimal(nota)), esperado,
+                )
+
+    def test_meia_estrela_inteira_sai_como_inteiro(self):
+        self.assertIsInstance(nota_para_meias_estrelas(Decimal("8")), int)
+        self.assertIsInstance(nota_para_meias_estrelas(Decimal("7")), float)
+
+    def test_3_5_e_4_4_estrelas_nao_se_confundem(self):
+        # a média bruta 7,0 (3,5★) e 8,8 (4,4★) precisam desenhar coisas diferentes
+        self.assertNotEqual(
+            contexto_estrelas(nota_para_meias_estrelas(Decimal("7")))["itens"],
+            contexto_estrelas(nota_para_meias_estrelas(Decimal("8.8")))["itens"],
+        )
 
     def test_faixas_usam_so_os_quatro_trios_do_guia(self):
         self.assertEqual(
@@ -73,8 +91,18 @@ class MediaEFaixaTests(SimpleTestCase):
             ["gray", "erro", "erro", "erro", "warn", "ok", "ok"],
         )
 
+    def test_meia_estrela_cai_na_faixa_de_baixo(self):
+        self.assertEqual(
+            [faixa_da_estrela(n) for n in (2.5, 3.5, 4.5)],
+            ["erro", "warn", "ok"],
+        )
+
     def test_contexto_das_estrelas(self):
         contexto = contexto_estrelas(3)
-        self.assertEqual(contexto["itens"], [True, True, True, False, False])
+        self.assertEqual(contexto["itens"], ["cheia", "cheia", "cheia", "vazia", "vazia"])
         self.assertEqual(contexto["maximo"], 5)
-        self.assertEqual(contexto_estrelas(None)["itens"], [False] * 5)
+        self.assertEqual(contexto_estrelas(None)["itens"], ["vazia"] * 5)
+        self.assertEqual(
+            contexto_estrelas(3.5)["itens"], ["cheia", "cheia", "cheia", "meia", "vazia"],
+        )
+        self.assertEqual(contexto_estrelas(0.5)["itens"], ["meia"] + ["vazia"] * 4)

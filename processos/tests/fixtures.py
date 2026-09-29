@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+import json
+
 from django.test import Client, TestCase
 from django.urls import reverse
+from django.utils import timezone
 
 from ciclos.models import CargoSimulacao, CicloSimulacao, GrupoTrabalho, StatusCiclo
 from movimentacoes.models import TipoMovimentacao
@@ -16,8 +19,18 @@ from processos.models import (
     TipoProcesso,
     VaraServentia,
 )
-from processos.services import estado_posicoes_do_processo
-from usuarios.models import Usuario
+from usuarios.models import VERSAO_TERMOS_ATUAL, Usuario
+
+def aceite_termos_teste():
+    """Aceite dos termos já registrado nos usuários de teste: estas fixtures
+    cobrem outras telas, não o portão acesso.middleware.TermosAceitosMiddleware.
+    Função, não dicionário de módulo — um dicionário fixaria `timezone.now()`
+    no instante em que o módulo é importado, não em que o usuário nasce."""
+    return {
+        "aceitou_termos_em": timezone.now(),
+        "versao_termos_aceita": VERSAO_TERMOS_ATUAL,
+    }
+
 
 CARGOS = [
     ("Serventia/Cartório", "SC"),
@@ -46,6 +59,7 @@ class CenarioMovimentacoesTestCase(TestCase):
         cls.professor = Usuario.objects.create_user(
             username="prof.coord", email="prof.coord@teste.local", password="s3nha-teste",
             tipo_perfil_global=Usuario.TipoPerfilGlobal.PROFESSOR,
+            **aceite_termos_teste(),
         )
         cls.ciclo = CicloSimulacao.objects.create(
             nome_edicao="Ciclo de Teste", coordenador=cls.professor,
@@ -58,6 +72,7 @@ class CenarioMovimentacoesTestCase(TestCase):
             u = Usuario.objects.create_user(
                 username=f"aluno.{cod.lower()}", email=f"aluno.{cod.lower()}@teste.local",
                 password="s3nha-teste", tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
+                **aceite_termos_teste(),
             )
             cls.ciclo.participantes.add(u)
             g = GrupoTrabalho.objects.create(ciclo=cls.ciclo, cargo_simulacao=cls.cargos[cod], nome=f"Grupo {cod}")
@@ -106,56 +121,22 @@ class CenarioMovimentacoesTestCase(TestCase):
         )
         return processo
 
-    POSICAO_DO_CARGO = {
-        "APA": "polo_ativo",
-        "APP": "polo_passivo",
-        "MP": "ministerio_publico",
-        "JZ": "juiz",
-    }
-
-    def payload_atribuicao(self, processo, **escolhas):
-        """
-        Corpo do POST da tela de atribuição: "manter" em tudo, com o retrato de estado que a
-        tela teria mandado. `escolhas` sobrescreve por chave de posição.
-        """
-        dados = {}
-        for estado in estado_posicoes_do_processo(processo):
-            chave = estado.posicao.chave
-            dados[f"atual_{chave}"] = estado.impressao
-            if chave in escolhas:
-                dados[f"posicao_{chave}"] = escolhas[chave]
-            elif not estado.em_conflito:
-                dados[f"posicao_{chave}"] = "manter"
-        return dados
-
     def autuar_processo(self, processo, cods_grupos, *, sc_user=None):
-        """
-        Bate na tela processos:atribuir_grupos de verdade (não reimplementa a lógica aqui).
-
-        Cada cargo pedido vai para a posição dele; as posições não pedidas ficam como estão,
-        que é a semântica aditiva que a suíte inteira assume ao chamar este helper.
-        """
-        estados = {
-            estado.posicao.chave: estado
-            for estado in estado_posicoes_do_processo(processo)
-        }
-        escolhas = {}
-        for cod in cods_grupos:
-            # "SC" não tem posição na tela: o vínculo do cartório nasce do registro do evento
-            chave = self.POSICAO_DO_CARGO.get(cod)
-            if chave is None:
-                continue
-            grupo, estado = self.grupos[cod], estados[chave]
-            # pedir quem já ocupa a posição é "manter": a tela não oferece o ocupante como
-            # opção, e o ChoiceField recusaria o pk dele
-            if estado.grupo is None or estado.grupo.pk != grupo.pk:
-                escolhas[chave] = str(grupo.pk)
-
-        dados = self.payload_atribuicao(processo, **escolhas)
-        dados["acao"] = "confirmar"
-
+        """Bate na view processos:atribuir_grupo_processos de verdade (não reimplementa a lógica aqui)."""
         client = self.cliente_logado(sc_user or self.usuarios["SC"])
-        resp = client.post(reverse("processos:atribuir_grupos", args=[processo.numero]), dados)
+        # cods_grupos vazio expressa "remover tudo", como o card "Remover atribuição" do modal
+        if cods_grupos:
+            corpo = {
+                "processo_ids": [processo.pk],
+                "grupo_ids_adicionar": [self.grupos[cod].pk for cod in cods_grupos],
+            }
+        else:
+            corpo = {"processo_ids": [processo.pk], "remover_tudo": True}
+        resp = client.post(
+            reverse("processos:atribuir_grupo_processos"),
+            data=json.dumps(corpo),
+            content_type="application/json",
+        )
         processo.refresh_from_db()
         return resp
 

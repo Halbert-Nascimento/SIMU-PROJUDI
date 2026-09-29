@@ -1,0 +1,16 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Erro interno — Simu Projudi{% endblock %}
+
+{% comment %}
+O handler 500 do Django (django.views.defaults.server_error) renderiza este
+template com `template.render()`, sem contexto nem `request` — diferente de
+400/403/404. Por isso nenhuma variável do projeto (user, ciclo_ativo,
+nome_instituicao, notificações) chega até aqui: em base.html elas resolvem
+para "indefinido", o que o Django trata como vazio/falso, então o cabeçalho
+aparece no estado deslogado mesmo que a sessão do usuário continue válida.
+{% endcomment %}
+{% block content %}
+{% url 'base:home' as url_base_home %}
+{% include 'base/components/_erro_http.html' with icone="fa-solid fa-bug" titulo="Erro interno" mensagem="Estamos enfrentando um problema interno. Tente novamente em instantes. Se você estava logado, tente novamente — sua sessão pode não ter sido exibida corretamente nesta tela." url_botao=url_base_home rotulo_botao="Voltar para o início" only %}
+{% endblock %}
