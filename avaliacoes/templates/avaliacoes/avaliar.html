@@ -285,7 +285,7 @@
         </table>
         {% if media_notas is not None %}
         <div class="text-right mt-2 text-apoio">
-            Média atual do(a) aluno(a) no ciclo: <strong class="text-acao font-mono text-dado">{{ media_notas|floatformat:1 }} de 5 estrelas</strong>
+            Média atual do(a) aluno(a) no ciclo: {% estrelas media_notas %}
         </div>
         {% endif %}
     </div>

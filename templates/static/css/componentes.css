@@ -277,9 +277,9 @@
    de cor: cheia em #1f4f9c (ação), vazia em #d3d7de (borda de campo). Dentro de
    uma `.pill`, `.herda` deixa a estrela na cor do estado. */
 .estrelas { display: inline-flex; gap: 2px; white-space: nowrap; }
-.estrelas .cheia { color: #1f4f9c; }
+.estrelas .cheia, .estrelas .meia { color: #1f4f9c; }
 .estrelas .vazia { color: #d3d7de; }
-.estrelas.herda .cheia, .estrelas.herda .vazia { color: inherit; }
+.estrelas.herda .cheia, .estrelas.herda .meia, .estrelas.herda .vazia { color: inherit; }
 
 /* Os rádios vêm do maior para o menor e a linha é invertida: o "~" (irmãos
    seguintes) enxerga as estrelas menores, e o preenchimento não precisa de JS. */
