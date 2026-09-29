@@ -663,11 +663,18 @@ Depois de preencher, há três botões:
 - **"Concluir Avaliação"**: abre uma caixa de confirmação resumindo o aluno e a nota (em estrelas)
   antes de enviar definitivamente: clique em **"Confirmar e Enviar"**.
 - **"Devolver para Revisão"**: grava o comentário sem atribuir nota.
-
-  *(Seção em elaboração: descrição detalhada do fluxo de devolução para revisão.)*
 - **"Voltar"**: sai da tela sem salvar nada.
 
 ![Formulário de avaliação de uma movimentação, com o campo de 1 a 5 estrelas e o comentário ao aluno preenchidos](assets/img_40_professor_avaliar_estrelas.png)
+
+Testado ao vivo: cliquei em "Devolver para Revisão" com um comentário preenchido e nenhuma
+estrela marcada. O sistema salvou o comentário, mostrou a mensagem "Movimentação devolvida para
+revisão." e voltou para a tela do processo. Na prática, isso **não reabre a movimentação para o
+aluno editar**: o efeito é registrar um feedback só com comentário, sem nota, que some da lista de
+"Avaliações Pendentes" (por já ter recebido uma resposta do Professor) e aparece para o aluno em
+["Minhas Notas"](#aluno-minhas-notas) com "—" no lugar das estrelas, na aba "Sem Nota".
+
+![Detalhe de uma avaliação "sem nota" (devolvida para revisão) na tela "Minhas Notas" do aluno, com o comentário do Professor visível](assets/img_63_aluno_avaliacao_sem_nota_detalhe.png)
 
 <a name="professor-bloquear-cadastro"></a>
 ### 4. Como Bloquear/Desativar um Cadastro

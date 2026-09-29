@@ -1077,3 +1077,43 @@ concluído.
 
 Validação pós-edição: âncoras (0 ausentes), imagens (0 ausentes), travessões (1, placeholder já
 conhecido) - OK.
+
+## Rodada 20: Verificação e correção da marcação residual em "Devolver para Revisão"
+
+**Contexto:** ao revisar o manual em busca de marcações "em elaboração" ainda pendentes, encontrei
+uma na seção "Como Avaliar uma Movimentação" (Professor), sobre o botão "Devolver para Revisão".
+Diferente do caso do Menu Audiências e "Marcar Audiência" (que checei no código - agendamentos/
+views.py e models.py estão vazios, então a funcionalidade realmente não existe ainda), o botão
+"Devolver para Revisão" **está implementado** (avaliacoes/views.py, ação "devolver": grava o
+FeedbackProfessor com nota=None e mensagem "Movimentação devolvida para revisão."). Era só a
+descrição no manual que estava incompleta.
+
+**Teste ao vivo (login como Camila, Professor):**
+1. Abri "Avaliações Pendentes" (14 pendentes na conta), escolhi a movimentação "Juntada de
+   Documentos" de Lucas Andrade Monteiro (uma das já usadas nos dados de teste).
+2. Preenchi um comentário sem marcar nenhuma estrela e cliquei "Devolver para Revisão".
+3. Confirmado: a movimentação some da lista de "Avaliações Pendentes" (contador caiu de 15 para
+   14) - ou seja, "devolver" conta como uma resposta do Professor, não deixa a movimentação em
+   aberto para nova rodada de avaliação.
+4. Login como Lucas (Aluno): em "Minhas Notas", a nova linha aparece na aba "Sem Nota", com "—" no
+   lugar das estrelas na coluna Avaliação. Abrindo o ícone de "olho", o modal "Detalhe da
+   Avaliação" mostra "sem nota" no lugar das estrelas e o comentário do Professor normalmente.
+   Indicador "Avaliadas: 1 de 2 movimentações" confirma que só a avaliação com nota conta nesse
+   contador; a Média Geral também só considera avaliações com nota.
+
+**Atualização no manual:** removida a marcação "em elaboração"; parágrafo novo descrevendo o
+comportamento confirmado, com aviso explícito de que "Devolver para Revisão" **não reabre a
+movimentação para o aluno editar** - é só um feedback sem nota. 1 print novo:
+img_63_aluno_avaliacao_sem_nota_detalhe.png.
+
+**Tarefas antigas do roteiro (#2-#11) revisadas:** ao conferir o índice do manual contra a lista de
+tarefas desta sessão, confirmei que todas as tarefas #2 a #11 (cadastro/aprovação de Lucas, criação
+do grupo Monteiro & Advogados Associados, vínculo do grupo ao processo, anexo de arquivo,
+editor on-line, avaliação de movimentação, Minhas Notas, notificações, bloqueio de cadastro,
+capítulo de ciclos/grupos) já estavam refletidas no manual (criadas em rodadas anteriores a esta
+sessão) - eram apenas itens da lista de tarefas que não tinham sido marcados como concluídos.
+Marcadas como concluídas nesta rodada, sem necessidade de retrabalho.
+
+Validação pós-edição: âncoras (0 ausentes), imagens (0 ausentes), travessões (2, ambos
+placeholders legítimos do próprio sistema - "—"/"0" em Minhas Notas vazio e "—" na avaliação sem
+nota) - OK.
