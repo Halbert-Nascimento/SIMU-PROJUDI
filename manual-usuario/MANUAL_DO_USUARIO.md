@@ -191,8 +191,8 @@ Professor](#capitulo-professor).
 
 Várias movimentações processuais, ao serem registradas, mexem no controle de prazos do processo,
 mesmo que o simulador não mostre isso como um campo separado no formulário de Movimentar (visto na
-[seção 9 do Capítulo do Aluno](#aluno-movimentar-processo)). Pelo catálogo de movimentações do
-sistema, cada tipo de movimentação pode ter um destes efeitos colaterais:
+[seção 9 do Capítulo do Aluno](#aluno-movimentar-processo)). Cada tipo de movimentação pode ter um
+ou mais destes efeitos:
 
 - **Abre prazo**: a movimentação inicia a contagem de um prazo para a parte contrária responder
   (ex.: a citação abre prazo para a Contestação).
@@ -204,9 +204,9 @@ sistema, cada tipo de movimentação pode ter um destes efeitos colaterais:
   [seção 6 do Capítulo do Aluno](#aluno-notificacoes)).
 - **Agenda audiência**: cria automaticamente uma audiência na agenda do processo.
 
-Este manual não documenta prazo a prazo de cada uma das mais de 80 movimentações do catálogo; cada
-capítulo de papel (SC, APA, APP, MP, JZ) já indica, quando relevante, se uma movimentação testada
-ao vivo abre ou fecha algum prazo.
+Este manual não documenta prazo a prazo cada uma das movimentações do sistema; cada capítulo de
+papel (SC, APA, APP, MP, JZ) já indica, quando relevante, se uma movimentação testada ao vivo abre
+ou fecha algum prazo.
 
 <a name="guia-avisos"></a>
 ### 4. Avisos operacionais (tela de login)
@@ -1045,13 +1045,13 @@ tipo de pessoa), use **Opções Processo → Partes → Alterar Parte**:
 O mecanismo de "Movimentar" é o mesmo explicado na [seção 9 do Capítulo do
 Aluno](#aluno-movimentar-processo): um formulário de 2 passos, com o **Tipo de Movimentação** numa
 lista suspensa. A diferença é **quais tipos aparecem**: para o SC, a lista reúne os atos cartorários
-do fluxo processual: entre eles **Autuação e Distribuição**, **Custas Recolhidas**, **Custas Não
-Recolhidas**, as diferentes **Modalidades de Citação** (Mandado, Postal, Edital, Eletrônica) e seus
-desdobramentos, **Revelia**, **Laudo Pericial juntado**, **Publicação/Intimação das Partes**,
-**Remessa ao 2º Grau**, **Trânsito em Julgado**, **Certidão de Trânsito em Julgado**,
-**Arquivamento** e o transversal **Cancelamento/Tornar Sem Efeito** (disponível a qualquer momento,
-sem pré-condição). Cada um só aparece quando sua pré-condição já foi cumprida por uma movimentação
-anterior no mesmo processo; por isso a lista cresce/diminui conforme o processo avança.
+do fluxo processual. Cada tipo só aparece quando sua pré-condição já foi cumprida por uma
+movimentação anterior no mesmo processo; por isso a lista cresce/diminui conforme o processo avança
+para as fases seguintes.
+
+Testado ao vivo, com o processo no estágio **Autuado**, apareciam disponíveis: **Autuação e
+Distribuição**, **Custas Recolhidas**, **Custas Não Recolhidas** e o transversal
+**Cancelamento/Tornar Sem Efeito** (disponível a qualquer momento, sem pré-condição).
 
 ![Lista suspensa "Tipo Movimentação" aberta para um usuário SC, mostrando Autuação e Distribuição, Cancelamento/Tornar Sem Efeito, Custas Não Recolhidas e Custas Recolhidas já disponíveis](assets/img_56_sc_movimentar_tipos_dropdown.png)
 
@@ -1065,13 +1065,6 @@ um ícone de lápis (só quem registrou pode editar depois).
 > ℹ️ Os campos de filtro por tipo de evento e a caixa "Bloquear/Desbloquear", acima da lista de
 > eventos, aparecem sempre desmarcados/travados: são elementos visuais que reproduzem a tela do
 > PROJUDI real, mas **não têm nenhuma função** implementada no simulador.
-
-> ⚠️ **Não testei ao vivo** os demais tipos de movimentação exclusivos do SC (citação em suas
-> variantes, revelia, publicação/intimação, remessa ao 2º grau, trânsito em julgado, arquivamento):
-> o comportamento de cada um (avanço de status, notificações, prazos) segue o mesmo mecanismo já
-> confirmado com "Custas Recolhidas" e "Autuação e Distribuição", mas a lista completa de
-> pré-condições vem apenas do código (migração `0004_popular_catalogo_movimentacao`), não de teste
-> passo a passo de cada ato.
 
 ---
 
@@ -1103,11 +1096,9 @@ disponível (o transversal, sem pré-condição).
 
 ![Lista suspensa "Tipo Movimentação" de um usuário APA, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_59_apa_movimentar_juntada.png)
 
-Pelo código (migração `0004_popular_catalogo_movimentacao`, não testado ato a ato), o papel APA
-está autorizado, mais à frente no processo, para: **Emenda Apresentada**, **Réplica do Autor**,
-**Memoriais/Alegações Finais**, **Embargos de Declaração**, **Apelação**, **Contrarrazões**,
-**Recurso Superior? (STJ/STF)** e **REsp/RE (STJ/STF)**, cada uma na fase correspondente do
-processo (emenda da inicial, após a contestação do réu, fase recursal etc.).
+Assim como para os demais papéis, outros tipos de movimentação do APA passam a ficar
+disponíveis conforme o processo avança para as fases seguintes, seguindo o mesmo mecanismo de
+pré-condição descrito acima.
 
 ---
 
@@ -1117,26 +1108,26 @@ processo (emenda da inicial, após a contestação do réu, fase recursal etc.).
 *Disponível para: Aluno vinculado a um grupo com papel processual **Advogados Polo Passivo**. É o
 advogado de quem está sendo processado (o Requerido).*
 
-Assim como o APA, a navegação geral é a do [Capítulo do Aluno](#capitulo-aluno), com as mesmas duas
-restrições confirmadas para o APA: **"Modificar Dados"** e **"Alterar Parte"** ficam desabilitados
-(ação exclusiva do [SC](#sc-modificar-dados)); não testado ao vivo separadamente para o APP porque
-o comportamento é idêntico ao do APA e vem da mesma checagem de permissão
-(`pode_editar_processo`), sem distinção entre os dois papéis de advogado.
+Assim como o APA, a navegação geral é a do [Capítulo do Aluno](#capitulo-aluno). Confirmado ao vivo
+(login como Lucas Andrade Monteiro, grupo "Monteiro & Advogados Associados"): no menu "Opções
+Processo", **"Modificar Dados"** e **"Partes → Alterar Parte"** também aparecem **desabilitados**
+para o APP, a mesma restrição já confirmada para o [APA](#apa-restricoes) (ação exclusiva do
+[SC](#sc-modificar-dados)).
+
+![Menu "Opções Processo" de um usuário APP, com "Modificar Dados" e "Alterar Parte" em cinza (desabilitados)](assets/img_64_app_opcoes_menu_restrito.png)
 
 <a name="app-movimentar"></a>
 ### 1. Quais movimentações o APP pode praticar
 
-Pelo código (migração `0004_popular_catalogo_movimentacao`, não testado ao vivo): o papel APP está
-autorizado para **Contestação** (ação exclusiva dele, disponível depois da "Audiência de
-Conciliação: Sem Acordo", e só quando o próprio grupo ocupa o Polo Passivo do processo),
-**Réplica do Autor**, **Memoriais/Alegações Finais**, **Embargos de Declaração**, **Apelação**,
-**Contrarrazões**, **Recurso Superior? (STJ/STF)**, **REsp/RE (STJ/STF)** e o transversal
-**Juntada de Documentos**, disponível a qualquer momento.
+Testado ao vivo: no formulário "Movimentar" do processo, só **"Juntada de Documentos"** aparecia
+disponível nesse estágio do processo (o transversal, sem pré-condição): o mesmo tipo já usado por
+Lucas para juntar a procuração e a contestação registradas nos [dados de teste](DADOS_DE_TESTE.md).
 
-> ℹ️ O nome "Réplica do Autor" aparecer também na lista do APP (e não só do APA) é assim no
-> catálogo do sistema (`movimentacoes/migrations/0004_popular_catalogo_movimentacao.py`); este
-> manual descreve o comportamento implementado, não avalia se o nome do ato bate com a prática
-> forense real.
+![Lista suspensa "Tipo Movimentação" de um usuário APP, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_65_app_movimentar_juntada.png)
+
+Assim como para os demais papéis, outros tipos de movimentação do APP passam a ficar disponíveis
+conforme o processo avança para as fases seguintes, seguindo o mesmo mecanismo de pré-condição já
+descrito no capítulo do SC.
 
 ---
 
@@ -1158,6 +1149,8 @@ mesmo processo de teste usado nos demais capítulos): no menu "Opções Processo
 Dados"** também aparece desabilitado, como para os demais papéis de Aluno que não são
 [Serventia/Cartório](#sc-modificar-dados).
 
+![Menu "Opções Processo" de um usuário MP, com "Modificar Dados" em cinza (desabilitado)](assets/img_66_mp_opcoes_menu_restrito.png)
+
 <a name="mp-movimentar"></a>
 ### 2. Quais movimentações o MP pode praticar
 
@@ -1167,21 +1160,10 @@ formulário "Movimentar" (o transversal, sem pré-condição, igual ao observado
 
 ![Lista suspensa "Tipo Movimentação" de um usuário MP, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_60_mp_movimentar_juntada.png)
 
-Pelo código (migração `0004_popular_catalogo_movimentacao`, não testado ato a ato: exigiria
-avançar o processo até a fase de réplica), o papel MP está autorizado, mais à frente no processo,
-para:
-
-- **Emenda Apresentada** (na fase de emenda da inicial).
-- **Réplica do Autor** (depois da contestação do réu, junto com APA e APP).
-- **Manifestação do MP** (ação exclusiva do MP, disponível quando o Juiz decide, na movimentação
-  "MP Deve Intervir: Sim", que a intervenção do Ministério Público é obrigatória no processo).
-- **Memoriais/Alegações Finais**, **Embargos de Declaração**, **Apelação**, **Contrarrazões**,
-  **Recurso Superior? (STJ/STF)** e **REsp/RE (STJ/STF)**, nas fases de instrução e recursal,
-  junto com APA e APP.
-
-> ℹ️ A intervenção do MP no processo é decidida pelo [Juiz](#capitulo-jz), na movimentação "MP
-> Deve Intervir: Sim/Não". Só quando o Juiz escolhe "Sim" é que "Manifestação do MP" passa a
-> aparecer na lista de movimentações desse papel.
+Assim como para os demais papéis, outros tipos de movimentação do MP (incluindo uma manifestação
+exclusiva do papel, quando sua intervenção no processo é exigida) passam a ficar disponíveis
+conforme o processo avança para as fases seguintes, seguindo o mesmo mecanismo de pré-condição já
+descrito no capítulo do SC.
 
 ---
 
@@ -1192,9 +1174,9 @@ para:
 decide, saneia, julga e sentencia.*
 
 A navegação geral (Área do Aluno, "Processos Vinculados", menus, notificações) é a mesma do
-[Capítulo do Aluno](#capitulo-aluno). O papel de Juiz é o que mais movimentações tem no catálogo do
-sistema: praticamente toda a condução do processo (despachos, decisões e sentença) é dele. O que
-é específico do papel:
+[Capítulo do Aluno](#capitulo-aluno). O papel de Juiz é o que tem mais movimentações no sistema:
+praticamente toda a condução do processo (despachos, decisões e sentença) é dele. O que é
+específico do papel:
 
 <a name="jz-restricoes"></a>
 ### 1. Restrições
@@ -1203,6 +1185,8 @@ Testado ao vivo (grupo "1ª Vara Cível de Formosa", papel Juiz, vinculado ao me
 teste): assim como para os demais papéis de Aluno, **"Modificar Dados"** aparece desabilitado no
 menu "Opções Processo": essa ação continua exclusiva do papel [Serventia/Cartório](#sc-modificar-dados),
 mesmo para quem julga o processo.
+
+![Menu "Opções Processo" de um usuário Juiz, com "Modificar Dados" em cinza (desabilitado)](assets/img_67_jz_opcoes_menu_restrito.png)
 
 <a name="jz-movimentar"></a>
 ### 2. Quais movimentações o Juiz pode praticar
@@ -1213,30 +1197,13 @@ Juiz, sem pré-condição).
 
 ![Lista suspensa "Tipo Movimentação" de um usuário Juiz, mostrando só "Desentranhamento" disponível nesse estágio do processo](assets/img_61_jz_movimentar_desentranhamento.png)
 
-Pelo código (migração `0004_popular_catalogo_movimentacao`, não testado ato a ato: o processo de
-teste usado neste manual não foi avançado por toda a instrução), o papel Juiz é autorizado, em
-cada fase do processo, para uma sequência bem mais longa de movimentações do que os demais papéis.
-Agrupando por fase:
-
-- **Análise da inicial**: Cancelamento da Distribuição, Análise da Inicial (Irregular / Urgente /
-  Indefere / Em Ordem), Indeferimento da Inicial, Despacho de Citação.
-- **Tutela de urgência**: Tutela de Urgência Deferida/Indeferida, Liminar Concedida.
-- **Citação**: nova tentativa de citação por edital, quando a citação anterior não teve êxito.
-- **Audiência de conciliação**: resultado da audiência, com ou sem acordo.
-- **Revelia**: efeitos da revelia (produz ou não efeito) e Julgamento Antecipado.
-- **Intervenção do MP**: decisão se o MP deve intervir (Sim/Não) e Decisão Saneadora.
-- **Instrução**: Provas a Produzir (Perícia / Prova Oral / Só Documental), Audiência de Instrução
-  e Julgamento, Resultado da Audiência (Acordo / Memoriais / Julgamento na Data), Acordo em
-  Audiência.
-- **Sentença**: Sentença Homologatória de Acordo, Sentença, Tipo de Sentença (Com Mérito / Sem
-  Mérito), Com/Sem resolução do mérito.
-- **Fase recursal**: Decisão nos Embargos.
-- **Transversal**: Desentranhamento, disponível a qualquer momento (testado ao vivo acima).
-
-> ℹ️ Esta lista foi organizada por fase para facilitar a leitura; a ordem exata e as
-> pré-condições de cada movimentação (o que precisa ter acontecido antes no processo para que ela
-> apareça disponível) estão definidas no catálogo do sistema
-> (`movimentacoes/migrations/0004_popular_catalogo_movimentacao.py`), não neste manual.
+O papel de Juiz é o que tem a sequência mais longa de movimentações no sistema, cobrindo
+praticamente toda a condução do processo (despachos, decisões interlocutórias e sentença). Assim
+como para os demais papéis, cada tipo passa a ficar disponível conforme sua pré-condição é
+cumprida por uma movimentação anterior; por isso a lista cresce e muda de conteúdo à medida que o
+processo avança pelas fases seguintes (análise da inicial, citação, audiência de conciliação,
+instrução, sentença e fase recursal), além do transversal **Desentranhamento**, disponível a
+qualquer momento (testado ao vivo acima).
 
 ---
 

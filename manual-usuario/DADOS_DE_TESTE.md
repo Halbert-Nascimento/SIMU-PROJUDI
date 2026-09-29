@@ -1117,3 +1117,49 @@ Marcadas como concluídas nesta rodada, sem necessidade de retrabalho.
 Validação pós-edição: âncoras (0 ausentes), imagens (0 ausentes), travessões (2, ambos
 placeholders legítimos do próprio sistema - "—"/"0" em Minhas Notas vazio e "—" na avaliação sem
 nota) - OK.
+
+## Rodada 21 — Revisão do manual: sem referência a código, sem travessão de estilo, prints faltantes
+
+1. **Revisão de conteúdo do manual (produção)**: removido todo trecho do corpo do
+   MANUAL_DO_USUARIO.md que citava fonte de código/migração ("Pelo código (migração
+   `0004_popular_catalogo_movimentacao`)...", "não testado ato a ato", "catálogo do sistema",
+   "mais de 80 movimentações do catálogo" etc.). Um manual de produção não deve indicar ao usuário
+   final que parte do conteúdo veio de leitura de código-fonte em vez de teste real do fluxo do
+   sistema. Trechos afetados: capítulo SC (seção "Movimentar"), APA, APP (restrições e
+   movimentar), MP (movimentar) e JZ (movimentar), além do Guia Geral (seção "O que são prazos").
+   Onde a lista completa de tipos de movimentação por papel (derivada do catálogo, não testada ato
+   a ato) foi removida do corpo do manual, ela permanece disponível aqui como referência interna
+   de roteiro de testes futuros (ver lista completa nas rodadas 17-19 acima, ou diretamente no
+   arquivo `movimentacoes/migrations/0004_popular_catalogo_movimentacao.py`, só para quem monta o
+   roteiro — nunca para o manual do usuário final).
+
+2. **Travessões**: confirmado que os únicos "—" restantes no manual são os dois já registrados nas
+   rodadas anteriores (placeholders literais de tela, não estilo de escrita): o "—" mostrado no
+   lugar das estrelas quando uma movimentação está "Sem Nota" (seções Professor e Aluno). Nenhum
+   travessão de estilo remanescente.
+
+3. **Prints que faltavam, agora incluídos** (fechando lacunas encontradas nesta revisão):
+   - `img_64_app_opcoes_menu_restrito.png`: menu "Opções Processo" do APP (login como Lucas Andrade
+     Monteiro), confirmando "Modificar Dados" e "Alterar Parte" desabilitados — antes o capítulo
+     APP citava essa restrição sem print próprio nem teste ao vivo separado do APA.
+   - `img_65_app_movimentar_juntada.png`: dropdown "Tipo Movimentação" do APP, mostrando só
+     "Juntada de Documentos" disponível.
+   - `img_66_mp_opcoes_menu_restrito.png`: menu "Opções Processo" do MP (login como Fernando
+     Ribeiro Castro), confirmando "Modificar Dados" desabilitado — a seção já afirmava isso "ao
+     vivo" mas não tinha print.
+   - `img_67_jz_opcoes_menu_restrito.png`: menu "Opções Processo" do Juiz (login como Patrícia
+     Almeida Rocha), confirmando "Modificar Dados" desabilitado — mesma lacuna do MP.
+
+4. **Credenciais de login confirmadas** (úteis para próximas rodadas de teste, consultadas via
+   painel "Gerir Usuários" do Professor): `lucas.monteiro@exemplo.com`,
+   `fernando.castro@exemplo.com`, `patricia.rocha@exemplo.com` — todas com a senha padrão de teste.
+
+5. **Arquivos temporários não removidos**: os scripts Python usados para editar o manual nesta
+   rodada (`_review21.py`, `_review21b.py`, `_review21c.py`, `_review21d.py`, `_fix_mp.py`,
+   `_fix2.py`, `_fix_prints.py`, na pasta `manual-usuario/`) não puderam ser apagados por
+   restrição de permissão de exclusão na pasta conectada. Ficam para exclusão manual junto do
+   commit desta rodada.
+
+Validação pós-edição: âncoras (0 ausentes), imagens (0 ausentes, 64 referenciadas), travessões (2,
+ambos placeholders de tela já conhecidos), nenhuma "Testado ao vivo"/"Confirmado ao vivo" sem print
+próximo, nenhuma referência a código/catálogo/migração restante no corpo do manual — OK.
