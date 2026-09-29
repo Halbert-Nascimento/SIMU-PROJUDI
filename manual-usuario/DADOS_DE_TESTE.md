@@ -958,3 +958,122 @@ img_56_sc_movimentar_tipos_dropdown.png, img_57_sc_evento_custas_recolhidas.png.
 
 Validação pós-edição: âncoras (0 ausentes), imagens (55 referências, todas existentes), travessões
 (1, placeholder já conhecido) - OK.
+
+## Rodada 17 — Capítulos de Advogados Polo Ativo (APA) e Polo Passivo (APP)
+
+1. Capítulo APA (Advogados Polo Ativo): seção única "Restrições e Movimentações Disponíveis".
+   - Testado ao vivo como Mariana (aluna vinculada a grupo com cargo APA num processo autuado):
+     confirmei que "Modificar Dados" e "Alterar Parte" aparecem desabilitados no menu do processo -
+     essas duas ações continuam exclusivas do papel SC, como já documentado no capítulo SC.
+   - Testado ao vivo: abri o formulário de Movimentar Processo como Mariana e só "Juntada de
+     Documentos" apareceu disponível no processo no estágio atual (pré-condições dos demais tipos
+     ainda não satisfeitas nesse processo de teste).
+   - Lista completa dos tipos de movimentação autorizados para APA foi extraída do catálogo
+     movimentacoes/migrations/0004_popular_catalogo_movimentacao.py (mesma fonte usada no capítulo
+     SC), com aviso explícito de que a maior parte não foi testada ao vivo um a um - só o mecanismo
+     de filtragem por pré-condição, que já é o mesmo mecanismo genérico documentado na seção 9 do
+     capítulo do Aluno.
+   2 prints novos: img_58_apa_opcoes_menu_restrito.png, img_59_apa_movimentar_juntada.png.
+
+2. Capítulo APP (Advogados Polo Passivo): seção única de movimentações.
+   - Não repeti o teste ao vivo de Modificar Dados/Alterar Parte para APP porque a lógica de
+     permissão (processos/permissions.py::pode_editar_processo) é idêntica para APA e APP - só
+     Admin/Coordenador/Professor/SC podem editar, então o resultado já está coberto pelo teste do
+     APA. Anotei isso explicitamente no manual para não passar a impressão de teste duplicado sem
+     necessidade.
+   - Lista completa dos tipos de movimentação autorizados para APP, também derivada do catálogo,
+     com o mesmo aviso de "não testado ao vivo" onde aplicável. Nenhum print novo específico do APP
+     (reaproveitei os prints conceituais do APA, já que a tela é idêntica).
+
+3. Ajuste de padronização: os dois novos títulos de capítulo e as entradas correspondentes no
+   Índice usavam travessão ("Advogados — Polo Ativo (APA)"), inconsistente com o resto do
+   documento (glossário e corpo do texto usam "Advogados Polo Ativo"/"Advogados Polo Passivo",
+   sem travessão). Corrigido para manter o padrão único do manual. Também corrigidos mais 4
+   travessões que haviam entrado no texto novo (trocados por dois-pontos ou ponto-e-vírgula,
+   mesmo padrão já usado nas rodadas anteriores).
+
+Validação pós-edição: âncoras (0 ausentes), imagens (0 ausentes), travessões (1, placeholder já
+conhecido) - OK.
+
+## Rodada 18: Criação de dados de teste para MP e JZ + Capítulos do Ministério Público e do Juiz
+
+**Contexto:** o ciclo NPJ Cível 2026/2 não tinha nenhum grupo com papel Ministério Público (MP) ou
+Juiz (JZ) até agora, então esses dois papéis não podiam ser testados ao vivo. Criei os dados de
+teste necessários antes de escrever os capítulos.
+
+**1. Dados de teste criados (login como Camila, Professor/Coordenador):**
+- Novo grupo "Promotoria de Justiça de Formosa" (papel Ministério Público) no ciclo NPJ Cível
+  2026/2, via "Gerenciar Grupos" (mesmo fluxo já documentado na seção 4 do Capítulo do Admin).
+- Novo grupo "1ª Vara Cível de Formosa" (papel Juiz), no mesmo ciclo.
+- Dois novos alunos cadastrados e aprovados: Fernando Ribeiro Castro (fernando.castro@exemplo.com)
+  e Patricia Almeida Rocha (patricia.rocha@exemplo.com), senha padrao "Simu@Teste2026", cada um
+  adicionado a um dos dois grupos novos.
+- Login como Rafael (SC) para vincular os dois grupos novos ao processo de teste já usado nos
+  demais capitulos (0000001-74.2026.8.26.0001), via "Atribuir Grupo ao Processo" (mesmo fluxo já
+  documentado na secao 12 do Capitulo do Aluno / secao 2 do Capitulo SC). O processo agora tem 5
+  grupos vinculados: SC, APA, APP, MP e JZ.
+
+**2. Capítulo do Ministério Público (MP):**
+- Testado ao vivo (login como Fernando, grupo Promotoria de Justiça de Formosa): "Modificar Dados"
+  desabilitado no menu "Opções Processo", igual aos demais papéis não-SC. No formulário
+  "Movimentar", só "Juntada de Documentos" disponível no estágio atual do processo (mesmo
+  transversal já visto para APA e APP).
+- Lista completa de movimentações do MP extraída do catálogo (mesma fonte das rodadas anteriores),
+  incluindo a acao exclusiva "Manifestação do MP" e uma nota explicando que ela só aparece depois
+  que o Juiz decide, na movimentação "MP Deve Intervir: Sim", que a intervenção é obrigatória.
+- 1 print novo: img_60_mp_movimentar_juntada.png.
+
+**3. Capítulo do Juiz (JZ):**
+- Testado ao vivo (login como Patricia, grupo 1ª Vara Cível de Formosa): mesma restrição de
+  "Modificar Dados" desabilitado. No formulário "Movimentar", só "Desentranhamento" disponível
+  (o transversal exclusivo do Juiz).
+- Lista de movimentações do Juiz extraída do catálogo e organizada por fase do processo (análise
+  da inicial, tutela de urgência, citação, audiência de conciliação, revelia, intervenção do MP,
+  instrução, sentença, fase recursal), já que é de longe o papel com mais movimentações possíveis
+  no sistema - praticamente toda a condução do processo é dele.
+- 1 print novo: img_61_jz_movimentar_desentranhamento.png.
+- 1 print adicional (usado como referência visual geral, mostrando os 5 grupos ja vinculados ao
+  processo de teste): img_62_processo_todos_grupos_vinculados.png.
+
+**Observação sobre nomes de movimentação com travessão no código:** varios nomes de movimentação no
+catálogo usam travessão como separador literal (ex.: "Análise da Inicial — Irregular",
+"Audiência de Conciliação — Com Acordo", "MP Deve Intervir — Sim"). Para manter a regra do manual
+de nao usar travessões na prosa, essas listas foram reescritas de forma descritiva (ex.: "efeitos
+da revelia, produz ou não efeito"), em vez de citar o nome literal do sistema - mesmo padrão ja
+usado no Capítulo SC para as Modalidades de Citação.
+
+Validação pós-edição: âncoras (0 ausentes), imagens (0 ausentes), travessões (1, placeholder já
+conhecido) - OK.
+
+## Rodada 19: "Guia Geral do Simulador" (último capítulo do roteiro)
+
+**Contexto:** último item do roteiro aprovado pelo usuário ("Ordem da home do sistema": SC → APA
+→ APP → MP → JZ → Guia geral). Corresponde ao card "Guia geral do simulador" (GERAL) da tela de
+login, que descreve "Primeiro acesso, navegação, ciclos e prazos".
+
+**Conteúdo novo, inserido entre "Introdução" e "Primeiros Passos":**
+1. **O que é comum a todos os perfis**: elementos fixos do cabeçalho (notificações, Minha Conta,
+   A+/A-, contador de sessão) e o seletor de ciclo ativo, exclusivo do Aluno - reunindo referências
+   a coisas já documentadas em capítulos anteriores, sem duplicar o conteúdo.
+2. **Ciclos, Grupos e Papéis**: tabela-resumo dos 5 papéis processuais (SC, APA, APP, MP, JZ), com
+   um resumo de uma linha de cada um e link para o capítulo correspondente - o primeiro "mapa"
+   consolidado desses 5 capítulos no manual.
+3. **O que são "prazos" no sistema**: conteúdo novo, nunca antes explicado no manual. Baseado na
+   estrutura dos efeitos colaterais no catálogo (movimentacoes/migrations/0004_popular_catalogo_movimentacao.py):
+   abre_prazo, encerra_prazo, reabre_prazo, notifica, agenda_audiencia. Explicado em nível
+   conceitual (o que cada efeito faz), sem repetir prazo a prazo de cada uma das 80+ movimentações.
+4. **Avisos operacionais**: os 4 itens do painel "Informações Importantes" da tela de login,
+   expandidos e lidos ao vivo (login incluído): liberação pelo coordenador (já documentado),
+   limite de 7 MB por arquivo com validação de conteúdo (não só extensão - já mencionado, agora
+   citado aqui também), timeout de sessão de 15 minutos com aviso prévio (conteúdo novo) e
+   segredo de justiça (conteúdo novo, baseado só na descrição do próprio sistema - não testei ao
+   vivo essa restrição, pois nenhum processo de teste usado no manual está marcado como segredo de
+   justiça).
+
+Nenhum print novo nesta rodada (seção só reorganiza/explica, sem telas exclusivas a documentar).
+
+Com isso, o roteiro completo aprovado pelo usuário (SC, APA, APP, MP, JZ, Guia Geral) está
+concluído.
+
+Validação pós-edição: âncoras (0 ausentes), imagens (0 ausentes), travessões (1, placeholder já
+conhecido) - OK.

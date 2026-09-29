@@ -19,6 +19,11 @@ jurídico real nem produz qualquer efeito fora do ambiente acadêmico.
 
 - [Glossário de Abreviações e Siglas](#glossario)
 - [Introdução](#introducao)
+- [Guia Geral do Simulador](#guia-geral)
+  - [1. O que é comum a todos os perfis](#guia-navegacao-comum)
+  - [2. Ciclos, Grupos e Papéis: como tudo se encaixa](#guia-ciclos-grupos-papeis)
+  - [3. O que são "prazos" no sistema](#guia-prazos)
+  - [4. Avisos operacionais (tela de login)](#guia-avisos)
 - [Primeiros Passos](#primeiros-passos)
   - [1. Como se Cadastrar no Sistema](#como-se-cadastrar)
   - [2. O que Acontece Logo Após o Cadastro](#apos-cadastro)
@@ -59,6 +64,12 @@ jurídico real nem produz qualquer efeito fora do ambiente acadêmico.
   - [2. Quais movimentações o APA pode praticar](#apa-movimentar)
 - [Capítulo de Advogados Polo Passivo (APP)](#capitulo-app)
   - [1. Quais movimentações o APP pode praticar](#app-movimentar)
+- [Capítulo do Ministério Público (MP)](#capitulo-mp)
+  - [1. Restrições](#mp-restricoes)
+  - [2. Quais movimentações o MP pode praticar](#mp-movimentar)
+- [Capítulo do Juiz (JZ)](#capitulo-jz)
+  - [1. Restrições](#jz-restricoes)
+  - [2. Quais movimentações o Juiz pode praticar](#jz-movimentar)
 - [Notificações do Sistema](#notificacoes-sistema)
 
 *(Este índice será expandido conforme novos capítulos forem escritos.)*
@@ -120,6 +131,104 @@ O manual está organizado por perfil de usuário (Admin, Coordenador, Professor,
 cada capítulo as ações que aquele perfil pode realizar no sistema. Recomenda-se ler primeiro a
 seção ["Primeiros Passos"](#primeiros-passos), comum a todos os perfis, antes de avançar para o
 capítulo do seu perfil específico.
+
+---
+
+<a name="guia-geral"></a>
+## Guia Geral do Simulador
+
+*Esta seção reúne, num só lugar, o que é comum a todos os perfis e papéis do simulador: navegação
+geral, como ciclos/grupos/papéis se encaixam, o que são "prazos" no sistema e os avisos
+operacionais que aparecem na tela de login. Corresponde ao card "Guia geral do simulador" da
+página de login. Quem está começando agora pode ler só esta seção e a de
+[Primeiros Passos](#primeiros-passos) antes de ir direto ao capítulo do seu perfil.*
+
+<a name="guia-navegacao-comum"></a>
+### 1. O que é comum a todos os perfis
+
+Independente do perfil (Admin, Coordenador, Professor) ou do papel do Aluno (SC, APA, APP, MP,
+JZ), o cabeçalho do sistema sempre tem:
+
+- **Nome do usuário e perfil/cargo**, no canto superior direito.
+- **Sino de notificações**, com contador de não lidas (ver [seção 6 do Capítulo do
+  Aluno](#aluno-notificacoes)).
+- **Ícone de cadeado ("Minha Conta")**, para trocar a própria senha a qualquer momento (ver
+  [seção 5 de Primeiros Passos](#alterar-senha)).
+- **Botões A+/A-**, para aumentar/diminuir o tamanho da fonte da interface.
+- **Contador de sessão**, no rodapé (ex. "15m 00s"), que mostra o tempo restante antes do logout
+  automático por inatividade (ver [seção 4](#guia-avisos) abaixo).
+
+Só o Aluno tem, além disso, o **seletor de ciclo ativo** (ícone de seta circular ao lado do nome),
+para trocar entre os ciclos em que está vinculado; ver o aviso na [seção 4 de Primeiros
+Passos](#redirecionamento). Admin, Coordenador e Professor não precisam desse seletor porque, na
+Gestão Acadêmica, já enxergam todos os ciclos de uma vez.
+
+<a name="guia-ciclos-grupos-papeis"></a>
+### 2. Ciclos, Grupos e Papéis: como tudo se encaixa
+
+Como já apresentado na [Introdução](#introducao), o simulador organiza tudo em torno de três
+conceitos: **Ciclo de Simulação** (o período letivo), **Grupo de Trabalho** (a equipe de alunos
+dentro de um ciclo) e **Processo Judicial** (ao qual um ou mais grupos são vinculados). Cada grupo
+assume, no processo, um dos cinco **papéis processuais**:
+
+| Papel | Sigla | O que faz | Capítulo |
+|---|---|---|---|
+| Serventia/Cartório | SC | Vincula grupos ao processo, atua e movimenta como o cartório (autuação, citação, certidões) e é o único papel que pode editar os dados do processo e as partes | [Capítulo de Serventia/Cartório](#capitulo-sc) |
+| Advogados Polo Ativo | APA | Representa quem propôs a ação (o Requerente) | [Capítulo de Advogados Polo Ativo](#capitulo-apa) |
+| Advogados Polo Passivo | APP | Representa quem está sendo processado (o Requerido) | [Capítulo de Advogados Polo Passivo](#capitulo-app) |
+| Ministério Público | MP | Fiscal da lei; intervém quando o Juiz decide que a intervenção é obrigatória | [Capítulo do Ministério Público](#capitulo-mp) |
+| Juiz | JZ | Conduz o processo: despacha, decide, saneia, julga e sentencia | [Capítulo do Juiz](#capitulo-jz) |
+
+Um processo pode ter vários grupos vinculados ao mesmo tempo (por exemplo, um grupo SC, um APA, um
+APP, um MP e um JZ, todos no mesmo processo), cada um vendo e agindo só dentro do que seu papel
+permite. Os perfis de gestão (Admin, Coordenador, Professor) não atuam diretamente nos processos:
+eles administram ciclos, grupos e usuários, e avaliam as movimentações feitas pelos Alunos: ver os
+capítulos [do Admin](#capitulo-admin), [do Coordenador](#capitulo-coordenador) e [do
+Professor](#capitulo-professor).
+
+<a name="guia-prazos"></a>
+### 3. O que são "prazos" no sistema
+
+Várias movimentações processuais, ao serem registradas, mexem no controle de prazos do processo,
+mesmo que o simulador não mostre isso como um campo separado no formulário de Movimentar (visto na
+[seção 9 do Capítulo do Aluno](#aluno-movimentar-processo)). Pelo catálogo de movimentações do
+sistema, cada tipo de movimentação pode ter um destes efeitos colaterais:
+
+- **Abre prazo**: a movimentação inicia a contagem de um prazo para a parte contrária responder
+  (ex.: a citação abre prazo para a Contestação).
+- **Encerra prazo**: a movimentação seguinte fecha esse prazo (ex.: a própria Contestação encerra
+  o prazo que a citação abriu).
+- **Reabre prazo**: usado em situações específicas, como após uma decisão em Embargos de
+  Declaração.
+- **Notifica**: gera uma notificação para o(s) grupo(s) responsável(is) pelo próximo ato (ver
+  [seção 6 do Capítulo do Aluno](#aluno-notificacoes)).
+- **Agenda audiência**: cria automaticamente uma audiência na agenda do processo.
+
+Este manual não documenta prazo a prazo de cada uma das mais de 80 movimentações do catálogo; cada
+capítulo de papel (SC, APA, APP, MP, JZ) já indica, quando relevante, se uma movimentação testada
+ao vivo abre ou fecha algum prazo.
+
+<a name="guia-avisos"></a>
+### 4. Avisos operacionais (tela de login)
+
+A tela de login tem um painel "Informações Importantes", com itens que valem para o sistema
+inteiro:
+
+- **Primeiro acesso**: todo cadastro novo entra como "Pendente" e só é liberado depois que um
+  Admin, Coordenador ou Professor aprova e atribui o papel de simulação, já documentado na
+  [seção 2 de Primeiros Passos](#apos-cadastro).
+- **Limite de 7 MB por arquivo**: cada documento anexado a uma movimentação pode ter até 7 MB, nos
+  formatos PDF, DOCX, JPG e JPEG. O sistema confere o conteúdo do arquivo, não só a extensão:
+  renomear um arquivo para ".pdf" não faz ele passar pela validação, já mencionado na [seção 7 do
+  Capítulo do Aluno](#aluno-cadastrar-processo).
+- **A sessão encerra após 15 minutos sem atividade**: um aviso aparece antes do fim do prazo, com
+  a opção de continuar conectado. Sem resposta, a sessão é encerrada e o sistema volta para a tela
+  de login. Vale a pena não deixar um formulário longo aberto sem salvar.
+- **Processos em segredo de justiça**: segundo o próprio sistema, um processo marcado como segredo
+  de justiça só aparece para quem atua nele; não é uma etiqueta visual: quem não é parte, nem o
+  cartório ou o juízo do feito, não encontra o processo nem pelas listagens nem pela busca. *(Não
+  testei ao vivo esta restrição: os processos de teste usados neste manual não estão marcados como
+  segredo de justiça.)*
 
 ---
 
@@ -1021,6 +1130,106 @@ Conciliação: Sem Acordo", e só quando o próprio grupo ocupa o Polo Passivo d
 > catálogo do sistema (`movimentacoes/migrations/0004_popular_catalogo_movimentacao.py`); este
 > manual descreve o comportamento implementado, não avalia se o nome do ato bate com a prática
 > forense real.
+
+---
+
+<a name="capitulo-mp"></a>
+## Capítulo do Ministério Público (MP)
+
+*Disponível para: Aluno vinculado a um grupo com papel processual **Ministério Público**. Atua
+como fiscal da lei (custos legis), intervindo no processo quando a lei ou o juiz exigir.*
+
+A navegação geral (Área do Aluno, "Processos Vinculados", menus, notificações, cadastrar processo,
+anexar documento, editor on-line) é a mesma do [Capítulo do Aluno](#capitulo-aluno). O que é
+específico do papel:
+
+<a name="mp-restricoes"></a>
+### 1. Restrições
+
+Testado ao vivo (grupo "Promotoria de Justiça de Formosa", papel Ministério Público, vinculado ao
+mesmo processo de teste usado nos demais capítulos): no menu "Opções Processo", **"Modificar
+Dados"** também aparece desabilitado, como para os demais papéis de Aluno que não são
+[Serventia/Cartório](#sc-modificar-dados).
+
+<a name="mp-movimentar"></a>
+### 2. Quais movimentações o MP pode praticar
+
+Testado ao vivo: num processo recém-autuado, só **"Juntada de Documentos"** aparecia disponível no
+formulário "Movimentar" (o transversal, sem pré-condição, igual ao observado para
+[APA](#apa-movimentar) e [APP](#app-movimentar)).
+
+![Lista suspensa "Tipo Movimentação" de um usuário MP, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_60_mp_movimentar_juntada.png)
+
+Pelo código (migração `0004_popular_catalogo_movimentacao`, não testado ato a ato: exigiria
+avançar o processo até a fase de réplica), o papel MP está autorizado, mais à frente no processo,
+para:
+
+- **Emenda Apresentada** (na fase de emenda da inicial).
+- **Réplica do Autor** (depois da contestação do réu, junto com APA e APP).
+- **Manifestação do MP** (ação exclusiva do MP, disponível quando o Juiz decide, na movimentação
+  "MP Deve Intervir: Sim", que a intervenção do Ministério Público é obrigatória no processo).
+- **Memoriais/Alegações Finais**, **Embargos de Declaração**, **Apelação**, **Contrarrazões**,
+  **Recurso Superior? (STJ/STF)** e **REsp/RE (STJ/STF)**, nas fases de instrução e recursal,
+  junto com APA e APP.
+
+> ℹ️ A intervenção do MP no processo é decidida pelo [Juiz](#capitulo-jz), na movimentação "MP
+> Deve Intervir: Sim/Não". Só quando o Juiz escolhe "Sim" é que "Manifestação do MP" passa a
+> aparecer na lista de movimentações desse papel.
+
+---
+
+<a name="capitulo-jz"></a>
+## Capítulo do Juiz (JZ)
+
+*Disponível para: Aluno vinculado a um grupo com papel processual **Juiz**. Conduz o processo:
+decide, saneia, julga e sentencia.*
+
+A navegação geral (Área do Aluno, "Processos Vinculados", menus, notificações) é a mesma do
+[Capítulo do Aluno](#capitulo-aluno). O papel de Juiz é o que mais movimentações tem no catálogo do
+sistema: praticamente toda a condução do processo (despachos, decisões e sentença) é dele. O que
+é específico do papel:
+
+<a name="jz-restricoes"></a>
+### 1. Restrições
+
+Testado ao vivo (grupo "1ª Vara Cível de Formosa", papel Juiz, vinculado ao mesmo processo de
+teste): assim como para os demais papéis de Aluno, **"Modificar Dados"** aparece desabilitado no
+menu "Opções Processo": essa ação continua exclusiva do papel [Serventia/Cartório](#sc-modificar-dados),
+mesmo para quem julga o processo.
+
+<a name="jz-movimentar"></a>
+### 2. Quais movimentações o Juiz pode praticar
+
+Testado ao vivo: num processo recém-autuado (antes de qualquer despacho de citação), só
+**"Desentranhamento"** aparecia disponível no formulário "Movimentar" (o transversal exclusivo do
+Juiz, sem pré-condição).
+
+![Lista suspensa "Tipo Movimentação" de um usuário Juiz, mostrando só "Desentranhamento" disponível nesse estágio do processo](assets/img_61_jz_movimentar_desentranhamento.png)
+
+Pelo código (migração `0004_popular_catalogo_movimentacao`, não testado ato a ato: o processo de
+teste usado neste manual não foi avançado por toda a instrução), o papel Juiz é autorizado, em
+cada fase do processo, para uma sequência bem mais longa de movimentações do que os demais papéis.
+Agrupando por fase:
+
+- **Análise da inicial**: Cancelamento da Distribuição, Análise da Inicial (Irregular / Urgente /
+  Indefere / Em Ordem), Indeferimento da Inicial, Despacho de Citação.
+- **Tutela de urgência**: Tutela de Urgência Deferida/Indeferida, Liminar Concedida.
+- **Citação**: nova tentativa de citação por edital, quando a citação anterior não teve êxito.
+- **Audiência de conciliação**: resultado da audiência, com ou sem acordo.
+- **Revelia**: efeitos da revelia (produz ou não efeito) e Julgamento Antecipado.
+- **Intervenção do MP**: decisão se o MP deve intervir (Sim/Não) e Decisão Saneadora.
+- **Instrução**: Provas a Produzir (Perícia / Prova Oral / Só Documental), Audiência de Instrução
+  e Julgamento, Resultado da Audiência (Acordo / Memoriais / Julgamento na Data), Acordo em
+  Audiência.
+- **Sentença**: Sentença Homologatória de Acordo, Sentença, Tipo de Sentença (Com Mérito / Sem
+  Mérito), Com/Sem resolução do mérito.
+- **Fase recursal**: Decisão nos Embargos.
+- **Transversal**: Desentranhamento, disponível a qualquer momento (testado ao vivo acima).
+
+> ℹ️ Esta lista foi organizada por fase para facilitar a leitura; a ordem exata e as
+> pré-condições de cada movimentação (o que precisa ter acontecido antes no processo para que ela
+> apareça disponível) estão definidas no catálogo do sistema
+> (`movimentacoes/migrations/0004_popular_catalogo_movimentacao.py`), não neste manual.
 
 ---
 
