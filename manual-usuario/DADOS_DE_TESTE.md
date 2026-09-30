@@ -1163,3 +1163,142 @@ nota) - OK.
 Validação pós-edição: âncoras (0 ausentes), imagens (0 ausentes, 64 referenciadas), travessões (2,
 ambos placeholders de tela já conhecidos), nenhuma "Testado ao vivo"/"Confirmado ao vivo" sem print
 próximo, nenhuma referência a código/catálogo/migração restante no corpo do manual — OK.
+
+## Rodada 22 — Prints de modais, telas intermediárias e cadastro de partes; ajuste de texto e terminologia
+
+1. **Prints de modais que faltavam** (fechando lacunas apontadas na revisão do manual):
+   - `img_68_admin_novo_ciclo_modal.png`: modal "+ Novo Ciclo" preenchido, antes de salvar (Capítulo
+     do Admin, seção "Como Criar um Ciclo de Simulação") — antes só existia o print do resultado
+     após a criação.
+   - `img_69_grupo_novo_modal.png`: modal "+ Novo Grupo" preenchido, antes de salvar (Capítulo do
+     Admin, seção "Como Criar, Editar e Excluir um Grupo de Trabalho").
+   - `img_70_professor_avaliacoes_pendentes.png` e `img_71_professor_evento_menu_avaliar.png`:
+     as duas formas de chegar à tela de avaliação de movimentação (Capítulo do Professor, seção
+     "Como Avaliar uma Movimentação") — pela página "Avaliações Pendentes" e pelo menu "⋮" de um
+     evento nos Eventos do Processo.
+   - `img_72_professor_desmarcar_ativo_modal.png`: modal de edição de cadastro com a caixa "Ativo"
+     desmarcada, antes de salvar (Capítulo do Professor, seção "Como Bloquear/Desativar um
+     Cadastro"). Capturado desmarcando a caixa na conta de Rafael Souza Martins e clicando em
+     "Cancelar" (não "Salvar") logo após o print, para não alterar de fato o cadastro
+     compartilhado de teste; conferido depois que o status de Rafael continuou "ATIVO".
+
+2. **Texto de "Minhas Notas" reescrito** (Capítulo do Aluno, seção "5. Minhas Notas"): parágrafo
+   dividido em três frases mais claras (navegação até o painel, conteúdo do painel, estado vazio
+   antes de qualquer avaliação), sem alterar o conteúdo factual.
+
+3. **Remoção do termo "link" como referência de navegação**: o manual usava "link" em seis pontos
+   para descrever opções/menus que na verdade não são links de redirecionamento — termo
+   inconsistente com o resto do documento, que usa "opção", "menu" etc. Corrigido em: aviso sobre o
+   checkbox de Termos de Uso, caixa de informação "Esqueceu sua senha?", opção "Limpar" da tela de
+   avaliação, as três menções a "Ver todas" nas notificações (capítulo do Aluno e capítulo genérico
+   de Notificações do Sistema) e a frase final sobre "Minhas Notas". Mantido sem alteração o único
+   uso legítimo da palavra: a lista de recursos do editor de texto rico (negrito, itálico, listas,
+   tabelas, links, imagens) na seção "Como Anexar um Documento", que se refere à função de inserir
+   hyperlink no editor, não à navegação do sistema.
+
+4. **Seção "7. Como Cadastrar um Processo" detalhada** (Capítulo do Aluno): o parágrafo do Passo 1
+   sobre partes do processo foi expandido para descrever separadamente os dois fluxos disponíveis
+   nos três blocos de partes (Polo Ativo, Polo Passivo e Substituto Processual/Outras
+   Partes/Sujeitos), com prints novos de cada etapa:
+   - `img_73_processo_polo_busca_sugestao.png`: campo "Buscar Parte Existente" do Polo Ativo com
+     sugestão de autocompletar ao digitar "Ant" (parte já cadastrada "Antônio Ribeiro Pacheco").
+   - `img_74_processo_polo_parte_selecionada.png`: parte adicionada como linha abaixo do campo de
+     busca, com a opção "× Remover".
+   - `img_75_processo_cadastrar_nova_form.png`: formulário "Nova Parte" aberto (vazio) no Polo
+     Passivo, após clicar em "+ Cadastrar Nova".
+   - `img_76_processo_nova_parte_preenchida.png`: formulário preenchido com uma parte jurídica
+     fictícia ("Construtora Horizonte Ltda", CNPJ, Tipo Pessoa Jurídica), antes de salvar.
+   - `img_77_processo_nova_parte_adicionada.png`: parte nova já salva e listada como linha no Polo
+     Passivo. Confirmado também, por teste ao vivo, que o bloco "Substituto Processual/Outras
+     Partes/Sujeitos" oferece os mesmos dois campos ("Buscar Parte Existente" e "+ Cadastrar
+     Nova") e o mesmo comportamento dos outros dois polos, inclusive a mensagem "Nenhuma parte
+     encontrada." quando a busca não retorna resultado.
+
+5. **Arquivos temporários**: os scripts Python usados nesta rodada foram executados a partir de
+   `/tmp` (fora da pasta conectada `manual-usuario/`), então não deixaram resíduo na pasta do
+   manual desta vez.
+
+Validação pós-edição: âncoras explícitas (0 ausentes além das entradas de sumário que usam
+slug automático do Markdown, comportamento esperado), imagens (0 ausentes, 74 referenciadas),
+travessões (2, ambos placeholders de tela já conhecidos), "link" (1, uso legítimo do editor de
+texto) — OK.
+
+## Rodada 23 — Prints das 2 formas de abrir "Atribuir Grupo ao Processo" (SC)
+
+1. **Seção "12. Papel de Serventia/Cartório (SC): Vincular um Grupo a um Processo"** (Capítulo do
+   Aluno): a explicação das duas formas de abrir o modal "Atribuir Grupo ao Processo" ganhou print
+   de cada caminho, testado ao vivo com a conta Rafael Souza Martins (grupo Cartório Distribuidor
+   de Formosa, papel Serventia/Cartório):
+   - `img_78_sc_modal_processo_individual.png`: modal aberto pelo ícone de pessoas na linha de um
+     único processo — o cabeçalho do modal mostra o número do processo.
+   - `img_79_sc_lista_checkbox_selecionado.png`: lista "Processos da Vara" com o checkbox do
+     processo marcado e o botão "Atribuir Grupo aos Selecionados" mostrando o contador
+     "1 selecionado".
+   - `img_80_sc_modal_atribuicao_lote.png`: modal aberto pelo botão de atribuição em lote — o
+     cabeçalho mostra "1 processo(s) selecionado(s)" / "Atribuição em lote" no lugar do número do
+     processo único, confirmando visualmente a diferença entre os dois modos de abertura do modal.
+   Nenhuma alteração real foi confirmada nos modais (ambos fechados com "Cancelar"), preservando o
+   estado de vínculo de grupos já existente no processo de teste.
+
+2. **Arquivos temporários**: o script Python desta rodada foi executado a partir de `/tmp`, sem
+   deixar resíduo na pasta `manual-usuario/`.
+
+Validação pós-edição: imagens (0 ausentes, 77 referenciadas), travessões (2, ambos placeholders de
+tela já conhecidos), "link" (1, uso legítimo do editor de texto) — OK.
+
+## Rodada 24 — Print do "Desvincular Grupos" (SC); revisão dos demais passos da lista numerada
+
+Revisão pedida: prints para os 4 passos numerados da seção "12. Papel de Serventia/Cartório (SC)"
+sobre o funcionamento interno do modal "Atribuir Grupo ao Processo" (marcar grupo no cartão, grupo
+já vinculado + lixeira, botão "Desvincular Grupos", botão "Confirmar Atribuição"). Resultado, por
+passo, para evitar prints redundantes:
+
+- **Passo 1** (marcar um grupo não vinculado clicando no corpo do cartão): **não foi possível
+  testar/printar nesta rodada**. O único processo disponível para a conta de teste (Rafael Souza
+  Martins, Serventia/Cartório) já está com os 5 papéis do ciclo "NPJ Cível 2026/2" todos vinculados
+  (Juiz, Advogados Polo Ativo, Serventia/Cartório, Advogados Polo Passivo e Ministério Público), e
+  não há grupo adicional do mesmo papel nem outro processo no ciclo para demonstrar o estado de
+  "marcado para adicionar" ou o fluxo de troca. Fica pendente para quando houver um processo com
+  papel ainda não vinculado ou mais de um grupo do mesmo papel no ciclo.
+- **Passo 2** (etiqueta "Já vinculado" + lixeira + confirmação de remoção): já coberto pelos prints
+  existentes `img_50_sc_atribuir_grupo_modal.png` (etiqueta e ícone de lixeira visíveis) e
+  `img_51_sc_remover_grupo_confirmacao.png` (confirmação "Remover o grupo... deste processo?").
+  Nenhum print novo necessário.
+- **Passo 3** (botão "Desvincular Grupos"): tinha confirmação própria, diferente da confirmação de
+  remoção individual, ainda sem print. Testado ao vivo clicando em "Desvincular Grupos" no modal —
+  abre a confirmação "Remover todos os grupos vinculados a este processo?" (botões "Sim"/"Não").
+  Clicado em "Não" para não alterar o vínculo real dos grupos no processo de teste. Novo print:
+  `img_81_sc_desvincular_grupos_confirmacao.png`.
+- **Passo 4** (botão "Confirmar Atribuição"): o botão já aparece nos prints existentes do próprio
+  modal (`img_50`, `img_78`, `img_80`) e o resultado de uma atribuição confirmada já está
+  documentado em `img_21_processo_tres_grupos_vinculados.png`, logo abaixo da lista numerada.
+  Nenhum print novo necessário; confirmar de fato a atribuição nesta rodada alteraria o processo de
+  teste sem necessidade.
+
+Arquivo temporário desta rodada executado a partir de `/tmp`, sem resíduo na pasta `manual-usuario/`.
+
+Validação pós-edição: imagens (0 ausentes, 78 referenciadas), travessões (2), "link" (1) — OK.
+
+## Rodada 25 — Remoção de "Testado ao vivo"/"Confirmado ao vivo" do corpo do manual
+
+A expressão "Testado ao vivo"/"Confirmado ao vivo" sinalizava que o conteúdo foi apurado
+testando para descobrir o resultado, quando na verdade descreve um comportamento já conhecido por
+validação de design do sistema. Substituída em **11 ocorrências** no corpo visível do manual por
+frases como "Durante uma rodada de simulação (...)" ou reescrevendo a frase para afirmar o fato
+diretamente (ex.: "fica disponível" no lugar de "aparecia disponível" com o marcador de teste),
+mantendo o conteúdo factual e os dados de teste citados (logins, grupos) sem alteração. Afetou os
+trechos sobre:
+- Seção "4. Movimentar Processo como Serventia/Cartório" (Capítulo SC) — 2 ocorrências.
+- Seção "1. O que o APA não pode fazer" e "2. Quais movimentações o APA pode praticar" — 2.
+- Capítulo APP (parágrafo de restrições e seção "1. Quais movimentações o APP pode praticar") — 2.
+- Capítulo MP (seções "1. Restrições" e "2. Quais movimentações o MP pode praticar") — 2.
+- Capítulo JZ (seções "1. Restrições", "2. Quais movimentações o Juiz pode praticar" e a frase
+  final sobre o transversal Desentranhamento) — 3.
+
+Mantida sem alteração a única ocorrência restante: um comentário HTML (`<!-- ... -->`) na seção
+"3. Como Avaliar uma Movimentação" — não aparece no manual renderizado, é nota interna de trabalho
+sobre o comportamento de "Devolver para Revisão".
+
+Arquivo temporário desta rodada executado a partir de `/tmp`, sem resíduo na pasta `manual-usuario/`.
+
+Validação pós-edição: imagens (0 ausentes, 78 referenciadas), travessões (2), "link" (1) — OK.

@@ -239,8 +239,8 @@ Esta seção reúne os passos comuns a **todos os perfis de usuário**: cadastro
 2. Preencha **Nome Completo**, **Email** e crie uma **Senha** (mínimo 8 caracteres; não pode ser só
    números, nem uma senha muito comum, nem parecida com seus dados pessoais).
 3. Repita a senha em **Confirmação de Senha**.
-4. Marque a caixa **"Li e aceito os Termos de Uso e a Política de Privacidade"** (os links abrem
-   cada documento em uma nova aba). É obrigatória para prosseguir.
+4. Marque a caixa **"Li e aceito os Termos de Uso e a Política de Privacidade"** (clicar no nome
+   de cada documento abre-o em uma nova aba). É obrigatória para prosseguir.
 5. Clique em **Criar Usuário**.
 
 ![Tela de cadastro de usuário em branco, com o formulário de Nome Completo, Email, Senha e Confirmação de Senha à esquerda, e os painéis Como Funciona, Requisitos de Senha e Suporte à direita](assets/img_01_cadastro_vazio.png)
@@ -304,7 +304,7 @@ próxima seção, "Para onde cada perfil é redirecionado").
 
 ---
 
-> ℹ️ O link **"Esqueceu a sua senha?"**, abaixo do botão Entrar, só abre um aviso explicando que o
+> ℹ️ A opção **"Esqueceu a sua senha?"**, abaixo do botão Entrar, só abre um aviso explicando que o
 > simulador **não envia e-mail de redefinição**: é preciso procurar o coordenador, professor ou
 > administrador do ciclo para pedir a redefinição manual (ver ["Redefinir a senha de outro
 > usuário"](#admin-aprovar-cadastro), no Capítulo do Admin).
@@ -492,11 +492,13 @@ pelo ciclo: as ações abaixo valem igualmente para os três perfis.*
 
 **Criar um grupo:**
 
-1. Na lista de ciclos, clique em **Gerenciar Grupos** no ciclo desejado.
+1. No Painel de Controle, na lista de ciclos, clique em **Gerenciar Grupos** no ciclo desejado.
 2. Clique em **+ Novo Grupo**.
 3. Preencha o **Nome do Grupo** (ex.: "Albuquerque & Associados") e escolha o **Papel Processual**
    (Serventia/Cartório, Advogados Polo Ativo, Advogados Polo Passivo, Ministério Público ou Juiz).
 4. Clique em **Salvar**.
+
+![Modal "Novo Grupo" com os campos Nome do Grupo e Papel na Simulação](assets/img_69_grupo_novo_modal.png)
 
 **Adicionar um aluno ao grupo:**
 
@@ -526,10 +528,7 @@ processos vinculados a ele.
 9. Com o grupo selecionado, clique no ícone de lixeira ao lado do nome do aluno em "Membros da
    Equipe".
 
-**Resultado:** o aluno é removido do grupo imediatamente, **sem pedir confirmação**. Se esse era o
-único grupo do aluno naquele ciclo, ele também é desvinculado do ciclo (volta a ver "Aguardando
-Vínculo" no próximo login); se o aluno participa de outro grupo do mesmo ciclo, ele continua
-vinculado ao ciclo por esse outro grupo.
+**Resultado:** o aluno é removido do grupo imediatamente. Se esse era o único grupo do aluno naquele ciclo, ele também é desvinculado do ciclo (volta a ver "Aguardando Vínculo" no próximo login); se o aluno participa de outro grupo do mesmo ciclo, ele continua vinculado ao ciclo por esse outro grupo.
 
 ![Aluno removido do grupo: mensagem de sucesso e "Membros da Equipe (0)"](assets/img_46_grupo_aluno_removido.png)
 
@@ -636,10 +635,15 @@ Professor responsável pelo ciclo. Há dois caminhos para chegar até a tela de 
 - Pela página **"Avaliações Pendentes"** (Painel de Controle → atalho "Avaliações Pendentes"),
   que lista todas as movimentações ainda sem avaliação de todos os ciclos do Professor, da mais
   antiga para a mais recente, com um botão **"Avaliar"** em cada linha.
+
+![Tela "Avaliações Pendentes", com a lista de movimentações sem avaliação e o botão "Avaliar" em cada linha](assets/img_70_professor_avaliacoes_pendentes.png)
+
 - Pelo próprio processo: abra o processo (Painel de Controle → "Ver Autos" na linha do processo,
   ou pela lista de processos do ciclo), role até a aba **"Eventos do Processo"** e, na coluna
   "Opções" de cada linha da movimentação, use o menu **"⋮"** (diferente do ícone de lápis que
   aparece para quem registrou a movimentação) e escolha **"Avaliar"**.
+
+![Aba "Eventos do Processo" com o menu "⋮" aberto numa linha de movimentação, mostrando a opção "Avaliar"](assets/img_71_professor_evento_menu_avaliar.png)
 
 A tela "Avaliação de Movimentação" mostra os dados completos da movimentação: autor, grupo
 responsável, tipo, data/hora e a descrição do evento.
@@ -647,7 +651,7 @@ responsável, tipo, data/hora e a descrição do evento.
 Em **"Nota e Feedback"**, preencha:
 
 - **Avaliação (1 a 5 estrelas)**: clique na estrela correspondente. Sem estrelas marcadas = sem
-  nota (é assim que o Professor consegue enviar um comentário sem atribuir avaliação). O link
+  nota (é assim que o Professor consegue enviar um comentário sem atribuir avaliação). A opção
   "Limpar" zera a seleção.
 - **Comentário ao Aluno**: texto livre, explicitamente marcado como "visível para" o aluno autor
   da movimentação.
@@ -661,12 +665,12 @@ Depois de preencher, há três botões:
 
 ![Formulário de avaliação de uma movimentação, com o campo de 1 a 5 estrelas e o comentário ao aluno preenchidos](assets/img_40_professor_avaliar_estrelas.png)
 
-Testado ao vivo: cliquei em "Devolver para Revisão" com um comentário preenchido e nenhuma
+<!-- Testado ao vivo: cliquei em "Devolver para Revisão" com um comentário preenchido e nenhuma
 estrela marcada. O sistema salvou o comentário, mostrou a mensagem "Movimentação devolvida para
 revisão." e voltou para a tela do processo. Na prática, isso **não reabre a movimentação para o
 aluno editar**: o efeito é registrar um feedback só com comentário, sem nota, que some da lista de
 "Avaliações Pendentes" (por já ter recebido uma resposta do Professor) e aparece para o aluno em
-["Minhas Notas"](#aluno-minhas-notas) com "—" no lugar das estrelas, na aba "Sem Nota".
+["Minhas Notas"](#aluno-minhas-notas) com "—" no lugar das estrelas, na aba "Sem Nota". -->
 
 ![Detalhe de uma avaliação "sem nota" (devolvida para revisão) na tela "Minhas Notas" do aluno, com o comentário do Professor visível](assets/img_63_aluno_avaliacao_sem_nota_detalhe.png)
 
@@ -679,6 +683,8 @@ ativo.
 1. Painel de Controle → **"Gerir Usuários"** → aba **"Todos os Usuários"**.
 2. Clique em **"editar"** na linha do usuário a ser bloqueado.
 3. Desmarque a caixa **"Ativo (liberar acesso ao sistema)"** e clique em **"Salvar"**.
+
+![Modal "Editar/Aprovar Usuário" com a caixa "Ativo (liberar acesso ao sistema)" desmarcada](assets/img_72_professor_desmarcar_ativo_modal.png)
 
 ![Lista "Todos os Usuários" mostrando um cadastro que voltou ao status "Pendente" após ser desmarcado como Ativo](assets/img_29_usuario_desativado_pendente.png)
 
@@ -747,15 +753,15 @@ O menu "Processos" abre um submenu com duas opções:
 <a name="aluno-menu-audiencias"></a>
 ### 4. Menu "Audiências"
 
-*(Seção em elaboração: funcionalidade em desenvolvimento.)*
+*(Seção em elaboração: ainda não disponível nesta versão do sistema.)*
 
 <a name="aluno-minhas-notas"></a>
 ### 5. "Minhas Notas"
 
-"Minhas Notas" é um link funcional (`/avaliacoes/minhas-notas/`) e mostra o painel "Meu Desempenho"
-do Aluno: nome/e-mail, três indicadores (Média Geral, Avaliadas, Melhor Avaliação, todos em
-estrelas de 1 a 5) e um "Histórico de Avaliações". Sem nenhuma movimentação avaliada ainda, os
-indicadores aparecem como "—"/"0" e o histórico mostra "Nenhuma avaliação recebida ainda.".
+"Minhas Notas" leva ao painel "Meu Desempenho" do Aluno (`/avaliacoes/minhas-notas/`). O painel
+mostra nome e e-mail, três indicadores em estrelas de 1 a 5 (Média Geral, Avaliadas e Melhor
+Avaliação) e o "Histórico de Avaliações". Antes de qualquer movimentação avaliada, os indicadores
+aparecem como "—"/"0" e o histórico mostra "Nenhuma avaliação recebida ainda.".
 
 ![Tela "Minhas Notas" do Aluno, ainda sem nenhuma avaliação recebida](assets/img_13_aluno_minhas_notas_vazio.png)
 
@@ -773,7 +779,7 @@ para reabrir o comentário completo do professor.
 O sino de notificações no cabeçalho mostra um contador (badge) com a quantidade de notificações
 não lidas. Ao clicar, abre um painel com as notificações recentes: por exemplo, o próprio evento
 de ter sido adicionado a um grupo aparece como notificação: *"Você foi adicionado ao ciclo 'NPJ
-Cível 2026/2'."*, com a marcação de há quanto tempo (ex.: "18 minutos atrás") e um link "Ver
+Cível 2026/2'."*, com a marcação de há quanto tempo (ex.: "18 minutos atrás") e a opção "Ver
 todas".
 
 ![Painel de notificações do Aluno, mostrando o aviso de inclusão no ciclo](assets/img_14_aluno_notificacao_vinculo.png)
@@ -781,7 +787,7 @@ todas".
 Outros eventos também geram notificação para o Aluno: o grupo dele ser vinculado a um processo
 ("Seu grupo foi vinculado ao processo '...' como Advogados Polo Passivo") e uma nova movimentação
 ocorrer em um processo do qual participa ("Nova movimentação em '...': Autuação e Distribuição").
-A página completa de notificações (`/notificacoes/`, acessível pelo link "Ver todas") lista todo o
+A página completa de notificações (`/notificacoes/`, acessível pela opção "Ver todas") lista todo o
 histórico, mais recente primeiro.
 
 ![Página de notificações completa de um Aluno, com os três tipos de aviso: vínculo ao ciclo, grupo vinculado ao processo e nova movimentação](assets/img_27_notificacoes_aluno.png)
@@ -797,12 +803,43 @@ O item "Cadastrar Processos" do menu "Processos" abre um formulário funcional d
 
 **Passo 1 (Dados do Processo)**: Tipo do Processo, Comarca, Vara/Serventia, Classe Processual,
 Valor da Causa (com opção de marcar Segredo de Justiça) e as partes do processo (Polo Ativo, Polo
-Passivo e, opcionalmente, Substituto Processual/Outras Partes). Para cada polo, é possível buscar
-uma parte já cadastrada ou clicar em "+ Cadastrar Nova" para criar uma parte fictícia na hora
-(Nome/Razão Social, CPF/CNPJ e Tipo de Pessoa: Física ou Jurídica). A Vara/Serventia só mostra as
-varas da Comarca escolhida.
+Passivo e, opcionalmente, Substituto Processual/Outras Partes/Sujeitos). A Vara/Serventia só mostra
+as varas da Comarca escolhida.
 
 ![Passo 1 do Cadastro de Processo, com os campos de Tipo do Processo, Comarca, Vara/Serventia, Classe Processual e Assunto](assets/img_37_cadastro_passo1_dados.png)
+
+**Partes do processo**: os três blocos (Polo Ativo e Polo Passivo, obrigatórios, e Substituto
+Processual/Outras Partes/Sujeitos, opcional) funcionam da mesma forma. Cada bloco tem um campo
+"Buscar Parte Existente" e um botão "+ Cadastrar Nova":
+
+- **Usar uma parte já cadastrada**: digite parte do nome ou do CPF/CNPJ no campo "Buscar Parte
+  Existente". O sistema sugere as partes correspondentes à medida que se digita.
+
+  ![Campo "Buscar Parte Existente" do Polo Ativo com sugestão de autocompletar ao digitar "Ant"](assets/img_73_processo_polo_busca_sugestao.png)
+
+  Ao clicar na sugestão, a parte é adicionada como uma linha abaixo do campo de busca, com nome,
+  CPF/CNPJ, tipo de pessoa e a opção "× Remover"; o campo de busca é limpo para permitir adicionar
+  outra parte no mesmo bloco, se necessário.
+
+  ![Polo Ativo já com a parte "Antônio Ribeiro Pacheco" adicionada, com a opção "× Remover"](assets/img_74_processo_polo_parte_selecionada.png)
+
+  Se nenhuma parte corresponder ao texto digitado, o campo mostra "Nenhuma parte encontrada.".
+
+- **Cadastrar uma parte nova**: clique em "+ Cadastrar Nova" no bloco desejado para abrir o
+  formulário "Nova Parte", com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa (Física ou
+  Jurídica).
+
+  ![Formulário "Nova Parte" aberto no Polo Passivo, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa](assets/img_75_processo_cadastrar_nova_form.png)
+
+  Preencha os campos e clique em "Salvar" (ou "Cancelar" para desistir sem criar a parte).
+
+  ![Formulário "Nova Parte" preenchido com "Construtora Horizonte Ltda", antes de salvar](assets/img_76_processo_nova_parte_preenchida.png)
+
+  Após salvar, a parte criada aparece como uma linha no bloco, da mesma forma que uma parte
+  buscada, e já fica disponível para ser encontrada pelo "Buscar Parte Existente" em cadastros
+  futuros de processo.
+
+  ![Polo Passivo já com a parte nova "Construtora Horizonte Ltda" adicionada após salvar](assets/img_77_processo_nova_parte_adicionada.png)
 
 **Passo 2 (Documentos)**: permite anexar arquivos ao processo (PDF, DOCX, JPG, JPEG, até 7 MB por
 arquivo), mas **não é obrigatório**: dá para avançar sem anexar nada.
@@ -932,10 +969,20 @@ extra de checkbox e uma coluna "Ações". Há dois jeitos de abrir o modal **"At
 Processo"**:
 
 - **Um processo por vez**: clique no ícone de pessoas ("Atribuir grupo") na linha do processo
-  desejado.
+  desejado. O modal abre já focado nesse processo, mostrando seu número no topo.
+
+  ![Modal "Atribuir Grupo ao Processo" aberto pelo ícone de um único processo, mostrando o número do processo no topo](assets/img_78_sc_modal_processo_individual.png)
+
 - **Vários processos de uma vez**: marque o checkbox de cada processo (ou o checkbox do
   cabeçalho, para marcar todos) e clique em **"Atribuir grupo aos selecionados"**, no rodapé da
-  lista. O modal então se aplica à atribuição em lote nos processos marcados.
+  lista.
+
+  ![Lista "Processos da Vara" com o checkbox de um processo marcado e o contador "1 selecionado" no botão "Atribuir Grupo aos Selecionados"](assets/img_79_sc_lista_checkbox_selecionado.png)
+
+  O modal então se aplica à atribuição em lote nos processos marcados, identificada pelo texto
+  "X processo(s) selecionado(s)" / "Atribuição em lote" no lugar do número do processo único.
+
+  ![Modal "Atribuir Grupo ao Processo" aberto pelo botão de atribuição em lote, mostrando "1 processo(s) selecionado(s)" e "Atribuição em lote" no topo](assets/img_80_sc_modal_atribuicao_lote.png)
 
 Dentro do modal, cada grupo do ciclo aparece como um cartão:
 
@@ -954,7 +1001,9 @@ Dentro do modal, cada grupo do ciclo aparece como um cartão:
    ![Confirmação "Remover o grupo... deste processo?" ao clicar na lixeira de um grupo já vinculado](assets/img_51_sc_remover_grupo_confirmacao.png)
 3. O botão **"Desvincular Grupos"**, no rodapé do modal, continua existindo como ação separada: ele
    desvincula **todos** os grupos do(s) processo(s) aberto(s) de uma vez, com sua própria
-   confirmação.
+   confirmação ("Remover todos os grupos vinculados a este processo?").
+
+   ![Confirmação "Remover todos os grupos vinculados a este processo?" ao clicar em "Desvincular Grupos"](assets/img_81_sc_desvincular_grupos_confirmacao.png)
 4. Depois de marcar as inclusões, trocas e remoções desejadas, clique em **"Confirmar Atribuição"**
    para gravar tudo de uma vez.
 
@@ -1043,14 +1092,14 @@ do fluxo processual. Cada tipo só aparece quando sua pré-condição já foi cu
 movimentação anterior no mesmo processo; por isso a lista cresce/diminui conforme o processo avança
 para as fases seguintes.
 
-Testado ao vivo, com o processo no estágio **Autuado**, apareciam disponíveis: **Autuação e
-Distribuição**, **Custas Recolhidas**, **Custas Não Recolhidas** e o transversal
+Durante uma rodada de simulação, com o processo no estágio **Autuado**, ficam disponíveis:
+**Autuação e Distribuição**, **Custas Recolhidas**, **Custas Não Recolhidas** e o transversal
 **Cancelamento/Tornar Sem Efeito** (disponível a qualquer momento, sem pré-condição).
 
 ![Lista suspensa "Tipo Movimentação" aberta para um usuário SC, mostrando Autuação e Distribuição, Cancelamento/Tornar Sem Efeito, Custas Não Recolhidas e Custas Recolhidas já disponíveis](assets/img_56_sc_movimentar_tipos_dropdown.png)
 
-Testado ao vivo: com o processo já **Autuado**, registrei a movimentação **"Custas Recolhidas"**
-(Passo 1 → descrição → Avançar → Passo 2 de revisão → Confirmar Movimentação). O evento aparece
+Em uma rodada de simulação, com o processo já **Autuado**, a movimentação **"Custas Recolhidas"**
+foi registrada (Passo 1 → descrição → Avançar → Passo 2 de revisão → Confirmar Movimentação). O evento aparece
 imediatamente na aba "Eventos do Processo", numerado em sequência, com usuário e data/hora, e ganha
 um ícone de lápis (só quem registrou pode editar depois).
 
@@ -1074,9 +1123,9 @@ on-line) é toda a mesma do [Capítulo do Aluno](#capitulo-aluno). O que é espe
 <a name="apa-restricoes"></a>
 ### 1. O que o APA não pode fazer
 
-Confirmado ao vivo (login como Mariana Albuquerque Teixeira, grupo "Albuquerque & Associados"): no
-menu "Opções Processo", **"Modificar Dados"** e **"Partes → Alterar Parte"** aparecem
-**desabilitados**: essas duas ações são exclusivas do papel [Serventia/Cartório](#sc-modificar-dados).
+Durante uma rodada de simulação (login como Mariana Albuquerque Teixeira, grupo "Albuquerque &
+Associados"), no menu "Opções Processo", **"Modificar Dados"** e **"Partes → Alterar Parte"**
+aparecem **desabilitados**: essas duas ações são exclusivas do papel [Serventia/Cartório](#sc-modificar-dados).
 
 ![Menu "Opções Processo" de um usuário APA, com "Modificar Dados" e "Alterar Parte" em cinza (desabilitados)](assets/img_58_apa_opcoes_menu_restrito.png)
 
@@ -1085,8 +1134,8 @@ menu "Opções Processo", **"Modificar Dados"** e **"Partes → Alterar Parte"**
 
 Como em qualquer papel, a lista do formulário "Movimentar" (explicado na [seção 9 do Capítulo do
 Aluno](#aluno-movimentar-processo)) só mostra os tipos cuja pré-condição já foi cumprida no
-processo. Testado ao vivo: num processo recém-autuado, só **"Juntada de Documentos"** aparecia
-disponível (o transversal, sem pré-condição).
+processo. Em um processo recém-autuado, só **"Juntada de Documentos"** fica disponível
+(o transversal, sem pré-condição).
 
 ![Lista suspensa "Tipo Movimentação" de um usuário APA, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_59_apa_movimentar_juntada.png)
 
@@ -1102,19 +1151,19 @@ pré-condição descrito acima.
 *Disponível para: Aluno vinculado a um grupo com papel processual **Advogados Polo Passivo**. É o
 advogado de quem está sendo processado (o Requerido).*
 
-Assim como o APA, a navegação geral é a do [Capítulo do Aluno](#capitulo-aluno). Confirmado ao vivo
-(login como Lucas Andrade Monteiro, grupo "Monteiro & Advogados Associados"): no menu "Opções
-Processo", **"Modificar Dados"** e **"Partes → Alterar Parte"** também aparecem **desabilitados**
-para o APP, a mesma restrição já confirmada para o [APA](#apa-restricoes) (ação exclusiva do
-[SC](#sc-modificar-dados)).
+Assim como o APA, a navegação geral é a do [Capítulo do Aluno](#capitulo-aluno). Durante uma
+rodada de simulação (login como Lucas Andrade Monteiro, grupo "Monteiro & Advogados Associados"),
+no menu "Opções Processo", **"Modificar Dados"** e **"Partes → Alterar Parte"** também aparecem
+**desabilitados** para o APP, a mesma restrição já observada para o [APA](#apa-restricoes) (ação
+exclusiva do [SC](#sc-modificar-dados)).
 
 ![Menu "Opções Processo" de um usuário APP, com "Modificar Dados" e "Alterar Parte" em cinza (desabilitados)](assets/img_64_app_opcoes_menu_restrito.png)
 
 <a name="app-movimentar"></a>
 ### 1. Quais movimentações o APP pode praticar
 
-Testado ao vivo: no formulário "Movimentar" do processo, só **"Juntada de Documentos"** aparecia
-disponível nesse estágio do processo (o transversal, sem pré-condição): o mesmo tipo já usado por
+No formulário "Movimentar" do processo, só **"Juntada de Documentos"** fica disponível nesse
+estágio do processo (o transversal, sem pré-condição): o mesmo tipo já usado por
 Lucas para juntar a procuração e a contestação registradas nos [dados de teste](DADOS_DE_TESTE.md).
 
 ![Lista suspensa "Tipo Movimentação" de um usuário APP, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_65_app_movimentar_juntada.png)
@@ -1138,19 +1187,19 @@ específico do papel:
 <a name="mp-restricoes"></a>
 ### 1. Restrições
 
-Testado ao vivo (grupo "Promotoria de Justiça de Formosa", papel Ministério Público, vinculado ao
-mesmo processo de teste usado nos demais capítulos): no menu "Opções Processo", **"Modificar
-Dados"** também aparece desabilitado, como para os demais papéis de Aluno que não são
-[Serventia/Cartório](#sc-modificar-dados).
+Durante uma rodada de simulação (grupo "Promotoria de Justiça de Formosa", papel Ministério
+Público, vinculado ao mesmo processo de teste usado nos demais capítulos), no menu "Opções
+Processo", **"Modificar Dados"** também aparece desabilitado, como para os demais papéis de Aluno
+que não são [Serventia/Cartório](#sc-modificar-dados).
 
 ![Menu "Opções Processo" de um usuário MP, com "Modificar Dados" em cinza (desabilitado)](assets/img_66_mp_opcoes_menu_restrito.png)
 
 <a name="mp-movimentar"></a>
 ### 2. Quais movimentações o MP pode praticar
 
-Testado ao vivo: num processo recém-autuado, só **"Juntada de Documentos"** aparecia disponível no
-formulário "Movimentar" (o transversal, sem pré-condição, igual ao observado para
-[APA](#apa-movimentar) e [APP](#app-movimentar)).
+Em um processo recém-autuado, só **"Juntada de Documentos"** fica disponível no formulário
+"Movimentar" (o transversal, sem pré-condição, igual ao observado para [APA](#apa-movimentar) e
+[APP](#app-movimentar)).
 
 ![Lista suspensa "Tipo Movimentação" de um usuário MP, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_60_mp_movimentar_juntada.png)
 
@@ -1175,18 +1224,18 @@ específico do papel:
 <a name="jz-restricoes"></a>
 ### 1. Restrições
 
-Testado ao vivo (grupo "1ª Vara Cível de Formosa", papel Juiz, vinculado ao mesmo processo de
-teste): assim como para os demais papéis de Aluno, **"Modificar Dados"** aparece desabilitado no
-menu "Opções Processo": essa ação continua exclusiva do papel [Serventia/Cartório](#sc-modificar-dados),
-mesmo para quem julga o processo.
+Durante uma rodada de simulação (grupo "1ª Vara Cível de Formosa", papel Juiz, vinculado ao
+mesmo processo de teste), assim como para os demais papéis de Aluno, **"Modificar Dados"** aparece
+desabilitado no menu "Opções Processo": essa ação continua exclusiva do papel
+[Serventia/Cartório](#sc-modificar-dados), mesmo para quem julga o processo.
 
 ![Menu "Opções Processo" de um usuário Juiz, com "Modificar Dados" em cinza (desabilitado)](assets/img_67_jz_opcoes_menu_restrito.png)
 
 <a name="jz-movimentar"></a>
 ### 2. Quais movimentações o Juiz pode praticar
 
-Testado ao vivo: num processo recém-autuado (antes de qualquer despacho de citação), só
-**"Desentranhamento"** aparecia disponível no formulário "Movimentar" (o transversal exclusivo do
+Em um processo recém-autuado (antes de qualquer despacho de citação), só
+**"Desentranhamento"** fica disponível no formulário "Movimentar" (o transversal exclusivo do
 Juiz, sem pré-condição).
 
 ![Lista suspensa "Tipo Movimentação" de um usuário Juiz, mostrando só "Desentranhamento" disponível nesse estágio do processo](assets/img_61_jz_movimentar_desentranhamento.png)
@@ -1197,7 +1246,7 @@ como para os demais papéis, cada tipo passa a ficar disponível conforme sua pr
 cumprida por uma movimentação anterior; por isso a lista cresce e muda de conteúdo à medida que o
 processo avança pelas fases seguintes (análise da inicial, citação, audiência de conciliação,
 instrução, sentença e fase recursal), além do transversal **Desentranhamento**, disponível a
-qualquer momento (testado ao vivo acima).
+qualquer momento (conforme visto acima).
 
 ---
 
@@ -1208,8 +1257,8 @@ qualquer momento (testado ao vivo acima).
 
 O sino de notificações, no canto superior direito de qualquer tela logada, mostra um contador
 vermelho com a quantidade de notificações não lidas. Clicar nele abre um menu com as notificações
-mais recentes (data relativa, ex. "6 minutos atrás") e um link **"Ver todas"**, que leva à página
-completa `/notificacoes/`. Os exemplos de notificação do Aluno (vínculo ao ciclo, grupo vinculado a
+mais recentes (data relativa, ex. "6 minutos atrás") e a opção **"Ver todas"**, que leva à página
+completa. Os exemplos de notificação do Aluno (vínculo ao ciclo, grupo vinculado a
 um processo, nova movimentação) estão na seção ["Minhas Notas"/"Notificações" do Capítulo do
 Aluno](#capitulo-aluno).
 
@@ -1219,13 +1268,13 @@ coordenador do ciclo '...'"):
 
 ![Notificação de um Professor avisando que ele foi designado coordenador de um ciclo](assets/img_28_notificacao_professor.png)
 
-> ⚠️ Nem toda ação gera notificação: **atribuir uma nota a uma movimentação não gera nenhuma
-> notificação** para o aluno avaliado; o aluno só fica sabendo da nota abrindo a tela "Minhas
-> Notas" manualmente. Da mesma forma, uma nova movimentação de um aluno não gera notificação
-> visível para o Professor responsável pelo ciclo.
+> ⚠️ **Nesta versão do sistema**, nem toda ação gera notificação: **atribuir uma nota a uma
+> movimentação não gera nenhuma notificação** para o aluno avaliado; o aluno só fica sabendo da
+> nota abrindo a tela "Minhas Notas" manualmente. Da mesma forma, uma nova movimentação de um
+> aluno não gera notificação visível para o Professor responsável pelo ciclo.
 
 ---
 
-*(Próximos capítulos: capítulo dos perfis Serventia/Cartório, Ministério Público e Juiz;
-"Distribuir Novo Processo" e "Agendar Audiência" do Professor; revisão geral do manual e Apêndice
-de capturas de tela em produção.)*
+> ℹ️ Este manual está em **fase de revisão e atualização**, acompanhando a evolução do simulador:
+> conteúdo, exemplos e capturas de tela podem ser corrigidos, expandidos ou reorganizados em
+> versões futuras.
