@@ -1,7 +1,7 @@
 # Manual do Usuário: Simulador PROJUDI (simu-projudi)
 
 **Versão:** 0.1 (em elaboração, capítulo por capítulo)
-**Última atualização:** 2026-09-19
+**Última atualização:** 2026-09-30
 
 ---
 
