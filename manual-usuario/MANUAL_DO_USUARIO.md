@@ -17,60 +17,63 @@ jurídico real nem produz qualquer efeito fora do ambiente acadêmico.
 
 ## Índice
 
-- [Glossário de Abreviações e Siglas](#glossario)
-- [Introdução](#introducao)
-- [Guia Geral do Simulador](#guia-geral)
-  - [1. O que é comum a todos os perfis](#guia-navegacao-comum)
-  - [2. Ciclos, Grupos e Papéis: como tudo se encaixa](#guia-ciclos-grupos-papeis)
-  - [3. O que são "prazos" no sistema](#guia-prazos)
-  - [4. Avisos operacionais (tela de login)](#guia-avisos)
-- [Primeiros Passos](#primeiros-passos)
-  - [1. Como se Cadastrar no Sistema](#como-se-cadastrar)
-  - [2. O que Acontece Logo Após o Cadastro](#apos-cadastro)
-  - [3. Como Fazer Login](#como-fazer-login)
-  - [4. Para onde Cada Perfil é Redirecionado](#redirecionamento)
-  - [5. Como Alterar sua Senha (Minha Conta)](#alterar-senha)
-- [Capítulo do Admin](#capitulo-admin)
-  - [1. Painel de Controle](#admin-painel)
-  - [2. Como Aprovar um Cadastro Pendente](#admin-aprovar-cadastro)
-  - [3. Como Criar um Ciclo de Simulação](#admin-criar-ciclo)
-  - [4. Como Criar, Editar e Excluir um Grupo de Trabalho, e Adicionar/Remover Alunos](#admin-criar-grupo)
-- [Capítulo do Coordenador](#capitulo-coordenador)
-- [Capítulo do Professor](#capitulo-professor)
-  - [1. O que o Professor vê no Painel de Controle](#professor-painel)
-  - [2. Como Vincular um Aluno a um Grupo de Trabalho](#professor-vincular-aluno-grupo)
-  - [3. Como Avaliar uma Movimentação (Atribuir Nota)](#professor-avaliar-movimentacao)
-  - [4. Como Bloquear/Desativar um Cadastro](#professor-bloquear-cadastro)
-- [Capítulo do Aluno](#capitulo-aluno)
-  - [1. Para onde o Aluno é redirecionado, dependendo do vínculo](#aluno-redirecionamento)
-  - [2. Área do Aluno: visão geral](#aluno-area-geral)
-  - [3. Menu "Processos"](#aluno-menu-processos)
-  - [4. Menu "Audiências"](#aluno-menu-audiencias)
-  - [5. "Minhas Notas"](#aluno-minhas-notas)
-  - [6. Notificações](#aluno-notificacoes)
-  - [7. Como Cadastrar um Processo](#aluno-cadastrar-processo)
-  - [8. Detalhe do Processo](#aluno-detalhe-processo)
-  - [9. Como Movimentar um Processo](#aluno-movimentar-processo)
-  - [10. Como Anexar um Documento em uma Movimentação](#aluno-anexar-documento)
-  - [11. Como Usar o Editor On-line para Criar e Assinar um Documento](#aluno-editor-online)
-  - [12. Papel de Serventia/Cartório (SC): Vincular um Grupo a um Processo](#aluno-sc-vincular-grupo)
-- [Capítulo de Serventia/Cartório (SC)](#capitulo-sc)
-  - [1. O que muda na Área do Aluno para quem é Serventia/Cartório](#sc-visao-geral)
-  - [2. Vincular um Grupo a um Processo](#sc-vincular-grupo)
-  - [3. Modificar Dados do Processo e Alterar Parte](#sc-modificar-dados)
-  - [4. Movimentar Processo como Serventia/Cartório](#sc-movimentar)
-- [Capítulo de Advogados Polo Ativo (APA)](#capitulo-apa)
-  - [1. O que o APA não pode fazer](#apa-restricoes)
-  - [2. Quais movimentações o APA pode praticar](#apa-movimentar)
-- [Capítulo de Advogados Polo Passivo (APP)](#capitulo-app)
-  - [1. Quais movimentações o APP pode praticar](#app-movimentar)
-- [Capítulo do Ministério Público (MP)](#capitulo-mp)
-  - [1. Restrições](#mp-restricoes)
-  - [2. Quais movimentações o MP pode praticar](#mp-movimentar)
-- [Capítulo do Juiz (JZ)](#capitulo-jz)
-  - [1. Restrições](#jz-restricoes)
-  - [2. Quais movimentações o Juiz pode praticar](#jz-movimentar)
-- [Notificações do Sistema](#notificacoes-sistema)
+- [Manual do Usuário: Simulador PROJUDI (simu-projudi)](#manual-do-usuário-simulador-projudi-simu-projudi)
+  - [Declaração de Uso](#declaração-de-uso)
+  - [Índice](#índice)
+  - [Glossário de Abreviações e Siglas](#glossário-de-abreviações-e-siglas)
+  - [Introdução](#introdução)
+  - [Guia Geral do Simulador](#guia-geral-do-simulador)
+    - [1. O que é comum a todos os perfis](#1-o-que-é-comum-a-todos-os-perfis)
+    - [2. Ciclos, Grupos e Papéis: como tudo se encaixa](#2-ciclos-grupos-e-papéis-como-tudo-se-encaixa)
+    - [3. O que são "prazos" no sistema](#3-o-que-são-prazos-no-sistema)
+    - [4. Avisos operacionais (tela de login)](#4-avisos-operacionais-tela-de-login)
+  - [Primeiros Passos](#primeiros-passos)
+    - [1. Como se Cadastrar no Sistema](#1-como-se-cadastrar-no-sistema)
+    - [2. O que Acontece Logo Após o Cadastro](#2-o-que-acontece-logo-após-o-cadastro)
+    - [3. Como Fazer Login](#3-como-fazer-login)
+    - [4. Para onde Cada Perfil é Redirecionado](#4-para-onde-cada-perfil-é-redirecionado)
+    - [5. Como Alterar sua Senha (Minha Conta)](#5-como-alterar-sua-senha-minha-conta)
+  - [Capítulo do Admin](#capítulo-do-admin)
+    - [1. Painel de Controle](#1-painel-de-controle)
+    - [2. Como Aprovar um Cadastro Pendente](#2-como-aprovar-um-cadastro-pendente)
+    - [3. Como Criar um Ciclo de Simulação](#3-como-criar-um-ciclo-de-simulação)
+    - [4. Como Criar, Editar e Excluir um Grupo de Trabalho, e Adicionar/Remover Alunos](#4-como-criar-editar-e-excluir-um-grupo-de-trabalho-e-adicionarremover-alunos)
+  - [Capítulo do Coordenador](#capítulo-do-coordenador)
+  - [Capítulo do Professor](#capítulo-do-professor)
+    - [1. O que o Professor vê no Painel de Controle](#1-o-que-o-professor-vê-no-painel-de-controle)
+    - [2. Como Vincular um Aluno a um Grupo de Trabalho](#2-como-vincular-um-aluno-a-um-grupo-de-trabalho)
+    - [3. Como Avaliar uma Movimentação (Atribuir Nota)](#3-como-avaliar-uma-movimentação-atribuir-nota)
+    - [4. Como Bloquear/Desativar um Cadastro](#4-como-bloqueardesativar-um-cadastro)
+  - [Capítulo do Aluno](#capítulo-do-aluno)
+    - [1. Para onde o Aluno é redirecionado, dependendo do vínculo](#1-para-onde-o-aluno-é-redirecionado-dependendo-do-vínculo)
+    - [2. Área do Aluno: visão geral](#2-área-do-aluno-visão-geral)
+    - [3. Menu "Processos"](#3-menu-processos)
+    - [4. Menu "Audiências"](#4-menu-audiências)
+    - [5. "Minhas Notas"](#5-minhas-notas)
+    - [6. Notificações](#6-notificações)
+    - [7. Como Cadastrar um Processo](#7-como-cadastrar-um-processo)
+    - [8. Detalhe do Processo](#8-detalhe-do-processo)
+    - [9. Como Movimentar um Processo](#9-como-movimentar-um-processo)
+    - [10. Como Anexar um Documento em uma Movimentação](#10-como-anexar-um-documento-em-uma-movimentação)
+    - [11. Como Usar o Editor On-line para Criar e Assinar um Documento](#11-como-usar-o-editor-on-line-para-criar-e-assinar-um-documento)
+    - [12. Papel de Serventia/Cartório (SC): Vincular um Grupo a um Processo](#12-papel-de-serventiacartório-sc-vincular-um-grupo-a-um-processo)
+  - [Capítulo de Serventia/Cartório (SC)](#capítulo-de-serventiacartório-sc)
+    - [1. O que muda na Área do Aluno para quem é Serventia/Cartório](#1-o-que-muda-na-área-do-aluno-para-quem-é-serventiacartório)
+    - [2. Vincular um Grupo a um Processo](#2-vincular-um-grupo-a-um-processo)
+    - [3. Modificar Dados do Processo e Alterar Parte](#3-modificar-dados-do-processo-e-alterar-parte)
+    - [4. Movimentar Processo como Serventia/Cartório](#4-movimentar-processo-como-serventiacartório)
+  - [Capítulo de Advogados Polo Ativo (APA)](#capítulo-de-advogados-polo-ativo-apa)
+    - [1. O que o APA não pode fazer](#1-o-que-o-apa-não-pode-fazer)
+    - [2. Quais movimentações o APA pode praticar](#2-quais-movimentações-o-apa-pode-praticar)
+  - [Capítulo de Advogados Polo Passivo (APP)](#capítulo-de-advogados-polo-passivo-app)
+    - [1. Quais movimentações o APP pode praticar](#1-quais-movimentações-o-app-pode-praticar)
+  - [Capítulo do Ministério Público (MP)](#capítulo-do-ministério-público-mp)
+    - [1. Restrições](#1-restrições)
+    - [2. Quais movimentações o MP pode praticar](#2-quais-movimentações-o-mp-pode-praticar)
+  - [Capítulo do Juiz (JZ)](#capítulo-do-juiz-jz)
+    - [1. Restrições](#1-restrições-1)
+    - [2. Quais movimentações o Juiz pode praticar](#2-quais-movimentações-o-juiz-pode-praticar)
+  - [Notificações do Sistema](#notificações-do-sistema)
 
 *(Este índice será expandido conforme novos capítulos forem escritos.)*
 
@@ -214,21 +217,11 @@ ou fecha algum prazo.
 A tela de login tem um painel "Informações Importantes", com itens que valem para o sistema
 inteiro:
 
-- **Primeiro acesso**: todo cadastro novo entra como "Pendente" e só é liberado depois que um
-  Admin, Coordenador ou Professor aprova e atribui o papel de simulação, já documentado na
-  [seção 2 de Primeiros Passos](#apos-cadastro).
-- **Limite de 7 MB por arquivo**: cada documento anexado a uma movimentação pode ter até 7 MB, nos
-  formatos PDF, DOCX, JPG e JPEG. O sistema confere o conteúdo do arquivo, não só a extensão:
-  renomear um arquivo para ".pdf" não faz ele passar pela validação, já mencionado na [seção 7 do
-  Capítulo do Aluno](#aluno-cadastrar-processo).
-- **A sessão encerra após 15 minutos sem atividade**: um aviso aparece antes do fim do prazo, com
-  a opção de continuar conectado. Sem resposta, a sessão é encerrada e o sistema volta para a tela
+- **Primeiro acesso**: todo cadastro novo entra como "Pendente" e só é liberado depois que um Admin, Coordenador ou Professor aprova e atribui o papel de simulação, já documentado na  [seção 2 de Primeiros Passos](#apos-cadastro).
+- **Limite de 7 MB por arquivo**: cada documento anexado a uma movimentação pode ter até 7 MB, nos formatos PDF, DOCX, JPG e JPEG. O sistema confere o conteúdo do arquivo, não só a extensão: renomear um arquivo para ".pdf" não faz ele passar pela validação, já mencionado na [seção 7 do Capítulo do Aluno](#aluno-cadastrar-processo).
+- **A sessão encerra após 15 minutos sem atividade**: um aviso aparece antes do fim do prazo, com a opção de continuar conectado. Sem resposta, a sessão é encerrada e o sistema volta para a tela
   de login. Vale a pena não deixar um formulário longo aberto sem salvar.
-- **Processos em segredo de justiça**: segundo o próprio sistema, um processo marcado como segredo
-  de justiça só aparece para quem atua nele; não é uma etiqueta visual: quem não é parte, nem o
-  cartório ou o juízo do feito, não encontra o processo nem pelas listagens nem pela busca. *(Não
-  testei ao vivo esta restrição: os processos de teste usados neste manual não estão marcados como
-  segredo de justiça.)*
+- **Processos em segredo de justiça**: Um processo marcado como segredo de justiça só aparece para quem atua nele, não é uma  etiqueta visual: quem não é parte, nem o cartório ou o juízo do feito, não encontra o processo nem pelas listagens nem pela busca.
 
 ---
 
@@ -395,7 +388,7 @@ normalmente (o sistema não derruba o login após a troca).
 ## Capítulo do Admin
 
 *Disponível para: perfil global **Admin**. O Admin é o único perfil com acesso também ao painel
-técnico do Django (`/admin/`), usado apenas para dados de configuração do sistema; isso está fora
+técnico do Django, usado apenas para dados de configuração do sistema; isso está fora
 do escopo deste manual, que cobre a operação normal pela interface do simulador.*
 
 <a name="admin-painel"></a>
@@ -479,8 +472,9 @@ login do usuário afetado.
 3. Escolha o **Semestre** (1º ou 2º) e confira o **Ano**.
 4. Clique em **Salvar Ciclo**.
 
-**Resultado:** o ciclo aparece na lista "Gestão de Ciclos de Simulação", com status **Em
-andamento**, e quem criou o ciclo é automaticamente registrado como o "Responsável" por ele.
+![Modal "Novo Ciclo de Simulação" com os campos Nome/Edição do Ciclo, Semestre e Ano, e o aviso de que quem cria vira automaticamente o Coordenador do ciclo](assets/img_68_admin_novo_ciclo_modal.png)
+
+**Resultado:** o ciclo aparece na lista "Gestão de Ciclos de Simulação", com status **Em andamento**, e quem criou o ciclo é automaticamente registrado como o "Responsável" por ele.
 
 ![Painel de Controle mostrando o ciclo NPJ Cível 2026/2 recém-criado, com status Em andamento](assets/img_07_ciclo_criado.png)
 
