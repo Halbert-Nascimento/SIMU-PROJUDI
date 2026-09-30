@@ -7,11 +7,7 @@
 
 ## Declaração de Uso
 
-Este manual descreve o **Simulador PROJUDI**, plataforma acadêmica do Núcleo de Prática Jurídica
-(NPJ), usada para que estudantes de Direito pratiquem o peticionamento e a movimentação processual
-eletrônica em ambiente controlado. **Todos os dados, processos, nomes de partes e documentos usados
-neste simulador são fictícios**, criados exclusivamente para fins didáticos. Nada aqui tem valor
-jurídico real nem produz qualquer efeito fora do ambiente acadêmico.
+Este manual descreve o **Simulador PROJUDI**, plataforma acadêmica do Núcleo de Prática Jurídica (NPJ), usada para que estudantes de Direito pratiquem o peticionamento e a movimentação processual eletrônica em ambiente controlado. **Todos os dados, processos, nomes de partes e documentos usados neste simulador são fictícios**, criados exclusivamente para fins didáticos. Nada aqui tem valor jurídico real nem produz qualquer efeito fora do ambiente acadêmico.
 
 ---
 
@@ -102,77 +98,43 @@ jurídico real nem produz qualquer efeito fora do ambiente acadêmico.
 <a name="introducao"></a>
 ## Introdução
 
-O **Simulador PROJUDI** (simu-projudi) é uma plataforma acadêmica desenvolvida para estudantes de
-graduação em Direito que integram o Núcleo de Prática Jurídica (NPJ) de suas instituições de
-ensino. O sistema reproduz, de forma didática e em ambiente controlado, a interface e os fluxos
-operacionais do PROJUDI, o sistema oficial de processo judicial eletrônico utilizado pelo
-Tribunal de Justiça de Goiás (TJGO).
+O **Simulador PROJUDI** (simu-projudi) é uma plataforma acadêmica desenvolvida para estudantes de graduação em Direito que integram o Núcleo de Prática Jurídica (NPJ) de suas instituições de ensino. O sistema reproduz, de forma didática e em ambiente controlado, a interface e os fluxos operacionais do PROJUDI, o sistema oficial de processo judicial eletrônico utilizado pelo Tribunal de Justiça de Goiás (TJGO).
 
-O objetivo central da plataforma é proporcionar ao estudante a vivência prática do processo
-judicial eletrônico (cadastro de processos, peticionamento, movimentações, prazos e avaliação)
-antes de sua inserção no mercado de trabalho ou em estágios supervisionados, dentro de um ambiente
-seguro, sem qualquer risco de impacto em processos reais. Todos os dados manipulados no simulador
-(processos, partes, documentos) são fictícios, como já descrito na Declaração de Uso acima.
+O objetivo central da plataforma é proporcionar ao estudante a vivência prática do processo judicial eletrônico (cadastro de processos, peticionamento, movimentações, prazos e avaliação) antes de sua inserção no mercado de trabalho ou em estágios supervisionados, dentro de um ambiente seguro, sem qualquer risco de impacto em processos reais. Todos os dados manipulados no simulador (processos, partes, documentos) são fictícios, como já descrito na Declaração de Uso acima.
 
-O simulador organiza o uso em torno de alguns conceitos centrais, que aparecem repetidamente ao
-longo deste manual:
+O simulador organiza o uso em torno de alguns conceitos centrais, que aparecem repetidamente ao longo deste manual:
 
-- **Ciclo de Simulação**: corresponde a um período letivo (ex. um semestre). Cada ciclo é
-  conduzido por um Professor (o "coordenador" do ciclo) e reúne os alunos participantes daquele
-  período.
-- **Grupo de Trabalho**: dentro de um ciclo, os alunos são organizados em grupos, e cada grupo
-  assume um papel processual num ou mais processos (por exemplo, representando o polo ativo
-  como **APA**, o polo passivo como **APP**, atuando como Ministério Público/**MP**, Juízo/**JZ**
-  ou Serventia/Cartório/**SC**). Ver o [Glossário](#glossario) para a lista completa desses papéis.
-- **Processo Judicial**: o processo fictício em si, ao qual um ou mais grupos de trabalho são
-  vinculados, e sobre o qual as movimentações processuais são praticadas.
-- **Movimentação Processual**: cada ato praticado dentro de um processo (uma petição, um despacho,
-  a juntada de um documento etc.), sujeita a diferentes regras de permissão conforme o papel de
-  quem a pratica, e passível de avaliação (nota) por um Professor.
+- **Ciclo de Simulação**: corresponde a um período letivo (ex. um semestre). Cada ciclo é conduzido por um Professor (o "coordenador" do ciclo) e reúne os alunos participantes daquele período.
+- **Grupo de Trabalho**: dentro de um ciclo, os alunos são organizados em grupos, e cada grupo assume um papel processual num ou mais processos (por exemplo, representando o polo ativo como **APA**, o polo passivo como **APP**, atuando como Ministério Público/**MP**, Juízo/**JZ** ou Serventia/Cartório/**SC**). Ver o [Glossário](#glossario) para a lista completa desses papéis.
+- **Processo Judicial**: o processo fictício em si, ao qual um ou mais grupos de trabalho são vinculados, e sobre o qual as movimentações processuais são praticadas.
+- **Movimentação Processual**: cada ato praticado dentro de um processo (uma petição, um despacho, a juntada de um documento etc.), sujeita a diferentes regras de permissão conforme o papel de quem a pratica, e passível de avaliação (nota) por um Professor.
 
-O manual está organizado por perfil de usuário (Admin, Coordenador, Professor, Aluno), cobrindo em
-cada capítulo as ações que aquele perfil pode realizar no sistema. Recomenda-se ler primeiro a
-seção ["Primeiros Passos"](#primeiros-passos), comum a todos os perfis, antes de avançar para o
-capítulo do seu perfil específico.
+O manual está organizado por perfil de usuário (Admin, Coordenador, Professor, Aluno), cobrindo em cada capítulo as ações que aquele perfil pode realizar no sistema. Recomenda-se ler primeiro a seção ["Primeiros Passos"](#primeiros-passos), comum a todos os perfis, antes de avançar para o capítulo do seu perfil específico.
 
 ---
 
 <a name="guia-geral"></a>
 ## Guia Geral do Simulador
 
-*Esta seção reúne, num só lugar, o que é comum a todos os perfis e papéis do simulador: navegação
-geral, como ciclos/grupos/papéis se encaixam, o que são "prazos" no sistema e os avisos
-operacionais que aparecem na tela de login. Corresponde ao card "Guia geral do simulador" da
-página de login. Quem está começando agora pode ler só esta seção e a de
-[Primeiros Passos](#primeiros-passos) antes de ir direto ao capítulo do seu perfil.*
+*Esta seção reúne, num só lugar, o que é comum a todos os perfis e papéis do simulador: navegação geral, como ciclos/grupos/papéis se encaixam, o que são "prazos" no sistema e os avisos operacionais que aparecem na tela de login. Corresponde ao card "Guia geral do simulador" da página de login. Quem está começando agora pode ler só esta seção e a de [Primeiros Passos](#primeiros-passos) antes de ir direto ao capítulo do seu perfil.*
 
 <a name="guia-navegacao-comum"></a>
 ### 1. O que é comum a todos os perfis
 
-Independente do perfil (Admin, Coordenador, Professor) ou do papel do Aluno (SC, APA, APP, MP,
-JZ), o cabeçalho do sistema sempre tem:
+Independente do perfil (Admin, Coordenador, Professor) ou do papel do Aluno (SC, APA, APP, MP, JZ), o cabeçalho do sistema sempre tem:
 
 - **Nome do usuário e perfil/cargo**, no canto superior direito.
-- **Sino de notificações**, com contador de não lidas (ver [seção 6 do Capítulo do
-  Aluno](#aluno-notificacoes)).
-- **Ícone de cadeado ("Minha Conta")**, para trocar a própria senha a qualquer momento (ver
-  [seção 5 de Primeiros Passos](#alterar-senha)).
+- **Sino de notificações**, com contador de não lidas (ver [seção 6 do Capítulo do Aluno](#aluno-notificacoes)).
+- **Ícone de cadeado ("Minha Conta")**, para trocar a própria senha a qualquer momento (ver [seção 5 de Primeiros Passos](#alterar-senha)).
 - **Botões A+/A-**, para aumentar/diminuir o tamanho da fonte da interface.
-- **Contador de sessão**, no rodapé (ex. "15m 00s"), que mostra o tempo restante antes do logout
-  automático por inatividade (ver [seção 4](#guia-avisos) abaixo).
+- **Contador de sessão**, no rodapé (ex. "15m 00s"), que mostra o tempo restante antes do logout automático por inatividade (ver [seção 4](#guia-avisos) abaixo).
 
-Só o Aluno tem, além disso, o **seletor de ciclo ativo** (ícone de seta circular ao lado do nome),
-para trocar entre os ciclos em que está vinculado; ver o aviso na [seção 4 de Primeiros
-Passos](#redirecionamento). Admin, Coordenador e Professor não precisam desse seletor porque, na
-Gestão Acadêmica, já enxergam todos os ciclos de uma vez.
+Só o Aluno tem, além disso, o **seletor de ciclo ativo** (ícone de seta circular ao lado do nome), para trocar entre os ciclos em que está vinculado; ver o aviso na [seção 4 de Primeiros Passos](#redirecionamento). Admin, Coordenador e Professor não precisam desse seletor porque, na Gestão Acadêmica, já enxergam todos os ciclos de uma vez.
 
 <a name="guia-ciclos-grupos-papeis"></a>
 ### 2. Ciclos, Grupos e Papéis: como tudo se encaixa
 
-Como já apresentado na [Introdução](#introducao), o simulador organiza tudo em torno de três
-conceitos: **Ciclo de Simulação** (o período letivo), **Grupo de Trabalho** (a equipe de alunos
-dentro de um ciclo) e **Processo Judicial** (ao qual um ou mais grupos são vinculados). Cada grupo
-assume, no processo, um dos cinco **papéis processuais**:
+Como já apresentado na [Introdução](#introducao), o simulador organiza tudo em torno de três conceitos: **Ciclo de Simulação** (o período letivo), **Grupo de Trabalho** (a equipe de alunos dentro de um ciclo) e **Processo Judicial** (ao qual um ou mais grupos são vinculados). Cada grupo assume, no processo, um dos cinco **papéis processuais**:
 
 | Papel | Sigla | O que faz | Capítulo |
 |---|---|---|---|
@@ -182,45 +144,29 @@ assume, no processo, um dos cinco **papéis processuais**:
 | Ministério Público | MP | Fiscal da lei; intervém quando o Juiz decide que a intervenção é obrigatória | [Capítulo do Ministério Público](#capitulo-mp) |
 | Juiz | JZ | Conduz o processo: despacha, decide, saneia, julga e sentencia | [Capítulo do Juiz](#capitulo-jz) |
 
-Um processo pode ter vários grupos vinculados ao mesmo tempo (por exemplo, um grupo SC, um APA, um
-APP, um MP e um JZ, todos no mesmo processo), cada um vendo e agindo só dentro do que seu papel
-permite. Os perfis de gestão (Admin, Coordenador, Professor) não atuam diretamente nos processos:
-eles administram ciclos, grupos e usuários, e avaliam as movimentações feitas pelos Alunos: ver os
-capítulos [do Admin](#capitulo-admin), [do Coordenador](#capitulo-coordenador) e [do
-Professor](#capitulo-professor).
+Um processo pode ter vários grupos vinculados ao mesmo tempo (por exemplo, um grupo SC, um APA, um APP, um MP e um JZ, todos no mesmo processo), cada um vendo e agindo só dentro do que seu papel permite. Os perfis de gestão (Admin, Coordenador, Professor) não atuam diretamente nos processos: eles administram ciclos, grupos e usuários, e avaliam as movimentações feitas pelos Alunos: ver os capítulos [do Admin](#capitulo-admin), [do Coordenador](#capitulo-coordenador) e [do Professor](#capitulo-professor).
 
 <a name="guia-prazos"></a>
 ### 3. O que são "prazos" no sistema
 
-Várias movimentações processuais, ao serem registradas, mexem no controle de prazos do processo,
-mesmo que o simulador não mostre isso como um campo separado no formulário de Movimentar (visto na
-[seção 9 do Capítulo do Aluno](#aluno-movimentar-processo)). Cada tipo de movimentação pode ter um
-ou mais destes efeitos:
+Várias movimentações processuais, ao serem registradas, mexem no controle de prazos do processo, mesmo que o simulador não mostre isso como um campo separado no formulário de Movimentar (visto na [seção 9 do Capítulo do Aluno](#aluno-movimentar-processo)). Cada tipo de movimentação pode ter um ou mais destes efeitos: 
 
-- **Abre prazo**: a movimentação inicia a contagem de um prazo para a parte contrária responder
-  (ex.: a citação abre prazo para a Contestação).
-- **Encerra prazo**: a movimentação seguinte fecha esse prazo (ex.: a própria Contestação encerra
-  o prazo que a citação abriu).
-- **Reabre prazo**: usado em situações específicas, como após uma decisão em Embargos de
-  Declaração.
-- **Notifica**: gera uma notificação para o(s) grupo(s) responsável(is) pelo próximo ato (ver
-  [seção 6 do Capítulo do Aluno](#aluno-notificacoes)).
+- **Abre prazo**: a movimentação inicia a contagem de um prazo para a parte contrária responder (ex.: a citação abre prazo para a Contestação).
+- **Encerra prazo**: a movimentação seguinte fecha esse prazo (ex.: a própria Contestação encerra o prazo que a citação abriu).
+- **Reabre prazo**: usado em situações específicas, como após uma decisão em Embargos de Declaração.
+- **Notifica**: gera uma notificação para o(s) grupo(s) responsável(is) pelo próximo ato (ver [seção 6 do Capítulo do Aluno](#aluno-notificacoes)).
 - **Agenda audiência**: cria automaticamente uma audiência na agenda do processo.
 
-Este manual não documenta prazo a prazo cada uma das movimentações do sistema; cada capítulo de
-papel (SC, APA, APP, MP, JZ) já indica, quando relevante, se uma movimentação testada ao vivo abre
-ou fecha algum prazo.
+Este manual não documenta prazo a prazo cada uma das movimentações do sistema; cada capítulo de papel (SC, APA, APP, MP, JZ) já indica, quando relevante, se uma movimentação testada ao vivo abre ou fecha algum prazo.
 
 <a name="guia-avisos"></a>
 ### 4. Avisos operacionais (tela de login)
 
-A tela de login tem um painel "Informações Importantes", com itens que valem para o sistema
-inteiro:
+A tela de login tem um painel "Informações Importantes", com itens que valem para o sistema inteiro:
 
 - **Primeiro acesso**: todo cadastro novo entra como "Pendente" e só é liberado depois que um Admin, Coordenador ou Professor aprova e atribui o papel de simulação, já documentado na  [seção 2 de Primeiros Passos](#apos-cadastro).
 - **Limite de 7 MB por arquivo**: cada documento anexado a uma movimentação pode ter até 7 MB, nos formatos PDF, DOCX, JPG e JPEG. O sistema confere o conteúdo do arquivo, não só a extensão: renomear um arquivo para ".pdf" não faz ele passar pela validação, já mencionado na [seção 7 do Capítulo do Aluno](#aluno-cadastrar-processo).
-- **A sessão encerra após 15 minutos sem atividade**: um aviso aparece antes do fim do prazo, com a opção de continuar conectado. Sem resposta, a sessão é encerrada e o sistema volta para a tela
-  de login. Vale a pena não deixar um formulário longo aberto sem salvar.
+- **A sessão encerra após 15 minutos sem atividade**: um aviso aparece antes do fim do prazo, com a opção de continuar conectado. Sem resposta, a sessão é encerrada e o sistema volta para a tela de login. Vale a pena não deixar um formulário longo aberto sem salvar.
 - **Processos em segredo de justiça**: Um processo marcado como segredo de justiça só aparece para quem atua nele, não é uma  etiqueta visual: quem não é parte, nem o cartório ou o juízo do feito, não encontra o processo nem pelas listagens nem pela busca.
 
 ---
@@ -236,11 +182,9 @@ Esta seção reúne os passos comuns a **todos os perfis de usuário**: cadastro
 *Disponível para: qualquer pessoa, sem necessidade de login prévio. Pré-requisito: nenhum.*
 
 1. Acesse a tela inicial do simulador (`/acesso`) e clique em **Solicitar Cadastro**.
-2. Preencha **Nome Completo**, **Email** e crie uma **Senha** (mínimo 8 caracteres; não pode ser só
-   números, nem uma senha muito comum, nem parecida com seus dados pessoais).
+2. Preencha **Nome Completo**, **Email** e crie uma **Senha** (mínimo 8 caracteres; não pode ser só números, nem uma senha muito comum, nem parecida com seus dados pessoais).
 3. Repita a senha em **Confirmação de Senha**.
-4. Marque a caixa **"Li e aceito os Termos de Uso e a Política de Privacidade"** (clicar no nome
-   de cada documento abre-o em uma nova aba). É obrigatória para prosseguir.
+4. Marque a caixa **"Li e aceito os Termos de Uso e a Política de Privacidade"** (clicar no nome de cada documento abre-o em uma nova aba). É obrigatória para prosseguir.
 5. Clique em **Criar Usuário**.
 
 ![Tela de cadastro de usuário em branco, com o formulário de Nome Completo, Email, Senha e Confirmação de Senha à esquerda, e os painéis Como Funciona, Requisitos de Senha e Suporte à direita](assets/img_01_cadastro_vazio.png)
@@ -249,9 +193,7 @@ Exemplo de formulário preenchido com dados fictícios:
 
 ![Tela de cadastro preenchida com nome, e-mail e senha de um usuário fictício](assets/img_02_cadastro_preenchido.png)
 
-**Resultado:** você volta para a tela de login com a mensagem "Cadastro realizado com sucesso!
-Aguarde a aprovação de um responsável para acessar o sistema." Seu cadastro fica com status
-**Pendente**: é o **Coordenador/Professor** do seu Núcleo de Prática Jurídica quem confirma sua matrícula e
+**Resultado:** você volta para a tela de login com a mensagem "Cadastro realizado com sucesso! Aguarde a aprovação de um responsável para acessar o sistema." Seu cadastro fica com status **Pendente**: é o **Coordenador/Professor** do seu Núcleo de Prática Jurídica quem confirma sua matrícula e
 libera seu acesso, atribuindo seu cargo de simulação dentro de um ciclo.
 
 ![Tela de login exibindo a faixa verde de confirmação: Cadastro realizado com sucesso! Aguarde a aprovação de um responsável para acessar o sistema](assets/img_03_cadastro_sucesso.png)
@@ -268,13 +210,10 @@ libera seu acesso, atribuindo seu cargo de simulação dentro de um ciclo.
 <a name="apos-cadastro"></a>
 ### 2. O que Acontece Logo Após o Cadastro
 
-Enquanto o Coordenador do seu Núcleo de Prática Jurídica não confirmar seu cadastro, seu perfil
-fica como **Pendente**. Nessa fase:
+Enquanto o Coordenador do seu Núcleo de Prática Jurídica não confirmar seu cadastro, seu perfil fica como **Pendente**. Nessa fase:
 
-- Você **não consegue entrar no sistema**: qualquer tentativa de login mostra a mensagem padrão de
-  usuário/senha incorretos (ver aviso na seção anterior), mesmo com a senha certa.
-- Não existe uma tela específica de "aguardando aprovação" para consultar; o único jeito de saber
-  se seu cadastro já foi liberado é tentar fazer login novamente.
+- Você **não consegue entrar no sistema**: qualquer tentativa de login mostra a mensagem padrão de usuário/senha incorretos (ver aviso na seção anterior), mesmo com a senha certa.
+- Não existe uma tela específica de "aguardando aprovação" para consultar; o único jeito de saber se seu cadastro já foi liberado é tentar fazer login novamente.
 
 
 
@@ -283,14 +222,12 @@ fica como **Pendente**. Nessa fase:
 <a name="como-fazer-login"></a>
 ### 3. Como Fazer Login
 
-*Disponível para: qualquer usuário com cadastro **Ativo** (aprovado por um Coordenador, Admin ou
-Professor).*
+*Disponível para: qualquer usuário com cadastro **Ativo** (aprovado por um Coordenador, Admin ou Professor).*
 
 1. Na tela inicial do simulador, preencha **Usuário** (seu e-mail de cadastro) e **Senha**.
 2. Clique em **Entrar**.
 
-**Resultado:** o sistema confere usuário e senha e leva você para a tela inicial do seu perfil (ver
-próxima seção, "Para onde cada perfil é redirecionado").
+**Resultado:** o sistema confere usuário e senha e leva você para a tela inicial do seu perfil (ver próxima seção, "Para onde cada perfil é redirecionado").
 
 ![Tela inicial de acesso ao simulador, com os campos Usuário e Senha e o botão Entrar](assets/img_31_login_tela_limpa.png)
 
@@ -314,64 +251,44 @@ próxima seção, "Para onde cada perfil é redirecionado").
 <a name="redirecionamento"></a>
 ### 4. Para onde Cada Perfil é Redirecionado
 
-**Admin, Coordenador e Professor** caem no mesmo lugar: o **Painel de Controle**
-(`/acesso/painel-administrativo/`), com a Gestão de Ciclos de Simulação, o Resumo dos Ciclos Ativos
-e os atalhos de "Ações Rápidas". A tela é **visualmente idêntica** para os três perfis; o que muda
-é o que cada um enxerga e pode fazer dentro dela (ver o capítulo de cada perfil para as
-diferenças).
+**Admin, Coordenador e Professor** caem no mesmo lugar: o **Painel de Controle** (`/acesso/painel-administrativo/`), com a Gestão de Ciclos de Simulação, o Resumo dos Ciclos Ativos e os atalhos de "Ações Rápidas". A tela é **visualmente idêntica** para os três perfis; o que muda é o que cada um enxerga e pode fazer dentro dela (ver o capítulo de cada perfil para as diferenças).
 
 ![Painel de Controle logo após o login de um Professor (mesma tela usada por Admin e Coordenador)](assets/img_33_professor_redirecionado_painel.png)
 
 **Aluno**: o destino depende de já estar vinculado a um grupo de trabalho ou não.
 
-- **Ainda sem vínculo a nenhum grupo/ciclo de simulação**: é direcionado a uma tela de
-  **Boas-vindas** (`/ciclos/boas-vindas/`) com o aviso "Aguardando Vínculo", explicando que é o
-  professor ou o coordenador do ciclo quem inclui o aluno em um grupo de trabalho e define seu
-  cargo na simulação. Enquanto isso não acontece, não há processo nenhum para acompanhar.
+- **Ainda sem vínculo a nenhum grupo/ciclo de simulação**: é direcionado a uma tela de **Boas-vindas** (`/ciclos/boas-vindas/`) com o aviso "Aguardando Vínculo", explicando que é o professor ou o coordenador do ciclo quem inclui o aluno em um grupo de trabalho e define seu cargo na simulação. Enquanto isso não acontece, não há processo nenhum para acompanhar.
 
   ![Tela de Boas-vindas de um Aluno recém-aprovado, mostrando o aviso Aguardando Vínculo](assets/img_06_aluno_login_sem_vinculo.png)
 
-- **Já vinculado a um grupo**: é direcionado direto para a **Área do Aluno**
-  (`/processos/area-servidor/`), já mostrando o grupo, o cargo de simulação e os processos
-  vinculados.
+- **Já vinculado a um grupo**: é direcionado direto para a **Área do Aluno** (`/processos/area-servidor/`), já mostrando o grupo, o cargo de simulação e os processos vinculados.
 
   ![Área do Aluno logo após o login, já com o grupo e o processo vinculado listados](assets/img_32_aluno_redirecionado_area_aluno.png)
 
-> ℹ️ **Aluno vinculado a mais de um ciclo ao mesmo tempo**: se o Aluno pertence a um grupo de
-> trabalho em mais de um ciclo "Em andamento", o login não vai direto para a Área do Aluno: antes
-> disso aparece a tela **"Selecione o Ciclo"**, pedindo para escolher em qual dos ciclos deseja
-> atuar naquele momento.
+> ℹ️ **Aluno vinculado a mais de um ciclo ao mesmo tempo**: se o Aluno pertence a um grupo de trabalho em mais de um ciclo "Em andamento", o login não vai direto para a Área do Aluno: antes disso aparece a tela **"Selecione o Ciclo"**, pedindo para escolher em qual dos ciclos deseja atuar naquele momento.
 >
 > ![Tela "Selecione o Ciclo", listando os dois ciclos em andamento aos quais o Aluno está vinculado](assets/img_34_selecionar_ciclo.png)
 >
-> Depois de escolhido, o ciclo ativo fica marcado no cabeçalho (ícone de seta circular, ao lado do
-> nome do usuário). Clicando nele, o Aluno pode **trocar de ciclo ativo** a qualquer momento, sem
-> precisar sair e logar de novo; o sistema pede para escolher de novo apenas no próximo login.
+> Depois de escolhido, o ciclo ativo fica marcado no cabeçalho (ícone de seta circular, ao lado do nome do usuário). Clicando nele, o Aluno pode **trocar de ciclo ativo** a qualquer momento, sem precisar sair e logar de novo; o sistema pede para escolher de novo apenas no próximo login.
 >
 > ![Cabeçalho com o seletor de ciclo aberto, mostrando os dois ciclos disponíveis para o Aluno trocar](assets/img_35_trocar_ciclo_dropdown.png)
 >
-> Esse seletor de ciclo no cabeçalho aparece **só para o Aluno**: Admin, Coordenador e Professor
-> não precisam dele porque o Painel de Controle deles já mostra todos os seus ciclos de uma vez.
+> Esse seletor de ciclo no cabeçalho aparece **só para o Aluno**: Admin, Coordenador e Professor não precisam dele porque o Painel de Controle deles já mostra todos os seus ciclos de uma vez.
 
 <a name="alterar-senha"></a>
 ### 5. Como Alterar sua Senha (Minha Conta)
 
-*Disponível para: qualquer perfil logado (Admin, Coordenador, Professor ou Aluno). É a única forma
-de troca de senha feita pelo próprio usuário; veja também [Esqueci minha senha](#como-fazer-login),
-para quando o usuário não consegue nem fazer login.*
+*Disponível para: qualquer perfil logado (Admin, Coordenador, Professor ou Aluno). É a única forma de troca de senha feita pelo próprio usuário; veja também [Esqueci minha senha](#como-fazer-login), para quando o usuário não consegue nem fazer login.*
 
-1. Em qualquer tela do sistema, já logado, clique no ícone de cadeado (🔒) no canto superior
-   direito do cabeçalho, ao lado do nome do usuário.
-2. Na tela **"Minha Conta"**, preencha **Senha Antiga**, **Nova Senha** e **Confirmação da Nova
-   Senha**.
+1. Em qualquer tela do sistema, já logado, clique no ícone de cadeado (🔒) no canto superior direito do cabeçalho, ao lado do nome do usuário.
+2. Na tela **"Minha Conta"**, preencha **Senha Antiga**, **Nova Senha** e **Confirmação da Nova Senha**.
 3. Clique em **Salvar**.
 
 ![Tela "Minha Conta" com o formulário "Alterar Minha Senha" em branco](assets/img_47_minha_conta_vazio.png)
 
 ![Formulário "Alterar Minha Senha" preenchido, com a senha antiga e a nova senha (e confirmação)](assets/img_48_minha_conta_preenchido.png)
 
-**Resultado:** mensagem de sucesso "Senha alterada com sucesso.", e a sessão **continua ativa**
-normalmente (o sistema não derruba o login após a troca).
+**Resultado:** mensagem de sucesso "Senha alterada com sucesso.", e a sessão **continua ativa** normalmente (o sistema não derruba o login após a troca).
 
 ![Tela "Minha Conta" mostrando a mensagem de sucesso após a troca de senha](assets/img_49_minha_conta_sucesso.png)
 
@@ -387,46 +304,33 @@ normalmente (o sistema não derruba o login após a troca).
 <a name="capitulo-admin"></a>
 ## Capítulo do Admin
 
-*Disponível para: perfil global **Admin**. O Admin é o único perfil com acesso também ao painel
-técnico do Django, usado apenas para dados de configuração do sistema; isso está fora
-do escopo deste manual, que cobre a operação normal pela interface do simulador.*
+*Disponível para: perfil global **Admin**. O Admin é o único perfil com acesso também ao painel técnico do Django, usado apenas para dados de configuração do sistema; isso está fora do escopo deste manual, que cobre a operação normal pela interface do simulador.*
 
 <a name="admin-painel"></a>
 ### 1. Painel de Controle
 
-Ao entrar, o Admin é direcionado direto ao **Painel de Controle** (mesma tela do Coordenador e do
-Professor; ver capítulos seguintes), com:
+Ao entrar, o Admin é direcionado direto ao **Painel de Controle** (mesma tela do Coordenador e do Professor; ver capítulos seguintes), com:
 
 - **Gestão de Ciclos de Simulação**: lista os ciclos já criados e o botão para criar um novo.
 - **Processos dos Ciclos Ativos**: lista os processos judiciais fictícios em andamento.
-- **Resumo dos Ciclos Ativos**: contadores de Processos Ativos, Avaliações Pendentes, Grupos de
-  Trabalho e Alunos Vinculados, calculados a partir dos dados reais dos ciclos em andamento
-  (o de Avaliações Pendentes some/aumenta conforme movimentações são avaliadas).
+- **Resumo dos Ciclos Ativos**: contadores de Processos Ativos, Avaliações Pendentes, Grupos de Trabalho e Alunos Vinculados, calculados a partir dos dados reais dos ciclos em andamento (o de Avaliações Pendentes some/aumenta conforme movimentações são avaliadas).
 - **Ações Rápidas**: **Relatório de Notas**, **Gerir Usuários** e **Avaliações Pendentes**.
-- Um aviso amarelo no topo, "Aprovações de Cadastro Pendentes", aparece sempre que houver algum
-  cadastro aguardando liberação.
+  *Um aviso amarelo no topo, "Aprovações de Cadastro Pendentes", aparece sempre que houver algum cadastro aguardando liberação.*
 
 ![Painel de Controle com o Resumo dos Ciclos Ativos calculado (Processos Ativos, Avaliações Pendentes, Grupos de Trabalho, Alunos Vinculados) e as 3 Ações Rápidas](assets/img_42_painel_controle_resumo_real.png)
 
-**Relatório de Notas** (`/avaliacoes/relatorio-notas/`) é uma tela própria: mostra, com filtro por
-ciclo, o total de alunos e de movimentações avaliadas, a média geral (em estrelas) e uma tabela
-"Notas por Aluno" com o total de movimentações, quantas foram avaliadas e a média de cada aluno por
-ciclo.
+**Relatório de Notas** (`/avaliacoes/relatorio-notas/`) é uma tela própria: mostra, com filtro por ciclo, o total de alunos e de movimentações avaliadas, a média geral (em estrelas) e uma tabela "Notas por Aluno" com o total de movimentações, quantas foram avaliadas e a média de cada aluno por ciclo.
 
 ![Tela "Relatório de Notas", com os cartões de resumo e a tabela de notas por aluno](assets/img_43_relatorio_notas.png)
 
-**Avaliações Pendentes** (`/avaliacoes/pendentes/`) lista, com filtro por ciclo, todas as
-movimentações registradas que ainda não receberam avaliação de nenhum Professor, da mais antiga
-para a mais recente, com um botão **"Avaliar"** em cada linha que leva direto à tela de avaliação
-(ver [Capítulo do Professor, seção 3](#professor-avaliar-movimentacao)).
+**Avaliações Pendentes** (`/avaliacoes/pendentes/`) lista, com filtro por ciclo, todas as movimentações registradas que ainda não receberam avaliação de nenhum Professor, da mais antiga para a mais recente, com um botão **"Avaliar"** em cada linha que leva direto à tela de avaliação (ver [Capítulo do Professor, seção 3](#professor-avaliar-movimentacao)).
 
 ![Tela "Avaliações Pendentes", com os cartões de resumo e a lista de movimentações a avaliar](assets/img_44_avaliacoes_pendentes.png)
 
 <a name="admin-aprovar-cadastro"></a>
 ### 2. Como Aprovar um Cadastro Pendente
 
-1. No Painel de Controle, clique em **Analisar Cadastros** (ou em **Gerir Usuários**, nas Ações
-   Rápidas).
+1. No Painel de Controle, clique em **Analisar Cadastros** (ou em **Gerir Usuários**, nas Ações Rápidas).
 2. Na aba **Pendentes**, localize o usuário e clique em **Aprovar / Editar**.
 3. Escolha o **Tipo de Perfil** (Admin, Coordenador, Professor ou Aluno).
 
@@ -436,31 +340,25 @@ para a mais recente, com um botão **"Avaliar"** em cada linha que leva direto �
 4. Marque a caixa **Ativo (liberar acesso ao sistema)**.
 5. Clique em **Salvar**.
 
-**Resultado:** o usuário passa a constar como Ativo na aba "Todos os Usuários" e já consegue fazer
-login normalmente, caindo na tela correspondente ao perfil escolhido (ver
-["Para onde Cada Perfil é Redirecionado"](#redirecionamento)).
+**Resultado:** o usuário passa a constar como Ativo na aba "Todos os Usuários" e já consegue fazer login normalmente, caindo na tela correspondente ao perfil escolhido (ver ["Para onde Cada Perfil é Redirecionado"](#redirecionamento)).
 
 ![Modal Gestão de Usuários, aba Todos os Usuários, mostrando usuários com seus perfis e status Ativo/Pendente](assets/img_05_admin_aprovacao_coordenador.png)
 
 > ⚠️ Os dois campos (perfil e "Ativo") precisam ser preenchidos manualmente: não existe um botão
 > único de "aprovar com um clique" que já libera o acesso automaticamente.
 
-**Redefinir a senha de outro usuário:** o mesmo modal "Editar/Aprovar Usuário" tem uma subseção
-recolhível **"Alterar Senha"**, útil para destravar alguém que esqueceu a senha (o sistema não
-envia e-mail de redefinição pela própria interface).
+**Redefinir a senha de outro usuário:** o mesmo modal "Editar/Aprovar Usuário" tem uma subseção recolhível **"Alterar Senha"**, útil para destravar alguém que esqueceu a senha (o sistema não envia e-mail de redefinição pela própria interface).
 
 1. Abra o modal "Editar/Aprovar Usuário" do usuário desejado (mesmos passos acima).
 2. Clique em **"Alterar Senha"** para expandir a subseção.
-3. Preencha **Nova Senha** e **Confirmação**. Deixe os dois em branco se não quiser alterar a
-   senha.
+3. Preencha **Nova Senha** e **Confirmação**. Deixe os dois em branco se não quiser alterar a senha.
 4. Clique em **Salvar**.
 
 ![Subseção "Alterar Senha" expandida no modal Editar/Aprovar Usuário, com os campos em branco](assets/img_52_admin_alterar_senha_expandido.png)
 
 ![Subseção "Alterar Senha" preenchida com a nova senha e a confirmação](assets/img_53_admin_alterar_senha_preenchido.png)
 
-**Resultado:** mensagem "Usuário atualizado com sucesso."; a nova senha passa a valer no próximo
-login do usuário afetado.
+**Resultado:** mensagem "Usuário atualizado com sucesso."; a nova senha passa a valer no próximo login do usuário afetado.
 
 <a name="admin-criar-ciclo"></a>
 ### 3. Como Criar um Ciclo de Simulação
@@ -485,29 +383,22 @@ login do usuário afetado.
 <a name="admin-criar-grupo"></a>
 ### 4. Como Criar, Editar e Excluir um Grupo de Trabalho, e Adicionar/Remover Alunos
 
-*Pré-requisito: o ciclo já precisa existir. Um Grupo de Trabalho representa uma equipe de alunos
-atuando com um papel específico no processo simulado (ex.: um "escritório de advocacia" do Polo
-Ativo). Esta tela ("Gerenciar Grupos") é a mesma para Admin, Coordenador e Professor responsável
-pelo ciclo: as ações abaixo valem igualmente para os três perfis.*
+*Pré-requisito: o ciclo já precisa existir. Um Grupo de Trabalho representa uma equipe de alunos atuando com um papel específico no processo simulado (ex.: um "escritório de advocacia" do Polo Ativo). Esta tela ("Gerenciar Grupos") é a mesma para Admin, Coordenador e Professor responsável pelo ciclo: as ações abaixo valem igualmente para os três perfis.*
 
 **Criar um grupo:**
 
 1. No Painel de Controle, na lista de ciclos, clique em **Gerenciar Grupos** no ciclo desejado.
 2. Clique em **+ Novo Grupo**.
-3. Preencha o **Nome do Grupo** (ex.: "Albuquerque & Associados") e escolha o **Papel Processual**
-   (Serventia/Cartório, Advogados Polo Ativo, Advogados Polo Passivo, Ministério Público ou Juiz).
+3. Preencha o **Nome do Grupo** (ex.: "Albuquerque & Associados") e escolha o **Papel Processual** (Serventia/Cartório, Advogados Polo Ativo, Advogados Polo Passivo, Ministério Público ou Juiz).
 4. Clique em **Salvar**.
 
 ![Modal "Novo Grupo" com os campos Nome do Grupo e Papel na Simulação](assets/img_69_grupo_novo_modal.png)
 
 **Adicionar um aluno ao grupo:**
 
-5. Com o grupo selecionado na lista à esquerda, use o campo **Adicionar ao Grupo** para buscar um
-   aluno pelo nome ou e-mail, e clique em **+ Add** ao lado do nome dele.
+5. Com o grupo selecionado na lista à esquerda, use o campo **Adicionar ao Grupo** para buscar um aluno pelo nome ou e-mail, e clique em **+ Add** ao lado do nome dele.
 
-**Resultado:** o aluno passa a fazer parte do grupo e do ciclo. No login seguinte, ele deixa de ver
-a tela "Aguardando Vínculo" e passa a ver sua Área do Aluno normalmente, com o grupo e os
-processos vinculados a ele.
+**Resultado:** o aluno passa a fazer parte do grupo e do ciclo. No login seguinte, ele deixa de ver a tela "Aguardando Vínculo" e passa a ver sua Área do Aluno normalmente, com o grupo e os processos vinculados a ele.
 
 ![Tela Gerenciar Grupos, com o grupo Albuquerque & Associados já com um aluno adicionado](assets/img_08_grupo_com_mariana.png)
 
@@ -517,16 +408,14 @@ processos vinculados a ele.
 **Editar um grupo já existente:**
 
 6. Na lista de grupos, clique no ícone de lápis ao lado do grupo desejado.
-7. No modal "Editar Grupo", altere o **Nome do Grupo** e/ou o **Papel na Simulação** livremente
-   (o sistema não impede a troca de papel mesmo que o grupo já tenha alunos vinculados).
+7. No modal "Editar Grupo", altere o **Nome do Grupo** e/ou o **Papel na Simulação** livremente (o sistema não impede a troca de papel mesmo que o grupo já tenha alunos vinculados).
 8. Clique em **Salvar**.
 
 ![Modal "Editar Grupo" aberto, com o nome e o papel processual pré-preenchidos para edição](assets/img_45_grupo_editar_modal.png)
 
 **Remover um aluno de um grupo:**
 
-9. Com o grupo selecionado, clique no ícone de lixeira ao lado do nome do aluno em "Membros da
-   Equipe".
+9. Com o grupo selecionado, clique no ícone de lixeira ao lado do nome do aluno em "Membros da Equipe".
 
 **Resultado:** o aluno é removido do grupo imediatamente. Se esse era o único grupo do aluno naquele ciclo, ele também é desvinculado do ciclo (volta a ver "Aguardando Vínculo" no próximo login); se o aluno participa de outro grupo do mesmo ciclo, ele continua vinculado ao ciclo por esse outro grupo.
 
@@ -543,18 +432,11 @@ processos vinculados a ele.
 
 *Disponível para: perfil global **Coordenador**.*
 
-O Painel de Controle do Coordenador é **idêntico** ao do Admin (mesmas seções: Gestão de Ciclos,
-Resumo do Semestre, Ações Rápidas); todos os passos do [Capítulo do Admin](#capitulo-admin) valem
-também para o Coordenador: aprovar cadastros, criar ciclos, criar/editar grupos e adicionar/remover alunos dos grupos.
+O Painel de Controle do Coordenador é **idêntico** ao do Admin (mesmas seções: Gestão de Ciclos, Resumo do Semestre, Ações Rápidas); todos os passos do [Capítulo do Admin](#capitulo-admin) valem também para o Coordenador: aprovar cadastros, criar ciclos, criar/editar grupos e adicionar/remover alunos dos grupos.
 
-Ao aprovar ou editar um usuário, o Coordenador **não pode atribuir o perfil "Admin"** a
-ninguém: o seletor de Tipo de Perfil só oferece Coordenador, Professor e Aluno. Já o Admin pode
-atribuir qualquer um dos quatro perfis.
+Ao aprovar ou editar um usuário, o Coordenador **não pode atribuir o perfil "Admin"** a ninguém: o seletor de Tipo de Perfil só oferece Coordenador, Professor e Aluno. Já o Admin pode atribuir qualquer um dos quatro perfis.
 
-*(Não há diferença de permissão a confirmar em "Distribuir Novo Processo" ou "Agendar
-Audiência": como descrito no [Capítulo do Admin, seção 1](#admin-painel), essas duas ações não têm
-nenhuma tela implementada por trás; a limitação é a mesma para qualquer perfil que acesse o
-Painel de Controle, não uma questão de permissão do Coordenador.)*
+*(Não há diferença de permissão a confirmar em "Distribuir Novo Processo" ou "Agendar Audiência": como descrito no [Capítulo do Admin, seção 1](#admin-painel), essas duas ações não têm nenhuma tela implementada por trás; a limitação é a mesma para qualquer perfil que acesse o Painel de Controle, não uma questão de permissão do Coordenador.)*
 
 ---
 
@@ -565,28 +447,20 @@ Painel de Controle, não uma questão de permissão do Coordenador.)*
 
 *Disponível para: perfil global **Professor**.*
 
-O Professor usa o **mesmo Painel de Controle** dos outros perfis de gestão, mas com um recorte bem
-mais restrito: ele só enxerga e administra os ciclos dos quais é responsável.
+O Professor usa o **mesmo Painel de Controle** dos outros perfis de gestão, mas com um recorte bem mais restrito: ele só enxerga e administra os ciclos dos quais é responsável.
 
 <a name="professor-painel"></a>
 ### 1. O que o Professor vê no Painel de Controle
 
-- **Gestão de Ciclos de Simulação**: mostra **apenas os ciclos em que o Professor é o
-  "Responsável"**, não a lista completa de ciclos do sistema, como no Admin/Coordenador. Um
-  Professor recém-aprovado, sem nenhum ciclo atribuído a ele, vê "Nenhum ciclo de simulação
-  cadastrado", mesmo que existam outros ciclos ativos no sistema.
+- **Gestão de Ciclos de Simulação**: mostra **apenas os ciclos em que o Professor é o   "Responsável"**, não a lista completa de ciclos do sistema, como no Admin/Coordenador. Um Professor recém-aprovado, sem nenhum ciclo atribuído a ele, vê "Nenhum ciclo de simulação cadastrado", mesmo que existam outros ciclos ativos no sistema.
 
   ![Painel de Controle do Professor, sem nenhum ciclo atribuído a ele ainda](assets/img_10_professor_painel_sem_ciclo.png)
 
-- Assim que um Coordenador (ou Admin) atribui o Professor como "Responsável" de um ciclo
-  (pela tela de **editar ciclo**), esse ciclo passa a aparecer normalmente para o Professor, com os
-  mesmos botões "Gerenciar Grupos" e "Editar" que o Coordenador tem.
+- Assim que um Coordenador (ou Admin) atribui o Professor como "Responsável" de um ciclo (pela tela de **editar ciclo**), esse ciclo passa a aparecer normalmente para o Professor, com os mesmos botões "Gerenciar Grupos" e "Editar" que o Coordenador tem.
 
   ![Painel de Controle do Professor já com um ciclo atribuído a ele](assets/img_12_professor_painel_com_ciclo.png)
 
-- **Gerir Usuários**: o Professor consegue ver a lista completa de usuários do sistema, mas só pode
-  **aprovar ou editar cadastros atribuindo o perfil Aluno**, ao contrário do Coordenador (que pode
-  atribuir Coordenador, Professor ou Aluno) e do Admin (que pode atribuir qualquer perfil).
+- **Gerir Usuários**: o Professor consegue ver a lista completa de usuários do sistema, mas só pode **aprovar ou editar cadastros atribuindo o perfil Aluno**, ao contrário do Coordenador (que pode atribuir Coordenador, Professor ou Aluno) e do Admin (que pode atribuir qualquer perfil).
 
   ![Tela de editar usuário aberta por um Professor, mostrando que só a opção Aluno está disponível no seletor de perfil](assets/img_11_professor_editar_usuario_so_aluno.png)
 
