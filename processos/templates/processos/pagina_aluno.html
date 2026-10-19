@@ -210,7 +210,7 @@
                     <td class="text-dado">{{ processo.partes_resumo }}</td>
                     <td class="text-apoio text-rotulo">{{ processo.data_autuacao|date:"d/m/Y" }} — {{ processo.status_atual.nome_status }}</td>
                     <td>
-                        {% pill_status_processo processo.status_atual %}
+                        {% status_tabela_processo processo.status_atual %}
                     </td>
                     {% if is_serventia %}
                     <td class="text-center">
