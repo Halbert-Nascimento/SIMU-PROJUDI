@@ -20,7 +20,7 @@ INDICADOR_EFEITO_COLATERAL = {
 
 @register.simple_tag
 def badges_efeito_colateral(categorias):
-    """Indicadores genéricos do Ponto 6 — um badge `.pill warn` por categoria cadastrada no tipo."""
+    """Indicadores genéricos do Ponto 6 — ícone + texto por categoria cadastrada no tipo."""
     badges = [
         {"icone": INDICADOR_EFEITO_COLATERAL[c][0], "descricao": INDICADOR_EFEITO_COLATERAL[c][1]}
         for c in categorias

@@ -39,15 +39,6 @@ def _cores(status) -> dict:
 
 
 @register.simple_tag
-def badge_status_processo(status):
-    """Etiqueta preenchida do status do processo — usada no painel."""
-    return mark_safe(render_to_string(
-        "processos/components/_badge_status.html",
-        {"status": status, "cores": _cores(status)},
-    ))
-
-
-@register.simple_tag
 def pill_status_processo(status):
     """Versão compacta em `.pill`, usada nas telas processuais."""
     return mark_safe(render_to_string(
