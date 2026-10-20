@@ -215,8 +215,7 @@
     <script>
     document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('input[type="password"]').forEach(function (input) {
-            // Envolve só o input (não o <label> que a tag "campo" coloca no mesmo
-            // contêiner) — senão o botão centraliza na altura do bloco inteiro.
+            // Envolve só o input, senão o botão centraliza na altura do <label> + input.
             var parent = document.createElement('span');
             parent.style.cssText = 'position:relative;display:block;';
             input.parentElement.insertBefore(parent, input);

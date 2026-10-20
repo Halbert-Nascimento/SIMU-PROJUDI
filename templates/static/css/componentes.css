@@ -45,7 +45,6 @@
 .pill.pend  { background: #fff5e4; color: #a96400; border-color: #f1d59c; }
 .pill.erro  { background: #fdeeee; color: #b33a3a; border-color: #f3cfcf; }
 .pill.gray  { background: #f1f2f4; color: #5b6270; border-color: #d8dbe1; }
-.pill.navy  { background: #eef1f6; color: #0a083d; border-color: #ccd0dc; }
 
 /* ── Modal ──────────────────────────────────────────────────────────────────
    Guia seção 07: 560px, sem raio, overlay navy 55%, entrada de 160ms.

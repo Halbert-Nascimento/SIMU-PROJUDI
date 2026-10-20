@@ -346,7 +346,7 @@ Antes de escrever HTML novo, verifique se já existe componente para a peça.
 | Classes de botão/campo | `{% classe_botao 'primario' %}`, `{% classe_campo %}` | `base/ui.py` |
 | Navegação secundária | `{% nav_secundaria %}` | `base/templatetags/ui.py` |
 | Status do ciclo | `{% badge_status_ciclo %}`, `{% ponto_status_ciclo %}`, `{% status_tabela_ciclo %}` (bolinha + texto, coluna de status em tabela) | `ciclos/templatetags/ciclos_ui.py` |
-| Status do processo | `{% badge_status_processo %}`, `{% pill_status_processo %}`, `{% status_tabela_processo %}` (bolinha + texto, coluna de status em tabela) | `processos/templatetags/processos_ui.py` |
+| Status do processo | `{% pill_status_processo %}`, `{% status_tabela_processo %}` (bolinha + texto, coluna de status em tabela) | `processos/templatetags/processos_ui.py` |
 
 ### Qual mecanismo usar
 

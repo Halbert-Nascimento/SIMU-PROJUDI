@@ -13,7 +13,7 @@ register = template.Library()
 CORES_STATUS = {
     "autuado": {
         "fundo": "bg-neutro-bg", "texto": "text-navy",
-        "borda": "border-neutro-bd", "ponto": "bg-navy", "pill": "navy",
+        "borda": "border-neutro-bd", "ponto": "bg-navy", "pill": "gray",
     },
     "citado": {
         "fundo": "bg-ok-bg", "texto": "text-ok-txt",
