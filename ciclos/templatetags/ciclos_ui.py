@@ -48,3 +48,12 @@ def ponto_status_ciclo(status):
         "ciclos/components/_ponto_status.html",
         {"status": status, "cores": _cores(status)},
     ))
+
+
+@register.simple_tag
+def status_tabela_ciclo(status):
+    """Bolinha colorida + nome do status, para a coluna de status em tabelas."""
+    return mark_safe(render_to_string(
+        "ciclos/components/_status_tabela.html",
+        {"status": status, "cores": _cores(status)},
+    ))
