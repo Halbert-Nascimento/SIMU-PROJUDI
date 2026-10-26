@@ -245,4 +245,4 @@ sem direito de distribuir nem de modificar. Resumo em português em
 
 ---
 
-**Faculdade IESGO** | Simulador Universitário Projudi
+Simulador Universitário Projudi
