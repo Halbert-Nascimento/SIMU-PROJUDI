@@ -102,11 +102,13 @@ function parseLinhas(html) {
             const di = /data-i="([^"]*)"/.exec(t[2]);
             const alt = /data-altura="([^"]*)"/.exec(t[2]);
             const mov = /data-mov="([^"]*)"/.exec(t[2]);
+            const tipo = /data-tipo="([^"]*)"/.exec(t[2]);
             const id = /\bid="([^"]*)"/.exec(t[2]);
             el.className = cls ? cls[1] : '';
             if (di) el.dataset.i = di[1];
             if (alt) el._alturaLinha = alt[1];
             if (mov) el.dataset.mov = mov[1];
+            if (tipo) el.dataset.tipo = tipo[1];
             if (id) { el.id = id[1]; porId.set(id[1], el); }
             out.push(el);
         }
@@ -499,6 +501,57 @@ ok(tbodyMov.offsetHeight === 460,
 paginadorMov.mudarPagina('primeira');
 ok(arqVisiveis() === 5, 'voltar para a página 1 traz as linhas de arquivo de volta');
 
+// ── Filtro por tipo de evento (visualizar_processo) ────────────────────────
+// Mesma fiação do template: filtrarRows por data-tipo, msgVazioId e resetar()
+// ao trocar o rádio. 12 movimentações: 4 Redistribuição, 1 Sentença, 7 Juntada.
+novoEl('mov-vazio-filtro', 'hidden');
+let filtroEvento = '';
+const paginadorFiltro = criarPaginador({
+    rowSelector: '.mov-row',
+    porPagina: 10,
+    tabelaId: 'tabela-movimentacoes',
+    paginacaoId: 'paginacao-mov',
+    infoId: 'paginacao-mov-info',
+    paginasContainerId: 'paginacao-mov-paginas',
+    btnPrimeiraId: 'btn-mov-primeira',
+    btnAnteriorId: 'btn-mov-anterior',
+    btnProximaId: 'btn-mov-proxima',
+    btnUltimaId: 'btn-mov-ultima',
+    msgVazioId: 'mov-vazio-filtro',
+    filtrarRows: (todas) => !filtroEvento ? todas : todas.filter(r => r.dataset.tipo === filtroEvento),
+    aoAtualizar: acompanharLinhasDeArquivo,
+});
+const tipoDe = (i) => i % 3 === 0 ? 'Redistribuição' : (i === 1 ? 'Sentença' : 'Juntada de Documentos');
+tbodyMov.innerHTML = Array.from({ length: 12 }, (_, i) => {
+    const linha = `<div class="mov-row" id="mov-${i}" data-tipo="${tipoDe(i)}" data-altura="46"><div class="c"></div></div>`;
+    const arq = i % 2 === 0
+        ? `<div class="arquivos-row" data-mov="${i}" data-altura="0"><div class="c"></div></div>`
+        : '';
+    return linha + arq;
+}).join('');
+const filtrar = (valor) => { filtroEvento = valor; paginadorFiltro.resetar(); };
+
+paginadorFiltro.renderizar();
+paginadorFiltro.mudarPagina('proxima');
+ok(movVisiveis() === 2, 'sem filtro: página 2 tem 2 movimentações');
+
+filtrar('Redistribuição');
+ok(movVisiveis() === 4, 'filtro Redistribuição -> 4 linhas, e volta à página 1');
+ok(pagMov.classList.contains('hidden'), 'filtro com 1 página -> paginação escondida');
+ok(arqVisiveis() === 2, 'só as linhas de arquivo das Redistribuições (mov 0 e 6) seguem visíveis');
+
+filtrar('Sentença');
+ok(movVisiveis() === 1, 'filtro Sentença -> 1 linha');
+
+filtrar('Custas Recolhidas');
+ok(movVisiveis() === 0, 'filtro sem resultado -> nenhuma linha');
+ok(!document.getElementById('mov-vazio-filtro').classList.contains('hidden'),
+   'filtro sem resultado -> aviso "Nenhuma movimentação deste tipo" aparece');
+
+filtrar('');
+ok(movVisiveis() === 10, 'TODOS -> volta às 10 da página 1');
+ok(document.getElementById('mov-vazio-filtro').classList.contains('hidden'),
+   'TODOS -> aviso some');
 
 console.log(falhas ? `\n${falhas} falha(s)` : '\ntudo passou');
 process.exit(falhas ? 1 : 0);
