@@ -48,8 +48,7 @@
         align-items: center; font-size: calc(11px * var(--escala-fonte, 1));
     }
     .filtros-evento label { display: flex; align-items: center; gap: 5px; color: #23262e; }
-    .filtros-evento input[type="radio"], .lock-area input { accent-color: #1f4f9c; }
-    .lock-area { display: flex; align-items: center; gap: 5px; }
+    .filtros-evento input[type="radio"] { accent-color: #1f4f9c; }
 
     /* Menus suspensos — raio 0 e a mesma sombra que a navegação secundária usa,
        para o sistema ter um único desenho de menu flutuante. */
@@ -470,17 +469,11 @@
             <div class="tab">Navegação de Arquivo</div>
         </div>
 
-        <div class="filtros-evento">
-            <label><input type="radio" name="evf" checked disabled> TODOS</label>
-            <label><input type="radio" name="evf" disabled> Protocolo da Petição Inicial</label>
-            <label><input type="radio" name="evf" disabled> Juntada de Documentos</label>
-            <label><input type="radio" name="evf" disabled> Certidão de Trânsito em Julgado</label>
-            <label><input type="radio" name="evf" disabled> Autuação e Distribuição</label>
-            <label><input type="radio" name="evf" disabled> Réplica do Autor</label>
-            <div class="lock-area ml-auto">
-                <input type="checkbox" id="bloqChk" disabled>
-                <label for="bloqChk" style="font-weight:normal;">Bloquear/Desbloquear</label>
-            </div>
+        <div class="filtros-evento" id="filtros-evento">
+            <label><input type="radio" name="evf" value="" checked> TODOS</label>
+            {% for nome in filtros_evento %}
+            <label><input type="radio" name="evf" value="{{ nome }}"> {{ nome }}</label>
+            {% endfor %}
         </div>
 
         <table class="tbl-mov" id="tabela-movimentacoes">
@@ -496,7 +489,7 @@
             </thead>
             <tbody>
                 {% for mov in movimentacoes %}
-                <tr class="mov-row" id="mov-{{ mov.id }}">
+                <tr class="mov-row" id="mov-{{ mov.id }}" data-tipo="{{ mov.nome }}">
                     <td class="num-col">{{ forloop.revcounter }}</td>
                     <td>
                         <div class="sub">{{ mov.nome }}</div>
@@ -595,6 +588,7 @@
                 {% endfor %}
             </tbody>
         </table>
+        {% include 'base/components/_estado_vazio.html' with id="mov-vazio-filtro" mensagem="Nenhuma movimentação deste tipo." oculto=True padding="py-[22px]" only %}
 
         {% if movimentacoes %}
         {% include 'base/components/_paginacao.html' with container_id="paginacao-mov" info_id="paginacao-mov-info" paginas_id="paginacao-mov-paginas" btn_prefixo="btn-mov" handler="mudarPaginaMovimentacoes" only %}
@@ -871,6 +865,12 @@ function acompanharLinhasDeArquivo() {
     });
 }
 
+// Lido do rádio a cada render: o navegador pode restaurá-lo marcado ao recarregar.
+function filtroEventoAtual() {
+    const marcado = document.querySelector('#filtros-evento input[name="evf"]:checked');
+    return marcado ? marcado.value : '';
+}
+
 const paginadorMovimentacoes = document.querySelector('.mov-row') ? criarPaginador({
     rowSelector: '.mov-row',
     porPagina: 10,
@@ -882,8 +882,19 @@ const paginadorMovimentacoes = document.querySelector('.mov-row') ? criarPaginad
     btnAnteriorId: 'btn-mov-anterior',
     btnProximaId: 'btn-mov-proxima',
     btnUltimaId: 'btn-mov-ultima',
+    msgVazioId: 'mov-vazio-filtro',
+    filtrarRows: (todas) => {
+        const tipo = filtroEventoAtual();
+        return !tipo ? todas : todas.filter(r => r.dataset.tipo === tipo);
+    },
     aoAtualizar: acompanharLinhasDeArquivo,
 }) : null;
+
+document.querySelectorAll('#filtros-evento input[name="evf"]').forEach(function (radio) {
+    radio.addEventListener('change', function () {
+        if (paginadorMovimentacoes) paginadorMovimentacoes.resetar();
+    });
+});
 
 function mudarPaginaMovimentacoes(acao) {
     if (paginadorMovimentacoes) paginadorMovimentacoes.mudarPagina(acao);
