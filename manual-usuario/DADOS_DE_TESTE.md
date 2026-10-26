@@ -1302,3 +1302,26 @@ sobre o comportamento de "Devolver para Revisão".
 Arquivo temporário desta rodada executado a partir de `/tmp`, sem resíduo na pasta `manual-usuario/`.
 
 Validação pós-edição: imagens (0 ausentes, 78 referenciadas), travessões (2), "link" (1) — OK.
+
+## Rodada 26 — Filtros por tipo na aba "Eventos do Processo"
+
+Nova funcionalidade (branch `feat/filtro-eventos-processo`, já integrada à `develop`): a barra de
+filtros da aba "Eventos do Processo" deixou de ser decorativa e a caixa "Bloquear/Desbloquear" foi
+removida da tela. Documentada na seção "8. Detalhe do Processo" (Capítulo do Aluno); a nota
+desatualizada do Capítulo SC (seção 4), que dizia que filtros e caixa não tinham função, foi trocada
+por uma referência a essa seção.
+
+Conferido na tela, logada como Mariana Albuquerque Teixeira (APA, ciclo "NPJ Cível 2026/2",
+processo 0000001-74.2026.8.26.0001, 18 eventos): barra com TODOS, Redistribuição, Juntada de
+Documentos, Custas Recolhidas, Conclusão ao Juiz e Sentença; "Redistribuição" mostra só esses
+eventos com a numeração original; "Sentença" (nenhum evento desse tipo no processo) mostra
+"Nenhuma movimentação deste tipo."; "TODOS" restaura a lista completa.
+
+Prints novos: `img_82_eventos_filtros_barra.png` (barra, recorte), `img_83_eventos_filtro_redistribuicao.png`,
+`img_84_eventos_filtro_sem_resultado.png`. O recorte da barra foi usado de propósito para não exibir o
+evento 18 ("TESTE visual das tags de efeito colateral", criado em 26/10/2026 para testar outra
+funcionalidade) no manual.
+
+Cabeçalho do manual: "Última atualização" passou para 2026-10-26.
+
+Validação: imagens (0 ausentes, 81 referenciadas), âncoras (0 ausentes), travessões (2), "link" (1).

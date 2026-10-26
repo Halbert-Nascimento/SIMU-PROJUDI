@@ -1,7 +1,7 @@
 # Manual do Usuário: Simulador PROJUDI (simu-projudi)
 
 **Versão:** 0.1 (em elaboração, capítulo por capítulo)
-**Última atualização:** 2026-09-30
+**Última atualização:** 2026-10-26
 
 ---
 
@@ -741,6 +741,25 @@ de Arquivo**.
 
 ![Tela de detalhe do processo, com os dados completos e os polos ativo/passivo](assets/img_16_detalhe_processo_dados.png)
 
+**Filtrar os eventos por tipo**: acima da lista da aba "Eventos do Processo" há uma barra de
+opções que permite mostrar só um tipo de movimentação por vez: **TODOS** (opção padrão, que
+mostra todos os eventos), **Redistribuição**, **Juntada de Documentos**, **Custas Recolhidas**,
+**Conclusão ao Juiz** e **Sentença**. A barra tem sempre essas seis opções, independentemente dos
+eventos que o processo já possui.
+
+![Aba "Eventos do Processo" com a barra de filtros por tipo: TODOS, Redistribuição, Juntada de Documentos, Custas Recolhidas, Conclusão ao Juiz e Sentença](assets/img_82_eventos_filtros_barra.png)
+
+Ao marcar um tipo, a lista passa a mostrar apenas os eventos daquele tipo, mantendo a numeração
+original de cada evento, e volta para a primeira página; o contador e a paginação se ajustam ao
+resultado. Para voltar a ver todos os eventos, marque **TODOS**.
+
+![Lista de eventos filtrada pela opção "Redistribuição", mostrando só os eventos desse tipo](assets/img_83_eventos_filtro_redistribuicao.png)
+
+Se o processo ainda não tem nenhum evento do tipo escolhido, a lista mostra a mensagem
+"Nenhuma movimentação deste tipo.".
+
+![Aba "Eventos do Processo" com o filtro "Sentença" marcado e a mensagem "Nenhuma movimentação deste tipo."](assets/img_84_eventos_filtro_sem_resultado.png)
+
 O botão "Opções Processo" abre um menu com as ações disponíveis para o Aluno/Advogado do grupo:
 **Marcar Audiência**, **Partes**, **Visualizar** e **Movimentar**. A opção **"Modificar Dados"**
 aparece desabilitada para esse perfil.
@@ -979,9 +998,9 @@ um ícone de lápis (só quem registrou pode editar depois).
 
 ![Aba "Eventos do Processo" com o novo evento "Custas Recolhidas" no topo da lista, registrado pelo usuário SC](assets/img_57_sc_evento_custas_recolhidas.png)
 
-> ℹ️ Os campos de filtro por tipo de evento e a caixa "Bloquear/Desbloquear", acima da lista de
-> eventos, aparecem sempre desmarcados/travados: são elementos visuais que reproduzem a tela do
-> PROJUDI real, mas **não têm nenhuma função** implementada no simulador.
+> ℹ️ Acima da lista de eventos há uma barra de filtros por tipo de movimentação (por exemplo,
+> "Custas Recolhidas"), que funciona da mesma forma para todos os eventos do processo e está
+> descrita na [seção 8 do Capítulo do Aluno](#aluno-detalhe-processo).
 
 ---
 
