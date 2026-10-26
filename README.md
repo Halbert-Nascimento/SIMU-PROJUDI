@@ -2,6 +2,10 @@
 
 Projeto acadêmico de simulação do sistema Projudi desenvolvido por alunos da Faculdade IESGO.
 
+> **Licença:** [PolyForm Strict 1.0.0](LICENSE) — © 2026 Halbert Nascimento, Cauê Gomes Machado e Eduardo Netto Freyer.
+> O código pode ser lido, estudado e executado para fins não comerciais, mas **não pode ser copiado, modificado nem distribuído**.
+> Resumo em português: [LICENSE.pt-BR.md](LICENSE.pt-BR.md).
+
 ## 👥 Autores
 
 - [Cauê Gomes Machado](https://github.com/CaueMachado07)
