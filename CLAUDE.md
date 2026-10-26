@@ -339,13 +339,14 @@ Antes de escrever HTML novo, verifique se já existe componente para a peça.
 | Paginação | `{% include 'base/components/_paginacao.html' with container_id=... only %}` + `criarPaginador()` de `static/js/paginador.js` | `base` |
 | Toast | `{% include 'base/components/_toast.html' %}` + `showToast()` de `static/js/toast.js` | `base` |
 | Card de indicador (KPI) | `{% include 'base/components/_card_kpi.html' with rotulo="..." numero=... apoio="..." only %}` (`variante="alerta"` para o trio de erro) | `base` |
+| Página de erro HTTP (404/403/400/500/CSRF) | `{% include 'base/components/_erro_http.html' with icone="fa-solid fa-..." titulo="..." mensagem="..." url_botao=... rotulo_botao="..." only %}` | `base` |
 | Card | `{% card titulo="..." icone="fa-..." %}...{% endcard %}` | `base/templatetags/ui.py` |
 | Modal | `{% modal id="..." titulo="..." %}...{% endmodal %}` | `base/templatetags/ui.py` |
 | Campo de formulário | `{% campo label="..." erros=form.x.errors %}<input>{% endcampo %}` | `base/templatetags/ui.py` |
 | Classes de botão/campo | `{% classe_botao 'primario' %}`, `{% classe_campo %}` | `base/ui.py` |
 | Navegação secundária | `{% nav_secundaria %}` | `base/templatetags/ui.py` |
-| Status do ciclo | `{% badge_status_ciclo %}`, `{% ponto_status_ciclo %}` | `ciclos/templatetags/ciclos_ui.py` |
-| Status do processo | `{% badge_status_processo %}`, `{% pill_status_processo %}` | `processos/templatetags/processos_ui.py` |
+| Status do ciclo | `{% badge_status_ciclo %}`, `{% ponto_status_ciclo %}`, `{% status_tabela_ciclo %}` (bolinha + texto, coluna de status em tabela) | `ciclos/templatetags/ciclos_ui.py` |
+| Status do processo | `{% pill_status_processo %}`, `{% status_tabela_processo %}` (bolinha + texto, coluna de status em tabela) | `processos/templatetags/processos_ui.py` |
 
 ### Qual mecanismo usar
 

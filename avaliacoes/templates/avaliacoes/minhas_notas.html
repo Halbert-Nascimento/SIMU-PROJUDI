@@ -72,14 +72,23 @@
 
         <!-- Cards de resumo -->
         <div class="grid grid-cols-3 gap-[14px] mt-3">
-            {% include 'base/components/_card_kpi.html' with rotulo="Média Geral" numero=media_geral|floatformat:1|default:"—" apoio="de 5 estrelas, nas avaliações com nota" only %}
+            <!-- direto na classe: o número é o desenho das estrelas, e o include recebe texto pronto -->
+            <div class="card-kpi">
+                <span class="rotulo">Média Geral</span>
+                <span class="numero">{% estrelas media_geral %}</span>
+                <span class="apoio">de 5 estrelas, nas avaliações com nota</span>
+            </div>
             <!-- direto na classe: o apoio interpola um contador, e o include recebe texto pronto -->
             <div class="card-kpi">
                 <span class="rotulo">Avaliadas</span>
                 <span class="numero">{{ total_avaliadas }}</span>
                 <span class="apoio">de {{ total_movimentacoes }} movimentações</span>
             </div>
-            {% include 'base/components/_card_kpi.html' with rotulo="Melhor Avaliação" numero=melhor_avaliacao|default_if_none:"—" apoio="estrelas na avaliação mais alta" only %}
+            <div class="card-kpi">
+                <span class="rotulo">Melhor Avaliação</span>
+                <span class="numero">{% estrelas melhor_avaliacao %}</span>
+                <span class="apoio">estrelas na avaliação mais alta</span>
+            </div>
         </div>
 
         {% if media_geral is not None %}

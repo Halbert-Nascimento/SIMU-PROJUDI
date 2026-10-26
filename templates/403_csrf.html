@@ -1,0 +1,8 @@
+{% extends 'base/base.html' %}
+
+{% block title %}Sessão não confirmada — Simu Projudi{% endblock %}
+
+{% block content %}
+{% url 'base:home' as url_base_home %}
+{% include 'base/components/_erro_http.html' with icone="fa-solid fa-clock-rotate-left" titulo="Sessão não confirmada" mensagem="Não foi possível confirmar sua sessão nesta ação. Isso costuma acontecer quando a página fica aberta por muito tempo. Volte para o início e tente de novo." url_botao=url_base_home rotulo_botao="Voltar para o início" only %}
+{% endblock %}

@@ -1,5 +1,5 @@
 {% for b in badges %}
-<span class="pill warn gap-1" title="Esta movimentação {{ b.descricao }}.">
+<span class="inline-flex items-center gap-1 text-atencao-txt text-micro font-bold uppercase tracking-[.07em] whitespace-nowrap" title="Esta movimentação {{ b.descricao }}.">
     <i class="fa-solid {{ b.icone }} text-[10px]"></i>{{ b.descricao|capfirst }}
 </span>
 {% endfor %}

@@ -85,7 +85,7 @@ def ctx_avaliar(com_erros=False, com_historico=True):
         "mov_origem": movimentacao(com_documentos=False),
         "feedback_origem": feedback(None),
         "historico": hist,
-        "media_notas": 4.1 if com_historico else None,
+        "media_notas": 3.5 if com_historico else None,
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
                         {"label": f"Processo {NUMERO}", "url": "/p/"},
                         {"label": "Avaliar Movimentação", "url": None}],
@@ -113,8 +113,8 @@ def ctx_minhas_notas(vazio=False):
                            avaliacao_json(3, "warn")],
         "total_movimentacoes": 0 if vazio else 7,
         "total_avaliadas": 0 if vazio else 3,
-        "media_geral": None if vazio else 3.9,
-        "media_percentual": 0 if vazio else 78,
+        "media_geral": None if vazio else 3.5,
+        "media_percentual": 0 if vazio else 70,
         "melhor_avaliacao": None if vazio else 5,
         "ultima_avaliacao": None if vazio else feedback(),
         "breadcrumbs": [{"label": "Área do Servidor", "url": "/"},
@@ -139,16 +139,16 @@ def ctx_relatorio_notas(variante="com_notas"):
     vazio = variante == "vazio"
     linhas = [] if vazio else [
         {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
-         "total_movimentacoes": 7, "total_avaliadas": 3, "media": 3.9, "faixa": "warn"},
+         "total_movimentacoes": 7, "total_avaliadas": 3, "estrelas": 3.5, "faixa": "warn"},
         {"aluno": ALUNO, "ciclo": Obj(nome_edicao="2026.2 — Prática Jurídica"),
-         "total_movimentacoes": 0, "total_avaliadas": 0, "media": None, "faixa": "gray"},
+         "total_movimentacoes": 0, "total_avaliadas": 0, "estrelas": None, "faixa": "gray"},
     ]
     return {
         "user": PROFESSOR, "request": Obj(user=PROFESSOR, path="/avaliacoes/relatorio-notas/"),
         "form_filtro": _filtro_ciclo(com_erro=variante == "filtro_invalido"),
         "linhas": linhas, "total_alunos": 0 if vazio else 1,
         "total_avaliadas": 0 if vazio else 3, "total_movimentacoes": 0 if vazio else 7,
-        "media_geral": None if vazio else 3.9,
+        "media_geral_estrelas": None if vazio else 3.5,
         "breadcrumbs": [{"label": "Painel Administrativo", "url": "/"},
                         {"label": "Relatório de Notas", "url": None}],
     }
@@ -265,6 +265,11 @@ def ctx_login(com_erros=False, expirada=False):
     }
 
 
+def ctx_erro_http(logado=True):
+    usr = ALUNO if logado else Obj(is_authenticated=False)
+    return {"user": usr, "request": Obj(user=usr)}
+
+
 CASOS = [
     ("acesso/termos_de_uso.html", "visitante anônimo", ctx_documento_legal()),
     ("acesso/termos_de_uso.html", "usuário logado", ctx_documento_legal(logado=True)),
@@ -291,6 +296,15 @@ CASOS = [
     ("avaliacoes/avaliacoes_pendentes.html", "sem pendência", ctx_avaliacoes_pendentes(vazio=True)),
     ("ciclos/boas_vindas.html", "primeiro acesso", ctx_boas_vindas()),
     ("ciclos/boas_vindas.html", "ciclo anterior encerrado", ctx_boas_vindas(ja_participou=True)),
+    ("404.html", "visitante anônimo", ctx_erro_http(logado=False)),
+    ("404.html", "usuário logado", ctx_erro_http()),
+    ("403.html", "usuário logado", ctx_erro_http()),
+    ("400.html", "usuário logado", ctx_erro_http()),
+    ("403_csrf.html", "usuário logado", ctx_erro_http()),
+    # Contexto vazio de propósito: é assim que o Django realmente chama este
+    # template — django.views.defaults.server_error renderiza sem contexto
+    # nem request, diferente de 400/403/404 (ver comentário em templates/500.html).
+    ("500.html", "contexto vazio (como o Django renderiza de fato)", {}),
 ]
 
 

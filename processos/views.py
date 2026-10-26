@@ -31,7 +31,7 @@ from .permissions import (
 )
 from .services import aplicar_grupos
 from .utils import validar_multiplos_arquivos
-from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
+from movimentacoes.catalogo import FILTROS_EVENTO_PROCESSO, NOME_AUTUACAO, NOME_REDISTRIBUICAO
 from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
 from movimentacoes.permissions import grupo_processo_do_usuario, pode_movimentar_processo
 from movimentacoes.services import registrar_movimentacao
@@ -614,6 +614,7 @@ def visualizar_processo(request, numero):
             "grupo_serventia": grupo_serventia,
             "grupos_vinculados": grupos_vinculados,
             "movimentacoes": movimentacoes,
+            "filtros_evento": FILTROS_EVENTO_PROCESSO,
             "pode_avaliar": pode_avaliar,
             "breadcrumbs": [
                 home_breadcrumb(request.user),

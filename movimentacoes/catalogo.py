@@ -19,3 +19,13 @@ NOMES_TRANSVERSAIS = {
     # seria lida como correção da primeira.
     NOME_REDISTRIBUICAO,
 }
+
+# Filtros da aba "Eventos do Processo": fixos e por nome exato, para a barra não mudar com o que
+# o processo tem no momento.
+FILTROS_EVENTO_PROCESSO = (
+    NOME_REDISTRIBUICAO,
+    "Juntada de Documentos",
+    "Custas Recolhidas",
+    "Conclusão ao Juiz",
+    "Sentença",
+)
