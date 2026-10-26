@@ -230,7 +230,10 @@ O acompanhamento da reformulação está em `../NOVO-DESIGN.md`.
 
 ## 📄 Licença
 
-Projeto acadêmico desenvolvido para fins educacionais.
+Projeto acadêmico (TCC) desenvolvido para fins educacionais, licenciado sob a
+[PolyForm Strict License 1.0.0](LICENSE): código visível e de uso não comercial,
+sem direito de distribuir nem de modificar. Resumo em português em
+[LICENSE.pt-BR.md](LICENSE.pt-BR.md).
 
 ## 🚧 Status do Projeto
 
