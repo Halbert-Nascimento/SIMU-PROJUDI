@@ -178,8 +178,8 @@
                     <div class="dropzone" id="dropZone" onclick="document.getElementById('fileInput').click()">
                         <div class="ico"><i class="fa-solid fa-cloud-arrow-up"></i></div>
                         <div class="font-bold text-acao text-[calc(13px*var(--escala-fonte,1))]">Arraste arquivos aqui ou clique para selecionar</div>
-                        <div class="text-[calc(11px*var(--escala-fonte,1))] text-rotulo mt-1">Tamanho máximo: 10MB por arquivo • PDF, DOC, DOCX, ODT, JPG, PNG</div>
-                        <input id="fileInput" name="documentos" type="file" multiple class="hidden" accept=".pdf,.doc,.docx,.odt,.jpg,.jpeg,.png"/>
+                        <div class="text-[calc(11px*var(--escala-fonte,1))] text-rotulo mt-1">Tamanho máximo: {{ upload_max_mb }}MB por arquivo • {{ upload_formatos_texto }}</div>
+                        <input id="fileInput" name="documentos" type="file" multiple class="hidden" accept="{{ upload_accept_attr }}"/>
                     </div>
                     <div id="pendingFiles" class="mt-4 space-y-2"></div>
                 </div>

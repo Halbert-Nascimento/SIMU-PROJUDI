@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from django.conf import settings
 
 # ---------------------------------------------------------------------------
@@ -11,6 +13,16 @@ MAX_FILE_SIZE: int = _cfg.get("MAX_FILE_SIZE_MB", 7) * 1024 * 1024
 ALLOWED_EXTENSIONS: list[str] = _cfg.get("ALLOWED_EXTENSIONS", [".pdf", ".docx", ".jpg", ".jpeg"])
 ALLOWED_MIME_TYPES: list[str] = _cfg.get("ALLOWED_MIME_TYPES", [])
 BLOCKED_MIME_PREFIXES: list[str] = _cfg.get("BLOCKED_MIME_PREFIXES", [])
+
+
+def contexto_upload() -> dict:
+    """Limites de upload para os templates, lidos da mesma configuração que valida o arquivo."""
+    return {
+        "upload_max_mb": _cfg.get("MAX_FILE_SIZE_MB", 7),
+        "upload_allowed_extensions_json": json.dumps(ALLOWED_EXTENSIONS),
+        "upload_accept_attr": ",".join(ALLOWED_EXTENSIONS),
+        "upload_formatos_texto": ", ".join(e.lstrip(".").upper() for e in ALLOWED_EXTENSIONS),
+    }
 
 
 # ---------------------------------------------------------------------------
