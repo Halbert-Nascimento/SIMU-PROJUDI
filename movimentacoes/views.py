@@ -12,7 +12,7 @@ from django.utils.text import slugify
 from base.breadcrumbs import home_breadcrumb
 from processos.models import ProcessoJudicial
 from processos.permissions import pode_visualizar_processo
-from processos.utils import validar_multiplos_arquivos
+from processos.utils import contexto_upload, validar_multiplos_arquivos
 
 from .models import DocumentoAnexado, MovimentacaoProcessual, TipoMovimentacao
 from .permissions import (
@@ -40,6 +40,7 @@ def _contexto_base(processo, user):
         "polos_passivo": [p for p in polos if p.tipo_polo == "Passivo"],
         "tipos_movimentacao": tipos,
         "tipos_com_janela_aberta": tipos_com_janela_aberta(processo, grupo_processo, tipos),
+        **contexto_upload(),
     }
 
 
