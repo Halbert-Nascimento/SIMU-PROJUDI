@@ -1,0 +1,101 @@
+<div class="manual-prosa">
+<h2 id="declaracao-de-uso">Declaração de Uso</h2>
+<p>Este manual descreve o <strong>Simulador PROJUDI</strong>, plataforma acadêmica do Núcleo de Prática Jurídica (NPJ), usada para que estudantes de Direito pratiquem o peticionamento e a movimentação processual eletrônica em ambiente controlado. <strong>Todos os dados, processos, nomes de partes e documentos usados neste simulador são fictícios</strong>, criados exclusivamente para fins didáticos. Nada aqui tem valor jurídico real nem produz qualquer efeito fora do ambiente acadêmico.</p>
+<h2 id="introducao">Introdução</h2>
+<p>O <strong>Simulador PROJUDI</strong> (simu-projudi) é uma plataforma acadêmica desenvolvida para estudantes de graduação em Direito que integram o Núcleo de Prática Jurídica (NPJ) de suas instituições de ensino. O sistema reproduz, de forma didática e em ambiente controlado, a interface e os fluxos operacionais do PROJUDI, o sistema oficial de processo judicial eletrônico utilizado pelo Tribunal de Justiça de Goiás (TJGO).</p>
+<p>O objetivo central da plataforma é proporcionar ao estudante a vivência prática do processo judicial eletrônico (cadastro de processos, peticionamento, movimentações, prazos e avaliação) antes de sua inserção no mercado de trabalho ou em estágios supervisionados, dentro de um ambiente seguro, sem qualquer risco de impacto em processos reais. Todos os dados manipulados no simulador (processos, partes, documentos) são fictícios, como já descrito na Declaração de Uso acima.</p>
+<p>O simulador organiza o uso em torno de alguns conceitos centrais, que aparecem repetidamente ao longo deste manual:</p>
+<ul>
+<li><strong>Ciclo de Simulação</strong>: corresponde a um período letivo (ex. um semestre). Cada ciclo é conduzido por um Professor (o &quot;coordenador&quot; do ciclo) e reúne os alunos participantes daquele período.</li>
+<li><strong>Grupo de Trabalho</strong>: dentro de um ciclo, os alunos são organizados em grupos, e cada grupo assume um papel processual num ou mais processos (por exemplo, representando o polo ativo como <strong>APA</strong>, o polo passivo como <strong>APP</strong>, atuando como Ministério Público/<strong>MP</strong>, Juízo/<strong>JZ</strong> ou Serventia/Cartório/<strong>SC</strong>). Ver o <a href="{% url 'manual:capitulo' 'glossario' %}#glossario">Glossário</a> para a lista completa desses papéis.</li>
+<li><strong>Processo Judicial</strong>: o processo fictício em si, ao qual um ou mais grupos de trabalho são vinculados, e sobre o qual as movimentações processuais são praticadas.</li>
+<li><strong>Movimentação Processual</strong>: cada ato praticado dentro de um processo (uma petição, um despacho, a juntada de um documento etc.), sujeita a diferentes regras de permissão conforme o papel de quem a pratica, e passível de avaliação (nota) por um Professor.</li>
+</ul>
+<p>O manual está organizado por perfil de usuário (Admin, Coordenador, Professor, Aluno), cobrindo em cada capítulo as ações que aquele perfil pode realizar no sistema. Recomenda-se ler primeiro a seção <a href="{% url 'manual:capitulo' 'primeiros-passos' %}#primeiros-passos">&quot;Primeiros Passos&quot;</a>, comum a todos os perfis, antes de avançar para o capítulo do seu perfil específico.</p>
+<h2 id="guia-geral">Guia Geral do Simulador</h2>
+<p><em>Esta seção reúne, num só lugar, o que é comum a todos os perfis e papéis do simulador: navegação geral, como ciclos/grupos/papéis se encaixam, o que são &quot;prazos&quot; no sistema e os avisos operacionais que aparecem na tela de login. Corresponde ao card &quot;Guia geral do simulador&quot; da página de login. Quem está começando agora pode ler só esta seção e a de <a href="{% url 'manual:capitulo' 'primeiros-passos' %}#primeiros-passos">Primeiros Passos</a> antes de ir direto ao capítulo do seu perfil.</em></p>
+<h3 id="guia-navegacao-comum">1. O que é comum a todos os perfis</h3>
+<p>Independente do perfil (Admin, Coordenador, Professor) ou do papel do Aluno (SC, APA, APP, MP, JZ), o cabeçalho do sistema sempre tem:</p>
+<ul>
+<li><strong>Nome do usuário e perfil/cargo</strong>, no canto superior direito.</li>
+<li><strong>Sino de notificações</strong>, com contador de não lidas (ver <a href="{% url 'manual:capitulo' 'aluno' %}#aluno-notificacoes">seção 6 do Capítulo do Aluno</a>).</li>
+<li><strong>Ícone de cadeado (&quot;Minha Conta&quot;)</strong>, para trocar a própria senha a qualquer momento (ver <a href="{% url 'manual:capitulo' 'primeiros-passos' %}#alterar-senha">seção 5 de Primeiros Passos</a>).</li>
+<li><strong>Botões A+/A-</strong>, para aumentar/diminuir o tamanho da fonte da interface.</li>
+<li><strong>Contador de sessão</strong>, no rodapé (ex. &quot;15m 00s&quot;), que mostra o tempo restante antes do logout automático por inatividade (ver <a href="#guia-avisos">seção 4</a> abaixo).</li>
+</ul>
+<p>Só o Aluno tem, além disso, o <strong>seletor de ciclo ativo</strong> (ícone de seta circular ao lado do nome), para trocar entre os ciclos em que está vinculado; ver o aviso na <a href="{% url 'manual:capitulo' 'primeiros-passos' %}#redirecionamento">seção 4 de Primeiros Passos</a>. Admin, Coordenador e Professor não precisam desse seletor porque, na Gestão Acadêmica, já enxergam todos os ciclos de uma vez.</p>
+<h3 id="guia-ciclos-grupos-papeis">2. Ciclos, Grupos e Papéis: como tudo se encaixa</h3>
+<p>Como já apresentado na <a href="#introducao">Introdução</a>, o simulador organiza tudo em torno de três conceitos: <strong>Ciclo de Simulação</strong> (o período letivo), <strong>Grupo de Trabalho</strong> (a equipe de alunos dentro de um ciclo) e <strong>Processo Judicial</strong> (ao qual um ou mais grupos são vinculados). Cada grupo assume, no processo, um dos cinco <strong>papéis processuais</strong>:</p>
+<div class="manual-tabela"><table><thead>
+<tr>
+<th>Papel</th>
+<th>Sigla</th>
+<th>O que faz</th>
+<th>Capítulo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Serventia/Cartório</td>
+<td>SC</td>
+<td>Vincula grupos ao processo, atua e movimenta como o cartório (autuação, citação, certidões) e é o único papel que pode editar os dados do processo e as partes</td>
+<td><a href="{% url 'manual:capitulo' 'serventia-cartorio' %}#capitulo-sc">Capítulo de Serventia/Cartório</a></td>
+</tr>
+<tr>
+<td>Advogados Polo Ativo</td>
+<td>APA</td>
+<td>Representa quem propôs a ação (o Requerente)</td>
+<td><a href="{% url 'manual:capitulo' 'advogados-polo-ativo' %}#capitulo-apa">Capítulo de Advogados Polo Ativo</a></td>
+</tr>
+<tr>
+<td>Advogados Polo Passivo</td>
+<td>APP</td>
+<td>Representa quem está sendo processado (o Requerido)</td>
+<td><a href="{% url 'manual:capitulo' 'advogados-polo-passivo' %}#capitulo-app">Capítulo de Advogados Polo Passivo</a></td>
+</tr>
+<tr>
+<td>Ministério Público</td>
+<td>MP</td>
+<td>Fiscal da lei; intervém quando o Juiz decide que a intervenção é obrigatória</td>
+<td><a href="{% url 'manual:capitulo' 'ministerio-publico' %}#capitulo-mp">Capítulo do Ministério Público</a></td>
+</tr>
+<tr>
+<td>Juiz</td>
+<td>JZ</td>
+<td>Conduz o processo: despacha, decide, saneia, julga e sentencia</td>
+<td><a href="{% url 'manual:capitulo' 'juiz' %}#capitulo-jz">Capítulo do Juiz</a></td>
+</tr>
+</tbody>
+</table></div><p>Um processo pode ter vários grupos vinculados ao mesmo tempo (por exemplo, um grupo SC, um APA, um APP, um MP e um JZ, todos no mesmo processo), cada um vendo e agindo só dentro do que seu papel permite.</p>
+<p>Regras que valem para todos os papéis e que ajudam a entender o que cada grupo vê:</p>
+<ul>
+<li><strong>Quem vincula os grupos ao processo é a Serventia/Cartório (SC).</strong> Só quem está vinculado ao processo consegue movimentá-lo.</li>
+<li><strong>Cada processo tem, no máximo, um grupo por papel</strong>, com uma exceção: a Serventia pode ter mais de um grupo vinculado.</li>
+<li><strong>O polo vem do papel</strong>: o grupo de Advogados Polo Ativo ocupa o polo ativo e o de Advogados Polo Passivo, o polo passivo.</li>
+<li><strong>Professor e Coordenador não movimentam processos</strong>: eles acompanham e avaliam o que os alunos fazem.</li>
+<li><strong>Cada ato só aparece depois do ato anterior</strong>: a lista do formulário &quot;Movimentar&quot; cresce conforme o processo avança, e por isso, no começo, alguns papéis veem poucas opções. A <a href="{% url 'manual:capitulo' 'linha-do-processo' %}">Linha do processo</a> mostra a ordem completa. Os perfis de gestão (Admin, Coordenador, Professor) não atuam diretamente nos processos: eles administram ciclos, grupos e usuários, e avaliam as movimentações feitas pelos Alunos: ver os capítulos <a href="{% url 'manual:capitulo' 'admin' %}#capitulo-admin">do Admin</a>, <a href="{% url 'manual:capitulo' 'coordenador' %}#capitulo-coordenador">do Coordenador</a> e <a href="{% url 'manual:capitulo' 'professor' %}#capitulo-professor">do Professor</a>.</li>
+</ul>
+<h3 id="guia-prazos">3. O que são &quot;prazos&quot; no sistema</h3>
+<p>Cada tipo de movimentação do catálogo pode carregar um ou mais <strong>indicadores</strong>. Eles aparecem na linha do evento, na aba &quot;Eventos do Processo&quot;, como um ícone com texto curto (por exemplo, &quot;Abre um prazo&quot;).</p>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>Os indicadores são <strong>marcações</strong>. O simulador <strong>não calcula vencimento, não bloqueia um ato praticado fora do prazo e não agenda audiência por conta própria</strong>. Quem acompanha os prazos são os próprios grupos de trabalho; o professor avalia o resultado.</p>
+</blockquote>
+<p>Os indicadores existentes são estes:</p>
+<ul>
+<li><strong>Abre um prazo</strong>: o ato inicia uma janela de tempo para a resposta da outra parte (ex.: a &quot;Audiência de Conciliação — Sem Acordo&quot; abre a janela de defesa).</li>
+<li><strong>Encerra um prazo</strong>: o ato fecha essa janela (ex.: a &quot;Contestação&quot; encerra a janela de defesa).</li>
+<li><strong>Reabre um prazo</strong>: usado em situações específicas, como a &quot;Decisão nos Embargos&quot;, que reabre o prazo recursal.</li>
+<li><strong>Agenda uma audiência</strong>: o ato costuma levar a uma audiência, mas o simulador não cria a audiência a partir dele.</li>
+<li><strong>Notifica as partes</strong>: marca que o ato é de comunicação (ex.: a &quot;Publicação/Intimação das Partes&quot;).</li>
+</ul>
+<p>Já a <strong>notificação de verdade</strong> funciona de outro jeito, igual para todos os atos: sempre que uma movimentação é registrada, os membros dos demais grupos vinculados ao processo recebem uma notificação, no sino do cabeçalho (ver <a href="{% url 'manual:capitulo' 'aluno' %}#aluno-notificacoes">seção 6 do Capítulo do Aluno</a>). Quem registrou o ato não é notificado.</p>
+<p>Para ver, ato a ato, quais indicadores existem, consulte a <a href="{% url 'manual:capitulo' 'linha-do-processo' %}">Linha do processo</a> e, no capítulo de cada papel, a tabela &quot;Atos de&quot; daquele papel.</p>
+<h3 id="guia-avisos">4. Avisos operacionais (tela de login)</h3>
+<p>A tela de login tem um painel &quot;Informações Importantes&quot;, com itens que valem para o sistema inteiro:</p>
+<ul>
+<li><strong>Primeiro acesso</strong>: todo cadastro novo entra como &quot;Pendente&quot; e só é liberado depois que um Admin, Coordenador ou Professor aprova e atribui o papel de simulação, já documentado na  <a href="{% url 'manual:capitulo' 'primeiros-passos' %}#apos-cadastro">seção 2 de Primeiros Passos</a>.</li>
+<li><strong>Limite de 7 MB por arquivo</strong>: cada documento anexado a uma movimentação pode ter até 7 MB, nos formatos PDF, DOCX, JPG e JPEG. O sistema confere o conteúdo do arquivo, não só a extensão: renomear um arquivo para &quot;.pdf&quot; não faz ele passar pela validação, já mencionado na <a href="{% url 'manual:capitulo' 'aluno' %}#aluno-cadastrar-processo">seção 7 do Capítulo do Aluno</a>.</li>
+<li><strong>A sessão encerra após 15 minutos sem atividade</strong>: um aviso aparece antes do fim do prazo, com a opção de continuar conectado. Sem resposta, a sessão é encerrada e o sistema volta para a tela de login. Vale a pena não deixar um formulário longo aberto sem salvar.</li>
+<li><strong>Processos em segredo de justiça</strong>: um processo marcado como segredo de justiça só aparece para quem atua nele: a Serventia do ciclo, os grupos vinculados ao processo, o Professor responsável pelo ciclo, o Coordenador e o Admin. Para qualquer outra pessoa o processo não existe. Já um processo <strong>sem</strong> segredo, depois de autuado, é <strong>público</strong>: quem tiver o endereço abre os autos mesmo sem fazer login. Antes da Autuação (status &quot;Protocolado&quot;), só o grupo que protocolou, a Serventia e a gestão enxergam o processo.</li>
+</ul>
+</div>

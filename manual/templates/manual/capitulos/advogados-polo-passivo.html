@@ -1,0 +1,38 @@
+<div class="manual-prosa">
+<h2 id="capitulo-app">Capítulo de Advogados Polo Passivo (APP)</h2>
+<p><em>Disponível para: Aluno vinculado a um grupo com papel processual <strong>Advogados Polo Passivo</strong>. É o
+advogado de quem está sendo processado (o Requerido).</em></p>
+<p><strong>Em resumo</strong></p>
+<ul>
+<li>Representa o <strong>réu</strong> (o Requerido) e ocupa o <strong>polo passivo</strong> do processo.</li>
+<li>Ato só seu: a <strong>Contestação</strong>. Ela depende da <em>Audiência de Conciliação — Sem Acordo</em> e só é aceita se o grupo ocupar o polo passivo daquele processo.</li>
+<li>Se o réu não contesta, a Serventia certifica a <strong>Revelia</strong> e o Juiz decide os efeitos dela.</li>
+<li>Atos de parte, que o catálogo libera também para APA e MP: <strong>Memoriais/Alegações Finais</strong>, <strong>Embargos de Declaração</strong>, <strong>Apelação</strong>, <strong>Contrarrazões</strong> e os recursos às instâncias superiores.</li>
+<li>A <strong>Juntada de Documentos</strong> pode ser feita a qualquer momento.</li>
+</ul>
+<p>Assim como o APA, a navegação geral é a do <a href="{% url 'manual:capitulo' 'aluno' %}#capitulo-aluno">Capítulo do Aluno</a>. Durante uma
+rodada de simulação (login como Lucas Andrade Monteiro, grupo &quot;Monteiro &amp; Advogados Associados&quot;),
+no menu &quot;Opções Processo&quot;, <strong>&quot;Modificar Dados&quot;</strong> e <strong>&quot;Partes → Alterar Parte&quot;</strong> também aparecem
+<strong>desabilitados</strong> para o APP, a mesma restrição já observada para o <a href="{% url 'manual:capitulo' 'advogados-polo-ativo' %}#apa-restricoes">APA</a> (ação
+exclusiva do <a href="{% url 'manual:capitulo' 'serventia-cartorio' %}#sc-modificar-dados">SC</a>).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_64_app_opcoes_menu_restrito.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_64_app_opcoes_menu_restrito.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Menu &quot;Opções Processo&quot; de um usuário APP, com &quot;Modificar Dados&quot; e &quot;Alterar Parte&quot; em cinza (desabilitados)</figcaption></figure>
+<h3 id="app-movimentar">1. Quais movimentações o APP pode praticar</h3>
+<p>No formulário &quot;Movimentar&quot; do processo, só <strong>&quot;Juntada de Documentos&quot;</strong> fica disponível nesse
+estágio do processo (o transversal, sem pré-condição): o mesmo tipo usado por
+Lucas, na rodada de simulação, para juntar a procuração e a contestação.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_65_app_movimentar_juntada.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_65_app_movimentar_juntada.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Lista suspensa &quot;Tipo Movimentação&quot; de um usuário APP, mostrando só &quot;Juntada de Documentos&quot; disponível nesse estágio do processo</figcaption></figure>
+<p>Os demais atos do APP passam a aparecer no formulário conforme o processo avança:</p>
+<ol>
+<li><strong>Contestação</strong>: depois que o Juiz registra a <em>Audiência de Conciliação — Sem Acordo</em>, abre-se a janela de defesa e o APP pode registrar a <em>Contestação</em>.</li>
+<li><strong>Revelia</strong>: se a defesa não vem, a Serventia certifica a <em>Revelia</em>. O Juiz registra então os <em>Efeitos da Revelia</em> (<em>Produz Efeitos</em> ou <em>Sem Efeito</em>); no primeiro caso o Juiz pode julgar antecipadamente, no segundo o processo segue como se houvesse contestação.</li>
+<li><strong>Memoriais</strong>: se o Juiz decide, ao fim da audiência de instrução, pelo resultado <em>Memoriais</em>, o APP registra os <em>Memoriais/Alegações Finais</em>.</li>
+<li><strong>Recurso</strong>: depois da <em>Publicação/Intimação das Partes</em> (ou da <em>Decisão nos Embargos</em>), o APP pode registrar <em>Embargos de Declaração</em> ou <em>Apelação</em>. Se a outra parte apelar, registra as <em>Contrarrazões</em>.</li>
+</ol>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>O catálogo libera também a <strong>Réplica do Autor</strong> para o APP. Pelo próprio nome, ela costuma ser ato do polo ativo, e o simulador não confere isso: cabe ao grupo praticar o ato conforme o seu papel.</p>
+</blockquote>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p><em>Recurso Superior?</em> e <em>REsp/RE</em> dependem do julgamento em 2º grau, que é etapa futura do simulador. Por ora eles aparecem na tabela, mas ainda não ficam disponíveis.</p>
+</blockquote>
+<p>A tabela <strong>&quot;Atos de Advogados Polo Passivo (APP)&quot;</strong>, no fim deste capítulo, traz a lista completa, com o que libera cada ato.</p>
+</div>

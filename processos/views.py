@@ -4,7 +4,6 @@ import datetime
 import decimal
 import json
 
-from django.conf import settings as django_settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -30,7 +29,7 @@ from .permissions import (
     pode_visualizar_processo,
 )
 from .services import aplicar_grupos
-from .utils import validar_multiplos_arquivos
+from .utils import contexto_upload, validar_multiplos_arquivos
 from movimentacoes.catalogo import FILTROS_EVENTO_PROCESSO, NOME_AUTUACAO, NOME_REDISTRIBUICAO
 from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
 from movimentacoes.permissions import grupo_processo_do_usuario, pode_movimentar_processo
@@ -57,17 +56,6 @@ def _saudacao():
     if hora < 18:
         return "Boa Tarde"
     return "Boa Noite"
-
-
-def _upload_ctx() -> dict:
-    """Retorna as constantes de upload do settings para uso nos templates."""
-    cfg = getattr(django_settings, "UPLOAD_CONFIG", {})
-    exts = cfg.get("ALLOWED_EXTENSIONS", [".pdf", ".docx", ".jpg", ".jpeg"])
-    return {
-        "upload_max_mb": cfg.get("MAX_FILE_SIZE_MB", 7),
-        "upload_allowed_extensions_json": json.dumps(exts),
-        "upload_accept_attr": ",".join(exts),
-    }
 
 
 @login_required
@@ -127,7 +115,7 @@ def cadastrar_processo(request):
                     request,
                     "processos/cadastro_processo.html",
                     {"form": form, "ciclo": ciclo, "comarcas": Comarca.objects.all().order_by("nome"),
-                     "step_inicial": 1, **_upload_ctx(),
+                     "step_inicial": 1, **contexto_upload(),
                      "polo_ativo_partes": [], "polo_passivo_partes": [], "polo_terceiro_partes": []},
                 )
 
@@ -212,7 +200,7 @@ def cadastrar_processo(request):
             "polo_ativo_partes": polo_ativo_partes,
             "polo_passivo_partes": polo_passivo_partes,
             "polo_terceiro_partes": polo_terceiro_partes,
-            **_upload_ctx(),
+            **contexto_upload(),
         },
     )
 

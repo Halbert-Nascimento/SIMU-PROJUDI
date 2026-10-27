@@ -2,6 +2,10 @@
 
 Projeto acadêmico de simulação do sistema Projudi desenvolvido por alunos da Faculdade IESGO.
 
+> **Licença:** [PolyForm Strict 1.0.0](LICENSE) — © 2026 Halbert Nascimento, Cauê Gomes Machado e Eduardo Netto Freyer.
+> O código pode ser lido, estudado e executado para fins não comerciais, mas **não pode ser copiado, modificado nem distribuído**.
+> Resumo em português: [LICENSE.pt-BR.md](LICENSE.pt-BR.md).
+
 ## 👥 Autores
 
 - [Cauê Gomes Machado](https://github.com/CaueMachado07)
@@ -230,7 +234,10 @@ O acompanhamento da reformulação está em `../NOVO-DESIGN.md`.
 
 ## 📄 Licença
 
-Projeto acadêmico desenvolvido para fins educacionais.
+Projeto acadêmico (TCC) desenvolvido para fins educacionais, licenciado sob a
+[PolyForm Strict License 1.0.0](LICENSE): código visível e de uso não comercial,
+sem direito de distribuir nem de modificar. Resumo em português em
+[LICENSE.pt-BR.md](LICENSE.pt-BR.md).
 
 ## 🚧 Status do Projeto
 
@@ -238,4 +245,4 @@ Projeto acadêmico desenvolvido para fins educacionais.
 
 ---
 
-**Faculdade IESGO** | Simulador Universitário Projudi
+Simulador Universitário Projudi

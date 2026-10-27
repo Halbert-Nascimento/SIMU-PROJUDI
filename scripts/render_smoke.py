@@ -270,6 +270,41 @@ def ctx_erro_http(logado=True):
     return {"user": usr, "request": Obj(user=usr)}
 
 
+def ctx_manual(slug, logado=False):
+    from manual import servicos
+    from manual.capitulos import POR_SLUG
+
+    capitulo = POR_SLUG[slug]
+    anterior, seguinte = servicos.vizinhos(slug)
+    usr = ALUNO if logado else Obj(is_authenticated=False)
+    return {
+        "user": usr, "request": Obj(user=usr, path=f"/manual/{slug}/"),
+        "capitulo": capitulo, "grupos": servicos.capitulos_por_grupo(),
+        "sumario": servicos.sumario_da_pagina(slug),
+        "versao_manual": servicos.versao_do_manual(), "atualizado_em": servicos.atualizado_em(),
+        "anterior": anterior, "seguinte": seguinte,
+        "conteudo": f"manual/capitulos/{slug}.html",
+    }
+
+
+def ctx_manual_linha_do_processo():
+    from manual.linha_processo import Ato, Fase, ORDEM_DOS_PAPEIS
+
+    contexto = ctx_manual("linha-do-processo")
+    contexto.update(
+        conteudo="manual/linha_do_processo_corpo.html",
+        papeis_do_filtro=ORDEM_DOS_PAPEIS,
+        fases=[
+            Fase("Defesa", [
+                Ato(40, "Contestação", ["APP"], ["Audiência de Conciliação — Sem Acordo"],
+                    "", ["encerra_prazo"], True),
+                Ato(0, "Ato futuro", [], ["Contestação"], "", [], False, "Etapa futura do simulador."),
+            ]),
+        ],
+    )
+    return contexto
+
+
 CASOS = [
     ("acesso/termos_de_uso.html", "visitante anônimo", ctx_documento_legal()),
     ("acesso/termos_de_uso.html", "usuário logado", ctx_documento_legal(logado=True)),
@@ -296,6 +331,10 @@ CASOS = [
     ("avaliacoes/avaliacoes_pendentes.html", "sem pendência", ctx_avaliacoes_pendentes(vazio=True)),
     ("ciclos/boas_vindas.html", "primeiro acesso", ctx_boas_vindas()),
     ("ciclos/boas_vindas.html", "ciclo anterior encerrado", ctx_boas_vindas(ja_participou=True)),
+    ("manual/capitulo.html", "guia geral, visitante", ctx_manual("guia-geral")),
+    ("manual/capitulo.html", "capítulo do aluno, logado", ctx_manual("aluno", logado=True)),
+    ("manual/capitulo.html", "capítulo do juiz", ctx_manual("juiz")),
+    ("manual/capitulo.html", "linha do processo", ctx_manual_linha_do_processo()),
     ("404.html", "visitante anônimo", ctx_erro_http(logado=False)),
     ("404.html", "usuário logado", ctx_erro_http()),
     ("403.html", "usuário logado", ctx_erro_http()),

@@ -30,6 +30,7 @@ urlpatterns = [
     path('processos/', include('processos.urls')),
     path('movimentacoes/', include('movimentacoes.urls')),
     path('avaliacoes/', include('avaliacoes.urls')),
+    path('manual/', include('manual.urls')),
     path('private-media/', include('private_storage.urls')),
     # path('usuarios/', include('usuarios.urls')),
 ]
