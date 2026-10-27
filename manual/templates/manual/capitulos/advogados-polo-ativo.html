@@ -1,0 +1,40 @@
+<div class="manual-prosa">
+<h2 id="capitulo-apa">Capítulo de Advogados Polo Ativo (APA)</h2>
+<p><em>Disponível para: Aluno vinculado a um grupo com papel processual <strong>Advogados Polo Ativo</strong>. É o
+advogado de quem propôs a ação (o Requerente).</em></p>
+<p><strong>Em resumo</strong></p>
+<ul>
+<li>Representa o <strong>autor</strong> da ação (o Requerente) e ocupa o <strong>polo ativo</strong> do processo.</li>
+<li>O processo nasce na tela <strong>Cadastrar Processo</strong> (ver <a href="{% url 'manual:capitulo' 'aluno' %}#aluno-cadastrar-processo">seção 7 do Capítulo do Aluno</a>), que já registra o Protocolo da Petição Inicial.</li>
+<li>Ato só seu, junto com o MP: a <strong>Emenda Apresentada</strong>, que responde ao <em>Emenda da Inicial</em> determinado pelo Juiz.</li>
+<li>Atos de parte, que o catálogo libera também para APP e MP: <strong>Réplica do Autor</strong>, <strong>Memoriais/Alegações Finais</strong>, <strong>Embargos de Declaração</strong>, <strong>Apelação</strong>, <strong>Contrarrazões</strong> e os recursos às instâncias superiores.</li>
+<li>A <strong>Juntada de Documentos</strong> pode ser feita a qualquer momento, e por isso é o único ato disponível no começo.</li>
+</ul>
+<p>A navegação (Área do Aluno, menus, notificações, cadastrar processo, anexar documento, editor
+on-line) é toda a mesma do <a href="{% url 'manual:capitulo' 'aluno' %}#capitulo-aluno">Capítulo do Aluno</a>. O que é específico do papel:</p>
+<h3 id="apa-restricoes">1. O que o APA não pode fazer</h3>
+<p>Durante uma rodada de simulação (login como Mariana Albuquerque Teixeira, grupo &quot;Albuquerque &amp;
+Associados&quot;), no menu &quot;Opções Processo&quot;, <strong>&quot;Modificar Dados&quot;</strong> e <strong>&quot;Partes → Alterar Parte&quot;</strong>
+aparecem <strong>desabilitados</strong>: essas duas ações são exclusivas do papel <a href="{% url 'manual:capitulo' 'serventia-cartorio' %}#sc-modificar-dados">Serventia/Cartório</a>.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_58_apa_opcoes_menu_restrito.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_58_apa_opcoes_menu_restrito.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Menu &quot;Opções Processo&quot; de um usuário APA, com &quot;Modificar Dados&quot; e &quot;Alterar Parte&quot; em cinza (desabilitados)</figcaption></figure>
+<h3 id="apa-movimentar">2. Quais movimentações o APA pode praticar</h3>
+<p>Como em qualquer papel, a lista do formulário &quot;Movimentar&quot; (explicado na <a href="{% url 'manual:capitulo' 'aluno' %}#aluno-movimentar-processo">seção 9 do Capítulo do
+Aluno</a>) só mostra os tipos cuja pré-condição já foi cumprida no
+processo. Em um processo recém-autuado, só <strong>&quot;Juntada de Documentos&quot;</strong> fica disponível
+(o transversal, sem pré-condição).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_59_apa_movimentar_juntada.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_59_apa_movimentar_juntada.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Lista suspensa &quot;Tipo Movimentação&quot; de um usuário APA, mostrando só &quot;Juntada de Documentos&quot; disponível nesse estágio do processo</figcaption></figure>
+<p>Os demais atos do APA passam a aparecer no formulário conforme o processo avança. Na prática, a vez do APA chega nestes momentos:</p>
+<ol>
+<li><strong>Emenda</strong>: quando o Juiz registra <em>Emenda da Inicial</em> (a inicial estava irregular), o APA responde com <em>Emenda Apresentada</em>. Se ele não emenda, a Serventia registra <em>Emenda Não Apresentada</em> e o processo caminha para o indeferimento.</li>
+<li><strong>Réplica</strong>: depois da <em>Contestação</em> (ou dos <em>Efeitos da Revelia — Sem Efeito</em>), o APA pode registrar a <em>Réplica do Autor</em>.</li>
+<li><strong>Memoriais</strong>: se o Juiz decide, ao fim da audiência de instrução, pelo resultado <em>Memoriais</em>, o APA registra os <em>Memoriais/Alegações Finais</em>.</li>
+<li><strong>Recurso</strong>: depois da <em>Publicação/Intimação das Partes</em> (ou da <em>Decisão nos Embargos</em>), o APA pode registrar <em>Embargos de Declaração</em> ou <em>Apelação</em>; a apelação também é possível depois de um <em>Indeferimento da Inicial</em>. Se a outra parte apelar, o APA registra as <em>Contrarrazões</em>.</li>
+</ol>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>O simulador libera Réplica, Embargos, Apelação e Contrarrazões para APA, APP e MP, e não confere qual polo responde a qual ato. Cabe a cada grupo praticar o ato conforme o seu papel no processo.</p>
+</blockquote>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p><em>Recurso Superior?</em> e <em>REsp/RE</em> dependem do julgamento em 2º grau, que é etapa futura do simulador. Por ora eles aparecem na tabela, mas ainda não ficam disponíveis.</p>
+</blockquote>
+<p>A tabela <strong>&quot;Atos de Advogados Polo Ativo (APA)&quot;</strong>, no fim deste capítulo, traz a lista completa, com o que libera cada ato.</p>
+</div>

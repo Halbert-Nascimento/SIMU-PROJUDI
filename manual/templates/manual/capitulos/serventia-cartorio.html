@@ -1,0 +1,100 @@
+<div class="manual-prosa">
+<h2 id="capitulo-sc">Capítulo de Serventia/Cartório (SC)</h2>
+<p><em>Disponível para: Aluno vinculado a um grupo com papel processual <strong>Serventia/Cartório</strong>. É um
+papel &quot;de bastidor&quot;: faz o serviço cartorário/administrativo do processo (autuação, custas,
+citação, expedientes, arquivamento), não é parte nem advogado de nenhum polo.</em></p>
+<p><strong>Em resumo</strong></p>
+<ul>
+<li>É o papel de bastidor do processo: cuida da rotina de cartório e <strong>não é parte nem advogado</strong>.</li>
+<li>Entre os papéis de simulação, é o <strong>único</strong> que vincula grupos ao processo e que registra o <strong>Cancelamento / Tornar Sem Efeito</strong>. Também corrige os dados do processo e das partes, o que Admin, Coordenador e o Professor responsável pelo ciclo igualmente podem fazer.</li>
+<li>Pratica a maior parte dos atos de rotina: autuação, custas, citação, certidões, publicação, trânsito em julgado e arquivamento.</li>
+<li>Em vez de ver só os processos do próprio grupo, vê <strong>todos os processos do ciclo</strong>.</li>
+<li>Sem a Serventia o processo não anda: é ela quem libera a vez de quase todos os outros papéis.</li>
+</ul>
+<p>Toda a navegação básica (Área do Aluno, menu Processos/Audiências/Minhas Notas, notificações) é a
+mesma descrita no <a href="{% url 'manual:capitulo' 'aluno' %}#capitulo-aluno">Capítulo do Aluno</a>. O que diferencia o papel Serventia/Cartório
+são quatro pontos, cobertos abaixo.</p>
+<h3 id="sc-visao-geral">1. O que muda na Área do Aluno para quem é Serventia/Cartório</h3>
+<p>Em vez de listar só os processos do próprio grupo, a Área do Aluno de um usuário SC mostra, em
+<strong>&quot;Processos da Vara&quot;</strong>, <strong>todos os processos do ciclo</strong> (com uma coluna de checkbox e uma coluna
+&quot;Ações&quot; que os outros papéis não têm): é essa visão ampliada que permite ao SC atuar em qualquer
+processo, mesmo nos que seu grupo não está diretamente vinculado.</p>
+<h3 id="sc-vincular-grupo">2. Vincular um Grupo a um Processo</h3>
+<p>Este é o fluxo mais importante do papel: atribuir (ou remover) o grupo de Polo Ativo, Polo Passivo
+ou outro SC de um processo. Já está descrito em detalhe, com prints, na seção <a href="{% url 'manual:capitulo' 'aluno' %}#aluno-sc-vincular-grupo">12 do Capítulo do
+Aluno</a>; os passos são os mesmos, só reproduzidos lá por terem sido
+escritos antes deste capítulo existir.</p>
+<h3 id="sc-modificar-dados">3. Modificar Dados do Processo e Alterar Parte</h3>
+<p>Para qualquer outro papel, a opção <strong>&quot;Modificar Dados&quot;</strong> do menu &quot;Opções Processo&quot; aparece
+desabilitada (ver <a href="{% url 'manual:capitulo' 'aluno' %}#aluno-detalhe-processo">seção 8 do Capítulo do Aluno</a>). Para o SC, ela é a
+única forma de corrigir os dados cadastrais depois que o processo já foi protocolado.</p>
+<ol>
+<li>Na tela do processo, abra <strong>Opções Processo → Modificar Dados</strong>.</li>
+<li>Altere <strong>Comarca</strong>, <strong>Vara/Serventia</strong>, <strong>Tipo de Processo</strong>, <strong>Classe Processual</strong>, <strong>Valor da
+Causa</strong> e/ou <strong>Segredo de Justiça</strong>.</li>
+<li>Clique em <strong>Salvar</strong>.</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_54_sc_modificar_dados_modal.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_54_sc_modificar_dados_modal.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Modal &quot;Modificar Dados do Processo&quot; aberto por um usuário Serventia/Cartório, com todos os campos editáveis</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>O número do processo, o ciclo, a data de autuação e o status <strong>não são alterados</strong> por essa
+tela (aviso que aparece no rodapé do próprio modal).</p>
+</blockquote>
+<p>Para corrigir os dados de uma das partes já cadastradas no processo (nome/razão social, CPF/CNPJ,
+tipo de pessoa), use <strong>Opções Processo → Partes → Alterar Parte</strong>:</p>
+<ol>
+<li>Escolha a parte no seletor <strong>&quot;Parte do Processo&quot;</strong> (mostra o polo de cada uma, ex.: &quot;Ativo:
+Antônio Ribeiro Pacheco&quot;).</li>
+<li>Altere os campos desejados.</li>
+<li>Clique em <strong>Salvar</strong>.</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_55_sc_alterar_parte_modal.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_55_sc_alterar_parte_modal.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Modal &quot;Alterar Parte&quot;, com o seletor de parte e os campos Nome/Razão Social, CPF/CNPJ e Tipo de Pessoa</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>O próprio modal avisa: <strong>&quot;Os dados da parte valem para todos os processos em que ela
+figura.&quot;</strong> Como uma mesma Parte Fictícia pode estar cadastrada em vários processos diferentes, a
+alteração não fica restrita ao processo aberto no momento.</p>
+</blockquote>
+<h3 id="sc-movimentar">4. Movimentar Processo como Serventia/Cartório</h3>
+<p>O mecanismo de &quot;Movimentar&quot; é o mesmo explicado na <a href="{% url 'manual:capitulo' 'aluno' %}#aluno-movimentar-processo">seção 9 do Capítulo do
+Aluno</a>: um formulário de 2 passos, com o <strong>Tipo de Movimentação</strong> numa
+lista suspensa. A diferença é <strong>quais tipos aparecem</strong>: para o SC, a lista reúne os atos cartorários
+do fluxo processual. Cada tipo só aparece quando sua pré-condição já foi cumprida por uma
+movimentação anterior no mesmo processo; por isso a lista cresce/diminui conforme o processo avança
+para as fases seguintes.</p>
+<p>Durante uma rodada de simulação, com o processo no estágio <strong>Autuado</strong>, ficam disponíveis:
+<strong>Autuação e Distribuição</strong>, <strong>Custas Recolhidas</strong>, <strong>Custas Não Recolhidas</strong> e o transversal
+<strong>Cancelamento/Tornar Sem Efeito</strong> (disponível a qualquer momento, sem pré-condição).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_56_sc_movimentar_tipos_dropdown.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_56_sc_movimentar_tipos_dropdown.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Lista suspensa &quot;Tipo Movimentação&quot; aberta para um usuário SC, mostrando Autuação e Distribuição, Cancelamento/Tornar Sem Efeito, Custas Não Recolhidas e Custas Recolhidas já disponíveis</figcaption></figure>
+<p>Em uma rodada de simulação, com o processo já <strong>Autuado</strong>, a movimentação <strong>&quot;Custas Recolhidas&quot;</strong>
+foi registrada (Passo 1 → descrição → Avançar → Passo 2 de revisão → Confirmar Movimentação). O evento aparece
+imediatamente na aba &quot;Eventos do Processo&quot;, numerado em sequência, com usuário e data/hora, e ganha
+um ícone de lápis (só quem registrou pode editar depois).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_57_sc_evento_custas_recolhidas.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_57_sc_evento_custas_recolhidas.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Aba &quot;Eventos do Processo&quot; com o novo evento &quot;Custas Recolhidas&quot; no topo da lista, registrado pelo usuário SC</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>Acima da lista de eventos há uma barra de filtros por tipo de movimentação (por exemplo,
+&quot;Custas Recolhidas&quot;), que funciona da mesma forma para todos os eventos do processo e está
+descrita na <a href="{% url 'manual:capitulo' 'aluno' %}#aluno-detalhe-processo">seção 8 do Capítulo do Aluno</a>.</p>
+</blockquote>
+<h3 id="sc-sequencia">5. A Rotina da Serventia, Fase por Fase</h3>
+<p>A lista completa, com o que libera cada ato, está na tabela <strong>&quot;Atos de Serventia/Cartório (SC)&quot;</strong> no fim deste capítulo. Em ordem, a rotina é esta:</p>
+<ol>
+<li><strong>Análise da inicial.</strong> Depois do protocolo, a Serventia registra <strong>Autuação e Distribuição</strong>. Em seguida registra as <strong>custas</strong>: <em>Custas Recolhidas</em> ou <em>Custas Não Recolhidas</em>. No segundo caso, registra <em>Intima autor p/ custas</em> e depois <em>Custas Pagas Após Intimação</em> ou <em>Custas Não Pagas Após Intimação</em> (este último permite ao Juiz o <em>Cancelamento da Distribuição</em>). Com as custas resolvidas, registra a <strong>Conclusão ao Juiz</strong>. Se o Juiz mandou emendar a inicial e o autor não emendou, registra <em>Emenda Não Apresentada</em>, o que abre caminho ao <em>Indeferimento da Inicial</em>.</li>
+<li><strong>Citação.</strong> Depois do <em>Despacho de Citação</em> do Juiz, a Serventia escolhe a <strong>modalidade</strong> (Mandado, Postal, Edital ou Eletrônica) e registra o desfecho:
+<ul>
+<li><em>Mandado</em>: Citação por Mandado, depois Cumprimento do Mandado (Réu Encontrado ou Réu Não Encontrado) e, por fim, Citação Positiva ou Citação Negativa.</li>
+<li><em>Postal</em>: Citação por Carta Postal (AR), depois AR Assinado Juntado ou AR Não Assinado ou Não Devolvido.</li>
+<li><em>Edital</em> e <em>Eletrônica</em>: Citação por Edital ou Citação Eletrônica/Portal, que já deixam o processo &quot;Citado&quot;.</li>
+<li>Quando a citação fracassa (negativa ou AR não devolvido), o Juiz pode decidir pelo edital (<em>Nova Modalidade — Edital</em>) ou a Serventia repete o mandado (<em>Nova Modalidade — Repetir Mandado</em>).</li>
+</ul>
+</li>
+<li><strong>Defesa.</strong> Se o réu não contestou, a Serventia certifica a <strong>Revelia</strong>, depois da <em>Audiência de Conciliação — Sem Acordo</em>. O Juiz então decide os efeitos da revelia.</li>
+<li><strong>Instrução.</strong> Se houve perícia, a Serventia junta o <strong>Laudo Pericial</strong>.</li>
+<li><strong>Recurso.</strong> Depois da sentença, a Serventia registra a <strong>Publicação/Intimação das Partes</strong>. Se houver apelação e contrarrazões, registra a <strong>Remessa ao 2º Grau</strong>.</li>
+<li><strong>Encerramento.</strong> Registra o <strong>Trânsito em Julgado</strong>, a <strong>Certidão de Trânsito em Julgado</strong> e o <strong>Arquivamento</strong>.</li>
+</ol>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>O simulador não confere se houve recurso nem se o prazo recursal terminou. Cabe à Serventia lançar o Trânsito em Julgado <strong>só depois de decorrido o prazo recursal sem recurso</strong>.</p>
+</blockquote>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>O julgamento em 2º grau é etapa futura do simulador. O processo segue normalmente até a Remessa ao 2º Grau e fica aguardando essa etapa.</p>
+</blockquote>
+</div>

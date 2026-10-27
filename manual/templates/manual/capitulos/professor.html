@@ -1,0 +1,115 @@
+<div class="manual-prosa">
+<h2 id="capitulo-professor">Capítulo do Professor</h2>
+<p><em>Disponível para: perfil global <strong>Professor</strong>.</em></p>
+<p>O Professor usa o <strong>mesmo Painel de Controle</strong> dos outros perfis de gestão, mas com um recorte bem mais restrito: ele só enxerga e administra os ciclos dos quais é responsável.</p>
+<h3 id="professor-painel">1. O que o Professor vê no Painel de Controle</h3>
+<ul>
+<li>
+<p><strong>Gestão de Ciclos de Simulação</strong>: mostra <strong>apenas os ciclos em que o Professor é o   &quot;Responsável&quot;</strong>, não a lista completa de ciclos do sistema, como no Admin/Coordenador. Um Professor recém-aprovado, sem nenhum ciclo atribuído a ele, vê &quot;Nenhum ciclo de simulação cadastrado&quot;, mesmo que existam outros ciclos ativos no sistema.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_10_professor_painel_sem_ciclo.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_10_professor_painel_sem_ciclo.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Painel de Controle do Professor, sem nenhum ciclo atribuído a ele ainda</figcaption></figure>
+</li>
+<li>
+<p>Assim que um Coordenador (ou Admin) atribui o Professor como &quot;Responsável&quot; de um ciclo (pela tela de <strong>editar ciclo</strong>), esse ciclo passa a aparecer normalmente para o Professor, com os mesmos botões &quot;Gerenciar Grupos&quot; e &quot;Editar&quot; que o Coordenador tem.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_12_professor_painel_com_ciclo.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_12_professor_painel_com_ciclo.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Painel de Controle do Professor já com um ciclo atribuído a ele</figcaption></figure>
+</li>
+<li>
+<p><strong>Novo ciclo</strong>: o Professor também pode criar um ciclo pelo botão <strong>+ Novo Ciclo</strong>. Como para qualquer perfil, quem cria o ciclo vira o &quot;Responsável&quot; por ele (ver <a href="{% url 'manual:capitulo' 'admin' %}#admin-criar-ciclo">seção 3 do Capítulo do Admin</a>).</p>
+</li>
+<li>
+<p><strong>Gerir Usuários</strong>: o Professor consegue ver a lista completa de usuários do sistema, mas só pode <strong>aprovar ou editar cadastros atribuindo o perfil Aluno</strong>, ao contrário do Coordenador (que pode atribuir Coordenador, Professor ou Aluno) e do Admin (que pode atribuir qualquer perfil).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_11_professor_editar_usuario_so_aluno.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_11_professor_editar_usuario_so_aluno.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Tela de editar usuário aberta por um Professor, mostrando que só a opção Aluno está disponível no seletor de perfil</figcaption></figure>
+</li>
+</ul>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>Um Professor <strong>não recebe automaticamente</strong> os ciclos criados por outras pessoas. Se um
+Coordenador criar um ciclo, o Professor só vai enxergá-lo depois que alguém (Admin ou
+Coordenador) o atribuir como Responsável daquele ciclo, na tela de editar.</p>
+</blockquote>
+<h3 id="professor-vincular-aluno-grupo">2. Como Vincular um Aluno a um Grupo de Trabalho</h3>
+<p>Depois de aprovar o cadastro de um Aluno (Painel de Controle → &quot;Analisar Cadastros&quot; → aprovar com o
+Tipo de Perfil &quot;Aluno&quot; e marcar &quot;Ativo&quot;), o Aluno ainda não pertence a nenhum grupo: ele só passa
+a ver processos e movimentações depois de ser colocado em um Grupo de Trabalho do ciclo.</p>
+<ol>
+<li>No Painel de Controle, clique em <strong>&quot;Gerenciar Grupos&quot;</strong> na linha do ciclo desejado (a mesma tela
+usada para <a href="{% url 'manual:capitulo' 'admin' %}#admin-criar-grupo">criar um Grupo de Trabalho</a>).</li>
+<li>Clique no grupo já existente ao qual o Aluno deve pertencer (ou crie um novo grupo com
+&quot;+ Novo Grupo&quot;, escolhendo o <strong>Papel na Simulação</strong>: Serventia/Cartório, Advogados Polo Ativo,
+Advogados Polo Passivo, Ministério Público ou Juiz).</li>
+<li>À direita, em <strong>&quot;Adicionar ao Grupo&quot;</strong>, a lista <strong>&quot;Alunos sem Grupo&quot;</strong> mostra apenas os alunos do
+ciclo que ainda não foram colocados em nenhuma equipe. Clique em <strong>&quot;+ ADD&quot;</strong> ao lado do nome do
+aluno desejado.</li>
+<li>O aluno aparece imediatamente em <strong>&quot;Membros da Equipe&quot;</strong>, e o contador de alunos do grupo (no
+painel esquerdo) é atualizado.</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_20_grupo_criado_membro_adicionado.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_20_grupo_criado_membro_adicionado.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Grupo de Trabalho &quot;Monteiro &amp; Advogados Associados&quot; já com um aluno adicionado como membro</figcaption></figure>
+<p>A partir desse momento, ao logar, o aluno passa a ver na &quot;Área do Aluno&quot; todos os processos
+vinculados ao grupo dele, podendo movimentar e visualizar os autos conforme o papel processual do
+grupo (Advogado, Serventia, Ministério Público ou Juiz).</p>
+<p>Nessa mesma tela também é possível <strong>editar</strong> o grupo (nome e papel, pelo ícone de lápis) e
+<strong>remover</strong> um aluno do grupo (ícone de lixeira ao lado do nome dele, sem pedir confirmação); veja
+os detalhes na <a href="{% url 'manual:capitulo' 'admin' %}#admin-criar-grupo">seção 4 do Capítulo do Admin</a>. Não existe opção para excluir
+um grupo inteiro.</p>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>Um aluno só pode pertencer a <strong>um grupo por vez</strong> dentro do mesmo ciclo; por isso a lista
+&quot;Adicionar ao Grupo&quot; só mostra quem ainda está sem grupo.</p>
+</blockquote>
+<h3 id="professor-avaliar-movimentacao">3. Como Avaliar uma Movimentação (Atribuir Nota)</h3>
+<p>Sempre que um aluno registra uma movimentação em um processo, ela fica disponível para avaliação do
+Professor responsável pelo ciclo. Há dois caminhos para chegar até a tela de avaliação:</p>
+<ul>
+<li>Pela página <strong>&quot;Avaliações Pendentes&quot;</strong> (Painel de Controle → atalho &quot;Avaliações Pendentes&quot;),
+que lista todas as movimentações ainda sem avaliação de todos os ciclos do Professor, da mais
+antiga para a mais recente, com um botão <strong>&quot;Avaliar&quot;</strong> em cada linha.</li>
+</ul>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_70_professor_avaliacoes_pendentes.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_70_professor_avaliacoes_pendentes.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Tela &quot;Avaliações Pendentes&quot;, com a lista de movimentações sem avaliação e o botão &quot;Avaliar&quot; em cada linha</figcaption></figure>
+<ul>
+<li>Pelo próprio processo: abra o processo (Painel de Controle → &quot;Ver Autos&quot; na linha do processo,
+ou pela lista de processos do ciclo), role até a aba <strong>&quot;Eventos do Processo&quot;</strong> e, na coluna
+&quot;Opções&quot; de cada linha da movimentação, use o menu <strong>&quot;⋮&quot;</strong> (diferente do ícone de lápis que
+aparece para quem registrou a movimentação) e escolha <strong>&quot;Avaliar&quot;</strong>.</li>
+</ul>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_71_professor_evento_menu_avaliar.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_71_professor_evento_menu_avaliar.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Aba &quot;Eventos do Processo&quot; com o menu &quot;⋮&quot; aberto numa linha de movimentação, mostrando a opção &quot;Avaliar&quot;</figcaption></figure>
+<p>A tela &quot;Avaliação de Movimentação&quot; mostra os dados completos da movimentação: autor, grupo
+responsável, tipo, data/hora e a descrição do evento.</p>
+<p>Em <strong>&quot;Nota e Feedback&quot;</strong>, preencha:</p>
+<ul>
+<li><strong>Avaliação (1 a 5 estrelas)</strong>: clique na estrela correspondente. Sem estrelas marcadas = sem
+nota (é assim que o Professor consegue enviar um comentário sem atribuir avaliação). A opção
+&quot;Limpar&quot; zera a seleção.</li>
+<li><strong>Comentário ao Aluno</strong>: texto livre, explicitamente marcado como &quot;visível para&quot; o aluno autor
+da movimentação.</li>
+</ul>
+<p>Depois de preencher, há três botões:</p>
+<ul>
+<li><strong>&quot;Concluir Avaliação&quot;</strong>: abre uma caixa de confirmação resumindo o aluno e a nota (em estrelas)
+antes de enviar definitivamente: clique em <strong>&quot;Confirmar e Enviar&quot;</strong>.</li>
+<li><strong>&quot;Devolver para Revisão&quot;</strong>: grava o comentário sem atribuir nota.</li>
+<li><strong>&quot;Voltar&quot;</strong>: sai da tela sem salvar nada.</li>
+</ul>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_40_professor_avaliar_estrelas.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_40_professor_avaliar_estrelas.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Formulário de avaliação de uma movimentação, com o campo de 1 a 5 estrelas e o comentário ao aluno preenchidos</figcaption></figure>
+<!-- Testado ao vivo: cliquei em "Devolver para Revisão" com um comentário preenchido e nenhuma
+estrela marcada. O sistema salvou o comentário, mostrou a mensagem "Movimentação devolvida para
+revisão." e voltou para a tela do processo. Na prática, isso **não reabre a movimentação para o
+aluno editar**: o efeito é registrar um feedback só com comentário, sem nota, que some da lista de
+"Avaliações Pendentes" (por já ter recebido uma resposta do Professor) e aparece para o aluno em
+["Minhas Notas"](#aluno-minhas-notas) com "—" no lugar das estrelas, na aba "Sem Nota". -->
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_63_aluno_avaliacao_sem_nota_detalhe.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_63_aluno_avaliacao_sem_nota_detalhe.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Detalhe de uma avaliação &quot;sem nota&quot; (devolvida para revisão) na tela &quot;Minhas Notas&quot; do aluno, com o comentário do Professor visível</figcaption></figure>
+<h3 id="professor-bloquear-cadastro">4. Como Bloquear/Desativar um Cadastro</h3>
+<p>O mesmo formulário usado para aprovar um cadastro também serve para bloquear o acesso de alguém já
+ativo.</p>
+<ol>
+<li>Painel de Controle → <strong>&quot;Gerir Usuários&quot;</strong> → aba <strong>&quot;Todos os Usuários&quot;</strong>.</li>
+<li>Clique em <strong>&quot;editar&quot;</strong> na linha do usuário a ser bloqueado.</li>
+<li>Desmarque a caixa <strong>&quot;Ativo (liberar acesso ao sistema)&quot;</strong> e clique em <strong>&quot;Salvar&quot;</strong>.</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_72_professor_desmarcar_ativo_modal.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_72_professor_desmarcar_ativo_modal.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Modal &quot;Editar/Aprovar Usuário&quot; com a caixa &quot;Ativo (liberar acesso ao sistema)&quot; desmarcada</figcaption></figure>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_29_usuario_desativado_pendente.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_29_usuario_desativado_pendente.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Lista &quot;Todos os Usuários&quot; mostrando um cadastro que voltou ao status &quot;Pendente&quot; após ser desmarcado como Ativo</figcaption></figure>
+<p>Ao tentar logar, o usuário bloqueado recebe a mesma mensagem genérica usada para qualquer erro de
+login (&quot;Por favor, entre com um usuário e senha corretos&quot;), mesmo digitando a senha correta: o
+sistema não informa que a conta foi desativada.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_30_login_bloqueado.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_30_login_bloqueado.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Tela de login rejeitando as credenciais corretas de um usuário que foi desativado</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>O Professor só pode bloquear/reativar cadastros do tipo <strong>Aluno</strong>. Bloquear um Coordenador
+ou outro Professor exige o perfil Admin ou Coordenador.</p>
+</blockquote>
+</div>

@@ -1,0 +1,54 @@
+<div class="manual-prosa">
+<h2 id="capitulo-jz">Capítulo do Juiz (JZ)</h2>
+<p><em>Disponível para: Aluno vinculado a um grupo com papel processual <strong>Juiz</strong>. Conduz o processo:
+decide, saneia, julga e sentencia.</em></p>
+<p><strong>Em resumo</strong></p>
+<ul>
+<li><strong>Conduz o processo</strong>: despacha, concilia, sanea, julga e sentencia. É o papel com mais atos no sistema.</li>
+<li>Cada decisão do Juiz <strong>libera a vez de outro papel</strong>: a Serventia (citação, publicação), as partes (defesa, réplica, memoriais) ou o MP.</li>
+<li>O Juiz também conduz as audiências de conciliação e de instrução, porque o simulador não tem um papel próprio de conciliador.</li>
+<li>O <strong>Desentranhamento</strong> pode ser praticado a qualquer momento, para retirar um documento juntado por engano.</li>
+<li>Não corrige dados do processo: essa ação continua exclusiva da Serventia.</li>
+</ul>
+<p>A navegação geral (Área do Aluno, &quot;Processos Vinculados&quot;, menus, notificações) é a mesma do
+<a href="{% url 'manual:capitulo' 'aluno' %}#capitulo-aluno">Capítulo do Aluno</a>. O papel de Juiz é o que tem mais movimentações no sistema:
+praticamente toda a condução do processo (despachos, decisões e sentença) é dele. O que é
+específico do papel:</p>
+<h3 id="jz-restricoes">1. Restrições</h3>
+<p>Durante uma rodada de simulação (grupo &quot;1ª Vara Cível de Formosa&quot;, papel Juiz, vinculado ao
+mesmo processo de teste), assim como para os demais papéis de Aluno, <strong>&quot;Modificar Dados&quot;</strong> aparece
+desabilitado no menu &quot;Opções Processo&quot;: essa ação continua exclusiva do papel
+<a href="{% url 'manual:capitulo' 'serventia-cartorio' %}#sc-modificar-dados">Serventia/Cartório</a>, mesmo para quem julga o processo.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_67_jz_opcoes_menu_restrito.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_67_jz_opcoes_menu_restrito.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Menu &quot;Opções Processo&quot; de um usuário Juiz, com &quot;Modificar Dados&quot; em cinza (desabilitado)</figcaption></figure>
+<h3 id="jz-movimentar">2. Quais movimentações o Juiz pode praticar</h3>
+<p>Em um processo recém-autuado (antes de qualquer despacho de citação), só
+<strong>&quot;Desentranhamento&quot;</strong> fica disponível no formulário &quot;Movimentar&quot; (o transversal exclusivo do
+Juiz, sem pré-condição).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_61_jz_movimentar_desentranhamento.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_61_jz_movimentar_desentranhamento.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Lista suspensa &quot;Tipo Movimentação&quot; de um usuário Juiz, mostrando só &quot;Desentranhamento&quot; disponível nesse estágio do processo</figcaption></figure>
+<p>Os atos do Juiz seguem <strong>caminhos de decisão</strong>. Em cada ponto abaixo, o Juiz escolhe um desfecho e isso decide quem age depois:</p>
+<ol>
+<li><strong>Análise da inicial</strong>, depois da <em>Conclusão ao Juiz</em>, com quatro caminhos:
+<ul>
+<li><em>Em Ordem</em>: segue para o <em>Despacho de Citação</em>.</li>
+<li><em>Irregular</em>: registra a <em>Emenda da Inicial</em>, e o autor (APA ou MP) responde com a <em>Emenda Apresentada</em>.</li>
+<li><em>Urgente</em>: decide a tutela (<em>Deferida</em> ou <em>Indeferida</em>); se deferida, pode conceder a <em>Liminar</em>. Depois, segue para a citação.</li>
+<li><em>Indefere</em>: registra o <em>Indeferimento da Inicial</em> e o processo se extingue sem resolução do mérito.</li>
+</ul>
+</li>
+<li><strong>Citação e conciliação</strong>: o <em>Despacho de Citação</em> libera a Serventia. Depois da citação, o Juiz conduz a <strong>Audiência de Conciliação</strong>:
+<ul>
+<li><em>Com Acordo</em>: segue para a <em>Sentença Homologatória de Acordo</em>.</li>
+<li><em>Sem Acordo</em>: abre-se a fase de defesa.</li>
+</ul>
+</li>
+<li><strong>Defesa</strong>: se o réu não contestou e a Serventia certificou a <em>Revelia</em>, o Juiz decide os <strong>Efeitos da Revelia</strong>. <em>Produz Efeitos</em> permite o <em>Julgamento Antecipado</em>; <em>Sem Efeito</em> segue para a réplica. Depois da <em>Réplica do Autor</em>, o Juiz decide se <strong>o MP deve intervir</strong> (<em>Sim</em> ou <em>Não</em>) e, concluída essa etapa, registra a <strong>Decisão Saneadora</strong>.</li>
+<li><strong>Instrução</strong>: depois do saneamento, o Juiz define as <strong>provas</strong> (<em>Perícia</em>, <em>Prova Oral</em> ou <em>Só Documental</em>), nomeia a prova pericial quando for o caso e conduz a <strong>Audiência de Instrução e Julgamento</strong>, cujo resultado pode ser <em>Acordo</em>, <em>Memoriais</em> ou <em>Julgamento na Data</em>.</li>
+<li><strong>Sentença</strong>: registra a <em>Sentença</em>, depois o <em>Tipo de Sentença</em> (<em>Com Mérito</em> ou <em>Sem Mérito</em>) e a resolução correspondente. Em seguida a Serventia faz a <em>Publicação/Intimação das Partes</em>.</li>
+<li><strong>Recurso</strong>: se houver embargos de declaração, o Juiz registra a <em>Decisão nos Embargos</em>, que reabre o prazo recursal.</li>
+</ol>
+<p>O <strong>Desentranhamento</strong> está disponível a qualquer momento, sem pré-condição, como visto acima.</p>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>O julgamento em 2º grau é etapa futura do simulador. O processo segue normalmente até a Remessa ao 2º Grau, feita pela Serventia, e fica aguardando essa etapa.</p>
+</blockquote>
+<p>A tabela <strong>&quot;Atos de Juiz (JZ)&quot;</strong>, no fim deste capítulo, traz a lista completa, com o que libera cada ato.</p>
+</div>

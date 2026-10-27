@@ -1,0 +1,301 @@
+<div class="manual-prosa">
+<h2 id="capitulo-aluno">Capítulo do Aluno</h2>
+<p><em>Disponível para: perfil global <strong>Aluno</strong>.</em></p>
+<h3 id="aluno-redirecionamento">1. Para onde o Aluno é redirecionado, dependendo do vínculo</h3>
+<p>O que o Aluno vê depende de já ter sido colocado em um grupo de trabalho de um ciclo ou não:</p>
+<ul>
+<li>
+<p><strong>Aluno aprovado mas ainda sem grupo</strong>: ao logar, é redirecionado para <code>/ciclos/boas-vindas/</code>, com um cartão
+&quot;Situação do Cadastro: Aguardando Vínculo&quot; explicando que é o Professor ou o Coordenador do
+ciclo quem inclui o aluno em um grupo e define o cargo de simulação (Serventia, Advogado,
+Ministério Público ou Juiz).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_06_aluno_login_sem_vinculo.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_06_aluno_login_sem_vinculo.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Tela de boas-vindas de um Aluno aprovado mas ainda sem vínculo a nenhum grupo</figcaption></figure>
+</li>
+<li>
+<p><strong>Aluno já vinculado a um grupo de trabalho</strong>: ao logar, é direcionado direto para a &quot;Área do Aluno&quot;
+(<code>/processos/area-servidor/</code>), já mostrando o nome do grupo e o cargo processual do grupo no
+cabeçalho (por exemplo, &quot;Albuquerque &amp; Associados, Advogados Polo Ativo&quot;).</p>
+</li>
+</ul>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>Só quem inclui o Aluno em um grupo é o Professor responsável pelo ciclo ou o Coordenador:
+o Aluno não escolhe nem solicita entrar em um grupo pela própria tela.</p>
+</blockquote>
+<h3 id="aluno-area-geral">2. Área do Aluno: visão geral</h3>
+<p>A página inicial do Aluno mostra, no topo, o nome do grupo e o cargo processual, e logo abaixo um
+bloco &quot;Consultar Processos&quot; (busca por número/classe/situação) e uma lista &quot;Processos Vinculados&quot;.
+Enquanto nenhum processo foi distribuído para o grupo, a lista aparece vazia, com a mensagem
+&quot;Nenhum processo vinculado ao seu usuário.&quot;.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_09_aluno_area_com_grupo.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_09_aluno_area_com_grupo.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Área do Aluno de Mariana, já com o grupo definido mas sem nenhum processo vinculado ainda</figcaption></figure>
+<p>O menu superior do Aluno tem 4 itens: <strong>Página Inicial</strong>, <strong>Processos</strong>, <strong>Audiências</strong> e
+<strong>Minhas Notas</strong>.</p>
+<h3 id="aluno-menu-processos">3. Menu &quot;Processos&quot;</h3>
+<p>O menu &quot;Processos&quot; abre um submenu com duas opções:</p>
+<ul>
+<li><strong>Cadastrar Processos</strong>: leva a um formulário funcional de &quot;Cadastro de Processo Comum&quot;, em 3
+passos (Dados do Processo → Documentos → Resumo), já mostrando o ciclo ativo do aluno no topo
+(&quot;Ciclo ativo: NPJ Cível 2026/2, 2º/2026&quot;). Documentado em detalhe na seção <a href="#aluno-cadastrar-processo">7. Como Cadastrar
+um Processo</a>, mais adiante neste capítulo.</li>
+<li><strong>Consultar Todos</strong>: ainda não disponível nesta versão do sistema.</li>
+</ul>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_36_aluno_menu_processos_dropdown.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_36_aluno_menu_processos_dropdown.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Menu &quot;Processos&quot; aberto, mostrando as opções &quot;Cadastrar Processos&quot; e &quot;Consultar Todos&quot;</figcaption></figure>
+<h3 id="aluno-menu-audiencias">4. Menu &quot;Audiências&quot;</h3>
+<p><em>(Seção em elaboração: ainda não disponível nesta versão do sistema.)</em></p>
+<h3 id="aluno-minhas-notas">5. &quot;Minhas Notas&quot;</h3>
+<p>&quot;Minhas Notas&quot; leva ao painel &quot;Meu Desempenho&quot; do Aluno (<code>/avaliacoes/minhas-notas/</code>). O painel
+mostra nome e e-mail, três indicadores em estrelas de 1 a 5 (Média Geral, Avaliadas e Melhor
+Avaliação) e o &quot;Histórico de Avaliações&quot;. Antes de qualquer movimentação avaliada, os indicadores
+aparecem como &quot;—&quot;/&quot;0&quot; e o histórico mostra &quot;Nenhuma avaliação recebida ainda.&quot;.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_13_aluno_minhas_notas_vazio.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_13_aluno_minhas_notas_vazio.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Tela &quot;Minhas Notas&quot; do Aluno, ainda sem nenhuma avaliação recebida</figcaption></figure>
+<p>Depois que o Professor <a href="{% url 'manual:capitulo' 'professor' %}#professor-avaliar-movimentacao">avalia uma movimentação</a>, essa mesma tela
+passa a mostrar a avaliação real: os três indicadores são preenchidos, aparece um aviso de &quot;Última
+avaliação&quot; (com professor, movimentação e estrelas) e a tabela &quot;Histórico de Avaliações&quot; lista cada
+movimentação avaliada, com abas para filtrar &quot;Todas&quot; / &quot;Com Nota&quot; / &quot;Sem Nota&quot; e um ícone de &quot;olho&quot;
+para reabrir o comentário completo do professor.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_41_aluno_minhas_notas_estrelas.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_41_aluno_minhas_notas_estrelas.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Tela &quot;Minhas Notas&quot; do Aluno já com uma avaliação recebida (4 de 5 estrelas)</figcaption></figure>
+<h3 id="aluno-notificacoes">6. Notificações</h3>
+<p>O sino de notificações no cabeçalho mostra um contador (badge) com a quantidade de notificações
+não lidas. Ao clicar, abre um painel com as notificações recentes: por exemplo, o próprio evento
+de ter sido adicionado a um grupo aparece como notificação: <em>&quot;Você foi adicionado ao ciclo 'NPJ
+Cível 2026/2'.&quot;</em>, com a marcação de há quanto tempo (ex.: &quot;18 minutos atrás&quot;) e a opção &quot;Ver
+todas&quot;.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_14_aluno_notificacao_vinculo.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_14_aluno_notificacao_vinculo.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Painel de notificações do Aluno, mostrando o aviso de inclusão no ciclo</figcaption></figure>
+<p>Outros eventos também geram notificação para o Aluno: o grupo dele ser vinculado a um processo
+(&quot;Seu grupo foi vinculado ao processo '...' como Advogados Polo Passivo&quot;) e uma nova movimentação
+ocorrer em um processo do qual participa (&quot;Nova movimentação em '...': Autuação e Distribuição&quot;).
+A página completa de notificações (<code>/notificacoes/</code>, acessível pela opção &quot;Ver todas&quot;) lista todo o
+histórico, mais recente primeiro.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_27_notificacoes_aluno.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_27_notificacoes_aluno.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Página de notificações completa de um Aluno, com os três tipos de aviso: vínculo ao ciclo, grupo vinculado ao processo e nova movimentação</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>Uma visão comparativa de notificações em outros perfis (Professor/Coordenador) e uma observação
+importante sobre o que <strong>não</strong> gera notificação está na seção <a href="{% url 'manual:capitulo' 'notificacoes' %}#notificacoes-sistema">Notificações do
+Sistema</a>, ao final deste capítulo.</p>
+</blockquote>
+<h3 id="aluno-cadastrar-processo">7. Como Cadastrar um Processo</h3>
+<p>O item &quot;Cadastrar Processos&quot; do menu &quot;Processos&quot; abre um formulário funcional de 3 passos.</p>
+<p><strong>Passo 1 (Dados do Processo)</strong>: Tipo do Processo, Comarca, Vara/Serventia, Classe Processual,
+Valor da Causa (com opção de marcar Segredo de Justiça) e as partes do processo (Polo Ativo, Polo
+Passivo e, opcionalmente, Substituto Processual/Outras Partes/Sujeitos). A Vara/Serventia só mostra
+as varas da Comarca escolhida.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_37_cadastro_passo1_dados.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_37_cadastro_passo1_dados.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Passo 1 do Cadastro de Processo, com os campos de Tipo do Processo, Comarca, Vara/Serventia, Classe Processual e Assunto</figcaption></figure>
+<p><strong>Partes do processo</strong>: os três blocos (Polo Ativo e Polo Passivo, obrigatórios, e Substituto
+Processual/Outras Partes/Sujeitos, opcional) funcionam da mesma forma. Cada bloco tem um campo
+&quot;Buscar Parte Existente&quot; e um botão &quot;+ Cadastrar Nova&quot;:</p>
+<ul>
+<li>
+<p><strong>Usar uma parte já cadastrada</strong>: digite parte do nome ou do CPF/CNPJ no campo &quot;Buscar Parte
+Existente&quot;. O sistema sugere as partes correspondentes à medida que se digita.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_73_processo_polo_busca_sugestao.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_73_processo_polo_busca_sugestao.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Campo &quot;Buscar Parte Existente&quot; do Polo Ativo com sugestão de autocompletar ao digitar &quot;Ant&quot;</figcaption></figure>
+<p>Ao clicar na sugestão, a parte é adicionada como uma linha abaixo do campo de busca, com nome,
+CPF/CNPJ, tipo de pessoa e a opção &quot;× Remover&quot;; o campo de busca é limpo para permitir adicionar
+outra parte no mesmo bloco, se necessário.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_74_processo_polo_parte_selecionada.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_74_processo_polo_parte_selecionada.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Polo Ativo já com a parte &quot;Antônio Ribeiro Pacheco&quot; adicionada, com a opção &quot;× Remover&quot;</figcaption></figure>
+<p>Se nenhuma parte corresponder ao texto digitado, o campo mostra &quot;Nenhuma parte encontrada.&quot;.</p>
+</li>
+<li>
+<p><strong>Cadastrar uma parte nova</strong>: clique em &quot;+ Cadastrar Nova&quot; no bloco desejado para abrir o
+formulário &quot;Nova Parte&quot;, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa (Física ou
+Jurídica).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_75_processo_cadastrar_nova_form.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_75_processo_cadastrar_nova_form.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Formulário &quot;Nova Parte&quot; aberto no Polo Passivo, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa</figcaption></figure>
+<p>Preencha os campos e clique em &quot;Salvar&quot; (ou &quot;Cancelar&quot; para desistir sem criar a parte).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_76_processo_nova_parte_preenchida.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_76_processo_nova_parte_preenchida.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Formulário &quot;Nova Parte&quot; preenchido com &quot;Construtora Horizonte Ltda&quot;, antes de salvar</figcaption></figure>
+<p>Após salvar, a parte criada aparece como uma linha no bloco, da mesma forma que uma parte
+buscada, e já fica disponível para ser encontrada pelo &quot;Buscar Parte Existente&quot; em cadastros
+futuros de processo.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_77_processo_nova_parte_adicionada.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_77_processo_nova_parte_adicionada.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Polo Passivo já com a parte nova &quot;Construtora Horizonte Ltda&quot; adicionada após salvar</figcaption></figure>
+</li>
+</ul>
+<p><strong>Passo 2 (Documentos)</strong>: permite anexar arquivos ao processo (PDF, DOCX, JPG, JPEG, até 7 MB por
+arquivo), mas <strong>não é obrigatório</strong>: dá para avançar sem anexar nada.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_38_cadastro_passo2_documentos.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_38_cadastro_passo2_documentos.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Passo 2 do Cadastro de Processo, com o botão &quot;+ Adicionar Documento&quot;</figcaption></figure>
+<p><strong>Passo 3 (Resumo)</strong>: mostra um resumo de conferência (dados do processo, partes e documentos)
+antes de confirmar. Ao clicar em &quot;Cadastrar Processo&quot;, o sistema gera automaticamente o número do
+processo no padrão CNJ (<code>NNNNNNNN-DD.AAAA.J.TR.OOOO</code>): o usuário não digita esse número.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_39_cadastro_passo3_resumo.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_39_cadastro_passo3_resumo.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Passo 3 do Cadastro de Processo, com o resumo de conferência dos dados, partes e documentos</figcaption></figure>
+<p>O processo cadastrado aparece imediatamente na lista &quot;Processos Vinculados&quot; da Área do Aluno, com
+situação &quot;Protocolado&quot;.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_15_aluno_processo_vinculado.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_15_aluno_processo_vinculado.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Área do Aluno já com um processo vinculado, após o cadastro</figcaption></figure>
+<h3 id="aluno-detalhe-processo">8. Detalhe do Processo</h3>
+<p>Ao clicar no número do processo na lista, abre a tela &quot;Autos&quot;, com os dados completos do processo
+(polos, vara/comarca, classe, valor da causa, status, ciclo e grupos vinculados) e, logo abaixo, três
+abas: <strong>Eventos do Processo</strong> (linha do tempo das movimentações), <strong>Índice Processo</strong> e <strong>Navegação
+de Arquivo</strong>.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_16_detalhe_processo_dados.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_16_detalhe_processo_dados.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Tela de detalhe do processo, com os dados completos e os polos ativo/passivo</figcaption></figure>
+<p><strong>Filtrar os eventos por tipo</strong>: acima da lista da aba &quot;Eventos do Processo&quot; há uma barra de
+opções que permite mostrar só um tipo de movimentação por vez: <strong>TODOS</strong> (opção padrão, que
+mostra todos os eventos), <strong>Redistribuição</strong>, <strong>Juntada de Documentos</strong>, <strong>Custas Recolhidas</strong>,
+<strong>Conclusão ao Juiz</strong> e <strong>Sentença</strong>. A barra tem sempre essas seis opções, independentemente dos
+eventos que o processo já possui.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_82_eventos_filtros_barra.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_82_eventos_filtros_barra.png' %}" alt="" loading="lazy" width="1000" height="74"></a><figcaption>Aba &quot;Eventos do Processo&quot; com a barra de filtros por tipo: TODOS, Redistribuição, Juntada de Documentos, Custas Recolhidas, Conclusão ao Juiz e Sentença</figcaption></figure>
+<p>Ao marcar um tipo, a lista passa a mostrar apenas os eventos daquele tipo, mantendo a numeração
+original de cada evento, e volta para a primeira página; o contador e a paginação se ajustam ao
+resultado. Para voltar a ver todos os eventos, marque <strong>TODOS</strong>.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_83_eventos_filtro_redistribuicao.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_83_eventos_filtro_redistribuicao.png' %}" alt="" loading="lazy" width="1000" height="436"></a><figcaption>Lista de eventos filtrada pela opção &quot;Redistribuição&quot;, mostrando só os eventos desse tipo</figcaption></figure>
+<p>Se o processo ainda não tem nenhum evento do tipo escolhido, a lista mostra a mensagem
+&quot;Nenhuma movimentação deste tipo.&quot;.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_84_eventos_filtro_sem_resultado.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_84_eventos_filtro_sem_resultado.png' %}" alt="" loading="lazy" width="1000" height="120"></a><figcaption>Aba &quot;Eventos do Processo&quot; com o filtro &quot;Sentença&quot; marcado e a mensagem &quot;Nenhuma movimentação deste tipo.&quot;</figcaption></figure>
+<p>O botão &quot;Opções Processo&quot; abre um menu com as ações disponíveis para o Aluno/Advogado do grupo:
+<strong>Marcar Audiência</strong>, <strong>Partes</strong>, <strong>Visualizar</strong> e <strong>Movimentar</strong>. A opção <strong>&quot;Modificar Dados&quot;</strong>
+aparece desabilitada para esse perfil.</p>
+<p><em>(Seção em elaboração: &quot;Marcar Audiência&quot; ainda em desenvolvimento.)</em></p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_17_opcoes_processo_menu.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_17_opcoes_processo_menu.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Menu &quot;Opções Processo&quot; aberto, mostrando as ações disponíveis para o Aluno</figcaption></figure>
+<h3 id="aluno-movimentar-processo">9. Como Movimentar um Processo</h3>
+<p>Em &quot;Opções Processo → Movimentar&quot;, o formulário pede o <strong>Tipo de Movimentação</strong> (lista suspensa,
+com a observação &quot;Preencher conforme TPU CNJ para alimentar estatística de produtividade&quot;), uma
+descrição livre e, opcionalmente, documentos anexados. Também é feito em 2 passos, com uma tela de
+revisão antes de confirmar.</p>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>Os tipos de movimentação disponíveis no formulário mudam conforme o papel processual de quem
+está logado. Para um Aluno do grupo &quot;Advogados Polo Ativo&quot;, só aparece a opção <strong>&quot;Juntada de
+Documentos&quot;</strong>.</p>
+</blockquote>
+<p>Depois de confirmada, a movimentação aparece na aba &quot;Eventos do Processo&quot; do detalhe do processo,
+junto com a movimentação automática &quot;Protocolo da Petição Inicial&quot; gerada no momento do cadastro;
+cada evento mostra número sequencial, descrição, data/hora e o usuário responsável.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_18_eventos_processo_movimentacao.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_18_eventos_processo_movimentacao.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Aba &quot;Eventos do Processo&quot; mostrando a linha do tempo com as movimentações registradas</figcaption></figure>
+<h3 id="aluno-anexar-documento">10. Como Anexar um Documento em uma Movimentação</h3>
+<p>No <strong>Passo 1</strong> de &quot;Movimentar Processo&quot;, a seção &quot;Documentos da Movimentação&quot; tem duas abas:
+&quot;Upload de Arquivos&quot; e &quot;Modelos, Editor On-line&quot; (coberto na próxima seção). Para anexar um arquivo
+já pronto (PDF, DOCX, JPG ou JPEG, até 7 MB por arquivo):</p>
+<ol>
+<li>Arraste o arquivo para a área pontilhada, ou clique nela para abrir o seletor de arquivos do
+sistema operacional.</li>
+<li>Depois do upload, o sistema pede um <strong>&quot;Título do Arquivo&quot;</strong> para cada documento (obrigatório)
+antes de incluí-lo na lista, confirmando com o ícone de &quot;✓&quot;.</li>
+<li>O documento passa a aparecer em <strong>&quot;Documentos a Anexar&quot;</strong>, com opções de editar o título (lápis)
+ou remover (lixeira).</li>
+<li>Clique em <strong>&quot;Avançar&quot;</strong>, confira o resumo no Passo 2 e clique em <strong>&quot;Confirmar Movimentação&quot;</strong>.</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_22_movimentacao_documento_anexado.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_22_movimentacao_documento_anexado.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Movimentação com o arquivo &quot;Procuração Ad Judicia (fictícia)&quot; já incluído na lista de Documentos a Anexar</figcaption></figure>
+<p>Depois de confirmada, o documento aparece anexado à movimentação na aba &quot;Eventos do Processo&quot;: o
+número de arquivos aparece na coluna &quot;Arquivo(s)&quot; (ex.: &quot;˅ 1&quot;); clique na seta para expandir e ver
+o(s) documento(s) daquele evento, com botões <strong>&quot;Visualizar&quot;</strong> (abre em nova aba) e <strong>&quot;Baixar&quot;</strong>.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_23_evento_visualizar_baixar_documento.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_23_evento_visualizar_baixar_documento.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Evento &quot;Juntada de Documentos&quot; expandido, mostrando o documento anexado com os botões Visualizar e Baixar</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>Não existe, por enquanto, uma tela central que liste &quot;todos os documentos do processo&quot; fora do
+contexto de cada movimentação: para juntar as peças de um processo é preciso abrir cada evento
+na aba &quot;Eventos do Processo&quot;.</p>
+<p><em>(Seção em elaboração: aba &quot;Navegação de Arquivo&quot;.)</em></p>
+</blockquote>
+<h3 id="aluno-editor-online">11. Como Usar o Editor On-line para Criar e Assinar um Documento</h3>
+<p>A aba <strong>&quot;Modelos, Editor On-line&quot;</strong> (ao lado de &quot;Upload de Arquivos&quot;, no mesmo Passo 1 de
+&quot;Movimentar Processo&quot;) permite redigir um documento diretamente no navegador, sem precisar montar
+um arquivo antes.</p>
+<ol>
+<li>Clique na aba <strong>&quot;Modelos, Editor On-line&quot;</strong>.</li>
+<li>Opcionalmente, escolha um <strong>modelo de documento</strong> pronto no seletor &quot;Carregar Modelo de
+Documento&quot; (ou continue de um <strong>rascunho salvo</strong> anteriormente, com &quot;Abrir Rascunho (.html)&quot;):
+qualquer um dos dois <strong>substitui o conteúdo atual do editor</strong>.</li>
+<li>Preencha o <strong>&quot;Nome do Arquivo para Salvar&quot;</strong>.</li>
+<li>Escreva o texto no editor (formatação de texto rico: negrito, itálico, listas, tabelas, links,
+imagens, alinhamento etc.; barra de ferramentas parecida com um processador de texto comum).</li>
+<li>No rodapé do editor há três botões:
+<ul>
+<li><strong>&quot;Assinar&quot;</strong>: insere automaticamente, ao final do texto, um bloco &quot;ASSINADO
+ELETRONICAMENTE&quot; com o nome do usuário logado e a data/hora, simulando uma assinatura
+eletrônica.</li>
+<li><strong>&quot;Incluir na Movimentação&quot;</strong>: adiciona o conteúdo atual do editor à lista de &quot;Documentos a
+Anexar&quot; da movimentação (mesma lista usada pelo upload de arquivos).</li>
+<li><strong>&quot;Salvar Rascunho&quot;</strong>: guarda o conteúdo sem incluir na movimentação, para continuar depois.</li>
+</ul>
+</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_24_editor_online_documento_assinado.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_24_editor_online_documento_assinado.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Documento redigido no editor on-line, já com o bloco &quot;ASSINADO ELETRONICAMENTE&quot; inserido após clicar em Assinar</figcaption></figure>
+<ol start="6">
+<li>Depois de clicar em &quot;Assinar&quot; (opcional, mas recomendado antes de protocolar uma peça) e depois
+em <strong>&quot;Incluir na Movimentação&quot;</strong>, o documento aparece em &quot;Documentos a Anexar&quot; com a extensão
+<code>.html</code>; o restante do fluxo (Avançar → Revisão → Confirmar Movimentação) é idêntico ao do
+upload de arquivo comum.</li>
+</ol>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>A assinatura eletrônica do editor é <strong>apenas simbólica</strong> (só insere um texto no próprio
+documento), não é uma assinatura digital com certificado, nem gera nenhum arquivo separado de
+verificação.</p>
+</blockquote>
+<h3 id="aluno-sc-vincular-grupo">12. Papel de Serventia/Cartório (SC): Vincular um Grupo a um Processo</h3>
+<p>Vincular um <strong>segundo grupo</strong> (por exemplo, o time de advogados da parte contrária) a um processo
+que já foi protocolado <strong>não é feito pelo Professor nem pelo próprio grupo interessado</strong>: é uma
+ação exclusiva de quem pertence a um grupo com o papel processual <strong>&quot;Serventia/Cartório&quot; (SC)</strong>,
+feita pela própria &quot;Área do Aluno&quot; desse usuário.</p>
+<p>Logado como um aluno de um grupo com papel &quot;Serventia/Cartório&quot;, a &quot;Área do Aluno&quot; lista <strong>todos
+os processos do ciclo</strong> (não só os do seu próprio grupo) em &quot;Processos da Vara&quot;, com uma coluna
+extra de checkbox e uma coluna &quot;Ações&quot;. Há dois jeitos de abrir o modal <strong>&quot;Atribuir Grupo ao
+Processo&quot;</strong>:</p>
+<ul>
+<li>
+<p><strong>Um processo por vez</strong>: clique no ícone de pessoas (&quot;Atribuir grupo&quot;) na linha do processo
+desejado. O modal abre já focado nesse processo, mostrando seu número no topo.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_78_sc_modal_processo_individual.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_78_sc_modal_processo_individual.png' %}" alt="" loading="lazy" width="1200" height="569"></a><figcaption>Modal &quot;Atribuir Grupo ao Processo&quot; aberto pelo ícone de um único processo, mostrando o número do processo no topo</figcaption></figure>
+</li>
+<li>
+<p><strong>Vários processos de uma vez</strong>: marque o checkbox de cada processo (ou o checkbox do
+cabeçalho, para marcar todos) e clique em <strong>&quot;Atribuir grupo aos selecionados&quot;</strong>, no rodapé da
+lista.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_79_sc_lista_checkbox_selecionado.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_79_sc_lista_checkbox_selecionado.png' %}" alt="" loading="lazy" width="1200" height="569"></a><figcaption>Lista &quot;Processos da Vara&quot; com o checkbox de um processo marcado e o contador &quot;1 selecionado&quot; no botão &quot;Atribuir Grupo aos Selecionados&quot;</figcaption></figure>
+<p>O modal então se aplica à atribuição em lote nos processos marcados, identificada pelo texto
+&quot;X processo(s) selecionado(s)&quot; / &quot;Atribuição em lote&quot; no lugar do número do processo único.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_80_sc_modal_atribuicao_lote.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_80_sc_modal_atribuicao_lote.png' %}" alt="" loading="lazy" width="1200" height="569"></a><figcaption>Modal &quot;Atribuir Grupo ao Processo&quot; aberto pelo botão de atribuição em lote, mostrando &quot;1 processo(s) selecionado(s)&quot; e &quot;Atribuição em lote&quot; no topo</figcaption></figure>
+</li>
+</ul>
+<p>Dentro do modal, cada grupo do ciclo aparece como um cartão:</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_50_sc_atribuir_grupo_modal.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_50_sc_atribuir_grupo_modal.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Modal &quot;Atribuir Grupo ao Processo&quot; aberto por um usuário Serventia/Cartório, com os três grupos do ciclo já vinculados</figcaption></figure>
+<ol>
+<li>
+<p>Clicar no <strong>corpo do cartão</strong> marca aquele grupo para ser adicionado ao(s) processo(s) aberto(s)
+no modal. Se o papel processual do grupo já estiver ocupado por outro grupo em algum dos
+processos (por exemplo, já existe um Polo Ativo diferente), o sistema pede confirmação antes de
+tratar como uma troca (exceto para o papel Serventia/Cartório, que pode ter mais de um grupo no
+mesmo ciclo sem conflito).</p>
+</li>
+<li>
+<p>Um grupo já vinculado mostra a etiqueta &quot;Já vinculado&quot; (um único processo aberto no modal) ou
+&quot;Em X de Y&quot;/&quot;Em todos os Y&quot; (atribuição em lote), e ganha um ícone de <strong>lixeira</strong> ao lado: clicar
+nele marca aquele grupo específico para ser desvinculado, pedindo confirmação antes. É possível
+desmarcar a remoção clicando de novo na lixeira, antes de confirmar.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_51_sc_remover_grupo_confirmacao.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_51_sc_remover_grupo_confirmacao.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Confirmação &quot;Remover o grupo... deste processo?&quot; ao clicar na lixeira de um grupo já vinculado</figcaption></figure>
+</li>
+<li>
+<p>O botão <strong>&quot;Desvincular Grupos&quot;</strong>, no rodapé do modal, continua existindo como ação separada: ele
+desvincula <strong>todos</strong> os grupos do(s) processo(s) aberto(s) de uma vez, com sua própria
+confirmação (&quot;Remover todos os grupos vinculados a este processo?&quot;).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_81_sc_desvincular_grupos_confirmacao.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_81_sc_desvincular_grupos_confirmacao.png' %}" alt="" loading="lazy" width="1200" height="569"></a><figcaption>Confirmação &quot;Remover todos os grupos vinculados a este processo?&quot; ao clicar em &quot;Desvincular Grupos&quot;</figcaption></figure>
+</li>
+<li>
+<p>Depois de marcar as inclusões, trocas e remoções desejadas, clique em <strong>&quot;Confirmar Atribuição&quot;</strong>
+para gravar tudo de uma vez.</p>
+</li>
+</ol>
+<p>Depois de confirmado, o campo &quot;Grupos Vinculados&quot; do processo passa a mostrar todos os grupos
+atribuídos, incluindo o próprio grupo de Serventia/Cartório que fez a atribuição e, se ainda não
+houvesse serventia definida, o campo &quot;Serventia&quot; do processo é preenchido automaticamente com o
+nome desse grupo. O status do processo também pode avançar automaticamente (por exemplo, de
+&quot;Protocolado&quot; para &quot;Autuado&quot;). A atribuição também registra sozinha um evento na aba &quot;Eventos do
+Processo&quot;: <strong>&quot;Autuação e Distribuição&quot;</strong> na primeira atribuição de grupos do processo, ou
+<strong>&quot;Redistribuição&quot;</strong> nas atribuições seguintes (inclusive quando a mudança é só uma remoção).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_21_processo_tres_grupos_vinculados.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_21_processo_tres_grupos_vinculados.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Processo com três grupos vinculados: Advogados Polo Ativo, Serventia/Cartório e Advogados Polo Passivo, status &quot;Autuado&quot;</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>Como consequência, <strong>todo processo que vai envolver mais de um grupo</strong> (por exemplo, uma ação
+com advogados dos dois polos) depende de existir, no ciclo, pelo menos um grupo com o papel
+&quot;Serventia/Cartório&quot; e pelo menos um aluno vinculado a ele; sem isso, não há como atribuir o
+segundo grupo pela interface.</p>
+</blockquote>
+<h3 id="aluno-corrigir-movimentacao">13. Como Corrigir uma Movimentação já Registrada</h3>
+<p>Um ato registrado não é apagado nem sobrescrito: a correção cria uma <strong>nova versão</strong> ligada à anterior, e as duas continuam no histórico do processo. Só o <strong>grupo que registrou</strong> o ato consegue corrigi-lo.</p>
+<p>Há dois caminhos para corrigir:</p>
+<ol>
+<li><strong>Pelo lápis do evento</strong>: na aba &quot;Eventos do Processo&quot;, o evento registrado pelo seu grupo tem um ícone de lápis. Ele abre o formulário já preenchido com o tipo e a descrição anteriores; ao confirmar, o sistema avisa &quot;Movimentação editada e nova versão registrada com sucesso&quot;.</li>
+<li><strong>Pelo formulário &quot;Movimentar&quot;</strong>: ao escolher um tipo que o seu grupo já praticou neste processo e cuja janela de correção (descrita abaixo) ainda está aberta, aparece a pergunta <strong>&quot;Isto corrige o envio anterior deste tipo?&quot;</strong>. Marque a opção se for uma correção. Se não marcar, o sistema recusa o registro e explica que já existe um ato desse tipo.</li>
+</ol>
+<p><strong>Até quando dá para corrigir?</strong> Enquanto <strong>nenhum ato posterior depender</strong> do que você registrou. Assim que outro grupo pratica um ato que tinha o seu como condição, a janela de correção se encerra e o sistema avisa: <em>&quot;a janela de correção já foi encerrada. Use Cancelamento/Tornar Sem Efeito ou Desentranhamento a partir daqui&quot;</em>.</p>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>Os atos que podem ser praticados a qualquer momento (<strong>Juntada de Documentos</strong>, <strong>Cancelamento / Tornar Sem Efeito</strong>, <strong>Desentranhamento</strong> e <strong>Redistribuição</strong>) não têm janela de correção: cada registro vale por si e pode ser repetido.</p>
+</blockquote>
+<p>Depois que a janela se encerra, a saída é registrar um ato do tipo certo:</p>
+<ul>
+<li><strong>Cancelamento / Tornar Sem Efeito</strong>: praticado pela Serventia/Cartório, para erro material, duplicidade ou arquivo corrompido (ver <a href="{% url 'manual:capitulo' 'serventia-cartorio' %}#capitulo-sc">Capítulo de Serventia/Cartório</a>).</li>
+<li><strong>Desentranhamento</strong>: praticado pelo Juiz, para retirar um documento juntado por engano (ver <a href="{% url 'manual:capitulo' 'juiz' %}#capitulo-jz">Capítulo do Juiz</a>).</li>
+</ul>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>Cancelar ou desentranhar um ato <strong>não desfaz o status</strong> que ele tinha dado ao processo. Se o ato cancelado era, por exemplo, o que deixou o processo &quot;Autuado&quot;, o status continua o mesmo.</p>
+</blockquote>
+</div>
