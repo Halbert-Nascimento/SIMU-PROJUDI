@@ -155,6 +155,9 @@ abbr.pill { text-decoration: none; cursor: help; }
 }
 
 .manual-ampliada { padding: 0; border: 0; background: transparent; max-width: 96vw; max-height: 94vh; }
+/* O dialog modal não trava a rolagem do fundo; sem isso a página anda por trás da captura. */
+html:has(.manual-ampliada[open]) { overflow: hidden; scrollbar-gutter: stable; }
+.manual-ampliada { overscroll-behavior: contain; }
 .manual-ampliada::backdrop { background: rgba(10, 8, 61, .55); }
 .manual-ampliada img { display: block; max-width: 96vw; max-height: 90vh; background: #fff; }
 .manual-ampliada button {
