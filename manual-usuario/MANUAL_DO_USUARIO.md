@@ -144,20 +144,34 @@ Como já apresentado na [Introdução](#introducao), o simulador organiza tudo e
 | Ministério Público | MP | Fiscal da lei; intervém quando o Juiz decide que a intervenção é obrigatória | [Capítulo do Ministério Público](#capitulo-mp) |
 | Juiz | JZ | Conduz o processo: despacha, decide, saneia, julga e sentencia | [Capítulo do Juiz](#capitulo-jz) |
 
-Um processo pode ter vários grupos vinculados ao mesmo tempo (por exemplo, um grupo SC, um APA, um APP, um MP e um JZ, todos no mesmo processo), cada um vendo e agindo só dentro do que seu papel permite. Os perfis de gestão (Admin, Coordenador, Professor) não atuam diretamente nos processos: eles administram ciclos, grupos e usuários, e avaliam as movimentações feitas pelos Alunos: ver os capítulos [do Admin](#capitulo-admin), [do Coordenador](#capitulo-coordenador) e [do Professor](#capitulo-professor).
+Um processo pode ter vários grupos vinculados ao mesmo tempo (por exemplo, um grupo SC, um APA, um APP, um MP e um JZ, todos no mesmo processo), cada um vendo e agindo só dentro do que seu papel permite.
+
+Regras que valem para todos os papéis e que ajudam a entender o que cada grupo vê:
+
+- **Quem vincula os grupos ao processo é a Serventia/Cartório (SC).** Só quem está vinculado ao processo consegue movimentá-lo.
+- **Cada processo tem, no máximo, um grupo por papel**, com uma exceção: a Serventia pode ter mais de um grupo vinculado.
+- **O polo vem do papel**: o grupo de Advogados Polo Ativo ocupa o polo ativo e o de Advogados Polo Passivo, o polo passivo.
+- **Professor e Coordenador não movimentam processos**: eles acompanham e avaliam o que os alunos fazem.
+- **Cada ato só aparece depois do ato anterior**: a lista do formulário "Movimentar" cresce conforme o processo avança, e por isso, no começo, alguns papéis veem poucas opções. A [Linha do processo](#linha-do-processo) mostra a ordem completa. Os perfis de gestão (Admin, Coordenador, Professor) não atuam diretamente nos processos: eles administram ciclos, grupos e usuários, e avaliam as movimentações feitas pelos Alunos: ver os capítulos [do Admin](#capitulo-admin), [do Coordenador](#capitulo-coordenador) e [do Professor](#capitulo-professor).
 
 <a name="guia-prazos"></a>
 ### 3. O que são "prazos" no sistema
 
-Várias movimentações processuais, ao serem registradas, mexem no controle de prazos do processo, mesmo que o simulador não mostre isso como um campo separado no formulário de Movimentar (visto na [seção 9 do Capítulo do Aluno](#aluno-movimentar-processo)). Cada tipo de movimentação pode ter um ou mais destes efeitos: 
+Cada tipo de movimentação do catálogo pode carregar um ou mais **indicadores**. Eles aparecem na linha do evento, na aba "Eventos do Processo", como um ícone com texto curto (por exemplo, "Abre um prazo").
 
-- **Abre prazo**: a movimentação inicia a contagem de um prazo para a parte contrária responder (ex.: a citação abre prazo para a Contestação).
-- **Encerra prazo**: a movimentação seguinte fecha esse prazo (ex.: a própria Contestação encerra o prazo que a citação abriu).
-- **Reabre prazo**: usado em situações específicas, como após uma decisão em Embargos de Declaração.
-- **Notifica**: gera uma notificação para o(s) grupo(s) responsável(is) pelo próximo ato (ver [seção 6 do Capítulo do Aluno](#aluno-notificacoes)).
-- **Agenda audiência**: cria automaticamente uma audiência na agenda do processo.
+> ⚠️ Os indicadores são **marcações**. O simulador **não calcula vencimento, não bloqueia um ato praticado fora do prazo e não agenda audiência por conta própria**. Quem acompanha os prazos são os próprios grupos de trabalho; o professor avalia o resultado.
 
-Este manual não documenta prazo a prazo cada uma das movimentações do sistema; cada capítulo de papel (SC, APA, APP, MP, JZ) já indica, quando relevante, se uma movimentação testada ao vivo abre ou fecha algum prazo.
+Os indicadores existentes são estes:
+
+- **Abre um prazo**: o ato inicia uma janela de tempo para a resposta da outra parte (ex.: a "Audiência de Conciliação — Sem Acordo" abre a janela de defesa).
+- **Encerra um prazo**: o ato fecha essa janela (ex.: a "Contestação" encerra a janela de defesa).
+- **Reabre um prazo**: usado em situações específicas, como a "Decisão nos Embargos", que reabre o prazo recursal.
+- **Agenda uma audiência**: o ato costuma levar a uma audiência, mas o simulador não cria a audiência a partir dele.
+- **Notifica as partes**: marca que o ato é de comunicação (ex.: a "Publicação/Intimação das Partes").
+
+Já a **notificação de verdade** funciona de outro jeito, igual para todos os atos: sempre que uma movimentação é registrada, os membros dos demais grupos vinculados ao processo recebem uma notificação, no sino do cabeçalho (ver [seção 6 do Capítulo do Aluno](#aluno-notificacoes)). Quem registrou o ato não é notificado.
+
+Para ver, ato a ato, quais indicadores existem, consulte a [Linha do processo](#linha-do-processo) e, no capítulo de cada papel, a tabela "Atos de" daquele papel.
 
 <a name="guia-avisos"></a>
 ### 4. Avisos operacionais (tela de login)
@@ -167,7 +181,7 @@ A tela de login tem um painel "Informações Importantes", com itens que valem p
 - **Primeiro acesso**: todo cadastro novo entra como "Pendente" e só é liberado depois que um Admin, Coordenador ou Professor aprova e atribui o papel de simulação, já documentado na  [seção 2 de Primeiros Passos](#apos-cadastro).
 - **Limite de 7 MB por arquivo**: cada documento anexado a uma movimentação pode ter até 7 MB, nos formatos PDF, DOCX, JPG e JPEG. O sistema confere o conteúdo do arquivo, não só a extensão: renomear um arquivo para ".pdf" não faz ele passar pela validação, já mencionado na [seção 7 do Capítulo do Aluno](#aluno-cadastrar-processo).
 - **A sessão encerra após 15 minutos sem atividade**: um aviso aparece antes do fim do prazo, com a opção de continuar conectado. Sem resposta, a sessão é encerrada e o sistema volta para a tela de login. Vale a pena não deixar um formulário longo aberto sem salvar.
-- **Processos em segredo de justiça**: Um processo marcado como segredo de justiça só aparece para quem atua nele, não é uma  etiqueta visual: quem não é parte, nem o cartório ou o juízo do feito, não encontra o processo nem pelas listagens nem pela busca.
+- **Processos em segredo de justiça**: um processo marcado como segredo de justiça só aparece para quem atua nele: a Serventia do ciclo, os grupos vinculados ao processo, o Professor responsável pelo ciclo, o Coordenador e o Admin. Para qualquer outra pessoa o processo não existe. Já um processo **sem** segredo, depois de autuado, é **público**: quem tiver o endereço abre os autos mesmo sem fazer login. Antes da Autuação (status "Protocolado"), só o grupo que protocolou, a Serventia e a gestão enxergam o processo.
 
 ---
 
@@ -280,7 +294,7 @@ Enquanto o Coordenador do seu Núcleo de Prática Jurídica não confirmar seu c
 
 *Disponível para: qualquer perfil logado (Admin, Coordenador, Professor ou Aluno). É a única forma de troca de senha feita pelo próprio usuário; veja também [Esqueci minha senha](#como-fazer-login), para quando o usuário não consegue nem fazer login.*
 
-1. Em qualquer tela do sistema, já logado, clique no ícone de cadeado (🔒) no canto superior direito do cabeçalho, ao lado do nome do usuário.
+1. Em qualquer tela do sistema, já logado, clique no ícone de cadeado no canto superior direito do cabeçalho, ao lado do nome do usuário.
 2. Na tela **"Minha Conta"**, preencha **Senha Antiga**, **Nova Senha** e **Confirmação da Nova Senha**.
 3. Clique em **Salvar**.
 
@@ -432,13 +446,16 @@ Ao entrar, o Admin é direcionado direto ao **Painel de Controle** (mesma tela d
 
 *Disponível para: perfil global **Coordenador**.*
 
-O Painel de Controle do Coordenador é **idêntico** ao do Admin (mesmas seções: Gestão de Ciclos, Resumo do Semestre, Ações Rápidas); todos os passos do [Capítulo do Admin](#capitulo-admin) valem também para o Coordenador: aprovar cadastros, criar ciclos, criar/editar grupos e adicionar/remover alunos dos grupos.
+O Painel de Controle do Coordenador é **idêntico** ao do Admin (mesmas seções: Gestão de Ciclos, Processos dos Ciclos Ativos, Resumo dos Ciclos Ativos e Ações Rápidas); todos os passos do [Capítulo do Admin](#capitulo-admin) valem também para o Coordenador: aprovar cadastros, criar ciclos, criar/editar grupos e adicionar/remover alunos dos grupos.
+
+**Em resumo**
+
+- Vê **todos os ciclos** do sistema, e não só os que coordena, e pode editá-los e gerenciar os grupos de qualquer um (o Professor só faz isso nos ciclos de que é responsável).
+- Aprova e edita cadastros, mas **só de Professores, Alunos e cadastros Pendentes**. Os cadastros de outros Coordenadores e de Admins ficam fora do alcance dele.
+- Ao aprovar ou editar, atribui os perfis **Coordenador, Professor ou Aluno**, nunca o de Admin.
+- **Não movimenta processos**: o sistema bloqueia o Coordenador de registrar atos. Ele acompanha o andamento e avalia o que os Alunos fazem.
 
 Ao aprovar ou editar um usuário, o Coordenador **não pode atribuir o perfil "Admin"** a ninguém: o seletor de Tipo de Perfil só oferece Coordenador, Professor e Aluno. Já o Admin pode atribuir qualquer um dos quatro perfis.
-
-*(Não há diferença de permissão a confirmar em "Distribuir Novo Processo" ou "Agendar Audiência": como descrito no [Capítulo do Admin, seção 1](#admin-painel), essas duas ações não têm nenhuma tela implementada por trás; a limitação é a mesma para qualquer perfil que acesse o Painel de Controle, não uma questão de permissão do Coordenador.)*
-
----
 
 ---
 
@@ -460,6 +477,7 @@ O Professor usa o **mesmo Painel de Controle** dos outros perfis de gestão, mas
 
   ![Painel de Controle do Professor já com um ciclo atribuído a ele](assets/img_12_professor_painel_com_ciclo.png)
 
+- **Novo ciclo**: o Professor também pode criar um ciclo pelo botão **+ Novo Ciclo**. Como para qualquer perfil, quem cria o ciclo vira o "Responsável" por ele (ver [seção 3 do Capítulo do Admin](#admin-criar-ciclo)).
 - **Gerir Usuários**: o Professor consegue ver a lista completa de usuários do sistema, mas só pode **aprovar ou editar cadastros atribuindo o perfil Aluno**, ao contrário do Coordenador (que pode atribuir Coordenador, Professor ou Aluno) e do Admin (que pode atribuir qualquer perfil).
 
   ![Tela de editar usuário aberta por um Professor, mostrando que só a opção Aluno está disponível no seletor de perfil](assets/img_11_professor_editar_usuario_so_aluno.png)
@@ -791,7 +809,7 @@ cada evento mostra número sequencial, descrição, data/hora e o usuário respo
 
 No **Passo 1** de "Movimentar Processo", a seção "Documentos da Movimentação" tem duas abas:
 "Upload de Arquivos" e "Modelos, Editor On-line" (coberto na próxima seção). Para anexar um arquivo
-já pronto (PDF, DOC, DOCX, ODT, JPG ou PNG, até 10MB):
+já pronto (PDF, DOCX, JPG ou JPEG, até 7 MB por arquivo):
 
 1. Arraste o arquivo para a área pontilhada, ou clique nela para abrir o seletor de arquivos do
    sistema operacional.
@@ -915,6 +933,28 @@ Processo": **"Autuação e Distribuição"** na primeira atribuição de grupos 
 > "Serventia/Cartório" e pelo menos um aluno vinculado a ele; sem isso, não há como atribuir o
 > segundo grupo pela interface.
 
+
+<a name="aluno-corrigir-movimentacao"></a>
+### 13. Como Corrigir uma Movimentação já Registrada
+
+Um ato registrado não é apagado nem sobrescrito: a correção cria uma **nova versão** ligada à anterior, e as duas continuam no histórico do processo. Só o **grupo que registrou** o ato consegue corrigi-lo.
+
+Há dois caminhos para corrigir:
+
+1. **Pelo lápis do evento**: na aba "Eventos do Processo", o evento registrado pelo seu grupo tem um ícone de lápis. Ele abre o formulário já preenchido com o tipo e a descrição anteriores; ao confirmar, o sistema avisa "Movimentação editada e nova versão registrada com sucesso".
+2. **Pelo formulário "Movimentar"**: ao escolher um tipo que o seu grupo já praticou neste processo e cuja janela de correção (descrita abaixo) ainda está aberta, aparece a pergunta **"Isto corrige o envio anterior deste tipo?"**. Marque a opção se for uma correção. Se não marcar, o sistema recusa o registro e explica que já existe um ato desse tipo.
+
+**Até quando dá para corrigir?** Enquanto **nenhum ato posterior depender** do que você registrou. Assim que outro grupo pratica um ato que tinha o seu como condição, a janela de correção se encerra e o sistema avisa: *"a janela de correção já foi encerrada. Use Cancelamento/Tornar Sem Efeito ou Desentranhamento a partir daqui"*.
+
+> ℹ️ Os atos que podem ser praticados a qualquer momento (**Juntada de Documentos**, **Cancelamento / Tornar Sem Efeito**, **Desentranhamento** e **Redistribuição**) não têm janela de correção: cada registro vale por si e pode ser repetido.
+
+Depois que a janela se encerra, a saída é registrar um ato do tipo certo:
+
+- **Cancelamento / Tornar Sem Efeito**: praticado pela Serventia/Cartório, para erro material, duplicidade ou arquivo corrompido (ver [Capítulo de Serventia/Cartório](#capitulo-sc)).
+- **Desentranhamento**: praticado pelo Juiz, para retirar um documento juntado por engano (ver [Capítulo do Juiz](#capitulo-jz)).
+
+> ⚠️ Cancelar ou desentranhar um ato **não desfaz o status** que ele tinha dado ao processo. Se o ato cancelado era, por exemplo, o que deixou o processo "Autuado", o status continua o mesmo.
+
 ---
 
 <a name="capitulo-sc"></a>
@@ -923,6 +963,14 @@ Processo": **"Autuação e Distribuição"** na primeira atribuição de grupos 
 *Disponível para: Aluno vinculado a um grupo com papel processual **Serventia/Cartório**. É um
 papel "de bastidor": faz o serviço cartorário/administrativo do processo (autuação, custas,
 citação, expedientes, arquivamento), não é parte nem advogado de nenhum polo.*
+
+**Em resumo**
+
+- É o papel de bastidor do processo: cuida da rotina de cartório e **não é parte nem advogado**.
+- Entre os papéis de simulação, é o **único** que vincula grupos ao processo e que registra o **Cancelamento / Tornar Sem Efeito**. Também corrige os dados do processo e das partes, o que Admin, Coordenador e o Professor responsável pelo ciclo igualmente podem fazer.
+- Pratica a maior parte dos atos de rotina: autuação, custas, citação, certidões, publicação, trânsito em julgado e arquivamento.
+- Em vez de ver só os processos do próprio grupo, vê **todos os processos do ciclo**.
+- Sem a Serventia o processo não anda: é ela quem libera a vez de quase todos os outros papéis.
 
 Toda a navegação básica (Área do Aluno, menu Processos/Audiências/Minhas Notas, notificações) é a
 mesma descrita no [Capítulo do Aluno](#capitulo-aluno). O que diferencia o papel Serventia/Cartório
@@ -1002,6 +1050,27 @@ um ícone de lápis (só quem registrou pode editar depois).
 > "Custas Recolhidas"), que funciona da mesma forma para todos os eventos do processo e está
 > descrita na [seção 8 do Capítulo do Aluno](#aluno-detalhe-processo).
 
+
+<a name="sc-sequencia"></a>
+### 5. A Rotina da Serventia, Fase por Fase
+
+A lista completa, com o que libera cada ato, está na tabela **"Atos de Serventia/Cartório (SC)"** no fim deste capítulo. Em ordem, a rotina é esta:
+
+1. **Análise da inicial.** Depois do protocolo, a Serventia registra **Autuação e Distribuição**. Em seguida registra as **custas**: *Custas Recolhidas* ou *Custas Não Recolhidas*. No segundo caso, registra *Intima autor p/ custas* e depois *Custas Pagas Após Intimação* ou *Custas Não Pagas Após Intimação* (este último permite ao Juiz o *Cancelamento da Distribuição*). Com as custas resolvidas, registra a **Conclusão ao Juiz**. Se o Juiz mandou emendar a inicial e o autor não emendou, registra *Emenda Não Apresentada*, o que abre caminho ao *Indeferimento da Inicial*.
+2. **Citação.** Depois do *Despacho de Citação* do Juiz, a Serventia escolhe a **modalidade** (Mandado, Postal, Edital ou Eletrônica) e registra o desfecho:
+    - *Mandado*: Citação por Mandado, depois Cumprimento do Mandado (Réu Encontrado ou Réu Não Encontrado) e, por fim, Citação Positiva ou Citação Negativa.
+    - *Postal*: Citação por Carta Postal (AR), depois AR Assinado Juntado ou AR Não Assinado ou Não Devolvido.
+    - *Edital* e *Eletrônica*: Citação por Edital ou Citação Eletrônica/Portal, que já deixam o processo "Citado".
+    - Quando a citação fracassa (negativa ou AR não devolvido), o Juiz pode decidir pelo edital (*Nova Modalidade — Edital*) ou a Serventia repete o mandado (*Nova Modalidade — Repetir Mandado*).
+3. **Defesa.** Se o réu não contestou, a Serventia certifica a **Revelia**, depois da *Audiência de Conciliação — Sem Acordo*. O Juiz então decide os efeitos da revelia.
+4. **Instrução.** Se houve perícia, a Serventia junta o **Laudo Pericial**.
+5. **Recurso.** Depois da sentença, a Serventia registra a **Publicação/Intimação das Partes**. Se houver apelação e contrarrazões, registra a **Remessa ao 2º Grau**.
+6. **Encerramento.** Registra o **Trânsito em Julgado**, a **Certidão de Trânsito em Julgado** e o **Arquivamento**.
+
+> ⚠️ O simulador não confere se houve recurso nem se o prazo recursal terminou. Cabe à Serventia lançar o Trânsito em Julgado **só depois de decorrido o prazo recursal sem recurso**.
+
+> ℹ️ O julgamento em 2º grau é etapa futura do simulador. O processo segue normalmente até a Remessa ao 2º Grau e fica aguardando essa etapa.
+
 ---
 
 <a name="capitulo-apa"></a>
@@ -1009,6 +1078,14 @@ um ícone de lápis (só quem registrou pode editar depois).
 
 *Disponível para: Aluno vinculado a um grupo com papel processual **Advogados Polo Ativo**. É o
 advogado de quem propôs a ação (o Requerente).*
+
+**Em resumo**
+
+- Representa o **autor** da ação (o Requerente) e ocupa o **polo ativo** do processo.
+- O processo nasce na tela **Cadastrar Processo** (ver [seção 7 do Capítulo do Aluno](#aluno-cadastrar-processo)), que já registra o Protocolo da Petição Inicial.
+- Ato só seu, junto com o MP: a **Emenda Apresentada**, que responde ao *Emenda da Inicial* determinado pelo Juiz.
+- Atos de parte, que o catálogo libera também para APP e MP: **Réplica do Autor**, **Memoriais/Alegações Finais**, **Embargos de Declaração**, **Apelação**, **Contrarrazões** e os recursos às instâncias superiores.
+- A **Juntada de Documentos** pode ser feita a qualquer momento, e por isso é o único ato disponível no começo.
 
 A navegação (Área do Aluno, menus, notificações, cadastrar processo, anexar documento, editor
 on-line) é toda a mesma do [Capítulo do Aluno](#capitulo-aluno). O que é específico do papel:
@@ -1032,9 +1109,18 @@ processo. Em um processo recém-autuado, só **"Juntada de Documentos"** fica di
 
 ![Lista suspensa "Tipo Movimentação" de um usuário APA, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_59_apa_movimentar_juntada.png)
 
-Assim como para os demais papéis, outros tipos de movimentação do APA passam a ficar
-disponíveis conforme o processo avança para as fases seguintes, seguindo o mesmo mecanismo de
-pré-condição descrito acima.
+Os demais atos do APA passam a aparecer no formulário conforme o processo avança. Na prática, a vez do APA chega nestes momentos:
+
+1. **Emenda**: quando o Juiz registra *Emenda da Inicial* (a inicial estava irregular), o APA responde com *Emenda Apresentada*. Se ele não emenda, a Serventia registra *Emenda Não Apresentada* e o processo caminha para o indeferimento.
+2. **Réplica**: depois da *Contestação* (ou dos *Efeitos da Revelia — Sem Efeito*), o APA pode registrar a *Réplica do Autor*.
+3. **Memoriais**: se o Juiz decide, ao fim da audiência de instrução, pelo resultado *Memoriais*, o APA registra os *Memoriais/Alegações Finais*.
+4. **Recurso**: depois da *Publicação/Intimação das Partes* (ou da *Decisão nos Embargos*), o APA pode registrar *Embargos de Declaração* ou *Apelação*; a apelação também é possível depois de um *Indeferimento da Inicial*. Se a outra parte apelar, o APA registra as *Contrarrazões*.
+
+> ℹ️ O simulador libera Réplica, Embargos, Apelação e Contrarrazões para APA, APP e MP, e não confere qual polo responde a qual ato. Cabe a cada grupo praticar o ato conforme o seu papel no processo.
+
+> ℹ️ *Recurso Superior?* e *REsp/RE* dependem do julgamento em 2º grau, que é etapa futura do simulador. Por ora eles aparecem na tabela, mas ainda não ficam disponíveis.
+
+A tabela **"Atos de Advogados Polo Ativo (APA)"**, no fim deste capítulo, traz a lista completa, com o que libera cada ato.
 
 ---
 
@@ -1043,6 +1129,14 @@ pré-condição descrito acima.
 
 *Disponível para: Aluno vinculado a um grupo com papel processual **Advogados Polo Passivo**. É o
 advogado de quem está sendo processado (o Requerido).*
+
+**Em resumo**
+
+- Representa o **réu** (o Requerido) e ocupa o **polo passivo** do processo.
+- Ato só seu: a **Contestação**. Ela depende da *Audiência de Conciliação — Sem Acordo* e só é aceita se o grupo ocupar o polo passivo daquele processo.
+- Se o réu não contesta, a Serventia certifica a **Revelia** e o Juiz decide os efeitos dela.
+- Atos de parte, que o catálogo libera também para APA e MP: **Memoriais/Alegações Finais**, **Embargos de Declaração**, **Apelação**, **Contrarrazões** e os recursos às instâncias superiores.
+- A **Juntada de Documentos** pode ser feita a qualquer momento.
 
 Assim como o APA, a navegação geral é a do [Capítulo do Aluno](#capitulo-aluno). Durante uma
 rodada de simulação (login como Lucas Andrade Monteiro, grupo "Monteiro & Advogados Associados"),
@@ -1056,14 +1150,23 @@ exclusiva do [SC](#sc-modificar-dados)).
 ### 1. Quais movimentações o APP pode praticar
 
 No formulário "Movimentar" do processo, só **"Juntada de Documentos"** fica disponível nesse
-estágio do processo (o transversal, sem pré-condição): o mesmo tipo já usado por
-Lucas para juntar a procuração e a contestação registradas nos [dados de teste](DADOS_DE_TESTE.md).
+estágio do processo (o transversal, sem pré-condição): o mesmo tipo usado por
+Lucas, na rodada de simulação, para juntar a procuração e a contestação.
 
 ![Lista suspensa "Tipo Movimentação" de um usuário APP, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_65_app_movimentar_juntada.png)
 
-Assim como para os demais papéis, outros tipos de movimentação do APP passam a ficar disponíveis
-conforme o processo avança para as fases seguintes, seguindo o mesmo mecanismo de pré-condição já
-descrito no capítulo do SC.
+Os demais atos do APP passam a aparecer no formulário conforme o processo avança:
+
+1. **Contestação**: depois que o Juiz registra a *Audiência de Conciliação — Sem Acordo*, abre-se a janela de defesa e o APP pode registrar a *Contestação*.
+2. **Revelia**: se a defesa não vem, a Serventia certifica a *Revelia*. O Juiz registra então os *Efeitos da Revelia* (*Produz Efeitos* ou *Sem Efeito*); no primeiro caso o Juiz pode julgar antecipadamente, no segundo o processo segue como se houvesse contestação.
+3. **Memoriais**: se o Juiz decide, ao fim da audiência de instrução, pelo resultado *Memoriais*, o APP registra os *Memoriais/Alegações Finais*.
+4. **Recurso**: depois da *Publicação/Intimação das Partes* (ou da *Decisão nos Embargos*), o APP pode registrar *Embargos de Declaração* ou *Apelação*. Se a outra parte apelar, registra as *Contrarrazões*.
+
+> ℹ️ O catálogo libera também a **Réplica do Autor** para o APP. Pelo próprio nome, ela costuma ser ato do polo ativo, e o simulador não confere isso: cabe ao grupo praticar o ato conforme o seu papel.
+
+> ℹ️ *Recurso Superior?* e *REsp/RE* dependem do julgamento em 2º grau, que é etapa futura do simulador. Por ora eles aparecem na tabela, mas ainda não ficam disponíveis.
+
+A tabela **"Atos de Advogados Polo Passivo (APP)"**, no fim deste capítulo, traz a lista completa, com o que libera cada ato.
 
 ---
 
@@ -1072,6 +1175,14 @@ descrito no capítulo do SC.
 
 *Disponível para: Aluno vinculado a um grupo com papel processual **Ministério Público**. Atua
 como fiscal da lei (custos legis), intervindo no processo quando a lei ou o juiz exigir.*
+
+**Em resumo**
+
+- Atua como **fiscal da lei** (*custos legis*): intervém quando o Juiz entende que a intervenção é necessária.
+- Ato só seu: a **Manifestação do MP**. Ela só fica disponível depois que o Juiz registra **MP Deve Intervir — Sim**, o que ele só pode fazer depois da *Réplica do Autor*.
+- Se o Juiz registra **MP Deve Intervir — Não**, o processo segue direto para a Decisão Saneadora e o MP não se manifesta.
+- Quando o MP é o **autor** do processo (ocupa o polo ativo), o Juiz não consegue registrar "Deve Intervir — Sim", só "Não", porque o MP já é parte.
+- Também pratica os atos de parte do autor: Emenda Apresentada, Réplica do Autor, Memoriais, Embargos, Apelação e Contrarrazões.
 
 A navegação geral (Área do Aluno, "Processos Vinculados", menus, notificações, cadastrar processo,
 anexar documento, editor on-line) é a mesma do [Capítulo do Aluno](#capitulo-aluno). O que é
@@ -1096,10 +1207,16 @@ Em um processo recém-autuado, só **"Juntada de Documentos"** fica disponível 
 
 ![Lista suspensa "Tipo Movimentação" de um usuário MP, mostrando só "Juntada de Documentos" disponível nesse estágio do processo](assets/img_60_mp_movimentar_juntada.png)
 
-Assim como para os demais papéis, outros tipos de movimentação do MP (incluindo uma manifestação
-exclusiva do papel, quando sua intervenção no processo é exigida) passam a ficar disponíveis
-conforme o processo avança para as fases seguintes, seguindo o mesmo mecanismo de pré-condição já
-descrito no capítulo do SC.
+O MP vê poucas opções por bastante tempo. A vez dele chega nestes momentos:
+
+1. **Manifestação**: depois da *Réplica do Autor*, o Juiz decide se o MP deve intervir. Só com a decisão **Sim** aparece a *Manifestação do MP*; o Juiz só consegue registrar o "Sim" se o MP não for o autor do processo.
+2. **Atos de parte**: nos processos em que ocupa o polo ativo, o MP pratica os mesmos atos do autor (*Emenda Apresentada*, *Réplica do Autor*, *Memoriais/Alegações Finais*, *Embargos de Declaração*, *Apelação* e *Contrarrazões*).
+
+> ℹ️ O MP não é avisado de um jeito especial: ele recebe a notificação normal de **nova movimentação**, no sino do cabeçalho, como qualquer grupo vinculado ao processo (ver [Notificações do Sistema](#notificacoes-sistema)). Por isso é importante olhar o processo quando houver notificação.
+
+> ℹ️ *Recurso Superior?* e *REsp/RE* dependem do julgamento em 2º grau, que é etapa futura do simulador. Por ora eles aparecem na tabela, mas ainda não ficam disponíveis.
+
+A tabela **"Atos de Ministério Público (MP)"**, no fim deste capítulo, traz a lista completa, com o que libera cada ato.
 
 ---
 
@@ -1108,6 +1225,14 @@ descrito no capítulo do SC.
 
 *Disponível para: Aluno vinculado a um grupo com papel processual **Juiz**. Conduz o processo:
 decide, saneia, julga e sentencia.*
+
+**Em resumo**
+
+- **Conduz o processo**: despacha, concilia, sanea, julga e sentencia. É o papel com mais atos no sistema.
+- Cada decisão do Juiz **libera a vez de outro papel**: a Serventia (citação, publicação), as partes (defesa, réplica, memoriais) ou o MP.
+- O Juiz também conduz as audiências de conciliação e de instrução, porque o simulador não tem um papel próprio de conciliador.
+- O **Desentranhamento** pode ser praticado a qualquer momento, para retirar um documento juntado por engano.
+- Não corrige dados do processo: essa ação continua exclusiva da Serventia.
 
 A navegação geral (Área do Aluno, "Processos Vinculados", menus, notificações) é a mesma do
 [Capítulo do Aluno](#capitulo-aluno). O papel de Juiz é o que tem mais movimentações no sistema:
@@ -1133,13 +1258,26 @@ Juiz, sem pré-condição).
 
 ![Lista suspensa "Tipo Movimentação" de um usuário Juiz, mostrando só "Desentranhamento" disponível nesse estágio do processo](assets/img_61_jz_movimentar_desentranhamento.png)
 
-O papel de Juiz é o que tem a sequência mais longa de movimentações no sistema, cobrindo
-praticamente toda a condução do processo (despachos, decisões interlocutórias e sentença). Assim
-como para os demais papéis, cada tipo passa a ficar disponível conforme sua pré-condição é
-cumprida por uma movimentação anterior; por isso a lista cresce e muda de conteúdo à medida que o
-processo avança pelas fases seguintes (análise da inicial, citação, audiência de conciliação,
-instrução, sentença e fase recursal), além do transversal **Desentranhamento**, disponível a
-qualquer momento (conforme visto acima).
+Os atos do Juiz seguem **caminhos de decisão**. Em cada ponto abaixo, o Juiz escolhe um desfecho e isso decide quem age depois:
+
+1. **Análise da inicial**, depois da *Conclusão ao Juiz*, com quatro caminhos:
+    - *Em Ordem*: segue para o *Despacho de Citação*.
+    - *Irregular*: registra a *Emenda da Inicial*, e o autor (APA ou MP) responde com a *Emenda Apresentada*.
+    - *Urgente*: decide a tutela (*Deferida* ou *Indeferida*); se deferida, pode conceder a *Liminar*. Depois, segue para a citação.
+    - *Indefere*: registra o *Indeferimento da Inicial* e o processo se extingue sem resolução do mérito.
+2. **Citação e conciliação**: o *Despacho de Citação* libera a Serventia. Depois da citação, o Juiz conduz a **Audiência de Conciliação**:
+    - *Com Acordo*: segue para a *Sentença Homologatória de Acordo*.
+    - *Sem Acordo*: abre-se a fase de defesa.
+3. **Defesa**: se o réu não contestou e a Serventia certificou a *Revelia*, o Juiz decide os **Efeitos da Revelia**. *Produz Efeitos* permite o *Julgamento Antecipado*; *Sem Efeito* segue para a réplica. Depois da *Réplica do Autor*, o Juiz decide se **o MP deve intervir** (*Sim* ou *Não*) e, concluída essa etapa, registra a **Decisão Saneadora**.
+4. **Instrução**: depois do saneamento, o Juiz define as **provas** (*Perícia*, *Prova Oral* ou *Só Documental*), nomeia a prova pericial quando for o caso e conduz a **Audiência de Instrução e Julgamento**, cujo resultado pode ser *Acordo*, *Memoriais* ou *Julgamento na Data*.
+5. **Sentença**: registra a *Sentença*, depois o *Tipo de Sentença* (*Com Mérito* ou *Sem Mérito*) e a resolução correspondente. Em seguida a Serventia faz a *Publicação/Intimação das Partes*.
+6. **Recurso**: se houver embargos de declaração, o Juiz registra a *Decisão nos Embargos*, que reabre o prazo recursal.
+
+O **Desentranhamento** está disponível a qualquer momento, sem pré-condição, como visto acima.
+
+> ℹ️ O julgamento em 2º grau é etapa futura do simulador. O processo segue normalmente até a Remessa ao 2º Grau, feita pela Serventia, e fica aguardando essa etapa.
+
+A tabela **"Atos de Juiz (JZ)"**, no fim deste capítulo, traz a lista completa, com o que libera cada ato.
 
 ---
 
