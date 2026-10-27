@@ -23,12 +23,18 @@
                     <!-- Um card por cargo de simulação, mais o guia geral: fecha as duas
                          fileiras de três e usa o mesmo vocabulário de cargo_simulacao. -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-[14px] mt-[14px]">
-                        {% include 'acesso/components/_card_manual.html' with icone="fa-book" codigo="Geral" titulo="Guia geral do simulador" descricao="Primeiro acesso, navegação, ciclos e prazos." only %}
-                        {% include 'acesso/components/_card_manual.html' with icone="fa-box-archive" codigo="SC" titulo="Serventia / Cartório" descricao="Autuação, distribuição e movimentação dos autos." only %}
-                        {% include 'acesso/components/_card_manual.html' with icone="fa-file-arrow-up" codigo="APA" titulo="Advogados — Polo Ativo" descricao="Petição inicial, juntada de documentos e réplica." only %}
-                        {% include 'acesso/components/_card_manual.html' with icone="fa-shield-halved" codigo="APP" titulo="Advogados — Polo Passivo" descricao="Contestação, prazos de defesa e acompanhamento." only %}
-                        {% include 'acesso/components/_card_manual.html' with icone="fa-file-circle-check" codigo="MP" titulo="Ministério Público" descricao="Parecer, manifestação e intervenção no feito." only %}
-                        {% include 'acesso/components/_card_manual.html' with icone="fa-scale-balanced" codigo="JZ" titulo="Juiz" descricao="Despacho, decisão interlocutória e sentença." only %}
+                        {% url 'manual:capitulo' 'guia-geral' as url_guia_geral %}
+                        {% url 'manual:capitulo' 'serventia-cartorio' as url_serventia %}
+                        {% url 'manual:capitulo' 'advogados-polo-ativo' as url_polo_ativo %}
+                        {% url 'manual:capitulo' 'advogados-polo-passivo' as url_polo_passivo %}
+                        {% url 'manual:capitulo' 'ministerio-publico' as url_ministerio_publico %}
+                        {% url 'manual:capitulo' 'juiz' as url_juiz %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-book" codigo="Geral" titulo="Guia geral do simulador" descricao="Cadastro, ciclos, grupos, cargos e como os prazos funcionam." url=url_guia_geral only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-box-archive" codigo="SC" titulo="Serventia / Cartório" descricao="Faz o processo andar: autua, cita, publica, certifica e arquiva." url=url_serventia only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-file-arrow-up" codigo="APA" titulo="Advogados — Polo Ativo" descricao="Abre a ação, responde à emenda e acompanha o processo até o recurso." url=url_polo_ativo only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-shield-halved" codigo="APP" titulo="Advogados — Polo Passivo" descricao="Apresenta a contestação e acompanha o processo até o recurso." url=url_polo_passivo only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-file-circle-check" codigo="MP" titulo="Ministério Público" descricao="Manifesta-se como fiscal da lei quando o Juiz determina." url=url_ministerio_publico only %}
+                        {% include 'acesso/components/_card_manual.html' with icone="fa-scale-balanced" codigo="JZ" titulo="Juiz" descricao="Despacha, concilia, saneia e sentencia." url=url_juiz only %}
                     </div>
                 </section>
 

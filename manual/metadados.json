@@ -1,0 +1,343 @@
+{
+ "versao": "0.1 (em elaboração, capítulo por capítulo)",
+ "atualizado": "2026-10-26",
+ "paginas": {
+  "guia-geral": {
+   "sumario": [
+    {
+     "id": "declaracao-de-uso",
+     "nivel": 2,
+     "texto": "Declaração de Uso"
+    },
+    {
+     "id": "introducao",
+     "nivel": 2,
+     "texto": "Introdução"
+    },
+    {
+     "id": "guia-geral",
+     "nivel": 2,
+     "texto": "Guia Geral do Simulador"
+    },
+    {
+     "id": "guia-navegacao-comum",
+     "nivel": 3,
+     "texto": "1. O que é comum a todos os perfis"
+    },
+    {
+     "id": "guia-ciclos-grupos-papeis",
+     "nivel": 3,
+     "texto": "2. Ciclos, Grupos e Papéis: como tudo se encaixa"
+    },
+    {
+     "id": "guia-prazos",
+     "nivel": 3,
+     "texto": "3. O que são \"prazos\" no sistema"
+    },
+    {
+     "id": "guia-avisos",
+     "nivel": 3,
+     "texto": "4. Avisos operacionais (tela de login)"
+    }
+   ]
+  },
+  "primeiros-passos": {
+   "sumario": [
+    {
+     "id": "primeiros-passos",
+     "nivel": 2,
+     "texto": "Primeiros Passos"
+    },
+    {
+     "id": "como-se-cadastrar",
+     "nivel": 3,
+     "texto": "1. Como se Cadastrar no Sistema"
+    },
+    {
+     "id": "apos-cadastro",
+     "nivel": 3,
+     "texto": "2. O que Acontece Logo Após o Cadastro"
+    },
+    {
+     "id": "como-fazer-login",
+     "nivel": 3,
+     "texto": "3. Como Fazer Login"
+    },
+    {
+     "id": "redirecionamento",
+     "nivel": 3,
+     "texto": "4. Para onde Cada Perfil é Redirecionado"
+    },
+    {
+     "id": "alterar-senha",
+     "nivel": 3,
+     "texto": "5. Como Alterar sua Senha (Minha Conta)"
+    }
+   ]
+  },
+  "admin": {
+   "sumario": [
+    {
+     "id": "capitulo-admin",
+     "nivel": 2,
+     "texto": "Capítulo do Admin"
+    },
+    {
+     "id": "admin-painel",
+     "nivel": 3,
+     "texto": "1. Painel de Controle"
+    },
+    {
+     "id": "admin-aprovar-cadastro",
+     "nivel": 3,
+     "texto": "2. Como Aprovar um Cadastro Pendente"
+    },
+    {
+     "id": "admin-criar-ciclo",
+     "nivel": 3,
+     "texto": "3. Como Criar um Ciclo de Simulação"
+    },
+    {
+     "id": "admin-criar-grupo",
+     "nivel": 3,
+     "texto": "4. Como Criar, Editar e Excluir um Grupo de Trabalho, e Adicionar/Remover Alunos"
+    }
+   ]
+  },
+  "coordenador": {
+   "sumario": [
+    {
+     "id": "capitulo-coordenador",
+     "nivel": 2,
+     "texto": "Capítulo do Coordenador"
+    }
+   ]
+  },
+  "professor": {
+   "sumario": [
+    {
+     "id": "capitulo-professor",
+     "nivel": 2,
+     "texto": "Capítulo do Professor"
+    },
+    {
+     "id": "professor-painel",
+     "nivel": 3,
+     "texto": "1. O que o Professor vê no Painel de Controle"
+    },
+    {
+     "id": "professor-vincular-aluno-grupo",
+     "nivel": 3,
+     "texto": "2. Como Vincular um Aluno a um Grupo de Trabalho"
+    },
+    {
+     "id": "professor-avaliar-movimentacao",
+     "nivel": 3,
+     "texto": "3. Como Avaliar uma Movimentação (Atribuir Nota)"
+    },
+    {
+     "id": "professor-bloquear-cadastro",
+     "nivel": 3,
+     "texto": "4. Como Bloquear/Desativar um Cadastro"
+    }
+   ]
+  },
+  "aluno": {
+   "sumario": [
+    {
+     "id": "capitulo-aluno",
+     "nivel": 2,
+     "texto": "Capítulo do Aluno"
+    },
+    {
+     "id": "aluno-redirecionamento",
+     "nivel": 3,
+     "texto": "1. Para onde o Aluno é redirecionado, dependendo do vínculo"
+    },
+    {
+     "id": "aluno-area-geral",
+     "nivel": 3,
+     "texto": "2. Área do Aluno: visão geral"
+    },
+    {
+     "id": "aluno-menu-processos",
+     "nivel": 3,
+     "texto": "3. Menu \"Processos\""
+    },
+    {
+     "id": "aluno-menu-audiencias",
+     "nivel": 3,
+     "texto": "4. Menu \"Audiências\""
+    },
+    {
+     "id": "aluno-minhas-notas",
+     "nivel": 3,
+     "texto": "5. \"Minhas Notas\""
+    },
+    {
+     "id": "aluno-notificacoes",
+     "nivel": 3,
+     "texto": "6. Notificações"
+    },
+    {
+     "id": "aluno-cadastrar-processo",
+     "nivel": 3,
+     "texto": "7. Como Cadastrar um Processo"
+    },
+    {
+     "id": "aluno-detalhe-processo",
+     "nivel": 3,
+     "texto": "8. Detalhe do Processo"
+    },
+    {
+     "id": "aluno-movimentar-processo",
+     "nivel": 3,
+     "texto": "9. Como Movimentar um Processo"
+    },
+    {
+     "id": "aluno-anexar-documento",
+     "nivel": 3,
+     "texto": "10. Como Anexar um Documento em uma Movimentação"
+    },
+    {
+     "id": "aluno-editor-online",
+     "nivel": 3,
+     "texto": "11. Como Usar o Editor On-line para Criar e Assinar um Documento"
+    },
+    {
+     "id": "aluno-sc-vincular-grupo",
+     "nivel": 3,
+     "texto": "12. Papel de Serventia/Cartório (SC): Vincular um Grupo a um Processo"
+    },
+    {
+     "id": "aluno-corrigir-movimentacao",
+     "nivel": 3,
+     "texto": "13. Como Corrigir uma Movimentação já Registrada"
+    }
+   ]
+  },
+  "serventia-cartorio": {
+   "sumario": [
+    {
+     "id": "capitulo-sc",
+     "nivel": 2,
+     "texto": "Capítulo de Serventia/Cartório (SC)"
+    },
+    {
+     "id": "sc-visao-geral",
+     "nivel": 3,
+     "texto": "1. O que muda na Área do Aluno para quem é Serventia/Cartório"
+    },
+    {
+     "id": "sc-vincular-grupo",
+     "nivel": 3,
+     "texto": "2. Vincular um Grupo a um Processo"
+    },
+    {
+     "id": "sc-modificar-dados",
+     "nivel": 3,
+     "texto": "3. Modificar Dados do Processo e Alterar Parte"
+    },
+    {
+     "id": "sc-movimentar",
+     "nivel": 3,
+     "texto": "4. Movimentar Processo como Serventia/Cartório"
+    },
+    {
+     "id": "sc-sequencia",
+     "nivel": 3,
+     "texto": "5. A Rotina da Serventia, Fase por Fase"
+    }
+   ]
+  },
+  "advogados-polo-ativo": {
+   "sumario": [
+    {
+     "id": "capitulo-apa",
+     "nivel": 2,
+     "texto": "Capítulo de Advogados Polo Ativo (APA)"
+    },
+    {
+     "id": "apa-restricoes",
+     "nivel": 3,
+     "texto": "1. O que o APA não pode fazer"
+    },
+    {
+     "id": "apa-movimentar",
+     "nivel": 3,
+     "texto": "2. Quais movimentações o APA pode praticar"
+    }
+   ]
+  },
+  "advogados-polo-passivo": {
+   "sumario": [
+    {
+     "id": "capitulo-app",
+     "nivel": 2,
+     "texto": "Capítulo de Advogados Polo Passivo (APP)"
+    },
+    {
+     "id": "app-movimentar",
+     "nivel": 3,
+     "texto": "1. Quais movimentações o APP pode praticar"
+    }
+   ]
+  },
+  "ministerio-publico": {
+   "sumario": [
+    {
+     "id": "capitulo-mp",
+     "nivel": 2,
+     "texto": "Capítulo do Ministério Público (MP)"
+    },
+    {
+     "id": "mp-restricoes",
+     "nivel": 3,
+     "texto": "1. Restrições"
+    },
+    {
+     "id": "mp-movimentar",
+     "nivel": 3,
+     "texto": "2. Quais movimentações o MP pode praticar"
+    }
+   ]
+  },
+  "juiz": {
+   "sumario": [
+    {
+     "id": "capitulo-jz",
+     "nivel": 2,
+     "texto": "Capítulo do Juiz (JZ)"
+    },
+    {
+     "id": "jz-restricoes",
+     "nivel": 3,
+     "texto": "1. Restrições"
+    },
+    {
+     "id": "jz-movimentar",
+     "nivel": 3,
+     "texto": "2. Quais movimentações o Juiz pode praticar"
+    }
+   ]
+  },
+  "notificacoes": {
+   "sumario": [
+    {
+     "id": "notificacoes-sistema",
+     "nivel": 2,
+     "texto": "Notificações do Sistema"
+    }
+   ]
+  },
+  "glossario": {
+   "sumario": [
+    {
+     "id": "glossario",
+     "nivel": 2,
+     "texto": "Glossário de Abreviações e Siglas"
+    }
+   ]
+  }
+ }
+}

@@ -25,6 +25,7 @@ dev = [
     "black",
     "ruff",
     "ipython",
+    "markdown-it-py",
 ]
 
 [build-system]
@@ -39,6 +40,7 @@ packages = [
     "base",
     "ciclos",
     "core",
+    "manual",
     "movimentacoes",
     "notificacoes",
     "processos",
