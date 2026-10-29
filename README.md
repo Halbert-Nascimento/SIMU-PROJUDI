@@ -90,19 +90,42 @@ uv pip install -e .
 uv pip install -e ".[dev]"
 ```
 
-### 5. Execute as migrações do banco de dados
+### 5. Configure o arquivo `.env`
+
+Crie um `.env` na raiz do projeto (ele é ignorado pelo Git). `SECRET_KEY` e
+`DATABASE_URL` são obrigatórios; o restante tem valor padrão.
+
+```env
+SECRET_KEY=troque-por-uma-chave-longa-e-aleatoria
+DEBUG=True
+DATABASE_URL=mysql://usuario:senha@127.0.0.1:3306/projudi
+ALLOWED_HOSTS=127.0.0.1,localhost
+
+# Em desenvolvimento local, sem HTTPS:
+SECURE_SSL_REDIRECT=False
+```
+
+O sistema exige **MySQL** (driver `mysqlclient`): as migrações usam SQL
+específico do MySQL, então o SQLite não é suportado, nem para testes.
+
+Outras variáveis aceitas: `CSRF_TRUSTED_ORIGINS`, `SESSION_TIMEOUT_SECONDS`
+(padrão 900), `BEHIND_TLS_PROXY`, `SECURE_HSTS_SECONDS`,
+`SECURE_HSTS_INCLUDE_SUBDOMAINS`, `SECURE_HSTS_PRELOAD`, `NOME_INSTITUICAO`,
+`FORO_COMARCA` e `EMAIL_CONTATO_DPO`.
+
+### 6. Execute as migrações do banco de dados
 
 ```bash
 python manage.py migrate
 ```
 
-### 6. Rode o servidor de desenvolvimento
+### 7. Rode o servidor de desenvolvimento
 
 ```bash
 python manage.py runserver
 ```
 
-### 7. Acesse o sistema
+### 8. Acesse o sistema
 
 Abra seu navegador e acesse:
 
@@ -114,25 +137,49 @@ http://127.0.0.1:8000/
 
 ```
 simu-projudi/
-├── core/               # Configurações principais do Django
-├── acesso/             # App de autenticação e página inicial
-├── processos/          # App de gerenciamento de processos
-├── usuarios/           # App de gerenciamento de usuários
-├── templates/          # Templates base compartilhados
-├── docs-tuto/          # Documentação e tutoriais
+├── core/               # Configurações do Django (settings, urls, wsgi/asgi)
+├── base/               # Infraestrutura compartilhada: componentes e layouts de
+│                       #   template, templatetags (card, modal, campo), classes de
+│                       #   botão/campo (ui.py), mensagens, decorators, storage
+├── usuarios/           # Modelo de usuário e perfis (Admin, Coordenador,
+│                       #   Professor, Aluno, Pendente)
+├── acesso/             # Login, cadastro, termos, gestão de usuários, middlewares
+│                       #   de sessão
+├── ciclos/             # Ciclos de simulação, grupos de trabalho e cargos
+├── processos/          # Processos judiciais, partes e documentos
+├── movimentacoes/      # Movimentações processuais e catálogo de tipos
+├── avaliacoes/         # Notas, estrelas e relatórios de avaliação
+├── notificacoes/       # Notificações do usuário
+├── agendamentos/       # Agendamentos (app ainda sem funcionalidades)
+├── manual/             # Manual do usuário publicado dentro do sistema
+├── manual-usuario/     # Fonte do manual (Markdown), roteiro e dados de teste
+├── templates/          # Páginas de erro (400/403/404/500) e arquivos estáticos
+│   └── static/         #   css/, js/, img/, favicon_io/ e modelos/
+├── scripts/            # Seeds, verificadores de interface e testes de JavaScript
 ├── pyproject.toml      # Configuração do projeto e dependências
 ├── manage.py           # Script de gerenciamento do Django
 └── README.md           # Este arquivo
 ```
 
+Cada app de domínio segue o mesmo desenho: `models.py`, `views.py`, `urls.py`,
+`forms.py`, `permissions.py` (funções puras de autorização) e, quando preciso,
+`services.py` e `templatetags/<app>_ui.py`. Os testes ficam em `tests.py` ou na
+pasta `tests/` de cada app.
+
+Pastas criadas em tempo de execução e ignoradas pelo Git: `.venv/`,
+`arquivos_privados/` (documentos processuais) e `staticfiles/`.
+
 ## 🛠️ Tecnologias Utilizadas
 
 - **Python 3.11+**
-- **Django 6.0** - Framework web
+- **Django 6.0** - Framework web (renderização no servidor, sem API REST)
 - **uv** - Gerenciador de pacotes
-- **SQLite** - Banco de dados (desenvolvimento)
-- **Tailwind CSS** - Framework CSS
+- **MySQL** (`mysqlclient`) - Banco de dados; `DATABASE_URL` via `django-environ`
+- **django-private-storage** - Armazenamento protegido dos documentos processuais
+- **python-magic** - Validação do tipo real dos arquivos enviados
+- **Tailwind CSS** - Framework CSS (tokens em `templates/static/js/tailwind.config.global.js`)
 - **Font Awesome** - Ícones
+- **pytest / pytest-django, ruff, black** - Testes e qualidade de código (extra `dev`)
 
 ## 📝 Comandos Úteis
 
@@ -160,6 +207,45 @@ python manage.py migrate
 python manage.py createsuperuser
 ```
 
+### Verificar a configuração do projeto
+
+```bash
+python manage.py check
+```
+
+### Popular o banco com dados de exemplo
+
+Seed idempotente (`get_or_create`): pode ser rodado mais de uma vez.
+
+```bash
+python manage.py shell -c "exec(open('scripts/seed_pos_migracao.py', encoding='utf-8').read())"
+```
+
+> `scripts/seed_pre_migracao.py` é o equivalente para o schema anterior à
+> separação do app `movimentacoes`; só serve para validar aquela migração.
+
+### Gerar o manual do usuário
+
+O manual é escrito em Markdown (`manual-usuario/MANUAL_DO_USUARIO.md`) e
+convertido em páginas HTML por capítulo, publicadas no app `manual`:
+
+```bash
+python scripts/gerar_manual_html.py           # gera as páginas
+python scripts/gerar_manual_html.py --check   # falha se o gerado estiver desatualizado
+```
+
+Requer `markdown-it-py` (extra `dev`); o servidor não precisa dele, porque o
+resultado é versionado em `manual/` (capítulos, `metadados.json` e o índice de
+busca `manual/static/manual/busca.json`). Rode o comando sempre que alterar o
+Markdown ou as imagens em `manual-usuario/assets/` e **versione os arquivos
+gerados**.
+
+### Coletar arquivos estáticos (produção)
+
+```bash
+python manage.py collectstatic --noinput
+```
+
 ### Listar pacotes instalados
 
 ```bash
@@ -174,14 +260,33 @@ uv pip install nome-do-pacote
 
 ## ✅ Testes
 
-O projeto não tem suíte automatizada de back-end (os `tests.py` estão vazios).
-O que existe hoje é um teste de comportamento do paginador:
+### Back-end (Django)
+
+A suíte de back-end tem cerca de 230 testes, distribuídos em `acesso`, `base`,
+`ciclos`, `usuarios`, `notificacoes`, `manual` e nas pastas `tests/` de
+`avaliacoes`, `movimentacoes` e `processos`. O app `agendamentos` ainda não tem
+testes. Instale o extra `dev` (`uv pip install -e ".[dev]"`) e rode:
+
+```bash
+pytest                                  # tudo (configurado no pyproject.toml)
+pytest movimentacoes                    # um app
+python manage.py test processos         # alternativa pelo runner do Django
+```
+
+Os testes criam um banco de teste próprio; com MySQL, o usuário do `DATABASE_URL`
+precisa de permissão para criar bancos.
+
+### Front-end (JavaScript)
+
+Os testes de JavaScript exigem [Node.js](https://nodejs.org/) e não usam jsdom
+nem runner: cada script traz um DOM mínimo escrito à mão. O primeiro cobre o
+paginador:
 
 ```bash
 node scripts/teste_paginador.mjs
 ```
 
-Ele roda `static/js/paginador.js` contra um DOM mínimo (57 asserções) e cobre,
+Ele roda `templates/static/js/paginador.js` contra esse DOM e cobre,
 entre outras coisas, a **reserva de espaço**: um bloco paginado não pode encolher
 quando a última página tem menos linhas, e numa tabela a linha solitária não pode
 ficar centralizada num bloco alto. Esse defeito já apareceu três vezes, por
@@ -192,7 +297,7 @@ aqui e confira a última página no navegador antes de considerar pronto.**
 node scripts/teste_mascara_moeda.mjs
 ```
 
-Cobre a máscara monetária de `static/js/mascara_moeda.js` (18 asserções), usada
+Cobre a máscara monetária de `templates/static/js/mascara_moeda.js`, usada
 pelo cadastro de processo e pelo modal "Modificar Dados": o dígito entra pelos
 centavos e empurra o valor para a esquerda — digitar `1` dá R$ 0,01 e `2000` em
 seguida dá R$ 120,00.
@@ -221,16 +326,15 @@ aparecem.
 
 ## 🎨 Identidade Visual
 
-O projeto segue o **Guia de Design da Faculdade IESGO** (versão 1.0), em
-`design/Guia de Design SIMU-PROJUDI.dc.html`:
+O projeto segue o **Guia de Design da Faculdade IESGO** (versão 1.0),
+`Guia de Design SIMU-PROJUDI.dc.html`, mantido fora deste repositório. As
+regras de uso (tokens, tipografia, componentes):
 
 - Navy IESGO (#0a083d) — cabeçalho, títulos e botão primário
 - Azul de ação (#1f4f9c) — links, aba ativa e foco de campo
 - Vermelho institucional (#d30000) — só fio de assinatura, nunca botão ou link
 - Barlow (interface) + Lato (dado codificado), base 12px
 - Cantos retos, sem sombra fora de modal; hierarquia por borda de 1px e faixa de 3px
-
-O acompanhamento da reformulação está em `../NOVO-DESIGN.md`.
 
 ## 📄 Licença
 
