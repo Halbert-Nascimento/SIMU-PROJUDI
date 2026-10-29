@@ -457,6 +457,7 @@
                 <span>Simulador Universitário Projudi{% if nome_instituicao %} · {{ nome_instituicao }}{% endif %}</span>
             </div>
             <div class="flex items-center gap-4">
+                <a href="{% url 'manual:indice' %}" class="text-navy-40 hover:text-white text-meta hover:underline">Manual do Usuário</a>
                 <a href="{% url 'acesso:termos_de_uso' %}" class="text-navy-40 hover:text-white text-meta hover:underline">Termos de Uso</a>
                 <a href="{% url 'acesso:politica_privacidade' %}" class="text-navy-40 hover:text-white text-meta hover:underline">Política de Privacidade</a>
                 <span class="footer-badge">Em desenvolvimento</span>

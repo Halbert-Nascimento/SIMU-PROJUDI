@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from django.conf import settings
 from django.urls import reverse
 
 from movimentacoes.models import MovimentacaoProcessual
@@ -33,6 +34,17 @@ class RotasMovimentacaoTests(CenarioMovimentacoesTestCase):
         client = self.cliente_logado(self.usuarios["APA"])
         resp = client.get(reverse("movimentacoes:criar_movimentacao", args=[self.processo.numero]))
         self.assertEqual(resp.status_code, 200)
+
+    def test_tela_de_movimentar_mostra_os_limites_que_a_validacao_aplica(self):
+        client = self.cliente_logado(self.usuarios["APA"])
+        resp = client.get(reverse("movimentacoes:criar_movimentacao", args=[self.processo.numero]))
+        limite = settings.UPLOAD_CONFIG["MAX_FILE_SIZE_MB"]
+        extensoes = ",".join(settings.UPLOAD_CONFIG["ALLOWED_EXTENSIONS"])
+        self.assertContains(resp, f"Tamanho máximo: {limite}MB por arquivo")
+        self.assertContains(resp, f'accept="{extensoes}"')
+        self.assertContains(resp, "PDF, DOCX, JPG, JPEG")
+        self.assertNotContains(resp, "10MB")
+        self.assertNotContains(resp, ".odt")
 
     def test_editar_movimentacao_get_autenticado_200(self):
         mov = self.registrar(self.processo, "Juntada de Documentos", self.usuarios["APA"], grupo_processo=self.gp_apa)

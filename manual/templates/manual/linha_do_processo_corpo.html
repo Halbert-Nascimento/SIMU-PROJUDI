@@ -1,0 +1,73 @@
+{% load movimentacoes_ui manual_ui %}
+<div class="manual-prosa">
+    <p>
+        Esta página lista, em ordem, todos os atos (movimentações) que o simulador reconhece. Ela é lida do
+        próprio catálogo do sistema, então mostra sempre o que o simulador faz hoje.
+    </p>
+    <ul>
+        <li><strong>Quem pratica</strong>: os papéis autorizados a registrar o ato.</li>
+        <li><strong>Depende de</strong>: o ato só aparece para o grupo depois que <strong>pelo menos um</strong> destes já foi registrado no processo.</li>
+        <li><strong>Efeito</strong>: o status que o processo assume e os indicadores do ato (prazo, audiência, notificação).</li>
+    </ul>
+
+    <blockquote class="manual-aviso manual-aviso--atencao">
+        <p>Os indicadores de prazo e de audiência são marcações: o simulador não calcula vencimento nem agenda
+        audiência sozinho. Quem acompanha o prazo são os próprios grupos.</p>
+    </blockquote>
+    <blockquote class="manual-aviso manual-aviso--neutro">
+        <p>O simulador não confere qual polo responde a qual ato (Réplica, Embargos, Apelação, Contrarrazões e
+        recursos): o ato fica liberado para APA, APP e MP, e cabe ao grupo praticá-lo conforme o seu papel no
+        processo. Do mesmo modo, ele não confere se houve recurso: a Serventia só deve lançar o Trânsito em
+        Julgado depois de decorrido o prazo recursal sem recurso.</p>
+    </blockquote>
+    <blockquote class="manual-aviso manual-aviso--neutro">
+        <p>O julgamento em 2º grau e nas instâncias superiores é etapa futura do simulador. O processo segue
+        normalmente até a Remessa ao 2º Grau; os atos seguintes aparecem aqui, mas ainda não têm quem os pratique.</p>
+    </blockquote>
+
+    <div class="tabs interativa manual-filtro" data-filtro-papeis hidden>
+        <button type="button" class="tab active" data-filtro-papel="">Todos</button>
+        {% for cod in papeis_do_filtro %}
+            <button type="button" class="tab" data-filtro-papel="{{ cod }}" title="{{ cod|nome_do_papel }}">{{ cod }}</button>
+        {% endfor %}
+    </div>
+
+    {% for fase in fases %}
+        <section data-fase>
+            <h2 id="{{ fase.nome|slugify }}">{{ fase.nome }}</h2>
+            <div class="manual-tabela">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Ato</th>
+                            <th>Quem pratica</th>
+                            <th>Depende de</th>
+                            <th>Efeito</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for ato in fase.atos %}
+                            <tr data-papeis="{{ ato.papeis|join:' ' }}">
+                                <td>
+                                    {% if ato.numero %}<span class="manual-ato-numero font-mono">{{ ato.numero }}</span>{% endif %}
+                                    <strong>{{ ato.nome }}</strong>
+                                    {% if ato.observacao %}<span class="manual-ato-obs">{{ ato.observacao }}</span>{% endif %}
+                                </td>
+                                <td>
+                                    {% for cod in ato.papeis %}<abbr class="pill gray font-mono" title="{{ cod|nome_do_papel }}">{{ cod }}</abbr> {% empty %}<span class="manual-ato-obs">—</span>{% endfor %}
+                                </td>
+                                <td>
+                                    {% for nome in ato.depende_de %}{{ nome }}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="manual-ato-obs">{% if ato.observacao %}—{% else %}Nada: pode ser praticado a qualquer momento{% endif %}</span>{% endfor %}
+                                </td>
+                                <td>
+                                    {% if ato.status %}<span class="manual-ato-status">Status: {{ ato.status }}</span>{% endif %}
+                                    {% badges_efeito_colateral ato.efeitos %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    {% endfor %}
+</div>

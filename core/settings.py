@@ -82,6 +82,7 @@ INSTALLED_APPS = [
     # daqui se a decisão mudar.
     'agendamentos',
     'movimentacoes',
+    'manual',
     'private_storage',
 ]
 

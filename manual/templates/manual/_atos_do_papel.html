@@ -1,0 +1,47 @@
+{% load movimentacoes_ui manual_ui %}
+<div class="manual-prosa manual-prosa--seguinte">
+    <h2 id="atos-do-papel">Atos de {{ cargo_nome }}</h2>
+    <p>
+        Lista completa dos atos que este papel pode registrar, lida do catálogo do sistema e na ordem do fluxo do processo.
+        Cada ato só aparece no formulário "Movimentar" depois que <strong>pelo menos um</strong> dos atos da coluna
+        "Disponível depois de" já foi registrado naquele processo. A coluna "Libera" mostra quem passa a poder agir em seguida.
+    </p>
+
+    {% for fase in atos_do_papel %}
+        <h3 id="atos-{{ fase.nome|slugify }}">{{ fase.nome }}</h3>
+        <div class="manual-tabela">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ato</th>
+                        <th>Disponível depois de</th>
+                        <th>Libera</th>
+                        <th>Efeito</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ato in fase.atos %}
+                        <tr>
+                            <td><strong>{{ ato.nome }}</strong></td>
+                            <td>
+                                {% for nome in ato.depende_de %}{{ nome }}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="manual-ato-obs">Qualquer momento</span>{% endfor %}
+                            </td>
+                            <td>
+                                {% for nome, papeis in ato.libera %}{{ nome }} {% for cod in papeis %}<abbr class="pill gray font-mono" title="{{ cod|nome_do_papel }}">{{ cod }}</abbr>{% endfor %}{% if not forloop.last %}<br>{% endif %}{% empty %}<span class="manual-ato-obs">—</span>{% endfor %}
+                            </td>
+                            <td>
+                                {% if ato.status %}<span class="manual-ato-status">Status: {{ ato.status }}</span>{% endif %}
+                                {% badges_efeito_colateral ato.efeitos %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endfor %}
+
+    <blockquote class="manual-aviso manual-aviso--atencao">
+        <p>Os indicadores de prazo e de audiência são marcações: o simulador não calcula vencimento nem agenda
+        audiência sozinho. Quem acompanha o prazo são os próprios grupos.</p>
+    </blockquote>
+</div>

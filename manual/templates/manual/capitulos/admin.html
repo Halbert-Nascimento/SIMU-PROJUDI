@@ -1,0 +1,111 @@
+<div class="manual-prosa">
+<h2 id="capitulo-admin">Capítulo do Admin</h2>
+<p><em>Disponível para: perfil global <strong>Admin</strong>. O Admin é o único perfil com acesso também ao painel técnico do Django, usado apenas para dados de configuração do sistema; isso está fora do escopo deste manual, que cobre a operação normal pela interface do simulador.</em></p>
+<h3 id="admin-painel">1. Painel de Controle</h3>
+<p>Ao entrar, o Admin é direcionado direto ao <strong>Painel de Controle</strong> (mesma tela do Coordenador e do Professor; ver capítulos seguintes), com:</p>
+<ul>
+<li><strong>Gestão de Ciclos de Simulação</strong>: lista os ciclos já criados e o botão para criar um novo.</li>
+<li><strong>Processos dos Ciclos Ativos</strong>: lista os processos judiciais fictícios em andamento.</li>
+<li><strong>Resumo dos Ciclos Ativos</strong>: contadores de Processos Ativos, Avaliações Pendentes, Grupos de Trabalho e Alunos Vinculados, calculados a partir dos dados reais dos ciclos em andamento (o de Avaliações Pendentes some/aumenta conforme movimentações são avaliadas).</li>
+<li><strong>Ações Rápidas</strong>: <strong>Relatório de Notas</strong>, <strong>Gerir Usuários</strong> e <strong>Avaliações Pendentes</strong>.
+<em>Um aviso amarelo no topo, &quot;Aprovações de Cadastro Pendentes&quot;, aparece sempre que houver algum cadastro aguardando liberação.</em></li>
+</ul>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_42_painel_controle_resumo_real.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_42_painel_controle_resumo_real.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Painel de Controle com o Resumo dos Ciclos Ativos calculado (Processos Ativos, Avaliações Pendentes, Grupos de Trabalho, Alunos Vinculados) e as 3 Ações Rápidas</figcaption></figure>
+<p><strong>Relatório de Notas</strong> (<code>/avaliacoes/relatorio-notas/</code>) é uma tela própria: mostra, com filtro por ciclo, o total de alunos e de movimentações avaliadas, a média geral (em estrelas) e uma tabela &quot;Notas por Aluno&quot; com o total de movimentações, quantas foram avaliadas e a média de cada aluno por ciclo.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_43_relatorio_notas.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_43_relatorio_notas.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Tela &quot;Relatório de Notas&quot;, com os cartões de resumo e a tabela de notas por aluno</figcaption></figure>
+<p><strong>Avaliações Pendentes</strong> (<code>/avaliacoes/pendentes/</code>) lista, com filtro por ciclo, todas as movimentações registradas que ainda não receberam avaliação de nenhum Professor, da mais antiga para a mais recente, com um botão <strong>&quot;Avaliar&quot;</strong> em cada linha que leva direto à tela de avaliação (ver <a href="{% url 'manual:capitulo' 'professor' %}#professor-avaliar-movimentacao">Capítulo do Professor, seção 3</a>).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_44_avaliacoes_pendentes.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_44_avaliacoes_pendentes.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Tela &quot;Avaliações Pendentes&quot;, com os cartões de resumo e a lista de movimentações a avaliar</figcaption></figure>
+<h3 id="admin-aprovar-cadastro">2. Como Aprovar um Cadastro Pendente</h3>
+<ol>
+<li>
+<p>No Painel de Controle, clique em <strong>Analisar Cadastros</strong> (ou em <strong>Gerir Usuários</strong>, nas Ações Rápidas).</p>
+</li>
+<li>
+<p>Na aba <strong>Pendentes</strong>, localize o usuário e clique em <strong>Aprovar / Editar</strong>.</p>
+</li>
+<li>
+<p>Escolha o <strong>Tipo de Perfil</strong> (Admin, Coordenador, Professor ou Aluno).</p>
+<blockquote class="manual-aviso manual-aviso--neutro">
+<p>As opções de Tipo de Perfil disponíveis dependem da permissão de quem está logado: o Admin
+vê os quatro perfis, enquanto o Coordenador e o Professor veem uma lista mais restrita (ver o
+capítulo de cada perfil).</p>
+</blockquote>
+</li>
+<li>
+<p>Marque a caixa <strong>Ativo (liberar acesso ao sistema)</strong>.</p>
+</li>
+<li>
+<p>Clique em <strong>Salvar</strong>.</p>
+</li>
+</ol>
+<p><strong>Resultado:</strong> o usuário passa a constar como Ativo na aba &quot;Todos os Usuários&quot; e já consegue fazer login normalmente, caindo na tela correspondente ao perfil escolhido (ver <a href="{% url 'manual:capitulo' 'primeiros-passos' %}#redirecionamento">&quot;Para onde Cada Perfil é Redirecionado&quot;</a>).</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_05_admin_aprovacao_coordenador.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_05_admin_aprovacao_coordenador.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Modal Gestão de Usuários, aba Todos os Usuários, mostrando usuários com seus perfis e status Ativo/Pendente</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>Os dois campos (perfil e &quot;Ativo&quot;) precisam ser preenchidos manualmente: não existe um botão
+único de &quot;aprovar com um clique&quot; que já libera o acesso automaticamente.</p>
+</blockquote>
+<p><strong>Redefinir a senha de outro usuário:</strong> o mesmo modal &quot;Editar/Aprovar Usuário&quot; tem uma subseção recolhível <strong>&quot;Alterar Senha&quot;</strong>, útil para destravar alguém que esqueceu a senha (o sistema não envia e-mail de redefinição pela própria interface).</p>
+<ol>
+<li>Abra o modal &quot;Editar/Aprovar Usuário&quot; do usuário desejado (mesmos passos acima).</li>
+<li>Clique em <strong>&quot;Alterar Senha&quot;</strong> para expandir a subseção.</li>
+<li>Preencha <strong>Nova Senha</strong> e <strong>Confirmação</strong>. Deixe os dois em branco se não quiser alterar a senha.</li>
+<li>Clique em <strong>Salvar</strong>.</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_52_admin_alterar_senha_expandido.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_52_admin_alterar_senha_expandido.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Subseção &quot;Alterar Senha&quot; expandida no modal Editar/Aprovar Usuário, com os campos em branco</figcaption></figure>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_53_admin_alterar_senha_preenchido.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_53_admin_alterar_senha_preenchido.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Subseção &quot;Alterar Senha&quot; preenchida com a nova senha e a confirmação</figcaption></figure>
+<p><strong>Resultado:</strong> mensagem &quot;Usuário atualizado com sucesso.&quot;; a nova senha passa a valer no próximo login do usuário afetado.</p>
+<h3 id="admin-criar-ciclo">3. Como Criar um Ciclo de Simulação</h3>
+<p><em>Pré-requisito: nenhum. Um Ciclo de Simulação representa um semestre letivo do NPJ.</em></p>
+<ol>
+<li>No Painel de Controle, clique em <strong>+ Novo Ciclo</strong>.</li>
+<li>Preencha o <strong>Nome/Edição do Ciclo</strong> (ex.: &quot;NPJ Cível 2026/2&quot;).</li>
+<li>Escolha o <strong>Semestre</strong> (1º ou 2º) e confira o <strong>Ano</strong>.</li>
+<li>Clique em <strong>Salvar Ciclo</strong>.</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_68_admin_novo_ciclo_modal.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_68_admin_novo_ciclo_modal.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Modal &quot;Novo Ciclo de Simulação&quot; com os campos Nome/Edição do Ciclo, Semestre e Ano, e o aviso de que quem cria vira automaticamente o Coordenador do ciclo</figcaption></figure>
+<p><strong>Resultado:</strong> o ciclo aparece na lista &quot;Gestão de Ciclos de Simulação&quot;, com status <strong>Em andamento</strong>, e quem criou o ciclo é automaticamente registrado como o &quot;Responsável&quot; por ele.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_07_ciclo_criado.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_07_ciclo_criado.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Painel de Controle mostrando o ciclo NPJ Cível 2026/2 recém-criado, com status Em andamento</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>Não existe campo para escolher outra pessoa como responsável no momento da criação: quem cria
+o ciclo sempre vira o responsável por ele. Para atribuir o ciclo a outro Coordenador ou Professor,
+é preciso <strong>editar</strong> o ciclo depois de criado.</p>
+</blockquote>
+<h3 id="admin-criar-grupo">4. Como Criar, Editar e Excluir um Grupo de Trabalho, e Adicionar/Remover Alunos</h3>
+<p><em>Pré-requisito: o ciclo já precisa existir. Um Grupo de Trabalho representa uma equipe de alunos atuando com um papel específico no processo simulado (ex.: um &quot;escritório de advocacia&quot; do Polo Ativo). Esta tela (&quot;Gerenciar Grupos&quot;) é a mesma para Admin, Coordenador e Professor responsável pelo ciclo: as ações abaixo valem igualmente para os três perfis.</em></p>
+<p><strong>Criar um grupo:</strong></p>
+<ol>
+<li>No Painel de Controle, na lista de ciclos, clique em <strong>Gerenciar Grupos</strong> no ciclo desejado.</li>
+<li>Clique em <strong>+ Novo Grupo</strong>.</li>
+<li>Preencha o <strong>Nome do Grupo</strong> (ex.: &quot;Albuquerque &amp; Associados&quot;) e escolha o <strong>Papel Processual</strong> (Serventia/Cartório, Advogados Polo Ativo, Advogados Polo Passivo, Ministério Público ou Juiz).</li>
+<li>Clique em <strong>Salvar</strong>.</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_69_grupo_novo_modal.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_69_grupo_novo_modal.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Modal &quot;Novo Grupo&quot; com os campos Nome do Grupo e Papel na Simulação</figcaption></figure>
+<p><strong>Adicionar um aluno ao grupo:</strong></p>
+<ol start="5">
+<li>Com o grupo selecionado na lista à esquerda, use o campo <strong>Adicionar ao Grupo</strong> para buscar um aluno pelo nome ou e-mail, e clique em <strong>+ Add</strong> ao lado do nome dele.</li>
+</ol>
+<p><strong>Resultado:</strong> o aluno passa a fazer parte do grupo e do ciclo. No login seguinte, ele deixa de ver a tela &quot;Aguardando Vínculo&quot; e passa a ver sua Área do Aluno normalmente, com o grupo e os processos vinculados a ele.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_08_grupo_com_mariana.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_08_grupo_com_mariana.png' %}" alt="" loading="lazy" width="1200" height="555"></a><figcaption>Tela Gerenciar Grupos, com o grupo Albuquerque &amp; Associados já com um aluno adicionado</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p>Um aluno só pode estar em <strong>um grupo por ciclo</strong>: o sistema bloqueia a tentativa de colocá-lo
+em dois grupos do mesmo ciclo ao mesmo tempo.</p>
+</blockquote>
+<p><strong>Editar um grupo já existente:</strong></p>
+<ol start="6">
+<li>Na lista de grupos, clique no ícone de lápis ao lado do grupo desejado.</li>
+<li>No modal &quot;Editar Grupo&quot;, altere o <strong>Nome do Grupo</strong> e/ou o <strong>Papel na Simulação</strong> livremente (o sistema não impede a troca de papel mesmo que o grupo já tenha alunos vinculados).</li>
+<li>Clique em <strong>Salvar</strong>.</li>
+</ol>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_45_grupo_editar_modal.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_45_grupo_editar_modal.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Modal &quot;Editar Grupo&quot; aberto, com o nome e o papel processual pré-preenchidos para edição</figcaption></figure>
+<p><strong>Remover um aluno de um grupo:</strong></p>
+<ol start="9">
+<li>Com o grupo selecionado, clique no ícone de lixeira ao lado do nome do aluno em &quot;Membros da Equipe&quot;.</li>
+</ol>
+<p><strong>Resultado:</strong> o aluno é removido do grupo imediatamente. Se esse era o único grupo do aluno naquele ciclo, ele também é desvinculado do ciclo (volta a ver &quot;Aguardando Vínculo&quot; no próximo login); se o aluno participa de outro grupo do mesmo ciclo, ele continua vinculado ao ciclo por esse outro grupo.</p>
+<figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_46_grupo_aluno_removido.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_46_grupo_aluno_removido.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Aluno removido do grupo: mensagem de sucesso e &quot;Membros da Equipe (0)&quot;</figcaption></figure>
+<blockquote class="manual-aviso manual-aviso--atencao">
+<p><strong>Não existe função para excluir um grupo inteiro.</strong> A tela &quot;Gerenciar Grupos&quot; permite criar,
+editar (nome e papel) e remover alunos um a um, mas não há botão nem opção para apagar um Grupo
+de Trabalho já criado. Para &quot;esvaziar&quot; um grupo, é preciso remover seus alunos um a um.</p>
+</blockquote>
+</div>
