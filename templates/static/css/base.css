@@ -12,6 +12,7 @@
 .input-group-icon {
     position: absolute; left: 10px; top: 50%; transform: translateY(-50%);
     color: #6b7280; font-size: calc(13px * var(--escala-fonte, 1));
+    z-index: 1; pointer-events: none;
 }
 
 /* Acordeão de informações — guia seção 03: 11px / 700 / .1em / caixa alta.
