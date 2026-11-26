@@ -45,7 +45,7 @@ def pode_gerenciar_grupos_ciclo(user: Usuario, ciclo) -> bool:
     Pode gerenciar grupos de um ciclo:
     - Admin: sempre.
     - Coordenador: sempre.
-    - Professor: somente se estiver vinculado como coodenador do ciclo.
+    - Professor: somente se for o coordenador ou participante do ciclo.
     """
     if not user.is_authenticated:
         return False
