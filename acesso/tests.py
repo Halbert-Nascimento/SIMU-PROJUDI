@@ -5,6 +5,7 @@ from django.utils.http import urlencode
 
 from acesso.forms_admin_usuarios import AtualizarUsuarioForm
 from acesso.permissions import pode_editar_usuario
+from acesso.services import redefinir_senha
 from avaliacoes.models import FeedbackProfessor
 from ciclos.models import (
     CargoSimulacao,
@@ -834,3 +835,109 @@ class CadastroViewAceiteTermosTests(TestCase):
         self.assertTrue(
             Usuario.objects.filter(email="maria.souza.cadastro@teste.local").exists()
         )
+
+
+class UsuarioAtualizarRedirecionamentoTests(TestCase):
+    """O `next` do modal de gestão só pode levar a uma página do próprio site."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = _criar_usuario("admin.next", Usuario.TipoPerfilGlobal.ADMIN)
+        cls.aluno = _criar_usuario("aluno.next", Usuario.TipoPerfilGlobal.ALUNO)
+
+    def _atualizar(self, **extra):
+        self.client.force_login(self.admin)
+        dados = {
+            "user_id": self.aluno.pk,
+            "tipo_perfil_global": Usuario.TipoPerfilGlobal.ALUNO,
+            "is_active": "on",
+            **extra,
+        }
+        self.client.raise_request_exception = False
+        return self.client.post(reverse("acesso:usuario_atualizar"), dados)
+
+    def test_next_que_nao_e_caminho_do_site_cai_na_lista(self):
+        destinos = (
+            "https://evil.example/",
+            "//evil.example/",
+            "javascript:alert(1)",
+            "http://testserver.evil.example/",
+        )
+        for destino in destinos:
+            with self.subTest(destino=destino):
+                resposta = self._atualizar(next=destino)
+                self.assertEqual(resposta.status_code, 302)
+                self.assertEqual(resposta["Location"], reverse("acesso:usuario_lista"))
+
+    def test_next_com_valor_solto_nao_gera_erro_500(self):
+        resposta = self._atualizar(next="qualquer-coisa")
+        self.assertEqual(resposta.status_code, 302)
+        self.assertEqual(resposta["Location"], "qualquer-coisa")
+
+    def test_next_interno_continua_respeitado(self):
+        destino = reverse("acesso:painel_administrativo")
+        resposta = self._atualizar(next=destino)
+        self.assertEqual(resposta["Location"], destino)
+
+    def test_sem_next_cai_na_lista(self):
+        resposta = self._atualizar()
+        self.assertEqual(resposta["Location"], reverse("acesso:usuario_lista"))
+
+
+class SuperusuarioProtegidoTests(TestCase):
+    """`createsuperuser` nasce com perfil Pendente, que a hierarquia deixa editar."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.admin = _criar_usuario("admin.su", Usuario.TipoPerfilGlobal.ADMIN)
+        cls.coordenador = _criar_usuario(
+            "coord.su", Usuario.TipoPerfilGlobal.COORDENADOR
+        )
+        cls.professor = _criar_usuario("prof.su", Usuario.TipoPerfilGlobal.PROFESSOR)
+        cls.superusuario = _criar_usuario("super.su", Usuario.TipoPerfilGlobal.PENDENTE)
+        cls.outro_super = _criar_usuario("super.su.2", Usuario.TipoPerfilGlobal.ADMIN)
+        Usuario.objects.filter(pk__in=[cls.superusuario.pk, cls.outro_super.pk]).update(
+            is_superuser=True, is_staff=True
+        )
+        cls.superusuario.refresh_from_db()
+        cls.outro_super.refresh_from_db()
+
+    def test_quem_nao_e_superusuario_nao_altera_superusuario(self):
+        for ator in (self.admin, self.coordenador, self.professor):
+            with self.subTest(ator=ator.username):
+                self.assertFalse(pode_editar_usuario(ator, self.superusuario))
+
+    def test_post_do_modal_nao_muda_dados_nem_senha_do_superusuario(self):
+        hash_antes = self.superusuario.password
+        for ator in (self.admin, self.coordenador, self.professor):
+            with self.subTest(ator=ator.username):
+                self.client.force_login(ator)
+                self.client.post(
+                    reverse("acesso:usuario_atualizar"),
+                    {
+                        "user_id": self.superusuario.pk,
+                        "tipo_perfil_global": Usuario.TipoPerfilGlobal.ALUNO,
+                        "nova_senha": "Senha-Nova-Forte-1",
+                        "confirmacao_senha": "Senha-Nova-Forte-1",
+                    },
+                )
+                self.superusuario.refresh_from_db()
+                self.assertEqual(self.superusuario.password, hash_antes)
+                self.assertEqual(
+                    self.superusuario.tipo_perfil_global,
+                    Usuario.TipoPerfilGlobal.PENDENTE,
+                )
+                self.assertTrue(self.superusuario.is_active)
+                self.assertTrue(self.superusuario.is_staff)
+
+    def test_redefinir_senha_recusa_superusuario(self):
+        with self.assertRaises(PermissionError):
+            redefinir_senha(
+                ator=self.professor,
+                alvo=self.superusuario,
+                nova_senha="Senha-Nova-Forte-1",
+            )
+
+    def test_superusuario_altera_superusuario_e_a_si_mesmo(self):
+        self.assertTrue(pode_editar_usuario(self.outro_super, self.superusuario))
+        self.assertTrue(pode_editar_usuario(self.superusuario, self.superusuario))

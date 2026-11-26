@@ -52,6 +52,7 @@ def pode_editar_usuario(ator: Usuario, alvo: Usuario) -> bool:
         Quem pode editar os dados de quem — status ativo, tipo de perfil e senha, tudo sob a
         mesma hierarquia: são a mesma decisão de autoridade, não regras separadas.
         - Autoalteração (ator == alvo): sempre permitida — é a tela "Minha conta".
+        - Superusuário: só outro superusuário.
         - Admin: qualquer usuário.
         - Coordenador: Professor, Aluno e Pendente (nunca outro Coordenador ou Admin).
         - Professor: Aluno e Pendente (nunca outro Professor, Coordenador ou Admin).
@@ -66,6 +67,10 @@ def pode_editar_usuario(ator: Usuario, alvo: Usuario) -> bool:
 
     if ator.pk == alvo.pk:
         return True
+
+    # createsuperuser nasce com perfil Pendente: pelo perfil, um Professor o alcançaria
+    if alvo.is_superuser and not ator.is_superuser:
+        return False
 
     tp_ator = ator.tipo_perfil_global
     tp_alvo = alvo.tipo_perfil_global
