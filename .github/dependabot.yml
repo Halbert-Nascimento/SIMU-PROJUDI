@@ -1,0 +1,12 @@
+# Pedidos de atualização das dependências Python. Só vale depois de chegar à branch padrão; atualizações de segurança ignoram o target-branch.
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    target-branch: "develop"
+    ignore:
+      # Django 6.1 exige MySQL 8.4; a produção roda a série 8.0
+      - dependency-name: "django"
+        versions: [">=6.1"]

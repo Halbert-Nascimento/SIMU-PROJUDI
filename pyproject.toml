@@ -26,6 +26,7 @@ dev = [
     "ruff",
     "ipython",
     "markdown-it-py",
+    "pip-audit",
 ]
 
 [build-system]

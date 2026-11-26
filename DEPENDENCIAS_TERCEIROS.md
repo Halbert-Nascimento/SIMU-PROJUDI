@@ -109,6 +109,7 @@ Não são distribuídos com a aplicação.
 | pluggy | 1.7.0 | MIT | Exigido pelo pytest | livre | metadados do pacote | Baixa | Acompanha o pytest |
 | Pygments | 2.21.0 | BSD-2-Clause | Exigido pelo pytest | livre | metadados do pacote | Baixa | Acompanha o pytest |
 | hatchling | usado só na montagem do pacote (versão não fixada) | MIT | `build-system` do `pyproject.toml` | livre | https://pypi.org/pypi/hatchling/json | Baixa | Outro construtor de pacotes |
+| pip-audit | 2.10.1 (executado com `uvx`, fora do ambiente do projeto) | Apache-2.0 | Auditoria de vulnerabilidades das dependências | livre | https://pypi.org/pypi/pip-audit/json | Baixa | Outro auditor de dependências |
 | uv | 0.10.9 (local) | MIT ou Apache-2.0 | Gerencia o ambiente virtual | livre | https://pypi.org/pypi/uv/json | Baixa | `pip` e `venv` |
 | ipython | declarado no extra `dev`; não instalado | não verificado | Console interativo | revisar | `pyproject.toml` | Baixa | Console padrão do Python |
 | Node.js | não fixada | não verificado | Executa `scripts/*.mjs` | revisar | ambiente local | Baixa | Outro executor de JavaScript |
