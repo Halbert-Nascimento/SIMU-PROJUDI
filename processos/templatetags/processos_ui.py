@@ -4,6 +4,8 @@ from django import template
 from django.template.loader import render_to_string
 from django.utils.safestring import mark_safe
 
+from processos.utils import mascarar_cpf_cnpj
+
 register = template.Library()
 
 
@@ -36,6 +38,12 @@ CORES_PADRAO = CORES_STATUS["arquivado"]
 def _cores(status) -> dict:
     nome = (getattr(status, "nome_status", "") or "").lower()
     return CORES_STATUS.get(nome, CORES_PADRAO)
+
+
+@register.filter
+def exibir_documento(documento, completo):
+    """CPF/CNPJ de uma parte: só sai completo com permissão explícita (True)."""
+    return documento if completo is True else mascarar_cpf_cnpj(documento)
 
 
 @register.simple_tag

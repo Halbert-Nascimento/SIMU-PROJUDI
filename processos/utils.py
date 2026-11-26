@@ -26,6 +26,30 @@ def contexto_upload() -> dict:
 
 
 # ---------------------------------------------------------------------------
+# Exibição de documentos das partes
+# ---------------------------------------------------------------------------
+
+
+def mascarar_cpf_cnpj(documento: str | None) -> str:
+    """
+    Esconde letras e dígitos, preservando a pontuação digitada:
+    CPF vira ***.456.789-** e CNPJ mostra só da 3ª à 8ª posição.
+    """
+    texto = documento or ""
+    total = sum(caractere.isalnum() for caractere in texto)
+    # fora de 11 ou 14 posições não há como saber o que é seguro mostrar
+    visiveis = {11: range(3, 9), 14: range(2, 8)}.get(total, range(0))
+    saida, posicao = [], 0
+    for caractere in texto:
+        if not caractere.isalnum():
+            saida.append(caractere)
+            continue
+        saida.append(caractere if posicao in visiveis else "*")
+        posicao += 1
+    return "".join(saida)
+
+
+# ---------------------------------------------------------------------------
 # Validação de arquivo único
 # ---------------------------------------------------------------------------
 

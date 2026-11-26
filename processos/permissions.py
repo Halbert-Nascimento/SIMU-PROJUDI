@@ -44,9 +44,21 @@ def grupo_serventia_do_usuario(user, ciclo):
     return user.grupos_trabalho.filter(ciclo=ciclo, cargo_simulacao__cod="SC").first()
 
 
+def pode_ver_documentos_das_partes(user) -> bool:
+    """CPF/CNPJ completo é só para quem tem login; o visitante vê mascarado."""
+    return user.is_authenticated
+
+
+def pode_baixar_anexos(user, processo) -> bool:
+    """Anexo pode trazer dados reais de alunos: exige login além de ver o processo."""
+    return user.is_authenticated and pode_visualizar_processo(user, processo)
+
+
 def pode_visualizar_processo(user, processo) -> bool:
     """
     Processo sem segredo de justiça e já autuado: público, qualquer pessoa acessa sem login.
+    O visitante anônimo recebe a consulta restrita: ver `pode_ver_documentos_das_partes`
+    e `pode_baixar_anexos`.
     Processo com segredo de justiça, ou ainda não autuado (status "Protocolado" — só o
     grupo do protocolo está vinculado, a Autuação é quem expõe o processo pra quem mais atua):
       - Admin / Coordenador global: acesso irrestrito.
