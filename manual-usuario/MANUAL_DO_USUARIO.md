@@ -182,7 +182,7 @@ A tela de login tem um painel "Informações Importantes", com itens que valem p
 - **Primeiro acesso**: todo cadastro novo entra como "Pendente" e só é liberado depois que um Admin, Coordenador ou Professor aprova e atribui o papel de simulação, já documentado na  [seção 2 de Primeiros Passos](#apos-cadastro).
 - **Limite de 7 MB por arquivo**: cada documento anexado a uma movimentação pode ter até 7 MB, nos formatos PDF, DOCX, JPG e JPEG. O sistema confere o conteúdo do arquivo, não só a extensão: renomear um arquivo para ".pdf" não faz ele passar pela validação, já mencionado na [seção 7 do Capítulo do Aluno](#aluno-cadastrar-processo).
 - **A sessão encerra após 15 minutos sem atividade**: um aviso aparece antes do fim do prazo, com a opção de continuar conectado. Sem resposta, a sessão é encerrada e o sistema volta para a tela de login. Vale a pena não deixar um formulário longo aberto sem salvar.
-- **Processos em segredo de justiça**: um processo marcado como segredo de justiça só aparece para quem atua nele: a Serventia do ciclo, os grupos vinculados ao processo, o Professor responsável pelo ciclo, o Coordenador e o Admin. Para qualquer outra pessoa o processo não existe. Já um processo **sem** segredo, depois de autuado, é **público**: quem tiver o endereço abre os autos mesmo sem fazer login. Antes da Autuação (status "Protocolado"), só o grupo que protocolou, a Serventia e a gestão enxergam o processo.
+- **Processos em segredo de justiça**: um processo marcado como segredo de justiça só aparece para quem atua nele: a Serventia do ciclo, os grupos vinculados ao processo, o Professor responsável pelo ciclo, o Coordenador e o Admin. Para qualquer outra pessoa o processo não existe. Já um processo **sem** segredo, depois de autuado, é **público**: quem tiver o endereço abre os autos mesmo sem fazer login, mas o visitante sem login vê os CPFs e CNPJs das partes parcialmente ocultos e não abre nem baixa os documentos anexados. Antes da Autuação (status "Protocolado"), só o grupo que protocolou, a Serventia e a gestão enxergam o processo.
 
 ---
 
@@ -825,6 +825,7 @@ já pronto (PDF, DOCX, JPG ou JPEG, até 7 MB por arquivo):
 Depois de confirmada, o documento aparece anexado à movimentação na aba "Eventos do Processo": o
 número de arquivos aparece na coluna "Arquivo(s)" (ex.: "˅ 1"); clique na seta para expandir e ver
 o(s) documento(s) daquele evento, com botões **"Visualizar"** (abre em nova aba) e **"Baixar"**.
+Esses botões só aparecem para quem fez login.
 
 ![Evento "Juntada de Documentos" expandido, mostrando o documento anexado com os botões Visualizar e Baixar](assets/img_23_evento_visualizar_baixar_documento.png)
 

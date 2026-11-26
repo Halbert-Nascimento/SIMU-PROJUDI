@@ -26,7 +26,9 @@ from ciclos.permissions import pode_alterar_autos_no_ciclo
 from .forms import ProcessoJudicialForm
 from .permissions import (
     grupo_serventia_do_usuario,
+    pode_baixar_anexos,
     pode_editar_processo,
+    pode_ver_documentos_das_partes,
     pode_visualizar_processo,
 )
 from .services import aplicar_grupos
@@ -608,21 +610,27 @@ def visualizar_processo(request, numero):
             "pode_editar_processo": mantem_autos,
             "pode_movimentar_processo": pode_movimentar,
             "ciclo_encerrado": ciclo_encerrado,
+            "ver_documentos": pode_ver_documentos_das_partes(request.user),
+            "pode_baixar_anexos": pode_baixar_anexos(request.user, processo),
             "comarcas": Comarca.objects.all().order_by("nome"),
             "tipos_processo": TipoProcesso.objects.all().order_by("nome"),
             "classes_processuais": ClasseProcessual.objects.all().order_by("nome"),
             "varas_da_comarca": VaraServentia.objects.filter(
                 comarca_id=processo.vara.comarca_id).order_by("nome"),
-            "partes_json": [
-                {
-                    "id": p.parte_id,
-                    "nome_razao": p.parte.nome_razao,
-                    "cpf_cnpj": p.parte.cpf_cnpj,
-                    "tipo_pessoa": p.parte.tipo_pessoa,
-                    "polo": p.get_tipo_polo_display(),
-                }
-                for p in processo.polos.all()
-            ],
+            "partes_json": (
+                [
+                    {
+                        "id": p.parte_id,
+                        "nome_razao": p.parte.nome_razao,
+                        "cpf_cnpj": p.parte.cpf_cnpj,
+                        "tipo_pessoa": p.parte.tipo_pessoa,
+                        "polo": p.get_tipo_polo_display(),
+                    }
+                    for p in processo.polos.all()
+                ]
+                if mantem_autos
+                else []
+            ),
             "grupo_serventia": grupo_serventia,
             "grupos_vinculados": grupos_vinculados,
             "movimentacoes": movimentacoes,

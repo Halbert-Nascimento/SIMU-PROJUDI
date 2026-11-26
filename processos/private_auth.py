@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from movimentacoes.models import DocumentoAnexado
 
-from .permissions import pode_visualizar_processo
+from .permissions import pode_baixar_anexos
 
 
 def pode_baixar_documento(private_file) -> bool:
@@ -15,9 +15,9 @@ def pode_baixar_documento(private_file) -> bool:
     número CNJ é público, isso entregava qualquer anexo a qualquer sessão,
     inclusive os de processo em segredo de justiça.
 
-    Aqui o arquivo é localizado pelo caminho e passa exatamente pela mesma regra
-    que guarda a tela do processo: processo público continua público (decisão de
-    projeto), e o segredo de justiça passa a valer também para os arquivos.
+    Aqui o arquivo é localizado pelo caminho e passa pela regra que guarda a tela
+    do processo, com o segredo de justiça valendo também para os arquivos, e ainda
+    exige login: a consulta pública mostra os autos, não entrega os anexos.
 
     Arquivo sem `DocumentoAnexado` correspondente é negado: não há como saber a
     que processo ele pertence, logo não há como autorizar.
@@ -31,7 +31,7 @@ def pode_baixar_documento(private_file) -> bool:
     if doc is None:
         return False
 
-    return pode_visualizar_processo(
+    return pode_baixar_anexos(
         private_file.request.user,
         doc.movimentacao.processo,
     )
