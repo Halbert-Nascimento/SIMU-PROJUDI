@@ -15,6 +15,7 @@ from base.navegacao import home_do_usuario
 from base.decorators import exige_permissao
 from base.mensagens import propagar_erros_form
 
+from processos.utils import id_inteiro
 from notificacoes.services import (
     notificar_coordenador_atribuido,
     notificar_mudanca_status_ciclo,
@@ -205,6 +206,8 @@ def gerenciar_grupos(request, ciclo_id):
     if request.method == "POST":
         grupo_id_post = request.POST.get("grupo_id") or None
         if grupo_id_post:
+            if id_inteiro(grupo_id_post) is None:
+                raise Http404()
             grupo_editando = get_object_or_404(GrupoTrabalho, pk=grupo_id_post, ciclo=ciclo)
             form = GrupoTrabalhoForm(request.POST, instance=grupo_editando, ciclo=ciclo)
             acao = "atualizado"
@@ -251,16 +254,21 @@ def adicionar_membro(request, ciclo_id, grupo_id):
     grupo = get_object_or_404(GrupoTrabalho, pk=grupo_id, ciclo=ciclo)
 
     if not pode_gerenciar_grupos_ciclo(request.user, ciclo):
-        return JsonResponse({"erro": "Permissão negada."})
+        return JsonResponse({"erro": "Permissão negada."}, status=403)
+
+    nao_encontrado = {"erro": "Usuário não encontrado ou perfil não é Aluno ativo."}
+    usuario_id = id_inteiro(request.POST.get("usuario_id"))
+    if usuario_id is None:
+        return JsonResponse(nao_encontrado, status=400)
 
     try:
         usuario = Usuario.objects.get(
-            pk=request.POST.get("usuario_id"),
+            pk=usuario_id,
             is_active=True,
             tipo_perfil_global=Usuario.TipoPerfilGlobal.ALUNO,
         )
-    except (Usuario.DoesNotExist, ValueError, TypeError):
-        return JsonResponse({"erro": "Usuário não encontrado ou perfil não é Aluno ativo."})
+    except Usuario.DoesNotExist:
+        return JsonResponse(nao_encontrado)
 
     # Unicidade: não pode estar em outro grupo do mesmo ciclo
     if GrupoTrabalho.objects.filter(ciclo=ciclo, membros=usuario).exclude(pk=grupo.pk).exists():
@@ -292,7 +300,7 @@ def remover_membro(request, ciclo_id, grupo_id, usuario_id):
     grupo = get_object_or_404(GrupoTrabalho, pk=grupo_id, ciclo=ciclo)
 
     if not pode_gerenciar_grupos_ciclo(request.user, ciclo):
-        return JsonResponse({"erro": "Permissão negada."})
+        return JsonResponse({"erro": "Permissão negada."}, status=403)
 
     try:
         usuario = Usuario.objects.get(pk=usuario_id)

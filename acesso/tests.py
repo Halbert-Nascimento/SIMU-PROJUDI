@@ -941,3 +941,20 @@ class SuperusuarioProtegidoTests(TestCase):
     def test_superusuario_altera_superusuario_e_a_si_mesmo(self):
         self.assertTrue(pode_editar_usuario(self.outro_super, self.superusuario))
         self.assertTrue(pode_editar_usuario(self.superusuario, self.superusuario))
+
+
+class UsuarioAtualizarEntradaInvalidaTests(TestCase):
+    def test_user_id_invalido_volta_para_a_lista_sem_erro_500(self):
+        admin = _criar_usuario("admin.entrada", Usuario.TipoPerfilGlobal.ADMIN)
+        self.client.force_login(admin)
+        self.client.raise_request_exception = False
+        for valor in ("abc", "9" * 40, "-1"):
+            with self.subTest(valor=valor):
+                resposta = self.client.post(
+                    reverse("acesso:usuario_atualizar"), {"user_id": valor}
+                )
+                self.assertRedirects(
+                    resposta,
+                    reverse("acesso:usuario_lista"),
+                    fetch_redirect_response=False,
+                )
