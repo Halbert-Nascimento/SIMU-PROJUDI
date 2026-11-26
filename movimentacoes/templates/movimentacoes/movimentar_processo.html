@@ -59,7 +59,7 @@
        aqui só a moldura externa se alinha ao resto. */
     .tox-tinymce { border-radius: 0 !important; border-color: #e2e5ea !important; }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/8.11.0/tinymce.min.js" referrerpolicy="origin"></script>
 <script>const STATIC_URL = "{% get_static_prefix %}";</script>
 <script src="{% static 'js/escapar_html.js' %}"></script>
 <script src="{% static 'js/modelos_documentos.js' %}"></script>
@@ -662,6 +662,8 @@ function removeSelected() {
 // ── TinyMCE ───────────────────────────────────────────
 tinymce.init({
     selector: '#tinymce-editor',
+    // sem a declaração de licença o editor carrega desabilitado
+    license_key: 'gpl',
     height: 520,
     menubar: true,
     plugins: 'lists link image table pagebreak searchreplace preview fullscreen code wordcount',
@@ -684,9 +686,11 @@ tinymce.init({
                line-height: 2; color: #000; margin: 32px 48px; background: #fff; }
         p { text-align: justify; margin: 0 0 6px 0; }
     `,
-    language: 'pt_BR',
-    language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/pt_BR.js',
+    language: 'pt-BR',
+    language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@26.11.2/langs8/pt-BR.js',
     branding: false, promotion: false,
+    // o contorno azul arredondado da área de edição foge do guia de design
+    highlight_on_focus: false,
     image_uploadtab: true, automatic_uploads: false,
     file_picker_types: 'image',
     file_picker_callback: function(cb) {

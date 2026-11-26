@@ -64,8 +64,8 @@ Versões do ambiente de desenvolvimento. As do servidor de produção são defin
 
 | Nome | Versão | Licença | Uso no sistema | Situação comercial | Fonte | Criticidade | Plano de substituição |
 |---|---|---|---|---|---|---|---|
-| TinyMCE | 6.8.3 | MIT | Editor de peças processuais | livre | https://registry.npmjs.org/tinymce/6.8.3 e https://cdn.jsdelivr.net/npm/tinymce@6.8.3/license.txt | Alta | Atualização de versão prevista |
-| tinymce-i18n | 23.10.9 | MIT | Idioma português do editor | livre | https://registry.npmjs.org/tinymce-i18n/23.10.9 | Média | Acompanha o TinyMCE |
+| TinyMCE | 8.11.0 | GPL v2 ou posterior, ou licença comercial (`license_key: 'gpl'` no código) | Editor de peças processuais | revisar | https://github.com/tinymce/tinymce/blob/main/LICENSE.md e https://www.tiny.cloud/docs/tinymce/8/license-key/ | Alta | Licença comercial do fabricante ou editor de licença permissiva |
+| tinymce-i18n | 26.11.2 | Segue os termos do TinyMCE (`SEE LICENSE IN LICENSE.md`) | Idioma português do editor | revisar | https://registry.npmjs.org/tinymce-i18n/26.11.2 | Média | Acompanha o TinyMCE |
 | Tailwind CSS (Play CDN) | sem versão fixa; em 26/11/2026 entregava 3.4.17 | MIT | Toda a pele da interface | livre | https://registry.npmjs.org/tailwindcss e https://tailwindcss.com/docs/installation/play-cdn | Alta | Compilar o CSS no build e servir localmente (`backlog.md`, E2) |
 | Font Awesome Free | 6.4.0 | Ícones CC BY 4.0; fontes SIL OFL 1.1; código MIT | Ícones da interface | com obrigações (atribuição) | https://registry.npmjs.org/@fortawesome/fontawesome-free/6.4.0 | Média | Conjunto próprio de SVG ou outra biblioteca de licença permissiva |
 | Barlow (Google Fonts) | não versionada | SIL OFL 1.1 | Fonte da interface | com obrigações (OFL) | https://github.com/google/fonts/blob/main/ofl/barlow/OFL.txt | Baixa | Servir localmente com o arquivo de licença |
@@ -121,8 +121,8 @@ preenchido a cada deploy.
 
 | Arquivo (URL exata) | Versão | No código desde | Até | Em produção | SHA-384 |
 |---|---|---|---|---|---|
-| https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js | 6.8.3 | 21/05/2026 (`f0cfa5d`) | em uso | a preencher no deploy | `sha384-1Miaw0hyo/w0cd9ZHUnc7Z8ACgtO+lphAEziGNW4z2C1h3nJfMVVEWA5MI031P+X` |
-| https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/pt_BR.js | 23.10.9 | 21/05/2026 (`f0cfa5d`) | em uso | a preencher no deploy | `sha384-xesuNJWp0/+0EWNuEIz9UuwG9JDDpxhwIw4fK2D0nUJx6qQUTaJm4NxkAL8gLvZo` |
+| https://cdnjs.cloudflare.com/ajax/libs/tinymce/8.11.0/tinymce.min.js | 8.11.0 | 26/11/2026 | em uso | a preencher no deploy | `sha384-J2h73vI7pLZLVqNaLK1ytglH4uMqLVuGN0FYBkjosER5/naP1IwlTVm+cHrQHO79` |
+| https://cdn.jsdelivr.net/npm/tinymce-i18n@26.11.2/langs8/pt-BR.js | 26.11.2 | 26/11/2026 | em uso | a preencher no deploy | `sha384-xv0Hu1//6Oj+Uj9/8Z9wknFcu5m/i8aCPGSf5ZVXZ3LUCWb8aTM0qVAS/3B8Sfc2` |
 | https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css | 6.4.0 | 12/03/2026 (`5f3e950`) | em uso | a preencher no deploy | `sha384-iw3OoTErCYJJB9mCa8LNS2hbsQ7M3C0EpIsO/H5+EGAkPGc6rk+V8i04oW/K5xq0` |
 | https://cdn.tailwindcss.com (redirecionava para `/3.4.17`) | sem versão fixa | 12/03/2026 (`5f3e950`) | em uso | a preencher no deploy | `sha384-igm5BeiBt36UU4gqwWS7imYmelpTsZlQ45FZf+XBn9MuJbn4nQr7yx1yFydocC/K` (conteúdo de 26/11/2026; pode mudar) |
 | https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Lato:wght@400;700;900&display=swap | não versionada | 09/09/2026 (`95736d3`) | em uso | a preencher no deploy | não se aplica (o conteúdo varia por navegador) |
@@ -134,8 +134,21 @@ folhas de estilo.
 
 | Arquivo (URL exata) | Versão | No código desde | Até | Em produção | SHA-384 |
 |---|---|---|---|---|---|
+| https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js | 6.8.3 | 21/05/2026 (`f0cfa5d`) | 26/11/2026 | a preencher no deploy | `sha384-1Miaw0hyo/w0cd9ZHUnc7Z8ACgtO+lphAEziGNW4z2C1h3nJfMVVEWA5MI031P+X` |
+| https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/pt_BR.js | 23.10.9 | 21/05/2026 (`f0cfa5d`) | 26/11/2026 | a preencher no deploy | `sha384-xesuNJWp0/+0EWNuEIz9UuwG9JDDpxhwIw4fK2D0nUJx6qQUTaJm4NxkAL8gLvZo` |
 | https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css | 6.5.0 (conviveu com a 6.4.0) | 18/03/2026 (`d283105`) | 14/04/2026 (`809ac43`) | não verificado | `sha384-/o6I2CkkWC//PSjvWC/eYN7l3xM3tJm8ZzVkCOfp//W05QcE3mlGskpoHB6XqI+B` |
 | https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap | não versionada (IBM Plex Mono, SIL OFL 1.1) | 03/09/2026 (`c51ff3f`) | 09/09/2026 (`95736d3`) | não verificado | não se aplica |
+
+## Registro de licenciamento do TinyMCE (26/11/2026)
+
+- [x] Usado sem modificação do código do editor.
+- [x] Carregado por CDN, sem cópia no repositório.
+- [x] Atualização de 6.8.3 para 8.11.0 motivada por correção de vulnerabilidades.
+- [x] Licença registrada conforme a documentação oficial da versão adotada (linha da tabela).
+- [ ] **Pendente:** revisão jurídica antes de eventual produto comercial. A documentação do
+      fabricante diz que, em ambiente auto-hospedado para uso comercial, é exigido o complemento
+      de gerenciamento de chave de licença comercial; se esse uso cabe no modo `gpl` depende
+      dessa revisão.
 
 ## Pendências para produto comercial
 
