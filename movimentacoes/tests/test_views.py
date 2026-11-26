@@ -129,3 +129,22 @@ class RotasMovimentacaoTests(CenarioMovimentacoesTestCase):
             processo=self.processo, tipo_movimento=tipo_emenda,
         ).order_by("-pk").first()
         self.assertEqual(mov_c.movimentacao_origem_id, mov_b.pk)
+
+
+class EditorDePecasTests(CenarioMovimentacoesTestCase):
+    """A versão do editor é decisão de segurança: a série 6 não recebe correções."""
+
+    def test_tela_carrega_o_tinymce_corrigido_com_licenca_e_idioma(self):
+        processo = self.criar_processo_protocolado()
+        self.autuar_processo(processo, ["APA"])
+
+        resposta = self.cliente_logado(self.usuarios["APA"]).get(
+            reverse("movimentacoes:criar_movimentacao", args=[processo.numero])
+        )
+
+        self.assertContains(resposta, "libs/tinymce/8.11.0/tinymce.min.js")
+        self.assertContains(resposta, "license_key: 'gpl'")
+        self.assertContains(resposta, "language: 'pt-BR'")
+        self.assertContains(resposta, "tinymce-i18n@26.11.2/langs8/pt-BR.js")
+        self.assertNotContains(resposta, "6.8.3")
+        self.assertNotContains(resposta, "langs6")
