@@ -6,6 +6,8 @@ import re
 from django.conf import settings
 from django.http.request import RawPostDataException
 
+from movimentacoes.models import DocumentoAnexado
+
 # ---------------------------------------------------------------------------
 # Constantes lidas do settings.py — altere apenas em UPLOAD_CONFIG
 # ---------------------------------------------------------------------------
@@ -59,6 +61,21 @@ def ids_inteiros(valores) -> list[int] | None:
         return None
     ids = [id_inteiro(valor) for valor in valores]
     return None if None in ids else ids
+
+
+_SO_MILHARES = re.compile(r"[+-]?[0-9]{1,3}(\.[0-9]{3})+")
+
+
+def normalizar_valor_monetario(texto: str) -> str:
+    """
+    Leva o valor ao formato que Decimal entende. O campo mascarado da tela envia
+    "15000.00"; o formato brasileiro ("15.000,00" ou "15.000") também é aceito.
+    """
+    texto = texto.strip()
+    # tirar o ponto de "15000.00", fora do formato brasileiro, multiplicaria por 100
+    if "," in texto or _SO_MILHARES.fullmatch(texto):
+        return texto.replace(".", "").replace(",", ".")
+    return texto
 
 
 # ---------------------------------------------------------------------------
@@ -129,6 +146,17 @@ def validar_arquivo(arquivo) -> tuple[bool, str]:
     return True, ""
 
 
+def validar_titulo_documento(titulo: str) -> str:
+    """Mensagem de erro para um título que não cabe na coluna, ou "" se couber."""
+    limite = DocumentoAnexado._meta.get_field("titulo_arquivo").max_length
+    if len(titulo) <= limite:
+        return ""
+    return (
+        f'O título do documento "{titulo[:40]}…" passa de {limite} caracteres. '
+        "Informe um título menor."
+    )
+
+
 # ---------------------------------------------------------------------------
 # Validação em lote
 # ---------------------------------------------------------------------------
@@ -158,6 +186,10 @@ def validar_multiplos_arquivos(
             if i < len(nomes) and nomes[i].strip()
             else arquivo.name
         )
+        erro_titulo = validar_titulo_documento(titulo)
+        if erro_titulo:
+            erros.append(erro_titulo)
+            continue
         validos.append((arquivo, titulo))
 
     return validos, erros
