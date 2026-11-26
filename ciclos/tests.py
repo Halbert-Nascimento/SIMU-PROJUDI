@@ -194,3 +194,44 @@ class GerenciarGruposScriptTests(CenarioCicloTestCase):
         )
 
         self.assertContains(resposta, "'9\\u005C'")
+
+
+class EntradasDeGruposTests(CenarioCicloTestCase):
+    def setUp(self):
+        self.cliente = self.cliente_logado(self.professor_original)
+        self.cliente.raise_request_exception = False
+
+    def url(self, nome, *extras):
+        return reverse(f"ciclos:{nome}", args=[self.ciclo.pk, *extras])
+
+    def test_sem_permissao_responde_403_com_a_mensagem(self):
+        estranho = self.cliente_logado(self.professor_novo)
+        for nome, extras in (
+            ("adicionar_membro", [self.grupo.pk]),
+            ("remover_membro", [self.grupo.pk, self.aluno.pk]),
+        ):
+            with self.subTest(rota=nome):
+                resposta = estranho.post(
+                    self.url(nome, *extras), {"usuario_id": self.aluno.pk}
+                )
+                self.assertEqual(resposta.status_code, 403)
+                self.assertEqual(resposta.json()["erro"], "Permissão negada.")
+        self.assertFalse(self.grupo.membros.exists())
+
+    def test_usuario_id_invalido_responde_400(self):
+        for valor in ("abc", "", "9" * 40):
+            with self.subTest(valor=valor):
+                resposta = self.cliente.post(
+                    self.url("adicionar_membro", self.grupo.pk), {"usuario_id": valor}
+                )
+                self.assertEqual(resposta.status_code, 400)
+                self.assertIn("Usuário não encontrado", resposta.json()["erro"])
+
+    def test_grupo_id_invalido_na_edicao_responde_404(self):
+        for valor in ("abc", "9" * 40):
+            with self.subTest(valor=valor):
+                resposta = self.cliente.post(
+                    self.url("gerenciar_grupos"),
+                    {"grupo_id": valor, "nome": "X", "cargo_simulacao": self.cargo.pk},
+                )
+                self.assertEqual(resposta.status_code, 404)

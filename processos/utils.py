@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import re
 
 from django.conf import settings
+from django.http.request import RawPostDataException
 
 # ---------------------------------------------------------------------------
 # Constantes lidas do settings.py — altere apenas em UPLOAD_CONFIG
@@ -23,6 +25,40 @@ def contexto_upload() -> dict:
         "upload_accept_attr": ",".join(ALLOWED_EXTENSIONS),
         "upload_formatos_texto": ", ".join(e.lstrip(".").upper() for e in ALLOWED_EXTENSIONS),
     }
+
+
+# ---------------------------------------------------------------------------
+# Leitura de entrada não confiável
+# ---------------------------------------------------------------------------
+
+# 18 dígitos cabem em BIGINT; acima disso o banco responderia com erro
+_FORMATO_ID = re.compile(r"[0-9]{1,18}")
+
+
+def ler_json_objeto(request) -> dict | None:
+    """Corpo da requisição como objeto JSON, ou None para qualquer outra coisa."""
+    try:
+        dados = json.loads(request.body)
+    # JSON ou UTF-8 inválido, aninhamento fundo demais, ou formulário no lugar de JSON
+    except (ValueError, RecursionError, RawPostDataException):
+        return None
+    return dados if isinstance(dados, dict) else None
+
+
+def id_inteiro(valor) -> int | None:
+    """Chave primária recebida como inteiro ou texto de dígitos; None se inválida."""
+    if isinstance(valor, bool) or not isinstance(valor, (int, str)):
+        return None
+    texto = str(valor)
+    return int(texto) if _FORMATO_ID.fullmatch(texto) else None
+
+
+def ids_inteiros(valores) -> list[int] | None:
+    """Lista de chaves primárias; None se não for lista ou houver item inválido."""
+    if not isinstance(valores, list):
+        return None
+    ids = [id_inteiro(valor) for valor in valores]
+    return None if None in ids else ids
 
 
 # ---------------------------------------------------------------------------

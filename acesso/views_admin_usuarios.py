@@ -16,6 +16,7 @@ from usuarios.models import Usuario
 from ciclos.models import CicloSimulacao, GrupoTrabalho, ParticipanteCiclo, StatusCiclo
 from movimentacoes.models import MovimentacaoProcessual
 from processos.models import ProcessoJudicial
+from processos.utils import id_inteiro
 from ciclos.permissions import (
     pode_criar_ciclo,
     pode_editar_ciclo,
@@ -55,7 +56,7 @@ def usuario_atualizar(request):
         raise Http404()
 
     user_id = request.POST.get("user_id")
-    if not user_id:
+    if id_inteiro(user_id) is None:
         messages.error(request, "Usuario alvo nao informado.")
         return redirect("acesso:usuario_lista")
 

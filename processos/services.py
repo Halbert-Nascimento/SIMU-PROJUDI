@@ -18,6 +18,14 @@ _POLO_DO_CARGO = {
 }
 
 
+class TipoMovimentacaoIndisponivel(Exception):
+    """O catálogo não tem o tipo que a distribuição precisa registrar."""
+
+    def __init__(self, nome_tipo: str):
+        super().__init__(nome_tipo)
+        self.nome_tipo = nome_tipo
+
+
 def _descrever_alteracoes(entraram, sairam) -> str:
     partes = []
     if entraram:
@@ -128,11 +136,15 @@ def aplicar_grupos(
         autuando = protocolado and (bool(entraram) or polo_mudou)
         nome_tipo = NOME_AUTUACAO if autuando else NOME_REDISTRIBUICAO
         if tipos_movimentacao is not None:
-            tipo_movimentacao = tipos_movimentacao[nome_tipo]
+            tipo_movimentacao = tipos_movimentacao.get(nome_tipo)
         else:
-            tipo_movimentacao = TipoMovimentacao.objects.select_related("efeito_status").get(
-                nome_movimentacao=nome_tipo
+            tipo_movimentacao = (
+                TipoMovimentacao.objects.select_related("efeito_status")
+                .filter(nome_movimentacao=nome_tipo)
+                .first()
             )
+        if tipo_movimentacao is None:
+            raise TipoMovimentacaoIndisponivel(nome_tipo)
 
         if remover_todos:
             grupo_processo_ancora = None
