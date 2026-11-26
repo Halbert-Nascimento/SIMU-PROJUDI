@@ -152,7 +152,7 @@ Regras que valem para todos os papéis e que ajudam a entender o que cada grupo 
 - **Cada processo tem, no máximo, um grupo por papel**, com uma exceção: a Serventia pode ter mais de um grupo vinculado.
 - **O polo vem do papel**: o grupo de Advogados Polo Ativo ocupa o polo ativo e o de Advogados Polo Passivo, o polo passivo.
 - **Professor e Coordenador não movimentam processos**: eles acompanham e avaliam o que os alunos fazem.
-- **Ciclo encerrado é só consulta**: quando o ciclo deixa de estar "Em andamento" (por exemplo, finalizado ou arquivado), ninguém cadastra processos, distribui grupos, movimenta, corrige nem altera dados e partes. A consulta aos processos e a avaliação pelo Professor continuam disponíveis.
+- **Ciclo encerrado é só consulta**: quando o ciclo deixa de estar "Em andamento" (por exemplo, finalizado ou arquivado), ninguém cadastra processos, distribui grupos, movimenta, corrige nem altera dados e partes. A consulta aos processos e a avaliação pelo Professor continuam disponíveis; já o Aluno que não participa de nenhum outro ciclo em andamento volta a ver apenas a tela de espera.
 - **Cada ato só aparece depois do ato anterior**: a lista do formulário "Movimentar" cresce conforme o processo avança, e por isso, no começo, alguns papéis veem poucas opções. A [Linha do processo](#linha-do-processo) mostra a ordem completa. Os perfis de gestão (Admin, Coordenador, Professor) não atuam diretamente nos processos: eles administram ciclos, grupos e usuários, e avaliam as movimentações feitas pelos Alunos: ver os capítulos [do Admin](#capitulo-admin), [do Coordenador](#capitulo-coordenador) e [do Professor](#capitulo-professor).
 
 <a name="guia-prazos"></a>
