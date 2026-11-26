@@ -152,6 +152,7 @@ Regras que valem para todos os papéis e que ajudam a entender o que cada grupo 
 - **Cada processo tem, no máximo, um grupo por papel**, com uma exceção: a Serventia pode ter mais de um grupo vinculado.
 - **O polo vem do papel**: o grupo de Advogados Polo Ativo ocupa o polo ativo e o de Advogados Polo Passivo, o polo passivo.
 - **Professor e Coordenador não movimentam processos**: eles acompanham e avaliam o que os alunos fazem.
+- **Ciclo encerrado é só consulta**: quando o ciclo deixa de estar "Em andamento" (por exemplo, finalizado ou arquivado), ninguém cadastra processos, distribui grupos, movimenta, corrige nem altera dados e partes. A consulta aos processos e a avaliação pelo Professor continuam disponíveis.
 - **Cada ato só aparece depois do ato anterior**: a lista do formulário "Movimentar" cresce conforme o processo avança, e por isso, no começo, alguns papéis veem poucas opções. A [Linha do processo](#linha-do-processo) mostra a ordem completa. Os perfis de gestão (Admin, Coordenador, Professor) não atuam diretamente nos processos: eles administram ciclos, grupos e usuários, e avaliam as movimentações feitas pelos Alunos: ver os capítulos [do Admin](#capitulo-admin), [do Coordenador](#capitulo-coordenador) e [do Professor](#capitulo-professor).
 
 <a name="guia-prazos"></a>
@@ -698,7 +699,7 @@ Valor da Causa (com opção de marcar Segredo de Justiça) e as partes do proces
 Passivo e, opcionalmente, Substituto Processual/Outras Partes/Sujeitos). A Vara/Serventia só mostra
 as varas da Comarca escolhida.
 
-![Passo 1 do Cadastro de Processo, com os campos de Tipo do Processo, Comarca, Vara/Serventia, Classe Processual e Assunto](assets/img_37_cadastro_passo1_dados.png)
+![Passo 1 do Cadastro de Processo, com os campos de Tipo do Processo, Comarca, Vara/Serventia e Classe Processual](assets/img_37_cadastro_passo1_dados.png)
 
 **Partes do processo**: os três blocos (Polo Ativo e Polo Passivo, obrigatórios, e Substituto
 Processual/Outras Partes/Sujeitos, opcional) funcionam da mesma forma. Cada bloco tem um campo

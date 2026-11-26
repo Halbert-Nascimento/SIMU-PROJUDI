@@ -3,6 +3,14 @@ from __future__ import annotations
 from usuarios.models import Usuario
 
 
+def pode_alterar_autos_no_ciclo(ciclo) -> bool:
+    """
+    Fora de "Em andamento" o ciclo é só consulta, para todos os perfis: mexer nos
+    autos depois do encerramento mudaria o material que já foi avaliado.
+    """
+    return ciclo.status.nome_status.casefold() == "em andamento"
+
+
 def pode_criar_ciclo(user: Usuario) -> bool:
     if not user.is_authenticated:
         return False

@@ -142,7 +142,7 @@ def criar_movimentacao(request, numero):
         ProcessoJudicial.objects
         .select_related(
             "tipo_processo", "classe", "status_atual",
-            "vara", "vara__comarca",
+            "vara", "vara__comarca", "ciclo__status",
         )
         .prefetch_related("polos__parte"),
         numero=numero,
@@ -189,7 +189,7 @@ def editar_movimentacao(request, numero, mov_id):
         ProcessoJudicial.objects
         .select_related(
             "tipo_processo", "classe", "status_atual",
-            "vara", "vara__comarca",
+            "vara", "vara__comarca", "ciclo__status",
         )
         .prefetch_related("polos__parte"),
         numero=numero,

@@ -177,7 +177,9 @@ def ctx_boas_vindas(ja_participou=False):
     }
 
 
-def ctx_visualizar(sem_movimentacao=False, com_arquivo=True, pode_alterar=True):
+def ctx_visualizar(
+    sem_movimentacao=False, com_arquivo=True, pode_alterar=True, ciclo_encerrado=False
+):
     doc = Obj(titulo_arquivo="contestacao.pdf", data_upload=QUANDO,
               caminho_arquivo=Obj(url="/media/contestacao.pdf", name="contestacao.pdf"))
     movs = [] if sem_movimentacao else [
@@ -208,7 +210,8 @@ def ctx_visualizar(sem_movimentacao=False, com_arquivo=True, pode_alterar=True):
                                   cargo_simulacao=Obj(nome="Advogado do Polo Ativo"))],
         "movimentacoes": movs,
         "pode_avaliar": True,
-        "pode_editar_processo": pode_alterar,
+        "pode_editar_processo": pode_alterar and not ciclo_encerrado,
+        "ciclo_encerrado": ciclo_encerrado,
         "comarcas": [Obj(pk=1, nome="Goiânia"), Obj(pk=2, nome="Anápolis")],
         "varas_da_comarca": [Obj(pk=10, nome="1ª Vara Cível"), Obj(pk=11, nome="2ª Vara Cível")],
         "tipos_processo": [Obj(pk=1, nome="Cível"), Obj(pk=2, nome="Criminal")],
@@ -319,6 +322,11 @@ CASOS = [
     ("processos/visualizar_processo.html", "sem movimentação", ctx_visualizar(sem_movimentacao=True)),
     ("processos/visualizar_processo.html", "sem arquivo anexo", ctx_visualizar(com_arquivo=False)),
     ("processos/visualizar_processo.html", "sem permissão de editar", ctx_visualizar(pode_alterar=False)),
+    (
+        "processos/visualizar_processo.html",
+        "ciclo encerrado",
+        ctx_visualizar(ciclo_encerrado=True),
+    ),
     ("avaliacoes/avaliar.html", "com histórico", ctx_avaliar()),
     ("avaliacoes/avaliar.html", "form com erros", ctx_avaliar(com_erros=True)),
     ("avaliacoes/avaliar.html", "sem histórico", ctx_avaliar(com_historico=False)),
