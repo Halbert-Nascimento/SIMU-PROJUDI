@@ -12,7 +12,11 @@ from django.utils.text import slugify
 from base.breadcrumbs import home_breadcrumb
 from processos.models import ProcessoJudicial
 from processos.permissions import pode_visualizar_processo
-from processos.utils import contexto_upload, validar_multiplos_arquivos
+from processos.utils import (
+    contexto_upload,
+    validar_multiplos_arquivos,
+    validar_titulo_documento,
+)
 
 from .models import DocumentoAnexado, MovimentacaoProcessual, TipoMovimentacao
 from .permissions import (
@@ -76,6 +80,13 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
         arquivos_validos, erros_upload = validar_multiplos_arquivos(arquivos_raw, nomes_docs)
         erros.extend(erros_upload)
 
+    editor_html = request.POST.get("editor_html", "").strip()
+    editor_nome = request.POST.get("editor_html_nome", "").strip() or "documento_editor"
+    if editor_html:
+        erro_titulo = validar_titulo_documento(editor_nome)
+        if erro_titulo:
+            erros.append(erro_titulo)
+
     grupo_processo = None
     movimentacao_origem = None
     if tipo is not None:
@@ -113,8 +124,6 @@ def _salvar_movimentacao(request, processo, mov_origem=None):
                 caminho_arquivo=arquivo,
             )
 
-        editor_html = request.POST.get("editor_html", "").strip()
-        editor_nome = request.POST.get("editor_html_nome", "").strip() or "documento_editor"
         if editor_html:
             # gravado como .txt, nunca .html: o private_storage entrega o arquivo
             # com o Content-Type adivinhado pela extensão, então um .html com

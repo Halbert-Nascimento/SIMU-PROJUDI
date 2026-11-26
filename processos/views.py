@@ -36,6 +36,7 @@ from .utils import (
     id_inteiro,
     ids_inteiros,
     ler_json_objeto,
+    normalizar_valor_monetario,
     validar_multiplos_arquivos,
 )
 from movimentacoes.catalogo import FILTROS_EVENTO_PROCESSO, NOME_AUTUACAO, NOME_REDISTRIBUICAO
@@ -456,7 +457,7 @@ def modificar_dados_processo(request, numero):
         return JsonResponse({"erro": "Selecione vara, tipo e classe."}, status=400)
 
     # o valor chega como string do campo mascarado; vazio vale zero
-    bruto = str(dados.get("valor_causa") or "0").replace(".", "").replace(",", ".")
+    bruto = normalizar_valor_monetario(str(dados.get("valor_causa") or "0"))
     try:
         valor = decimal.Decimal(bruto)
     except decimal.InvalidOperation:
