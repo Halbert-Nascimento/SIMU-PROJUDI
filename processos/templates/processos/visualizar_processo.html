@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
 <script src="{% static 'js/paginador.js' %}"></script>
 <script src="{% static 'js/mascara_moeda.js' %}"></script>
+<script src="{% static 'js/escapar_html.js' %}"></script>
 <style>
     /* Colunas de largura fixa da tabela de movimentação */
     .tbl-mov .num-col { width: 32px; color: #6b7280; text-align: right; padding-right: 6px; }
@@ -715,7 +716,7 @@ function carregarVarasDaComarca() {
     fetch('/processos/api/varas/' + comarcaId + '/')
         .then(r => r.json())
         .then(varas => {
-            alvo.innerHTML = varas.map(v => `<option value="${v.id}">${v.nome}</option>`).join('')
+            alvo.innerHTML = varas.map(v => `<option value="${escaparHtml(v.id)}">${escaparHtml(v.nome)}</option>`).join('')
                 || '<option value="">Nenhuma vara nesta comarca</option>';
         })
         .catch(() => {
@@ -754,7 +755,7 @@ function abrirAlterarParte() {
     document.getElementById('opcoesMenu').classList.remove('open');
     const alvo = document.getElementById('parte-alvo');
     alvo.innerHTML = partesDoProcesso.map((parte, i) =>
-        `<option value="${i}">${parte.polo} — ${parte.nome_razao}</option>`).join('');
+        `<option value="${i}">${escaparHtml(parte.polo)} — ${escaparHtml(parte.nome_razao)}</option>`).join('');
     carregarParteSelecionada();
     document.getElementById('modalAlterarParte').classList.add('open');
 }

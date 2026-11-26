@@ -180,3 +180,17 @@ class EditarCicloCoordenadorNotificacaoTests(CenarioCicloTestCase):
                 tipo=TipoNotificacao.CICLO_COORDENADOR_ATRIBUIDO, destinatario=self.professor_novo,
             ).exists()
         )
+
+
+class GerenciarGruposScriptTests(CenarioCicloTestCase):
+    """O valor devolvido ao script de reabertura do modal vem do POST."""
+
+    def test_cargo_do_post_invalido_sai_escapado_para_javascript(self):
+        cliente = self.cliente_logado(self.professor_original)
+
+        resposta = cliente.post(
+            reverse("ciclos:gerenciar_grupos", args=[self.ciclo.pk]),
+            {"nome": "Grupo Novo", "cargo_simulacao": "9\\"},
+        )
+
+        self.assertContains(resposta, "'9\\u005C'")
