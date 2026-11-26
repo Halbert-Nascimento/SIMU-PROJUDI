@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from ciclos.permissions import pode_alterar_autos_no_ciclo
 from usuarios.models import Usuario
 
 
@@ -9,6 +10,7 @@ def pode_editar_processo(user, processo) -> bool:
 
     Ver um processo sem segredo de justiça é público, mas alterar não pode ser:
     a regra aqui é a de quem *atua* no processo.
+      - Ciclo fora de "Em andamento": ninguém altera.
       - Admin / Coordenador global: sempre.
       - Professor: somente no ciclo que coordena.
       - Aluno em grupo Serventia (cod="SC") do ciclo: é o papel que mantém o
@@ -16,6 +18,9 @@ def pode_editar_processo(user, processo) -> bool:
       - Demais / não autenticado: negado.
     """
     if not user.is_authenticated:
+        return False
+
+    if not pode_alterar_autos_no_ciclo(processo.ciclo):
         return False
 
     tp = user.tipo_perfil_global

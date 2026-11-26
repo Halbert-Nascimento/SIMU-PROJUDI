@@ -21,6 +21,7 @@ from django.views.decorators.http import require_POST
 from base.mensagens import propagar_erros_form
 
 from ciclos.models import GrupoTrabalho
+from ciclos.permissions import pode_alterar_autos_no_ciclo
 
 from .forms import ProcessoJudicialForm
 from .permissions import (
@@ -46,6 +47,10 @@ from .models import (
     VaraServentia,
 )
 
+MENSAGEM_CICLO_ENCERRADO = (
+    "Ciclo encerrado: o processo está disponível apenas para consulta."
+)
+
 
 def _saudacao():
     # localtime(): USE_TZ=True guarda tudo em UTC; o "agora" do usuário é o de
@@ -63,6 +68,8 @@ def cadastrar_processo(request):
     ciclo = request.ciclo_ativo
     if not ciclo:
         return redirect(reverse("ciclos:selecionar_ciclo") + f"?next={request.path}")
+    if not pode_alterar_autos_no_ciclo(ciclo):
+        raise PermissionDenied
 
     # Listas usadas tanto no POST (erro) quanto no GET (vazias)
     polo_ativo_partes: list = []
@@ -384,7 +391,13 @@ def criar_parte(request):
 @require_POST
 def modificar_dados_processo(request, numero):
     """Altera os dados cadastrais do processo — os que o form de cadastro edita."""
-    processo = get_object_or_404(ProcessoJudicial, numero=numero)
+    processo = get_object_or_404(
+        ProcessoJudicial.objects.select_related("ciclo__status"), numero=numero
+    )
+
+    # em JSON, e antes do perfil: quem chega à rota recebe o motivo na própria tela
+    if not pode_alterar_autos_no_ciclo(processo.ciclo):
+        return JsonResponse({"erro": MENSAGEM_CICLO_ENCERRADO}, status=403)
 
     if not pode_editar_processo(request.user, processo):
         raise PermissionDenied
@@ -426,7 +439,12 @@ def modificar_dados_processo(request, numero):
 @require_POST
 def alterar_parte(request, numero):
     """Altera os dados cadastrais de uma parte que já figura no processo."""
-    processo = get_object_or_404(ProcessoJudicial, numero=numero)
+    processo = get_object_or_404(
+        ProcessoJudicial.objects.select_related("ciclo__status"), numero=numero
+    )
+
+    if not pode_alterar_autos_no_ciclo(processo.ciclo):
+        return JsonResponse({"erro": MENSAGEM_CICLO_ENCERRADO}, status=403)
 
     if not pode_editar_processo(request.user, processo):
         raise PermissionDenied
@@ -480,7 +498,10 @@ def alterar_parte(request, numero):
 def visualizar_processo(request, numero):
     processo = get_object_or_404(
         ProcessoJudicial.objects
-        .select_related("classe", "status_atual", "vara", "vara__comarca", "tipo_processo", "ciclo")
+        .select_related(
+            "classe", "status_atual", "vara", "vara__comarca", "tipo_processo",
+            "ciclo__status",
+        )
         .prefetch_related("polos__parte"),
         numero=numero,
     )
@@ -567,9 +588,11 @@ def visualizar_processo(request, numero):
     # usuário é resolvido uma vez fora do laço — aquela função consulta o banco
     # e chamá-la por linha seria um N+1.
     grupo_processo_usuario = grupo_processo_do_usuario(request.user, processo)
+    ciclo_encerrado = not pode_alterar_autos_no_ciclo(processo.ciclo)
     for item in movimentacoes:
         item["pode_editar"] = (
-            grupo_processo_usuario is not None
+            not ciclo_encerrado
+            and grupo_processo_usuario is not None
             and item["grupo_processo_id"] is not None
             and item["grupo_processo_id"] == grupo_processo_usuario.pk
         )
@@ -584,6 +607,7 @@ def visualizar_processo(request, numero):
             "polos_terceiro": polos_terceiro,
             "pode_editar_processo": mantem_autos,
             "pode_movimentar_processo": pode_movimentar,
+            "ciclo_encerrado": ciclo_encerrado,
             "comarcas": Comarca.objects.all().order_by("nome"),
             "tipos_processo": TipoProcesso.objects.all().order_by("nome"),
             "classes_processuais": ClasseProcessual.objects.all().order_by("nome"),
@@ -633,6 +657,8 @@ def atribuir_grupo_processos(request):
     ciclo = request.ciclo_ativo
     if not ciclo:
         return JsonResponse({"erro": "Nenhum ciclo ativo selecionado."}, status=400)
+    if not pode_alterar_autos_no_ciclo(ciclo):
+        return JsonResponse({"erro": MENSAGEM_CICLO_ENCERRADO}, status=403)
 
     grupo_serventia = grupo_serventia_do_usuario(request.user, ciclo)
     if grupo_serventia is None:
