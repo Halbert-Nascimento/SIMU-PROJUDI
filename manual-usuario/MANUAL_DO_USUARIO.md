@@ -352,6 +352,9 @@ Ao entrar, o Admin é direcionado direto ao **Painel de Controle** (mesma tela d
    > ℹ️ As opções de Tipo de Perfil disponíveis dependem da permissão de quem está logado: o Admin
    > vê os quatro perfis, enquanto o Coordenador e o Professor veem uma lista mais restrita (ver o
    > capítulo de cada perfil).
+   >
+   > A conta de superusuário (o administrador técnico da instalação) só pode ser alterada por
+   > outro superusuário.
 4. Marque a caixa **Ativo (liberar acesso ao sistema)**.
 5. Clique em **Salvar**.
 
@@ -720,7 +723,9 @@ Processual/Outras Partes/Sujeitos, opcional) funcionam da mesma forma. Cada bloc
 
 - **Cadastrar uma parte nova**: clique em "+ Cadastrar Nova" no bloco desejado para abrir o
   formulário "Nova Parte", com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa (Física ou
-  Jurídica).
+  Jurídica). O CPF vai como `000.000.000-00` ou com os 11 dígitos; o CNPJ, pontuado ou com as 14
+  posições (o formato com letras também é aceito). O sistema confere só o formato, não o dígito
+  verificador, e o documento precisa corresponder ao tipo de pessoa.
 
   ![Formulário "Nova Parte" aberto no Polo Passivo, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa](assets/img_75_processo_cadastrar_nova_form.png)
 
@@ -815,7 +820,8 @@ já pronto (PDF, DOCX, JPG ou JPEG, até 7 MB por arquivo):
 1. Arraste o arquivo para a área pontilhada, ou clique nela para abrir o seletor de arquivos do
    sistema operacional.
 2. Depois do upload, o sistema pede um **"Título do Arquivo"** para cada documento (obrigatório)
-   antes de incluí-lo na lista, confirmando com o ícone de "✓".
+   antes de incluí-lo na lista, confirmando com o ícone de "✓". O título tem no máximo 150
+   caracteres; acima disso o sistema recusa o envio.
 3. O documento passa a aparecer em **"Documentos a Anexar"**, com opções de editar o título (lápis)
    ou remover (lixeira).
 4. Clique em **"Avançar"**, confira o resumo no Passo 2 e clique em **"Confirmar Movimentação"**.

@@ -25,9 +25,9 @@ Sempre consultar e reutilizar as funções existentes antes de criar novas.
 
 | App | Arquivo | Funções principais |
 |---|---|---|
-| `acesso` | `acesso/permissions.py` | `pode_gerenciar_usuarios()`, `tipos_que_pode_atribuir()` |
-| `ciclos` | `ciclos/permissions.py` | `pode_criar_ciclo()`, `pode_editar_ciclo()`, `pode_gerenciar_grupos_ciclo()`, `pode_ver_todos_ciclos()`, `pode_ver_ciclos_arquivados()` |
-| `processos` | `processos/permissions.py` | `pode_visualizar_processo()` (inclui lógica de segredo de justiça), `pode_editar_processo()` |
+| `acesso` | `acesso/permissions.py` | `pode_gerenciar_usuarios()`, `pode_editar_usuario()` (superusuário só é editado por superusuário), `tipos_que_pode_atribuir()` |
+| `ciclos` | `ciclos/permissions.py` | `pode_criar_ciclo()`, `pode_editar_ciclo()`, `pode_gerenciar_grupos_ciclo()`, `pode_ver_todos_ciclos()`, `pode_ver_ciclos_arquivados()`, `pode_alterar_autos_no_ciclo()` |
+| `processos` | `processos/permissions.py` | `pode_visualizar_processo()` (inclui lógica de segredo de justiça), `pode_editar_processo()`, `pode_ver_documentos_das_partes()`, `pode_baixar_anexos()` |
 | `movimentacoes` | `movimentacoes/permissions.py` | `pode_praticar_movimentacao()`, `pode_editar_movimentacao()`, `tipos_praticaveis()`, `grupo_processo_do_usuario()` |
 | `avaliacoes` | `avaliacoes/permissions.py` | `pode_ver_minhas_notas()`, `perfil_pode_avaliar()`, `pode_avaliar_movimentacao()` |
 
@@ -77,10 +77,26 @@ Regras práticas:
 - Sempre verificar `pode_visualizar_processo()` antes de expor dados de processo
 - Processos com `segredo_justica=True` têm regras de acesso diferenciadas — nunca ignorar esse campo
 
+### Consulta Pública
+- Visitante sem login vê CPF/CNPJ mascarado (filtro `exibir_documento`) e não abre nem baixa anexos
+- Tela ou JSON novo com dado de parte ou anexo passa por `pode_ver_documentos_das_partes()` / `pode_baixar_anexos()`
+
+### Ciclo Encerrado
+- Ciclo fora de "Em andamento" é só consulta, para todos os perfis; avaliação e gestão do ciclo continuam
+- Toda rota nova que grava nos autos consulta `pode_alterar_autos_no_ciclo()`
+
+### Escape no JavaScript
+- Texto vindo do banco ou do usuário que entra em `innerHTML` passa por `escaparHtml()` (`static/js/escapar_html.js`)
+- Em `<script>`, valor de template vai entre aspas com `|escapejs`, nunca entre crases
+
 ### Validação de Formulários
 - Toda entrada do usuário passa por `Form` ou `ModelForm` do Django
 - Nunca confiar em dados de `request.POST` sem passar pelo form
 - Campos de arquivo sempre validados com `python-magic` além do form
+- Rota JSON lê o corpo com `ler_json_objeto()` e ids com `id_inteiro()` / `ids_inteiros()` (`processos/utils.py`): entrada inválida vira 400 ou 404, nunca 500
+
+### Dependências de Terceiros
+- Pacote, arquivo de CDN ou componente de servidor novo ou atualizado atualiza `DEPENDENCIAS_TERCEIROS.md`
 
 ### Sessão
 - Timeout configurável via `.env` (`SESSION_TIMEOUT_SECONDS`, padrão 900s)

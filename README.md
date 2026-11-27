@@ -157,6 +157,7 @@ simu-projudi/
 │   └── static/         #   css/, js/, img/, favicon_io/ e modelos/
 ├── scripts/            # Seeds, verificadores de interface e testes de JavaScript
 ├── pyproject.toml      # Configuração do projeto e dependências
+├── DEPENDENCIAS_TERCEIROS.md  # Versões, licenças e histórico dos arquivos de CDN
 ├── manage.py           # Script de gerenciamento do Django
 └── README.md           # Este arquivo
 ```
@@ -258,11 +259,25 @@ uv pip list
 uv pip install nome-do-pacote
 ```
 
+Dependência nova ou atualizada (pacote, arquivo de CDN ou componente do
+servidor) atualiza a linha correspondente em
+[DEPENDENCIAS_TERCEIROS.md](DEPENDENCIAS_TERCEIROS.md).
+
+### Auditar vulnerabilidades das dependências
+
+```bash
+uvx pip-audit --path .venv/Lib/site-packages      # Windows
+uvx pip-audit --path .venv/lib/python3.*/site-packages  # Linux/macOS
+```
+
+O Dependabot (`.github/dependabot.yml`) propõe atualizações semanais para o
+branch `develop`.
+
 ## ✅ Testes
 
 ### Back-end (Django)
 
-A suíte de back-end tem cerca de 230 testes, distribuídos em `acesso`, `base`,
+A suíte de back-end tem cerca de 300 testes, distribuídos em `acesso`, `base`,
 `ciclos`, `usuarios`, `notificacoes`, `manual` e nas pastas `tests/` de
 `avaliacoes`, `movimentacoes` e `processos`. O app `agendamentos` ainda não tem
 testes. Instale o extra `dev` (`uv pip install -e ".[dev]"`) e rode:
@@ -279,8 +294,8 @@ precisa de permissão para criar bancos.
 ### Front-end (JavaScript)
 
 Os testes de JavaScript exigem [Node.js](https://nodejs.org/) e não usam jsdom
-nem runner: cada script traz um DOM mínimo escrito à mão. O primeiro cobre o
-paginador:
+nem runner: quando precisa de DOM, o script traz um mínimo escrito à mão. O
+primeiro cobre o paginador:
 
 ```bash
 node scripts/teste_paginador.mjs
@@ -301,6 +316,15 @@ Cobre a máscara monetária de `templates/static/js/mascara_moeda.js`, usada
 pelo cadastro de processo e pelo modal "Modificar Dados": o dígito entra pelos
 centavos e empurra o valor para a esquerda — digitar `1` dá R$ 0,01 e `2000` em
 seguida dá R$ 120,00.
+
+```bash
+node scripts/teste_escapar_html.mjs
+node scripts/teste_toast.mjs
+```
+
+O primeiro cobre o escape de texto inserido na página por JavaScript
+(`escapar_html.js`); o segundo, a pilha de avisos (`toast.js`), que já travou a
+tela no quarto aviso seguido.
 
 > Verde não é prova: antes de confiar numa asserção nova, reintroduza o defeito
 > e confira que o teste fica **vermelho**. Já aconteceu de o simulador de DOM
