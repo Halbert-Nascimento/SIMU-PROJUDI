@@ -168,6 +168,18 @@ class AlterarParteTests(_CenarioJson):
 
         self.assertEqual(resposta.status_code, 200)
 
+    def test_parte_antiga_gravada_com_espacos_permite_corrigir_o_nome(self):
+        for gravado in ("ANTIGO-1 ", " ANTIGO-1"):
+            with self.subTest(gravado=gravado):
+                ParteFicticia.objects.filter(pk=self.parte_autor.pk).update(
+                    cpf_cnpj=gravado
+                )
+
+                resposta = self.post_json(self.url, self.corpo(cpf_cnpj=gravado))
+
+                self.assertEqual(resposta.status_code, 200)
+                self.assertEqual(resposta.json()["nome_razao"], "Nome Novo")
+
     def test_documento_alterado_passa_a_ser_validado(self):
         self.assertRecusa(
             self.post_json(self.url, self.corpo(cpf_cnpj="ANTIGO-2")), "CPF inválido"

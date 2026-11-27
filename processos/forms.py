@@ -77,7 +77,8 @@ class ParteFicticiaForm(forms.Form):
 
         # cadastro antigo fora do formato continua permitindo corrigir o nome
         atual = self.parte_atual
-        if atual and (documento, tipo) == (atual.cpf_cnpj, atual.tipo_pessoa):
+        # strip: o valor enviado já chega sem espaços; o gravado por carga pode tê-los
+        if atual and (documento, tipo) == (atual.cpf_cnpj.strip(), atual.tipo_pessoa):
             return dados
 
         if not _FORMATOS_DOCUMENTO[tipo].fullmatch(documento):

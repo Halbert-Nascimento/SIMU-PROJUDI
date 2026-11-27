@@ -845,7 +845,7 @@ class UsuarioAtualizarRedirecionamentoTests(TestCase):
         cls.admin = _criar_usuario("admin.next", Usuario.TipoPerfilGlobal.ADMIN)
         cls.aluno = _criar_usuario("aluno.next", Usuario.TipoPerfilGlobal.ALUNO)
 
-    def _atualizar(self, **extra):
+    def _atualizar(self, *, secure=False, **extra):
         self.client.force_login(self.admin)
         dados = {
             "user_id": self.aluno.pk,
@@ -854,7 +854,18 @@ class UsuarioAtualizarRedirecionamentoTests(TestCase):
             **extra,
         }
         self.client.raise_request_exception = False
-        return self.client.post(reverse("acesso:usuario_atualizar"), dados)
+        return self.client.post(
+            reverse("acesso:usuario_atualizar"), dados, secure=secure
+        )
+
+    def test_acesso_https_nao_volta_para_pagina_sem_criptografia(self):
+        resposta = self._atualizar(secure=True, next="http://testserver/painel/")
+        self.assertEqual(resposta["Location"], reverse("acesso:usuario_lista"))
+
+    def test_acesso_https_respeita_destino_https_do_proprio_site(self):
+        destino = "https://testserver/painel/"
+        resposta = self._atualizar(secure=True, next=destino)
+        self.assertEqual(resposta["Location"], destino)
 
     def test_next_que_nao_e_caminho_do_site_cai_na_lista(self):
         destinos = (

@@ -26,6 +26,7 @@ from usuarios.models import Usuario
 
 STATUS_ENCERRADOS = ("Arquivado", "Finalizado")
 AVISO = "Ciclo encerrado"
+OPCOES_DE_ESCRITA = ("Alterar Parte", "Modificar Dados", "Movimentar")
 
 
 class _CenarioComProcesso(CenarioMovimentacoesTestCase):
@@ -188,6 +189,20 @@ class EscritaEmCicloEncerradoTests(_CenarioComProcesso):
                     )
                     self.assertContains(resposta, AVISO)
                     self.assertNotContains(resposta, "/movimentar/")
+
+    def test_cada_opcao_desabilitada_explica_o_encerramento(self):
+        url = reverse("processos:visualizar_processo", args=[self.processo.numero])
+        for nome in STATUS_ENCERRADOS:
+            self.mudar_status(nome)
+            for cod in ("APA", "SC"):
+                resposta = self.cliente_logado(self.usuarios[cod]).get(url)
+                for opcao in OPCOES_DE_ESCRITA:
+                    with self.subTest(status=nome, usuario=cod, opcao=opcao):
+                        self.assertContains(
+                            resposta,
+                            f'title="{AVISO}: o processo está disponível apenas '
+                            f'para consulta">{opcao}</div>',
+                        )
 
     def test_distribuir_e_cadastrar_recusam_mesmo_sem_o_middleware(self):
         # o middleware já não entrega ciclo encerrado; a view não pode depender disso

@@ -9,6 +9,7 @@ from django.test import SimpleTestCase
 from django.urls import reverse
 
 from movimentacoes.models import DocumentoAnexado
+from processos.models import ParteFicticia, PoloProcessual
 from processos.tests.fixtures import CenarioMovimentacoesTestCase, aceite_termos_teste
 from processos.utils import mascarar_cpf_cnpj
 from usuarios.models import Usuario
@@ -52,7 +53,22 @@ class _CenarioProcessoPublico(CenarioMovimentacoesTestCase):
         self.url_processo = reverse(
             "processos:visualizar_processo", args=[self.processo.numero]
         )
-        self.documentos = (self.parte_autor.cpf_cnpj, self.parte_reu.cpf_cnpj)
+        terceiro = ParteFicticia.objects.create(
+            nome_razao="Terceira Interessada",
+            cpf_cnpj="333.444.555-66",
+            tipo_pessoa=ParteFicticia.TipoPessoa.FISICA,
+        )
+        PoloProcessual.objects.create(
+            processo=self.processo,
+            parte=terceiro,
+            tipo_polo=PoloProcessual.TipoPolo.TERCEIRO,
+        )
+        # um documento por polo: cada bloco da tela aplica a máscara por conta própria
+        self.documentos = (
+            self.parte_autor.cpf_cnpj,
+            self.parte_reu.cpf_cnpj,
+            terceiro.cpf_cnpj,
+        )
 
 
 class VisitanteAnonimoTests(_CenarioProcessoPublico):
@@ -113,7 +129,7 @@ class UsuarioLogadoTests(_CenarioProcessoPublico):
         editor = self.cliente_logado(self.usuarios["SC"]).get(self.url_processo)
         leitor = self.cliente_logado(self.usuarios["MP"]).get(self.url_processo)
 
-        self.assertEqual(len(editor.context["partes_json"]), 2)
+        self.assertEqual(len(editor.context["partes_json"]), len(self.documentos))
         self.assertEqual(leitor.context["partes_json"], [])
 
 
