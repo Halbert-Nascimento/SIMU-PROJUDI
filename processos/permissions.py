@@ -1,11 +1,32 @@
 from __future__ import annotations
 
+from ciclos.permissions import pode_alterar_autos_no_ciclo
 from usuarios.models import Usuario
+
+
+def pode_criar_parte(user, ciclo) -> bool:
+    """
+    Parte fictícia nasce no cadastro de processo e vale a mesma regra: qualquer
+    papel, desde que o ciclo ativo esteja "Em andamento".
+    """
+    if not user.is_authenticated or ciclo is None:
+        return False
+    return pode_alterar_autos_no_ciclo(ciclo)
 
 
 def pode_editar_processo(user, processo) -> bool:
     """
-    Quem pode manter os autos: alterar dados do processo e dados das partes.
+    Alterar dados do processo e das partes: exige ciclo "Em andamento" e o papel
+    de `pode_manter_autos`.
+    """
+    return pode_alterar_autos_no_ciclo(processo.ciclo) and pode_manter_autos(
+        user, processo
+    )
+
+
+def pode_manter_autos(user, processo) -> bool:
+    """
+    Quem tem o papel de manter os autos, sem olhar o estado do ciclo.
 
     Ver um processo sem segredo de justiça é público, mas alterar não pode ser:
     a regra aqui é a de quem *atua* no processo.
@@ -39,9 +60,21 @@ def grupo_serventia_do_usuario(user, ciclo):
     return user.grupos_trabalho.filter(ciclo=ciclo, cargo_simulacao__cod="SC").first()
 
 
+def pode_ver_documentos_das_partes(user) -> bool:
+    """CPF/CNPJ completo é só para quem tem login; o visitante vê mascarado."""
+    return user.is_authenticated
+
+
+def pode_baixar_anexos(user, processo) -> bool:
+    """Anexo pode trazer dados reais de alunos: exige login além de ver o processo."""
+    return user.is_authenticated and pode_visualizar_processo(user, processo)
+
+
 def pode_visualizar_processo(user, processo) -> bool:
     """
     Processo sem segredo de justiça e já autuado: público, qualquer pessoa acessa sem login.
+    O visitante anônimo recebe a consulta restrita: ver `pode_ver_documentos_das_partes`
+    e `pode_baixar_anexos`.
     Processo com segredo de justiça, ou ainda não autuado (status "Protocolado" — só o
     grupo do protocolo está vinculado, a Autuação é quem expõe o processo pra quem mais atua):
       - Admin / Coordenador global: acesso irrestrito.

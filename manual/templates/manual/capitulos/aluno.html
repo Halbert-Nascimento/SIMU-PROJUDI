@@ -95,7 +95,11 @@ outra parte no mesmo bloco, se necessário.</p>
 <li>
 <p><strong>Cadastrar uma parte nova</strong>: clique em &quot;+ Cadastrar Nova&quot; no bloco desejado para abrir o
 formulário &quot;Nova Parte&quot;, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa (Física ou
-Jurídica).</p>
+Jurídica). O CPF vai como <code>000.000.000-00</code> ou com os 11 dígitos; o CNPJ, pontuado ou com as 14
+posições (o formato com letras também é aceito). O sistema confere só o formato, não o dígito
+verificador, e o documento precisa corresponder ao tipo de pessoa. As letras do CNPJ são
+gravadas em maiúsculas, e o mesmo documento escrito com ou sem pontuação é recusado como
+duplicado.</p>
 <figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_75_processo_cadastrar_nova_form.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_75_processo_cadastrar_nova_form.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Formulário &quot;Nova Parte&quot; aberto no Polo Passivo, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa</figcaption></figure>
 <p>Preencha os campos e clique em &quot;Salvar&quot; (ou &quot;Cancelar&quot; para desistir sem criar a parte).</p>
 <figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_76_processo_nova_parte_preenchida.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_76_processo_nova_parte_preenchida.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Formulário &quot;Nova Parte&quot; preenchido com &quot;Construtora Horizonte Ltda&quot;, antes de salvar</figcaption></figure>
@@ -161,7 +165,8 @@ já pronto (PDF, DOCX, JPG ou JPEG, até 7 MB por arquivo):</p>
 <li>Arraste o arquivo para a área pontilhada, ou clique nela para abrir o seletor de arquivos do
 sistema operacional.</li>
 <li>Depois do upload, o sistema pede um <strong>&quot;Título do Arquivo&quot;</strong> para cada documento (obrigatório)
-antes de incluí-lo na lista, confirmando com o ícone de &quot;✓&quot;.</li>
+antes de incluí-lo na lista, confirmando com o ícone de &quot;✓&quot;. O título tem no máximo 150
+caracteres; acima disso o sistema recusa o envio.</li>
 <li>O documento passa a aparecer em <strong>&quot;Documentos a Anexar&quot;</strong>, com opções de editar o título (lápis)
 ou remover (lixeira).</li>
 <li>Clique em <strong>&quot;Avançar&quot;</strong>, confira o resumo no Passo 2 e clique em <strong>&quot;Confirmar Movimentação&quot;</strong>.</li>
@@ -169,7 +174,8 @@ ou remover (lixeira).</li>
 <figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_22_movimentacao_documento_anexado.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_22_movimentacao_documento_anexado.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Movimentação com o arquivo &quot;Procuração Ad Judicia (fictícia)&quot; já incluído na lista de Documentos a Anexar</figcaption></figure>
 <p>Depois de confirmada, o documento aparece anexado à movimentação na aba &quot;Eventos do Processo&quot;: o
 número de arquivos aparece na coluna &quot;Arquivo(s)&quot; (ex.: &quot;˅ 1&quot;); clique na seta para expandir e ver
-o(s) documento(s) daquele evento, com botões <strong>&quot;Visualizar&quot;</strong> (abre em nova aba) e <strong>&quot;Baixar&quot;</strong>.</p>
+o(s) documento(s) daquele evento, com botões <strong>&quot;Visualizar&quot;</strong> (abre em nova aba) e <strong>&quot;Baixar&quot;</strong>.
+Esses botões só aparecem para quem fez login.</p>
 <figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_23_evento_visualizar_baixar_documento.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_23_evento_visualizar_baixar_documento.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Evento &quot;Juntada de Documentos&quot; expandido, mostrando o documento anexado com os botões Visualizar e Baixar</figcaption></figure>
 <blockquote class="manual-aviso manual-aviso--neutro">
 <p>Não existe, por enquanto, uma tela central que liste &quot;todos os documentos do processo&quot; fora do

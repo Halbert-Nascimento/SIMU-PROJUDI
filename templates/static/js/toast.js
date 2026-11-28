@@ -82,9 +82,11 @@ function showToast(msg, tipo, duracaoMs) {
     void toast.offsetWidth;
     toast.classList.add('show');
 
-    while (pilha.children.length > TOAST_MAX_VISIVEIS) {
-        removerToast(pilha.lastElementChild);
-    }
+    // quem está saindo segue na pilha até a animação acabar: esperar ela encolher travava a tela
+    Array.from(pilha.children)
+        .filter(function (item) { return !item._toastSaindo; })
+        .slice(TOAST_MAX_VISIVEIS)
+        .forEach(removerToast);
 
     toast._toastTimer = setTimeout(function () { removerToast(toast); }, duracao);
 }

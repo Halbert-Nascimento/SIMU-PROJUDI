@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from django.db.models import Q
 
+from ciclos.permissions import pode_alterar_autos_no_ciclo
 from processos.models import GrupoProcesso, PoloProcessual
 from usuarios.models import Usuario
 
@@ -45,6 +46,9 @@ def pode_praticar_movimentacao(user, processo, tipo_movimentacao) -> bool:
     if not user.is_authenticated:
         return False
 
+    if not pode_alterar_autos_no_ciclo(processo.ciclo):
+        return False
+
     if user.tipo_perfil_global in (
         Usuario.TipoPerfilGlobal.COORDENADOR,
         Usuario.TipoPerfilGlobal.PROFESSOR,
@@ -76,6 +80,8 @@ def pode_editar_movimentacao(user, processo, movimentacao) -> bool:
     """Só o grupo dono do registro (mesmo grupo_processo) pode corrigi-lo — nunca outro grupo vinculado ao processo."""
     if movimentacao.grupo_processo_id is None:
         return False
+    if not pode_alterar_autos_no_ciclo(processo.ciclo):
+        return False
     grupo_processo = grupo_processo_do_usuario(user, processo)
     return grupo_processo is not None and grupo_processo.pk == movimentacao.grupo_processo_id
 
@@ -87,6 +93,8 @@ def tipos_praticaveis(user, processo):
         Usuario.TipoPerfilGlobal.COORDENADOR,
         Usuario.TipoPerfilGlobal.PROFESSOR,
     ):
+        return TipoMovimentacao.objects.none()
+    if not pode_alterar_autos_no_ciclo(processo.ciclo):
         return TipoMovimentacao.objects.none()
 
     cargo = grupo_processo.grupo.cargo_simulacao

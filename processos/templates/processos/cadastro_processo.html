@@ -7,6 +7,7 @@
 {% block extra_head %}
 <link rel="stylesheet" href="{% static 'css/formularios.css' %}">
 <script src="{% static 'js/mascara_moeda.js' %}"></script>
+<script src="{% static 'js/escapar_html.js' %}"></script>
 <style>
     /* Trilha de passos — raio 0 como todo contêiner do guia; o número do passo
        também, porque o círculo é reservado a avatar e ponto de status. */
@@ -576,10 +577,10 @@
 
             html += `<div class="resumo-section">
                 <h4><i class="fas fa-gavel mr-1"></i> Dados do Processo</h4>
-                <div class="resumo-row"><span class="resumo-label">Tipo:</span><span class="resumo-value">${tipo}</span></div>
-                <div class="resumo-row"><span class="resumo-label">Comarca:</span><span class="resumo-value">${comarcaTxt}</span></div>
-                <div class="resumo-row"><span class="resumo-label">Vara / Serventia:</span><span class="resumo-value">${varaTxt}</span></div>
-                <div class="resumo-row"><span class="resumo-label">Classe Processual:</span><span class="resumo-value">${classeTxt}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Tipo:</span><span class="resumo-value">${escaparHtml(tipo)}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Comarca:</span><span class="resumo-value">${escaparHtml(comarcaTxt)}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Vara / Serventia:</span><span class="resumo-value">${escaparHtml(varaTxt)}</span></div>
+                <div class="resumo-row"><span class="resumo-label">Classe Processual:</span><span class="resumo-value">${escaparHtml(classeTxt)}</span></div>
                 <div class="resumo-row"><span class="resumo-label">Valor da Causa:</span><span class="resumo-value">${formatarMoedaBR(parseFloat(valorHidden) || 0)}</span></div>
                 <div class="resumo-row"><span class="resumo-label">Segredo de Justiça:</span><span class="resumo-value">${segredo}</span></div>
             </div>`;
@@ -590,7 +591,7 @@
                 return [...items].map(el => {
                     const nome = el.querySelector("strong").textContent;
                     const extra = el.querySelector(".parte-doc").textContent;
-                    return `${nome} <span style="color:#6b7280">${extra}</span>`;
+                    return `${escaparHtml(nome)} <span style="color:#6b7280">${escaparHtml(extra)}</span>`;
                 }).join("<br>");
             }
 
@@ -611,8 +612,8 @@
                 const size     = c.querySelector(".doc-size").textContent || "";
                 docsHtml += `<div class="flex items-center gap-3 py-1 text-[calc(12px*var(--escala-fonte,1))]">
                     <i class="fas fa-file-alt text-[#1f4f9c]"></i>
-                    <strong>${nomeDoc}</strong>
-                    <span class="text-rotulo">(${filename} — ${size})</span>
+                    <strong>${escaparHtml(nomeDoc)}</strong>
+                    <span class="text-rotulo">(${escaparHtml(filename)} — ${escaparHtml(size)})</span>
                 </div>`;
             });
             html += `<div class="resumo-section">
@@ -671,18 +672,20 @@
                 item.dataset.parteId = parte.id;
                 item.innerHTML = `
                     <div>
-                        <strong>${parte.nome_razao}</strong>
-                        <span class="parte-doc text-rotulo ml-2 font-mono">${parte.cpf_cnpj}</span>
-                        <span class="text-rotulo ml-1">(${parte.tipo_pessoa})</span>
+                        <strong>${escaparHtml(parte.nome_razao)}</strong>
+                        <span class="parte-doc text-rotulo ml-2 font-mono">${escaparHtml(parte.cpf_cnpj)}</span>
+                        <span class="text-rotulo ml-1">(${escaparHtml(parte.tipo_pessoa)})</span>
                     </div>
                     <div class="flex items-center gap-2">
-                        <input type="hidden" name="${inputName}" value="${parte.id}">
+                        <input type="hidden" name="${inputName}" value="${escaparHtml(parte.id)}">
                         <button type="button" class="btn-remover text-erro-txt hover:text-validacao text-apoio font-semibold">
                             <i class="fas fa-times"></i> Remover
                         </button>
                     </div>`;
                 item.querySelector(".btn-remover").addEventListener("click", () => item.remove());
                 lista.appendChild(item);
+                // o aviso "insira pelo menos uma parte" deixou de valer; Terceiro não tem aviso
+                fieldset.querySelector(".campo-erro-inline")?.classList.add("hidden");
             }
 
             let completando = false;
@@ -711,7 +714,7 @@
                                 partes.forEach(p => {
                                     const div = document.createElement("div");
                                     div.className = "px-3 py-2 hover:bg-linha-hover cursor-pointer text-corpo border-b border-divisor";
-                                    div.innerHTML = `<strong>${p.nome_razao}</strong> <span class="text-rotulo font-mono">${p.cpf_cnpj} (${p.tipo_pessoa})</span>`;
+                                    div.innerHTML = `<strong>${escaparHtml(p.nome_razao)}</strong> <span class="text-rotulo font-mono">${escaparHtml(p.cpf_cnpj)} (${escaparHtml(p.tipo_pessoa)})</span>`;
                                     div.addEventListener("click", () => {
                                         adicionarParte(p);
                                         busca.value = "";

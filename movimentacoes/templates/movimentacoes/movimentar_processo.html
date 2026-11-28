@@ -59,8 +59,9 @@
        aqui só a moldura externa se alinha ao resto. */
     .tox-tinymce { border-radius: 0 !important; border-color: #e2e5ea !important; }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/8.11.0/tinymce.min.js" referrerpolicy="origin"></script>
 <script>const STATIC_URL = "{% get_static_prefix %}";</script>
+<script src="{% static 'js/escapar_html.js' %}"></script>
 <script src="{% static 'js/modelos_documentos.js' %}"></script>
 {% endblock %}
 
@@ -475,12 +476,6 @@ let fid = 0;
 const USUARIO_NOME = "{{ user.get_full_name|default:user.username|escapejs }}";
 let documentoAssinado = false;
 
-function escapeHtml(texto) {
-    const d = document.createElement('div');
-    d.textContent = texto;
-    return d.innerHTML;
-}
-
 function formatarDataHora(d) {
     const p = n => String(n).padStart(2, '0');
     return `${p(d.getDate())}/${p(d.getMonth() + 1)}/${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
@@ -564,14 +559,14 @@ function renderPending() {
             <div class="border border-contorno bg-white p-3 flex items-center gap-3">
                 <i class="fa-solid ${ico} text-2xl" style="color:${col}"></i>
                 <div class="flex-1">
-                    <div class="text-[calc(12px*var(--escala-fonte,1))] font-bold text-texto">${f.name}
+                    <div class="text-[calc(12px*var(--escala-fonte,1))] font-bold text-texto">${escaparHtml(f.name)}
                         <span class="text-rotulo text-[calc(10px*var(--escala-fonte,1))] font-normal">(${formatSize(f.size)})</span>
                     </div>
                     <div class="mt-1.5">
                         <label class="lbl text-[calc(11px*var(--escala-fonte,1))]"><span class="req">*</span>Título do arquivo</label>
                         <input type="text"
                                class="w-full bg-white border border-contorno py-1 px-2 text-[calc(12px*var(--escala-fonte,1))] outline-none"
-                               value="${f.title}"
+                               value="${escaparHtml(f.title)}"
                                oninput="updateTitle(${f.id}, this.value)"
                                placeholder="Ex.: Petição inicial, Procuração, Documento pessoal..."/>
                     </div>
@@ -624,8 +619,8 @@ function renderFiles() {
         return `
             <tr data-id="${f.id}">
                 <td><input type="checkbox" class="fileChk" data-id="${f.id}"/></td>
-                <td>${f.desc}</td>
-                <td><i class="fa-solid ${ico} mr-1.5" style="color:${col}"></i>${f.name}</td>
+                <td>${escaparHtml(f.desc)}</td>
+                <td><i class="fa-solid ${ico} mr-1.5" style="color:${col}"></i>${escaparHtml(f.name)}</td>
                 <td>
                     <button type="button" class="text-acao hover:text-navy mr-2" title="Editar título" onclick="editTitle(${f.id})"><i class="fa-solid fa-pen"></i></button>
                     <button type="button" class="text-validacao hover:text-erro-txt" title="Remover" onclick="removeFile(${f.id})"><i class="fa-solid fa-trash"></i></button>
@@ -667,6 +662,8 @@ function removeSelected() {
 // ── TinyMCE ───────────────────────────────────────────
 tinymce.init({
     selector: '#tinymce-editor',
+    // sem a declaração de licença o editor carrega desabilitado
+    license_key: 'gpl',
     height: 520,
     menubar: true,
     plugins: 'lists link image table pagebreak searchreplace preview fullscreen code wordcount',
@@ -689,9 +686,11 @@ tinymce.init({
                line-height: 2; color: #000; margin: 32px 48px; background: #fff; }
         p { text-align: justify; margin: 0 0 6px 0; }
     `,
-    language: 'pt_BR',
-    language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@23.10.9/langs6/pt_BR.js',
+    language: 'pt-BR',
+    language_url: 'https://cdn.jsdelivr.net/npm/tinymce-i18n@26.11.2/langs8/pt-BR.js',
     branding: false, promotion: false,
+    // o contorno azul arredondado da área de edição foge do guia de design
+    highlight_on_focus: false,
     image_uploadtab: true, automatic_uploads: false,
     file_picker_types: 'image',
     file_picker_callback: function(cb) {
@@ -771,7 +770,7 @@ function assinarTexto() {
     const carimbo = `
 <div class="carimbo-assinatura" style="margin-top:28px;display:inline-block;border:1px solid #000;padding:6px 12px;font-family:'Times New Roman',Times,serif;font-size:10pt;line-height:1.5;">
 <strong>ASSINADO ELETRONICAMENTE</strong><br>
-${escapeHtml(USUARIO_NOME)} &mdash; ${formatarDataHora(new Date())}
+${escaparHtml(USUARIO_NOME)} &mdash; ${formatarDataHora(new Date())}
 </div>`;
     ed.setContent(ed.getContent() + carimbo);
     documentoAssinado = true;
@@ -806,7 +805,7 @@ function exportarPdf() {
     document.body.appendChild(iframe);
     const doc = iframe.contentDocument || iframe.contentWindow.document;
     doc.open();
-    doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${nome}</title>
+    doc.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${escaparHtml(nome)}</title>
 <style>
 body{font-family:"Times New Roman",serif;font-size:12pt;line-height:2;margin:2cm;color:#000;}
 p{text-align:justify;margin:0 0 6px 0;}
@@ -889,8 +888,8 @@ function avancar() {
             const [ico, col] = iconFor(f.name);
             return `<li class="flex items-center gap-2">
                 <i class="fa-solid ${ico}" style="color:${col}"></i>
-                <span>${f.desc}</span>
-                <span class="text-rotulo text-[calc(10px*var(--escala-fonte,1))]">(${f.name})</span>
+                <span>${escaparHtml(f.desc)}</span>
+                <span class="text-rotulo text-[calc(10px*var(--escala-fonte,1))]">(${escaparHtml(f.name)})</span>
             </li>`;
         }).join('');
     }
@@ -936,7 +935,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const tipo  = TIPOS.find(t => t.id === '{{ edicao_tipo_id }}');
     if (tipo) window._tipoMovSelect(tipo.id, tipo.nome);
     const ta = document.getElementById('descMov');
-    ta.value = `{{ edicao_descricao|escapejs }}`;
+    ta.value = '{{ edicao_descricao|escapejs }}';
     ta.dispatchEvent(new Event('input'));
 });
 {% endif %}

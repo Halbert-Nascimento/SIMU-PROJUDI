@@ -152,6 +152,7 @@ Regras que valem para todos os papéis e que ajudam a entender o que cada grupo 
 - **Cada processo tem, no máximo, um grupo por papel**, com uma exceção: a Serventia pode ter mais de um grupo vinculado.
 - **O polo vem do papel**: o grupo de Advogados Polo Ativo ocupa o polo ativo e o de Advogados Polo Passivo, o polo passivo.
 - **Professor e Coordenador não movimentam processos**: eles acompanham e avaliam o que os alunos fazem.
+- **Ciclo encerrado é só consulta**: quando o ciclo deixa de estar "Em andamento" (por exemplo, finalizado ou arquivado), ninguém cadastra processos, distribui grupos, movimenta, corrige nem altera dados e partes. A consulta aos processos e a avaliação pelo Professor continuam disponíveis; já o Aluno que não participa de nenhum outro ciclo em andamento volta a ver apenas a tela de espera.
 - **Cada ato só aparece depois do ato anterior**: a lista do formulário "Movimentar" cresce conforme o processo avança, e por isso, no começo, alguns papéis veem poucas opções. A [Linha do processo](#linha-do-processo) mostra a ordem completa. Os perfis de gestão (Admin, Coordenador, Professor) não atuam diretamente nos processos: eles administram ciclos, grupos e usuários, e avaliam as movimentações feitas pelos Alunos: ver os capítulos [do Admin](#capitulo-admin), [do Coordenador](#capitulo-coordenador) e [do Professor](#capitulo-professor).
 
 <a name="guia-prazos"></a>
@@ -181,7 +182,7 @@ A tela de login tem um painel "Informações Importantes", com itens que valem p
 - **Primeiro acesso**: todo cadastro novo entra como "Pendente" e só é liberado depois que um Admin, Coordenador ou Professor aprova e atribui o papel de simulação, já documentado na  [seção 2 de Primeiros Passos](#apos-cadastro).
 - **Limite de 7 MB por arquivo**: cada documento anexado a uma movimentação pode ter até 7 MB, nos formatos PDF, DOCX, JPG e JPEG. O sistema confere o conteúdo do arquivo, não só a extensão: renomear um arquivo para ".pdf" não faz ele passar pela validação, já mencionado na [seção 7 do Capítulo do Aluno](#aluno-cadastrar-processo).
 - **A sessão encerra após 15 minutos sem atividade**: um aviso aparece antes do fim do prazo, com a opção de continuar conectado. Sem resposta, a sessão é encerrada e o sistema volta para a tela de login. Vale a pena não deixar um formulário longo aberto sem salvar.
-- **Processos em segredo de justiça**: um processo marcado como segredo de justiça só aparece para quem atua nele: a Serventia do ciclo, os grupos vinculados ao processo, o Professor responsável pelo ciclo, o Coordenador e o Admin. Para qualquer outra pessoa o processo não existe. Já um processo **sem** segredo, depois de autuado, é **público**: quem tiver o endereço abre os autos mesmo sem fazer login. Antes da Autuação (status "Protocolado"), só o grupo que protocolou, a Serventia e a gestão enxergam o processo.
+- **Processos em segredo de justiça**: um processo marcado como segredo de justiça só aparece para quem atua nele: a Serventia do ciclo, os grupos vinculados ao processo, o Professor responsável pelo ciclo, o Coordenador e o Admin. Para qualquer outra pessoa o processo não existe. Já um processo **sem** segredo, depois de autuado, é **público**: quem tiver o endereço abre os autos mesmo sem fazer login, mas o visitante sem login vê os CPFs e CNPJs das partes parcialmente ocultos e não abre nem baixa os documentos anexados. Antes da Autuação (status "Protocolado"), só o grupo que protocolou, a Serventia e a gestão enxergam o processo.
 
 ---
 
@@ -351,6 +352,9 @@ Ao entrar, o Admin é direcionado direto ao **Painel de Controle** (mesma tela d
    > ℹ️ As opções de Tipo de Perfil disponíveis dependem da permissão de quem está logado: o Admin
    > vê os quatro perfis, enquanto o Coordenador e o Professor veem uma lista mais restrita (ver o
    > capítulo de cada perfil).
+   >
+   > A conta de superusuário (o administrador técnico da instalação) só pode ser alterada por
+   > outro superusuário.
 4. Marque a caixa **Ativo (liberar acesso ao sistema)**.
 5. Clique em **Salvar**.
 
@@ -698,7 +702,7 @@ Valor da Causa (com opção de marcar Segredo de Justiça) e as partes do proces
 Passivo e, opcionalmente, Substituto Processual/Outras Partes/Sujeitos). A Vara/Serventia só mostra
 as varas da Comarca escolhida.
 
-![Passo 1 do Cadastro de Processo, com os campos de Tipo do Processo, Comarca, Vara/Serventia, Classe Processual e Assunto](assets/img_37_cadastro_passo1_dados.png)
+![Passo 1 do Cadastro de Processo, com os campos de Tipo do Processo, Comarca, Vara/Serventia e Classe Processual](assets/img_37_cadastro_passo1_dados.png)
 
 **Partes do processo**: os três blocos (Polo Ativo e Polo Passivo, obrigatórios, e Substituto
 Processual/Outras Partes/Sujeitos, opcional) funcionam da mesma forma. Cada bloco tem um campo
@@ -719,7 +723,11 @@ Processual/Outras Partes/Sujeitos, opcional) funcionam da mesma forma. Cada bloc
 
 - **Cadastrar uma parte nova**: clique em "+ Cadastrar Nova" no bloco desejado para abrir o
   formulário "Nova Parte", com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa (Física ou
-  Jurídica).
+  Jurídica). O CPF vai como `000.000.000-00` ou com os 11 dígitos; o CNPJ, pontuado ou com as 14
+  posições (o formato com letras também é aceito). O sistema confere só o formato, não o dígito
+  verificador, e o documento precisa corresponder ao tipo de pessoa. As letras do CNPJ são
+  gravadas em maiúsculas, e o mesmo documento escrito com ou sem pontuação é recusado como
+  duplicado.
 
   ![Formulário "Nova Parte" aberto no Polo Passivo, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa](assets/img_75_processo_cadastrar_nova_form.png)
 
@@ -814,7 +822,8 @@ já pronto (PDF, DOCX, JPG ou JPEG, até 7 MB por arquivo):
 1. Arraste o arquivo para a área pontilhada, ou clique nela para abrir o seletor de arquivos do
    sistema operacional.
 2. Depois do upload, o sistema pede um **"Título do Arquivo"** para cada documento (obrigatório)
-   antes de incluí-lo na lista, confirmando com o ícone de "✓".
+   antes de incluí-lo na lista, confirmando com o ícone de "✓". O título tem no máximo 150
+   caracteres; acima disso o sistema recusa o envio.
 3. O documento passa a aparecer em **"Documentos a Anexar"**, com opções de editar o título (lápis)
    ou remover (lixeira).
 4. Clique em **"Avançar"**, confira o resumo no Passo 2 e clique em **"Confirmar Movimentação"**.
@@ -824,6 +833,7 @@ já pronto (PDF, DOCX, JPG ou JPEG, até 7 MB por arquivo):
 Depois de confirmada, o documento aparece anexado à movimentação na aba "Eventos do Processo": o
 número de arquivos aparece na coluna "Arquivo(s)" (ex.: "˅ 1"); clique na seta para expandir e ver
 o(s) documento(s) daquele evento, com botões **"Visualizar"** (abre em nova aba) e **"Baixar"**.
+Esses botões só aparecem para quem fez login.
 
 ![Evento "Juntada de Documentos" expandido, mostrando o documento anexado com os botões Visualizar e Baixar](assets/img_23_evento_visualizar_baixar_documento.png)
 

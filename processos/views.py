@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 import decimal
-import json
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -21,15 +20,32 @@ from django.views.decorators.http import require_POST
 from base.mensagens import propagar_erros_form
 
 from ciclos.models import GrupoTrabalho
+from ciclos.permissions import pode_alterar_autos_no_ciclo
 
-from .forms import ProcessoJudicialForm
+from .forms import ParteFicticiaForm, ProcessoJudicialForm
 from .permissions import (
     grupo_serventia_do_usuario,
+    pode_baixar_anexos,
+    pode_criar_parte,
     pode_editar_processo,
+    pode_manter_autos,
+    pode_ver_documentos_das_partes,
     pode_visualizar_processo,
 )
-from .services import aplicar_grupos
-from .utils import contexto_upload, validar_multiplos_arquivos
+from .services import (
+    TipoMovimentacaoIndisponivel,
+    aplicar_grupos,
+    partes_com_mesmo_documento,
+)
+from .utils import (
+    chave_documento,
+    contexto_upload,
+    id_inteiro,
+    ids_inteiros,
+    ler_json_objeto,
+    normalizar_valor_monetario,
+    validar_multiplos_arquivos,
+)
 from movimentacoes.catalogo import FILTROS_EVENTO_PROCESSO, NOME_AUTUACAO, NOME_REDISTRIBUICAO
 from movimentacoes.models import DocumentoAnexado, TipoMovimentacao
 from movimentacoes.permissions import grupo_processo_do_usuario, pode_movimentar_processo
@@ -45,6 +61,33 @@ from .models import (
     TipoProcesso,
     VaraServentia,
 )
+
+MENSAGEM_CICLO_ENCERRADO = (
+    "Ciclo encerrado: o processo está disponível apenas para consulta."
+)
+
+
+# maior valor que cabe em ProcessoJudicial.valor_causa (15 dígitos, 2 decimais)
+VALOR_CAUSA_MAXIMO = decimal.Decimal("9999999999999.99")
+
+
+def _partes_dos_polos(enviados: dict) -> tuple[dict, bool]:
+    """
+    Separa, por polo, os ids de partes que existem (sem repetição, na ordem enviada)
+    e informa se algum dos enviados era inválido.
+    """
+    ids = {polo: [id_inteiro(v) for v in valores] for polo, valores in enviados.items()}
+    existentes = set(
+        ParteFicticia.objects.filter(
+            pk__in=[i for lista in ids.values() for i in lista if i is not None]
+        ).values_list("pk", flat=True)
+    )
+    houve_invalido = any(i not in existentes for lista in ids.values() for i in lista)
+    validos = {
+        polo: list(dict.fromkeys(i for i in lista if i in existentes))
+        for polo, lista in ids.items()
+    }
+    return validos, houve_invalido
 
 
 def _saudacao():
@@ -63,6 +106,8 @@ def cadastrar_processo(request):
     ciclo = request.ciclo_ativo
     if not ciclo:
         return redirect(reverse("ciclos:selecionar_ciclo") + f"?next={request.path}")
+    if not pode_alterar_autos_no_ciclo(ciclo):
+        raise PermissionDenied
 
     # Listas usadas tanto no POST (erro) quanto no GET (vazias)
     polo_ativo_partes: list = []
@@ -72,12 +117,25 @@ def cadastrar_processo(request):
     if request.method == "POST":
         form = ProcessoJudicialForm(request.POST)
 
-        polo_ativo_ids   = [v for v in request.POST.getlist("polo_ativo")    if v]
-        polo_passivo_ids = [v for v in request.POST.getlist("polo_passivo")  if v]
-        polo_terceiro_ids = [v for v in request.POST.getlist("polo_terceiro") if v]
+        polos, parte_invalida = _partes_dos_polos(
+            {
+                nome: [v for v in request.POST.getlist(nome) if v]
+                for nome in ("polo_ativo", "polo_passivo", "polo_terceiro")
+            }
+        )
+        polo_ativo_ids = polos["polo_ativo"]
+        polo_passivo_ids = polos["polo_passivo"]
+        polo_terceiro_ids = polos["polo_terceiro"]
 
         # Validação de polos (passo 1) — separada da validação de arquivos (passo 2)
         polo_erro = False
+        if parte_invalida:
+            messages.error(
+                request,
+                "Parte selecionada inválida. Busque a parte novamente.",
+                extra_tags="processo",
+            )
+            polo_erro = True
         if not polo_ativo_ids:
             messages.error(request, "Insira pelo menos uma parte no Polo Ativo.", extra_tags="processo")
             polo_erro = True
@@ -141,13 +199,13 @@ def cadastrar_processo(request):
                     for parte_id in ids:
                         PoloProcessual.objects.create(
                             processo=processo,
-                            parte_id=int(parte_id),
+                            parte_id=parte_id,
                             tipo_polo=tipo_polo,
                         )
                 for parte_id in polo_terceiro_ids:
                     PoloProcessual.objects.create(
                         processo=processo,
-                        parte_id=int(parte_id),
+                        parte_id=parte_id,
                         tipo_polo="Terceiro",
                     )
 
@@ -261,9 +319,10 @@ def pagina_aluno(request):
 
     if filtro_numero:
         processos = processos.filter(numero__icontains=filtro_numero)
-    if filtro_classe:
+    # filtro adulterado na URL é ignorado
+    if id_inteiro(filtro_classe) is not None:
         processos = processos.filter(classe_id=filtro_classe)
-    if filtro_situacao:
+    if id_inteiro(filtro_situacao) is not None:
         processos = processos.filter(status_atual_id=filtro_situacao)
 
     total_processos = processos.count()
@@ -341,24 +400,23 @@ def criar_parte(request):
     if request.method != "POST":
         return JsonResponse({"erro": "Método não permitido."}, status=405)
 
-    try:
-        dados = json.loads(request.body)
-    except json.JSONDecodeError:
+    ciclo = request.ciclo_ativo
+    if not pode_criar_parte(request.user, ciclo):
+        erro = MENSAGEM_CICLO_ENCERRADO if ciclo else "Nenhum ciclo ativo selecionado."
+        return JsonResponse({"erro": erro}, status=403)
+
+    dados = ler_json_objeto(request)
+    if dados is None:
         return JsonResponse({"erro": "JSON inválido."}, status=400)
 
-    nome = dados.get("nome_razao", "").strip()
-    cpf_cnpj = dados.get("cpf_cnpj", "").strip()
-    tipo_pessoa = dados.get("tipo_pessoa", "").strip()
+    form = ParteFicticiaForm(dados)
+    if not form.is_valid():
+        return JsonResponse({"erro": form.mensagem_de_erro()}, status=400)
+    nome = form.cleaned_data["nome_razao"]
+    cpf_cnpj = form.cleaned_data["cpf_cnpj"]
+    tipo_pessoa = form.cleaned_data["tipo_pessoa"]
 
-    if not nome or not cpf_cnpj or not tipo_pessoa:
-        return JsonResponse({"erro": "Preencha todos os campos."}, status=400)
-
-    # choices do model não é restrição de banco: sem esta verificação uma
-    # string arbitrária é gravada (e acima de 8 caracteres vira DataError)
-    if tipo_pessoa not in ParteFicticia.TipoPessoa.values:
-        return JsonResponse({"erro": "Tipo de pessoa inválido."}, status=400)
-
-    if ParteFicticia.objects.filter(cpf_cnpj=cpf_cnpj).exists():
+    if partes_com_mesmo_documento(cpf_cnpj).exists():
         return JsonResponse({"erro": "Já existe uma parte com este CPF/CNPJ."}, status=400)
 
     try:
@@ -384,31 +442,45 @@ def criar_parte(request):
 @require_POST
 def modificar_dados_processo(request, numero):
     """Altera os dados cadastrais do processo — os que o form de cadastro edita."""
-    processo = get_object_or_404(ProcessoJudicial, numero=numero)
+    processo = get_object_or_404(
+        ProcessoJudicial.objects.select_related("ciclo__status"), numero=numero
+    )
 
-    if not pode_editar_processo(request.user, processo):
+    if not pode_manter_autos(request.user, processo):
         raise PermissionDenied
 
-    try:
-        dados = json.loads(request.body)
-    except json.JSONDecodeError:
+    # em JSON: quem mantém os autos recebe o motivo na própria tela
+    if not pode_alterar_autos_no_ciclo(processo.ciclo):
+        return JsonResponse({"erro": MENSAGEM_CICLO_ENCERRADO}, status=403)
+
+    dados = ler_json_objeto(request)
+    if dados is None:
         return JsonResponse({"erro": "JSON inválido."}, status=400)
 
-    vara = VaraServentia.objects.filter(pk=dados.get("vara_id")).first()
-    tipo = TipoProcesso.objects.filter(pk=dados.get("tipo_processo_id")).first()
-    classe = ClasseProcessual.objects.filter(pk=dados.get("classe_id")).first()
+    vara = VaraServentia.objects.filter(pk=id_inteiro(dados.get("vara_id"))).first()
+    tipo = TipoProcesso.objects.filter(
+        pk=id_inteiro(dados.get("tipo_processo_id"))
+    ).first()
+    classe = ClasseProcessual.objects.filter(
+        pk=id_inteiro(dados.get("classe_id"))
+    ).first()
 
     if vara is None or tipo is None or classe is None:
         return JsonResponse({"erro": "Selecione vara, tipo e classe."}, status=400)
 
     # o valor chega como string do campo mascarado; vazio vale zero
-    bruto = str(dados.get("valor_causa") or "0").replace(".", "").replace(",", ".")
+    bruto = normalizar_valor_monetario(str(dados.get("valor_causa") or "0"))
     try:
         valor = decimal.Decimal(bruto)
     except decimal.InvalidOperation:
         return JsonResponse({"erro": "Valor da causa inválido."}, status=400)
+    # NaN não admite comparação: is_finite() precisa vir primeiro
+    if not valor.is_finite() or valor > VALOR_CAUSA_MAXIMO:
+        return JsonResponse({"erro": "Valor da causa inválido."}, status=400)
     if valor < 0:
         return JsonResponse({"erro": "O valor da causa não pode ser negativo."}, status=400)
+    # arredondado aqui: um expoente como 1e-999999999 chegaria inteiro ao driver
+    valor = valor.quantize(decimal.Decimal("0.01"), rounding=decimal.ROUND_HALF_UP)
 
     processo.vara = vara
     processo.tipo_processo = tipo
@@ -426,41 +498,45 @@ def modificar_dados_processo(request, numero):
 @require_POST
 def alterar_parte(request, numero):
     """Altera os dados cadastrais de uma parte que já figura no processo."""
-    processo = get_object_or_404(ProcessoJudicial, numero=numero)
+    processo = get_object_or_404(
+        ProcessoJudicial.objects.select_related("ciclo__status"), numero=numero
+    )
 
-    if not pode_editar_processo(request.user, processo):
+    if not pode_manter_autos(request.user, processo):
         raise PermissionDenied
 
-    try:
-        dados = json.loads(request.body)
-    except json.JSONDecodeError:
+    if not pode_alterar_autos_no_ciclo(processo.ciclo):
+        return JsonResponse({"erro": MENSAGEM_CICLO_ENCERRADO}, status=403)
+
+    dados = ler_json_objeto(request)
+    if dados is None:
         return JsonResponse({"erro": "JSON inválido."}, status=400)
 
     # a parte tem que figurar NESTE processo — sem isso a rota viraria um
     # editor aberto de qualquer parte do banco
     polo = (
         processo.polos.select_related("parte")
-        .filter(parte_id=dados.get("parte_id"))
+        .filter(parte_id=id_inteiro(dados.get("parte_id")))
         .first()
     )
     if polo is None:
         return JsonResponse({"erro": "Esta parte não figura no processo."}, status=404)
 
-    nome = (dados.get("nome_razao") or "").strip()
-    cpf_cnpj = (dados.get("cpf_cnpj") or "").strip()
-    tipo_pessoa = (dados.get("tipo_pessoa") or "").strip()
+    form = ParteFicticiaForm(dados, parte_atual=polo.parte)
+    if not form.is_valid():
+        return JsonResponse({"erro": form.mensagem_de_erro()}, status=400)
+    nome = form.cleaned_data["nome_razao"]
+    cpf_cnpj = form.cleaned_data["cpf_cnpj"]
+    tipo_pessoa = form.cleaned_data["tipo_pessoa"]
 
-    if not nome or not cpf_cnpj or not tipo_pessoa:
-        return JsonResponse({"erro": "Preencha todos os campos."}, status=400)
-
-    if tipo_pessoa not in ParteFicticia.TipoPessoa.values:
-        return JsonResponse({"erro": "Tipo de pessoa inválido."}, status=400)
-
-    if (
-        ParteFicticia.objects.filter(cpf_cnpj=cpf_cnpj)
-        .exclude(pk=polo.parte_id)
-        .exists()
+    outras_partes = ParteFicticia.objects.exclude(pk=polo.parte_id)
+    duplicado = outras_partes.filter(cpf_cnpj=cpf_cnpj).exists()
+    # só na troca de documento: duplicata antiga não impede corrigir o nome
+    if not duplicado and chave_documento(cpf_cnpj) != chave_documento(
+        polo.parte.cpf_cnpj
     ):
+        duplicado = partes_com_mesmo_documento(cpf_cnpj, outras_partes).exists()
+    if duplicado:
         return JsonResponse({"erro": "Já existe outra parte com este CPF/CNPJ."}, status=400)
 
     parte = polo.parte
@@ -480,7 +556,10 @@ def alterar_parte(request, numero):
 def visualizar_processo(request, numero):
     processo = get_object_or_404(
         ProcessoJudicial.objects
-        .select_related("classe", "status_atual", "vara", "vara__comarca", "tipo_processo", "ciclo")
+        .select_related(
+            "classe", "status_atual", "vara", "vara__comarca", "tipo_processo",
+            "ciclo__status",
+        )
         .prefetch_related("polos__parte"),
         numero=numero,
     )
@@ -567,9 +646,11 @@ def visualizar_processo(request, numero):
     # usuário é resolvido uma vez fora do laço — aquela função consulta o banco
     # e chamá-la por linha seria um N+1.
     grupo_processo_usuario = grupo_processo_do_usuario(request.user, processo)
+    ciclo_encerrado = not pode_alterar_autos_no_ciclo(processo.ciclo)
     for item in movimentacoes:
         item["pode_editar"] = (
-            grupo_processo_usuario is not None
+            not ciclo_encerrado
+            and grupo_processo_usuario is not None
             and item["grupo_processo_id"] is not None
             and item["grupo_processo_id"] == grupo_processo_usuario.pk
         )
@@ -584,21 +665,28 @@ def visualizar_processo(request, numero):
             "polos_terceiro": polos_terceiro,
             "pode_editar_processo": mantem_autos,
             "pode_movimentar_processo": pode_movimentar,
+            "ciclo_encerrado": ciclo_encerrado,
+            "ver_documentos": pode_ver_documentos_das_partes(request.user),
+            "pode_baixar_anexos": pode_baixar_anexos(request.user, processo),
             "comarcas": Comarca.objects.all().order_by("nome"),
             "tipos_processo": TipoProcesso.objects.all().order_by("nome"),
             "classes_processuais": ClasseProcessual.objects.all().order_by("nome"),
             "varas_da_comarca": VaraServentia.objects.filter(
                 comarca_id=processo.vara.comarca_id).order_by("nome"),
-            "partes_json": [
-                {
-                    "id": p.parte_id,
-                    "nome_razao": p.parte.nome_razao,
-                    "cpf_cnpj": p.parte.cpf_cnpj,
-                    "tipo_pessoa": p.parte.tipo_pessoa,
-                    "polo": p.get_tipo_polo_display(),
-                }
-                for p in processo.polos.all()
-            ],
+            "partes_json": (
+                [
+                    {
+                        "id": p.parte_id,
+                        "nome_razao": p.parte.nome_razao,
+                        "cpf_cnpj": p.parte.cpf_cnpj,
+                        "tipo_pessoa": p.parte.tipo_pessoa,
+                        "polo": p.get_tipo_polo_display(),
+                    }
+                    for p in processo.polos.all()
+                ]
+                if mantem_autos
+                else []
+            ),
             "grupo_serventia": grupo_serventia,
             "grupos_vinculados": grupos_vinculados,
             "movimentacoes": movimentacoes,
@@ -615,14 +703,18 @@ def visualizar_processo(request, numero):
 @login_required
 @require_POST
 def atribuir_grupo_processos(request):
-    try:
-        dados = json.loads(request.body)
-    except json.JSONDecodeError:
+    dados = ler_json_objeto(request)
+    if dados is None:
         return JsonResponse({"erro": "JSON inválido."}, status=400)
 
-    processo_ids = dados.get("processo_ids", [])
-    grupo_ids_adicionar = dados.get("grupo_ids_adicionar", [])
-    grupo_ids_remover = dados.get("grupo_ids_remover", [])
+    listas = []
+    for campo in ("processo_ids", "grupo_ids_adicionar", "grupo_ids_remover"):
+        valor = dados.get(campo)
+        ids = ids_inteiros([] if valor is None else valor)
+        if ids is None:
+            return JsonResponse({"erro": "Seleção inválida."}, status=400)
+        listas.append(ids)
+    processo_ids, grupo_ids_adicionar, grupo_ids_remover = listas
     remover_tudo = dados.get("remover_tudo", False)
 
     if not processo_ids:
@@ -633,6 +725,8 @@ def atribuir_grupo_processos(request):
     ciclo = request.ciclo_ativo
     if not ciclo:
         return JsonResponse({"erro": "Nenhum ciclo ativo selecionado."}, status=400)
+    if not pode_alterar_autos_no_ciclo(ciclo):
+        return JsonResponse({"erro": MENSAGEM_CICLO_ENCERRADO}, status=403)
 
     grupo_serventia = grupo_serventia_do_usuario(request.user, ciclo)
     if grupo_serventia is None:
@@ -657,6 +751,41 @@ def atribuir_grupo_processos(request):
         )
     }
 
+    try:
+        _distribuir(
+            processos,
+            remover_tudo=remover_tudo,
+            grupo_ids_adicionar=grupo_ids_adicionar,
+            grupo_ids_remover=grupo_ids_remover,
+            ciclo=ciclo,
+            ator=request.user,
+            grupo_serventia=grupo_serventia,
+            tipos_movimentacao=tipos_movimentacao,
+        )
+    except TipoMovimentacaoIndisponivel as erro:
+        # capturado fora do atomic: o lote inteiro já foi desfeito
+        return JsonResponse(
+            {
+                "erro": f'Tipo de movimentação "{erro.nome_tipo}" não encontrado. '
+                "Contate o administrador do sistema."
+            },
+            status=400,
+        )
+
+    return JsonResponse({"sucesso": True, "atualizados": len(processos)})
+
+
+def _distribuir(
+    processos,
+    *,
+    remover_tudo,
+    grupo_ids_adicionar,
+    grupo_ids_remover,
+    ciclo,
+    ator,
+    grupo_serventia,
+    tipos_movimentacao,
+):
     # atomic(): em autocommit uma falha no meio do laço deixaria parte dos
     # processos alterada e parte não, com o cliente recebendo só um erro genérico
     with transaction.atomic():
@@ -668,7 +797,7 @@ def atribuir_grupo_processos(request):
                     processo,
                     grupos_adicionar=[],
                     grupos_remover=[],
-                    ator=request.user,
+                    ator=ator,
                     grupo_serventia=grupo_serventia,
                     remover_todos=True,
                     tipos_movimentacao=tipos_movimentacao,
@@ -689,10 +818,8 @@ def atribuir_grupo_processos(request):
                     processo,
                     grupos_adicionar=grupos_adicionar,
                     grupos_remover=grupos_remover,
-                    ator=request.user,
+                    ator=ator,
                     grupo_serventia=grupo_serventia,
                     tipos_movimentacao=tipos_movimentacao,
                 )
-
-    return JsonResponse({"sucesso": True, "atualizados": len(processos)})
 

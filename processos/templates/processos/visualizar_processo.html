@@ -11,6 +11,7 @@
 <link rel="stylesheet" href="{% static 'css/processos_compartilhado.css' %}">
 <script src="{% static 'js/paginador.js' %}"></script>
 <script src="{% static 'js/mascara_moeda.js' %}"></script>
+<script src="{% static 'js/escapar_html.js' %}"></script>
 <style>
     /* Colunas de largura fixa da tabela de movimentação */
     .tbl-mov .num-col { width: 32px; color: #6b7280; text-align: right; padding-right: 6px; }
@@ -240,7 +241,7 @@
                                 {% if pode_editar_processo %}
                                 <div class="opcoes-item" onclick="abrirAlterarParte()">Alterar Parte</div>
                                 {% else %}
-                                <div class="opcoes-item text-rotulo" title="Seu perfil não altera partes deste processo">Alterar Parte</div>
+                                <div class="opcoes-item text-rotulo" title="{% if ciclo_encerrado %}Ciclo encerrado: o processo está disponível apenas para consulta{% else %}Seu perfil não altera partes deste processo{% endif %}">Alterar Parte</div>
                                 {% endif %}
                             </div>
                         </div>
@@ -267,7 +268,7 @@
                         {% if pode_editar_processo %}
                         <div class="opcoes-item" onclick="abrirModificarDados()">Modificar Dados</div>
                         {% else %}
-                        <div class="opcoes-item text-rotulo" title="Seu perfil não modifica dados deste processo">Modificar Dados</div>
+                        <div class="opcoes-item text-rotulo" title="{% if ciclo_encerrado %}Ciclo encerrado: o processo está disponível apenas para consulta{% else %}Seu perfil não modifica dados deste processo{% endif %}">Modificar Dados</div>
                         {% endif %}
 
                         <!-- Movimentar — link funcional -->
@@ -277,7 +278,7 @@
                             Movimentar
                         </a>
                         {% else %}
-                        <div class="opcoes-item text-rotulo" title="Seu perfil não movimenta este processo">Movimentar</div>
+                        <div class="opcoes-item text-rotulo" title="{% if ciclo_encerrado %}Ciclo encerrado: o processo está disponível apenas para consulta{% else %}Seu perfil não movimenta este processo{% endif %}">Movimentar</div>
                         {% endif %}
 
 
@@ -310,7 +311,7 @@
                 </div>
                 <div class="col-span-3">
                     <div class="field-label">CPF / CNPJ</div>
-                    <div class="field-value">{{ polo.parte.cpf_cnpj }}</div>
+                    <div class="field-value">{{ polo.parte.cpf_cnpj|exibir_documento:ver_documentos }}</div>
                 </div>
                 <div class="col-span-3">
                     <div class="field-label">Tipo de Pessoa</div>
@@ -342,7 +343,7 @@
                 </div>
                 <div class="col-span-3">
                     <div class="field-label">CPF / CNPJ</div>
-                    <div class="field-value">{{ polo.parte.cpf_cnpj }}</div>
+                    <div class="field-value">{{ polo.parte.cpf_cnpj|exibir_documento:ver_documentos }}</div>
                 </div>
                 <div class="col-span-3">
                     <div class="field-label">Tipo de Pessoa</div>
@@ -376,7 +377,7 @@
                 </div>
                 <div class="col-span-3">
                     <div class="field-label">CPF / CNPJ</div>
-                    <div class="field-value">{{ polo.parte.cpf_cnpj }}</div>
+                    <div class="field-value">{{ polo.parte.cpf_cnpj|exibir_documento:ver_documentos }}</div>
                 </div>
                 <div class="col-span-3">
                     <div class="field-label">Tipo de Pessoa</div>
@@ -562,6 +563,7 @@
                                         {% endif %}
                                         {{ doc.titulo_arquivo }}
                                     </span>
+                                    {% if pode_baixar_anexos %}
                                     <div class="arq-acoes">
                                         <a href="{{ doc.caminho_arquivo.url }}" target="_blank"
                                            class="arq-btn visualizar">
@@ -572,6 +574,7 @@
                                             <i class="fa-solid fa-download"></i> Baixar
                                         </a>
                                     </div>
+                                    {% endif %}
                                 </div>
                                 {% endfor %}
                             </div>
@@ -715,7 +718,7 @@ function carregarVarasDaComarca() {
     fetch('/processos/api/varas/' + comarcaId + '/')
         .then(r => r.json())
         .then(varas => {
-            alvo.innerHTML = varas.map(v => `<option value="${v.id}">${v.nome}</option>`).join('')
+            alvo.innerHTML = varas.map(v => `<option value="${escaparHtml(v.id)}">${escaparHtml(v.nome)}</option>`).join('')
                 || '<option value="">Nenhuma vara nesta comarca</option>';
         })
         .catch(() => {
@@ -754,7 +757,7 @@ function abrirAlterarParte() {
     document.getElementById('opcoesMenu').classList.remove('open');
     const alvo = document.getElementById('parte-alvo');
     alvo.innerHTML = partesDoProcesso.map((parte, i) =>
-        `<option value="${i}">${parte.polo} — ${parte.nome_razao}</option>`).join('');
+        `<option value="${i}">${escaparHtml(parte.polo)} — ${escaparHtml(parte.nome_razao)}</option>`).join('');
     carregarParteSelecionada();
     document.getElementById('modalAlterarParte').classList.add('open');
 }

@@ -3,9 +3,10 @@ from __future__ import annotations
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
-from django.http import Http404
+from django.http import Http404, HttpResponseRedirect
 from django.db.models import Count, Q
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 
 from base.decorators import exige_permissao
 from base.mensagens import propagar_erros_form
@@ -15,6 +16,7 @@ from usuarios.models import Usuario
 from ciclos.models import CicloSimulacao, GrupoTrabalho, ParticipanteCiclo, StatusCiclo
 from movimentacoes.models import MovimentacaoProcessual
 from processos.models import ProcessoJudicial
+from processos.utils import id_inteiro
 from ciclos.permissions import (
     pode_criar_ciclo,
     pode_editar_ciclo,
@@ -54,7 +56,7 @@ def usuario_atualizar(request):
         raise Http404()
 
     user_id = request.POST.get("user_id")
-    if not user_id:
+    if id_inteiro(user_id) is None:
         messages.error(request, "Usuario alvo nao informado.")
         return redirect("acesso:usuario_lista")
 
@@ -72,8 +74,16 @@ def usuario_atualizar(request):
         propagar_erros_form(request, form, extra_tags="usuario")
 
     next_url = request.POST.get("next", "")
-    if next_url:
-        return redirect(next_url)
+    # sem barra inicial nem esquema, o destino seria resolvido sob esta própria rota
+    if next_url.startswith(
+        ("/", "http://", "https://")
+    ) and url_has_allowed_host_and_scheme(
+        next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure(),
+    ):
+        # redirect() trataria um valor sem barra como nome de rota (NoReverseMatch)
+        return HttpResponseRedirect(next_url)
     return redirect("acesso:usuario_lista")
 
 

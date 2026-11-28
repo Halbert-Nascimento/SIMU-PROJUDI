@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import json
+import re
 
 from django.conf import settings
+from django.http.request import RawPostDataException
+
+from movimentacoes.models import DocumentoAnexado
 
 # ---------------------------------------------------------------------------
 # Constantes lidas do settings.py — altere apenas em UPLOAD_CONFIG
@@ -23,6 +27,90 @@ def contexto_upload() -> dict:
         "upload_accept_attr": ",".join(ALLOWED_EXTENSIONS),
         "upload_formatos_texto": ", ".join(e.lstrip(".").upper() for e in ALLOWED_EXTENSIONS),
     }
+
+
+# ---------------------------------------------------------------------------
+# Leitura de entrada não confiável
+# ---------------------------------------------------------------------------
+
+# 18 dígitos cabem em BIGINT; acima disso o banco responderia com erro
+_FORMATO_ID = re.compile(r"[0-9]{1,18}")
+
+
+def ler_json_objeto(request) -> dict | None:
+    """Corpo da requisição como objeto JSON, ou None para qualquer outra coisa."""
+    try:
+        dados = json.loads(request.body)
+    # JSON ou UTF-8 inválido, aninhamento fundo demais, ou formulário no lugar de JSON
+    except (ValueError, RecursionError, RawPostDataException):
+        return None
+    return dados if isinstance(dados, dict) else None
+
+
+def id_inteiro(valor) -> int | None:
+    """Chave primária recebida como inteiro ou texto de dígitos; None se inválida."""
+    if isinstance(valor, bool) or not isinstance(valor, (int, str)):
+        return None
+    texto = str(valor)
+    return int(texto) if _FORMATO_ID.fullmatch(texto) else None
+
+
+def ids_inteiros(valores) -> list[int] | None:
+    """Lista de chaves primárias; None se não for lista ou houver item inválido."""
+    if not isinstance(valores, list):
+        return None
+    ids = [id_inteiro(valor) for valor in valores]
+    return None if None in ids else ids
+
+
+_SO_MILHARES = re.compile(r"[+-]?[0-9]{1,3}(\.[0-9]{3})+")
+
+
+def normalizar_valor_monetario(texto: str) -> str:
+    """
+    Leva o valor ao formato que Decimal entende. O campo mascarado da tela envia
+    "15000.00"; o formato brasileiro ("15.000,00" ou "15.000") também é aceito.
+    """
+    texto = texto.strip()
+    # tirar o ponto de "15000.00", fora do formato brasileiro, multiplicaria por 100
+    if "," in texto or _SO_MILHARES.fullmatch(texto):
+        return texto.replace(".", "").replace(",", ".")
+    return texto
+
+
+# ---------------------------------------------------------------------------
+# Exibição de documentos das partes
+# ---------------------------------------------------------------------------
+
+
+# pontuação que muda a escrita do CPF/CNPJ sem mudar o documento
+SEPARADORES_DOCUMENTO = ".-/ "
+
+
+def chave_documento(documento: str) -> str:
+    """CPF/CNPJ sem pontuação e em maiúsculas, para comparar duas escritas."""
+    for separador in SEPARADORES_DOCUMENTO:
+        documento = documento.replace(separador, "")
+    return documento.upper()
+
+
+def mascarar_cpf_cnpj(documento: str | None) -> str:
+    """
+    Esconde letras e dígitos, preservando a pontuação digitada:
+    CPF vira ***.456.789-** e CNPJ mostra só da 3ª à 8ª posição.
+    """
+    texto = documento or ""
+    total = sum(caractere.isalnum() for caractere in texto)
+    # fora de 11 ou 14 posições não há como saber o que é seguro mostrar
+    visiveis = {11: range(3, 9), 14: range(2, 8)}.get(total, range(0))
+    saida, posicao = [], 0
+    for caractere in texto:
+        if not caractere.isalnum():
+            saida.append(caractere)
+            continue
+        saida.append(caractere if posicao in visiveis else "*")
+        posicao += 1
+    return "".join(saida)
 
 
 # ---------------------------------------------------------------------------
@@ -69,6 +157,17 @@ def validar_arquivo(arquivo) -> tuple[bool, str]:
     return True, ""
 
 
+def validar_titulo_documento(titulo: str) -> str:
+    """Mensagem de erro para um título que não cabe na coluna, ou "" se couber."""
+    limite = DocumentoAnexado._meta.get_field("titulo_arquivo").max_length
+    if len(titulo) <= limite:
+        return ""
+    return (
+        f'O título do documento "{titulo[:40]}…" passa de {limite} caracteres. '
+        "Informe um título menor."
+    )
+
+
 # ---------------------------------------------------------------------------
 # Validação em lote
 # ---------------------------------------------------------------------------
@@ -98,6 +197,10 @@ def validar_multiplos_arquivos(
             if i < len(nomes) and nomes[i].strip()
             else arquivo.name
         )
+        erro_titulo = validar_titulo_documento(titulo)
+        if erro_titulo:
+            erros.append(erro_titulo)
+            continue
         validos.append((arquivo, titulo))
 
     return validos, erros
