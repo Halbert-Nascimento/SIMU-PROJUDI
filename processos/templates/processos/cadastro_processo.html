@@ -684,6 +684,8 @@
                     </div>`;
                 item.querySelector(".btn-remover").addEventListener("click", () => item.remove());
                 lista.appendChild(item);
+                // o aviso "insira pelo menos uma parte" deixou de valer; Terceiro não tem aviso
+                fieldset.querySelector(".campo-erro-inline")?.classList.add("hidden");
             }
 
             let completando = false;
