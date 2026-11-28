@@ -83,6 +83,17 @@ def normalizar_valor_monetario(texto: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+# pontuação que muda a escrita do CPF/CNPJ sem mudar o documento
+SEPARADORES_DOCUMENTO = ".-/ "
+
+
+def chave_documento(documento: str) -> str:
+    """CPF/CNPJ sem pontuação e em maiúsculas, para comparar duas escritas."""
+    for separador in SEPARADORES_DOCUMENTO:
+        documento = documento.replace(separador, "")
+    return documento.upper()
+
+
 def mascarar_cpf_cnpj(documento: str | None) -> str:
     """
     Esconde letras e dígitos, preservando a pontuação digitada:

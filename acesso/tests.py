@@ -880,10 +880,14 @@ class UsuarioAtualizarRedirecionamentoTests(TestCase):
                 self.assertEqual(resposta.status_code, 302)
                 self.assertEqual(resposta["Location"], reverse("acesso:usuario_lista"))
 
-    def test_next_com_valor_solto_nao_gera_erro_500(self):
-        resposta = self._atualizar(next="qualquer-coisa")
-        self.assertEqual(resposta.status_code, 302)
-        self.assertEqual(resposta["Location"], "qualquer-coisa")
+    def test_next_sem_barra_inicial_cai_na_lista(self):
+        # relativo seria resolvido sob a rota de atualização, que não tem essas páginas
+        destinos = ("qualquer-coisa", "painel/", "../painel/", "?aba=1", " /painel/")
+        for destino in destinos:
+            with self.subTest(destino=destino):
+                resposta = self._atualizar(next=destino)
+                self.assertEqual(resposta.status_code, 302)
+                self.assertEqual(resposta["Location"], reverse("acesso:usuario_lista"))
 
     def test_next_interno_continua_respeitado(self):
         destino = reverse("acesso:painel_administrativo")

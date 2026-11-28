@@ -4,13 +4,32 @@ from ciclos.permissions import pode_alterar_autos_no_ciclo
 from usuarios.models import Usuario
 
 
+def pode_criar_parte(user, ciclo) -> bool:
+    """
+    Parte fictícia nasce no cadastro de processo e vale a mesma regra: qualquer
+    papel, desde que o ciclo ativo esteja "Em andamento".
+    """
+    if not user.is_authenticated or ciclo is None:
+        return False
+    return pode_alterar_autos_no_ciclo(ciclo)
+
+
 def pode_editar_processo(user, processo) -> bool:
     """
-    Quem pode manter os autos: alterar dados do processo e dados das partes.
+    Alterar dados do processo e das partes: exige ciclo "Em andamento" e o papel
+    de `pode_manter_autos`.
+    """
+    return pode_alterar_autos_no_ciclo(processo.ciclo) and pode_manter_autos(
+        user, processo
+    )
+
+
+def pode_manter_autos(user, processo) -> bool:
+    """
+    Quem tem o papel de manter os autos, sem olhar o estado do ciclo.
 
     Ver um processo sem segredo de justiça é público, mas alterar não pode ser:
     a regra aqui é a de quem *atua* no processo.
-      - Ciclo fora de "Em andamento": ninguém altera.
       - Admin / Coordenador global: sempre.
       - Professor: somente no ciclo que coordena.
       - Aluno em grupo Serventia (cod="SC") do ciclo: é o papel que mantém o
@@ -18,9 +37,6 @@ def pode_editar_processo(user, processo) -> bool:
       - Demais / não autenticado: negado.
     """
     if not user.is_authenticated:
-        return False
-
-    if not pode_alterar_autos_no_ciclo(processo.ciclo):
         return False
 
     tp = user.tipo_perfil_global

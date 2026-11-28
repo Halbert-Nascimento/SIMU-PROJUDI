@@ -97,7 +97,9 @@ outra parte no mesmo bloco, se necessário.</p>
 formulário &quot;Nova Parte&quot;, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa (Física ou
 Jurídica). O CPF vai como <code>000.000.000-00</code> ou com os 11 dígitos; o CNPJ, pontuado ou com as 14
 posições (o formato com letras também é aceito). O sistema confere só o formato, não o dígito
-verificador, e o documento precisa corresponder ao tipo de pessoa.</p>
+verificador, e o documento precisa corresponder ao tipo de pessoa. As letras do CNPJ são
+gravadas em maiúsculas, e o mesmo documento escrito com ou sem pontuação é recusado como
+duplicado.</p>
 <figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_75_processo_cadastrar_nova_form.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_75_processo_cadastrar_nova_form.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Formulário &quot;Nova Parte&quot; aberto no Polo Passivo, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa</figcaption></figure>
 <p>Preencha os campos e clique em &quot;Salvar&quot; (ou &quot;Cancelar&quot; para desistir sem criar a parte).</p>
 <figure class="manual-figura"><a href="{% url 'manual:imagem' 'img_76_processo_nova_parte_preenchida.png' %}" target="_blank" rel="noopener" data-ampliar><img src="{% url 'manual:imagem' 'img_76_processo_nova_parte_preenchida.png' %}" alt="" loading="lazy" width="1200" height="534"></a><figcaption>Formulário &quot;Nova Parte&quot; preenchido com &quot;Construtora Horizonte Ltda&quot;, antes de salvar</figcaption></figure>

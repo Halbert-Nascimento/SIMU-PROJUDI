@@ -725,7 +725,9 @@ Processual/Outras Partes/Sujeitos, opcional) funcionam da mesma forma. Cada bloc
   formulário "Nova Parte", com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa (Física ou
   Jurídica). O CPF vai como `000.000.000-00` ou com os 11 dígitos; o CNPJ, pontuado ou com as 14
   posições (o formato com letras também é aceito). O sistema confere só o formato, não o dígito
-  verificador, e o documento precisa corresponder ao tipo de pessoa.
+  verificador, e o documento precisa corresponder ao tipo de pessoa. As letras do CNPJ são
+  gravadas em maiúsculas, e o mesmo documento escrito com ou sem pontuação é recusado como
+  duplicado.
 
   ![Formulário "Nova Parte" aberto no Polo Passivo, com os campos Nome/Razão Social, CPF/CNPJ e Tipo Pessoa](assets/img_75_processo_cadastrar_nova_form.png)
 

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from django.db import transaction
+from django.db.models import F, Value
+from django.db.models.functions import Replace
 
 from movimentacoes.catalogo import NOME_AUTUACAO, NOME_REDISTRIBUICAO
 from movimentacoes.models import TipoMovimentacao
@@ -10,7 +12,8 @@ from notificacoes.services import (
     notificar_grupo_vinculado_processo,
 )
 
-from .models import GrupoProcesso, PoloProcessual
+from .models import GrupoProcesso, ParteFicticia, PoloProcessual
+from .utils import SEPARADORES_DOCUMENTO, chave_documento
 
 _POLO_DO_CARGO = {
     "APA": PoloProcessual.TipoPolo.ATIVO,
@@ -24,6 +27,17 @@ class TipoMovimentacaoIndisponivel(Exception):
     def __init__(self, nome_tipo: str):
         super().__init__(nome_tipo)
         self.nome_tipo = nome_tipo
+
+
+def partes_com_mesmo_documento(documento, partes=None):
+    """Partes cujo CPF/CNPJ é o mesmo, com qualquer pontuação ou caixa."""
+    partes = ParteFicticia.objects.all() if partes is None else partes
+    sem_pontuacao = F("cpf_cnpj")
+    for separador in SEPARADORES_DOCUMENTO:
+        sem_pontuacao = Replace(sem_pontuacao, Value(separador), Value(""))
+    return partes.alias(chave=sem_pontuacao).filter(
+        chave__iexact=chave_documento(documento)
+    )
 
 
 def _descrever_alteracoes(entraram, sairam) -> str:

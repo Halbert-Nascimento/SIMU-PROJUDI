@@ -27,7 +27,7 @@ Sempre consultar e reutilizar as funções existentes antes de criar novas.
 |---|---|---|
 | `acesso` | `acesso/permissions.py` | `pode_gerenciar_usuarios()`, `pode_editar_usuario()` (superusuário só é editado por superusuário), `tipos_que_pode_atribuir()` |
 | `ciclos` | `ciclos/permissions.py` | `pode_criar_ciclo()`, `pode_editar_ciclo()`, `pode_gerenciar_grupos_ciclo()`, `pode_ver_todos_ciclos()`, `pode_ver_ciclos_arquivados()`, `pode_alterar_autos_no_ciclo()` |
-| `processos` | `processos/permissions.py` | `pode_visualizar_processo()` (inclui lógica de segredo de justiça), `pode_editar_processo()`, `pode_ver_documentos_das_partes()`, `pode_baixar_anexos()` |
+| `processos` | `processos/permissions.py` | `pode_visualizar_processo()` (inclui lógica de segredo de justiça), `pode_editar_processo()`, `pode_manter_autos()` (papel, sem olhar o ciclo), `pode_criar_parte()`, `pode_ver_documentos_das_partes()`, `pode_baixar_anexos()` |
 | `movimentacoes` | `movimentacoes/permissions.py` | `pode_praticar_movimentacao()`, `pode_editar_movimentacao()`, `tipos_praticaveis()`, `grupo_processo_do_usuario()` |
 | `avaliacoes` | `avaliacoes/permissions.py` | `pode_ver_minhas_notas()`, `perfil_pode_avaliar()`, `pode_avaliar_movimentacao()` |
 
@@ -84,6 +84,8 @@ Regras práticas:
 ### Ciclo Encerrado
 - Ciclo fora de "Em andamento" é só consulta, para todos os perfis; avaliação e gestão do ciclo continuam
 - Toda rota nova que grava nos autos consulta `pode_alterar_autos_no_ciclo()`
+- O motivo "Ciclo encerrado" só é informado a quem tem papel no processo: confira o papel antes do ciclo
+- Duplicidade de parte é comparada sem pontuação e caixa: `partes_com_mesmo_documento()` (`processos/services.py`)
 
 ### Escape no JavaScript
 - Texto vindo do banco ou do usuário que entra em `innerHTML` passa por `escaparHtml()` (`static/js/escapar_html.js`)

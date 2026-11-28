@@ -26,12 +26,19 @@ from .forms import ParteFicticiaForm, ProcessoJudicialForm
 from .permissions import (
     grupo_serventia_do_usuario,
     pode_baixar_anexos,
+    pode_criar_parte,
     pode_editar_processo,
+    pode_manter_autos,
     pode_ver_documentos_das_partes,
     pode_visualizar_processo,
 )
-from .services import TipoMovimentacaoIndisponivel, aplicar_grupos
+from .services import (
+    TipoMovimentacaoIndisponivel,
+    aplicar_grupos,
+    partes_com_mesmo_documento,
+)
 from .utils import (
+    chave_documento,
     contexto_upload,
     id_inteiro,
     ids_inteiros,
@@ -393,6 +400,11 @@ def criar_parte(request):
     if request.method != "POST":
         return JsonResponse({"erro": "Método não permitido."}, status=405)
 
+    ciclo = request.ciclo_ativo
+    if not pode_criar_parte(request.user, ciclo):
+        erro = MENSAGEM_CICLO_ENCERRADO if ciclo else "Nenhum ciclo ativo selecionado."
+        return JsonResponse({"erro": erro}, status=403)
+
     dados = ler_json_objeto(request)
     if dados is None:
         return JsonResponse({"erro": "JSON inválido."}, status=400)
@@ -404,7 +416,7 @@ def criar_parte(request):
     cpf_cnpj = form.cleaned_data["cpf_cnpj"]
     tipo_pessoa = form.cleaned_data["tipo_pessoa"]
 
-    if ParteFicticia.objects.filter(cpf_cnpj=cpf_cnpj).exists():
+    if partes_com_mesmo_documento(cpf_cnpj).exists():
         return JsonResponse({"erro": "Já existe uma parte com este CPF/CNPJ."}, status=400)
 
     try:
@@ -434,12 +446,12 @@ def modificar_dados_processo(request, numero):
         ProcessoJudicial.objects.select_related("ciclo__status"), numero=numero
     )
 
-    # em JSON, e antes do perfil: quem chega à rota recebe o motivo na própria tela
+    if not pode_manter_autos(request.user, processo):
+        raise PermissionDenied
+
+    # em JSON: quem mantém os autos recebe o motivo na própria tela
     if not pode_alterar_autos_no_ciclo(processo.ciclo):
         return JsonResponse({"erro": MENSAGEM_CICLO_ENCERRADO}, status=403)
-
-    if not pode_editar_processo(request.user, processo):
-        raise PermissionDenied
 
     dados = ler_json_objeto(request)
     if dados is None:
@@ -490,11 +502,11 @@ def alterar_parte(request, numero):
         ProcessoJudicial.objects.select_related("ciclo__status"), numero=numero
     )
 
+    if not pode_manter_autos(request.user, processo):
+        raise PermissionDenied
+
     if not pode_alterar_autos_no_ciclo(processo.ciclo):
         return JsonResponse({"erro": MENSAGEM_CICLO_ENCERRADO}, status=403)
-
-    if not pode_editar_processo(request.user, processo):
-        raise PermissionDenied
 
     dados = ler_json_objeto(request)
     if dados is None:
@@ -517,11 +529,14 @@ def alterar_parte(request, numero):
     cpf_cnpj = form.cleaned_data["cpf_cnpj"]
     tipo_pessoa = form.cleaned_data["tipo_pessoa"]
 
-    if (
-        ParteFicticia.objects.filter(cpf_cnpj=cpf_cnpj)
-        .exclude(pk=polo.parte_id)
-        .exists()
+    outras_partes = ParteFicticia.objects.exclude(pk=polo.parte_id)
+    duplicado = outras_partes.filter(cpf_cnpj=cpf_cnpj).exists()
+    # só na troca de documento: duplicata antiga não impede corrigir o nome
+    if not duplicado and chave_documento(cpf_cnpj) != chave_documento(
+        polo.parte.cpf_cnpj
     ):
+        duplicado = partes_com_mesmo_documento(cpf_cnpj, outras_partes).exists()
+    if duplicado:
         return JsonResponse({"erro": "Já existe outra parte com este CPF/CNPJ."}, status=400)
 
     parte = polo.parte
