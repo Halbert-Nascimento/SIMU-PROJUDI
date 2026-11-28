@@ -66,6 +66,52 @@ class CriarParteTests(_CenarioJson):
             **trocas,
         }
 
+    def test_letras_do_cnpj_sao_gravadas_em_maiusculas(self):
+        resposta = self.post_json(
+            self.url,
+            self.corpo(cpf_cnpj="12.abc.345/01de-35", tipo_pessoa="Jurídica"),
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.json()["cpf_cnpj"], "12.ABC.345/01DE-35")
+        self.assertTrue(
+            ParteFicticia.objects.filter(
+                pk=resposta.json()["id"], cpf_cnpj__regex=r"^12\.ABC"
+            ).exists()
+        )
+
+    def test_mesmo_documento_com_outra_pontuacao_ou_caixa_e_duplicado(self):
+        pares = (
+            ("12.345.678/0001-90", "12345678000190", "Jurídica"),
+            ("98765432000199", "98.765.432/0001-99", "Jurídica"),
+            ("12.ABC.345/01DE-35", "12abc34501de35", "Jurídica"),
+            ("123.456.789-00", "12345678900", "Física"),
+            ("98765432100", "987.654.321-00", "Física"),
+        )
+        for primeiro, segundo, tipo in pares:
+            with self.subTest(segundo=segundo):
+                self.post_json(
+                    self.url, self.corpo(cpf_cnpj=primeiro, tipo_pessoa=tipo)
+                )
+                total = ParteFicticia.objects.count()
+
+                resposta = self.post_json(
+                    self.url, self.corpo(cpf_cnpj=segundo, tipo_pessoa=tipo)
+                )
+
+                self.assertRecusa(resposta, "Já existe uma parte")
+                self.assertEqual(ParteFicticia.objects.count(), total)
+
+    def test_documento_gravado_com_espacos_tambem_conta_como_duplicado(self):
+        ParteFicticia.objects.filter(pk=self.parte_autor.pk).update(
+            cpf_cnpj=" 111.111.111-11 "
+        )
+
+        self.assertRecusa(
+            self.post_json(self.url, self.corpo(cpf_cnpj="11111111111")),
+            "Já existe uma parte",
+        )
+
     def test_documentos_nos_formatos_aceitos_sao_gravados_como_digitados(self):
         # sem dígito verificador: seeds e material de aula usam números fictícios
         casos = (
@@ -74,7 +120,7 @@ class CriarParteTests(_CenarioJson):
             ("12.345.678/0001-90", "Jurídica"),
             ("98765432000199", "Jurídica"),
             ("12.ABC.345/01DE-35", "Jurídica"),
-            ("12abc34501de36", "Jurídica"),
+            ("12ABC34501DE36", "Jurídica"),
         )
         for documento, tipo in casos:
             with self.subTest(documento=documento):
@@ -179,6 +225,53 @@ class AlterarParteTests(_CenarioJson):
 
                 self.assertEqual(resposta.status_code, 200)
                 self.assertEqual(resposta.json()["nome_razao"], "Nome Novo")
+
+    def _outra_parte(self, documento):
+        return ParteFicticia.objects.create(
+            nome_razao="Outra Parte",
+            cpf_cnpj=documento,
+            tipo_pessoa=ParteFicticia.TipoPessoa.FISICA,
+        )
+
+    def test_documento_de_outra_parte_com_outra_pontuacao_e_recusado(self):
+        self._outra_parte("555.666.777-88")
+
+        self.assertRecusa(
+            self.post_json(self.url, self.corpo(cpf_cnpj="55566677788")),
+            "Já existe outra parte",
+        )
+
+    def test_trocar_so_a_pontuacao_do_proprio_documento_e_permitido(self):
+        resposta = self.post_json(self.url, self.corpo(cpf_cnpj="11111111111"))
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.json()["cpf_cnpj"], "11111111111")
+
+    def test_duplicata_antiga_permite_corrigir_o_nome(self):
+        # pares que o sistema aceitou antes da checagem continuam editáveis
+        self._outra_parte("11111111111")
+
+        resposta = self.post_json(self.url, self.corpo())
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.json()["nome_razao"], "Nome Novo")
+
+    def test_mesmo_texto_de_duplicata_antiga_e_recusado_sem_erro_500(self):
+        self._outra_parte("11111111111")
+
+        self.assertRecusa(
+            self.post_json(self.url, self.corpo(cpf_cnpj="11111111111")),
+            "Já existe outra parte",
+        )
+
+    def test_letras_do_cnpj_alterado_sao_gravadas_em_maiusculas(self):
+        resposta = self.post_json(
+            self.url,
+            self.corpo(cpf_cnpj="12.abc.345/01de-35", tipo_pessoa="Jurídica"),
+        )
+
+        self.assertEqual(resposta.status_code, 200)
+        self.assertEqual(resposta.json()["cpf_cnpj"], "12.ABC.345/01DE-35")
 
     def test_documento_alterado_passa_a_ser_validado(self):
         self.assertRecusa(

@@ -74,7 +74,10 @@ def usuario_atualizar(request):
         propagar_erros_form(request, form, extra_tags="usuario")
 
     next_url = request.POST.get("next", "")
-    if next_url and url_has_allowed_host_and_scheme(
+    # sem barra inicial nem esquema, o destino seria resolvido sob esta própria rota
+    if next_url.startswith(
+        ("/", "http://", "https://")
+    ) and url_has_allowed_host_and_scheme(
         next_url,
         allowed_hosts={request.get_host()},
         require_https=request.is_secure(),

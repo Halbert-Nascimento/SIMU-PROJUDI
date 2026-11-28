@@ -87,6 +87,8 @@ class ParteFicticiaForm(forms.Form):
                     "O documento informado não corresponde ao tipo de pessoa."
                 )
             raise forms.ValidationError(_ERRO_FORMATO[tipo])
+        # CNPJ alfanumérico é oficialmente maiúsculo
+        dados["cpf_cnpj"] = documento.upper()
         return dados
 
     def mensagem_de_erro(self) -> str:

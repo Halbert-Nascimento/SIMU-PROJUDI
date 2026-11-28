@@ -18,10 +18,10 @@ from movimentacoes.permissions import (
     pode_movimentar_processo,
     pode_praticar_movimentacao,
 )
-from processos.models import GrupoProcesso, ProcessoJudicial
+from processos.models import GrupoProcesso, ParteFicticia, ProcessoJudicial
 from processos.permissions import pode_editar_processo
 from processos.tests.fixtures import CenarioMovimentacoesTestCase, aceite_termos_teste
-from processos.views import atribuir_grupo_processos, cadastrar_processo
+from processos.views import atribuir_grupo_processos, cadastrar_processo, criar_parte
 from usuarios.models import Usuario
 
 STATUS_ENCERRADOS = ("Arquivado", "Finalizado")
@@ -234,6 +234,95 @@ class EscritaEmCicloEncerradoTests(_CenarioComProcesso):
         requisicao.ciclo_ativo = self.ciclo
         with self.assertRaises(PermissionDenied):
             cadastrar_processo(requisicao)
+
+
+class AvisoSoParaQuemMantemOsAutosTests(_CenarioComProcesso):
+    def test_quem_nao_tem_papel_nao_recebe_o_motivo(self):
+        outro_professor = Usuario.objects.create_user(
+            username="prof.fora",
+            email="prof.fora@teste.local",
+            tipo_perfil_global=Usuario.TipoPerfilGlobal.PROFESSOR,
+            **aceite_termos_teste(),
+        )
+        casos = (
+            ("processos:modificar_dados_processo", self.corpo_dados()),
+            ("processos:alterar_parte", self.corpo_parte()),
+        )
+        for nome in ("Em andamento", *STATUS_ENCERRADOS):
+            self.mudar_status(nome)
+            for usuario in (self.usuarios["APA"], self.usuarios["MP"], outro_professor):
+                for rota, corpo in casos:
+                    with self.subTest(status=nome, usuario=usuario.username, rota=rota):
+                        resposta = self.post_json(usuario, rota, corpo)
+                        self.assertEqual(resposta.status_code, 403)
+                        self.assertNotIn(AVISO, resposta.content.decode())
+
+
+class CriarParteExigeCicloAbertoTests(_CenarioComProcesso):
+    corpo = {
+        "nome_razao": "Parte Nova",
+        "cpf_cnpj": "555.666.777-88",
+        "tipo_pessoa": "Física",
+    }
+
+    def criar(self, usuario):
+        return self.cliente_logado(usuario).post(
+            reverse("processos:criar_parte"),
+            data=json.dumps(self.corpo),
+            content_type="application/json",
+        )
+
+    def assertNadaCriado(self, resposta):
+        self.assertEqual(resposta.status_code, 403)
+        self.assertIn("ciclo", resposta.json()["erro"].lower())
+        self.assertFalse(
+            ParteFicticia.objects.filter(cpf_cnpj=self.corpo["cpf_cnpj"]).exists()
+        )
+
+    def test_usuario_sem_ciclo_nao_cria_parte(self):
+        for perfil in (
+            Usuario.TipoPerfilGlobal.PROFESSOR,
+            Usuario.TipoPerfilGlobal.ADMIN,
+            Usuario.TipoPerfilGlobal.PENDENTE,
+        ):
+            with self.subTest(perfil=perfil):
+                usuario = Usuario.objects.create_user(
+                    username=f"semciclo.{perfil.lower()}",
+                    email=f"semciclo.{perfil.lower()}@teste.local",
+                    tipo_perfil_global=perfil,
+                    **aceite_termos_teste(),
+                )
+                self.assertNadaCriado(self.criar(usuario))
+
+    def test_com_todos_os_ciclos_encerrados_nao_cria_parte(self):
+        for nome in STATUS_ENCERRADOS:
+            self.mudar_status(nome)
+            CicloSimulacao.objects.exclude(pk=self.ciclo.pk).update(
+                status=self.ciclo.status
+            )
+            with self.subTest(status=nome):
+                self.assertNadaCriado(self.criar(self.professor))
+
+    def test_qualquer_papel_com_ciclo_aberto_continua_criando(self):
+        for indice, usuario in enumerate(
+            (self.professor, *self.usuarios.values()), start=1
+        ):
+            with self.subTest(usuario=usuario.username):
+                self.corpo = {**self.corpo, "cpf_cnpj": f"{indice:011d}"}
+                self.assertEqual(self.criar(usuario).status_code, 200)
+
+    def test_view_recusa_ciclo_encerrado_mesmo_sem_o_middleware(self):
+        self.mudar_status("Arquivado")
+        requisicao = RequestFactory().post(
+            "/", data=json.dumps(self.corpo), content_type="application/json"
+        )
+        requisicao.user = self.usuarios["APA"]
+        requisicao.ciclo_ativo = self.ciclo
+
+        resposta = criar_parte(requisicao)
+
+        self.assertEqual(resposta.status_code, 403)
+        self.assertIn(AVISO, json.loads(resposta.content)["erro"])
 
 
 class CicloAbertoEExcecoesTests(_CenarioComProcesso):
